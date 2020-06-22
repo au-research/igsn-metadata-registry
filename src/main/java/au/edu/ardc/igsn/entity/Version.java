@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "version")
@@ -33,7 +32,23 @@ public class Version {
     @JoinColumn(name = "record_id", nullable = false)
 	private Record record;
 	
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "schema_id", nullable = false)
+	private Schema schema;
+	
     
+	public Record getRecord() {
+		return record;
+	}
+	public void setRecord(Record record) {
+		this.record = record;
+	}
+	public Schema getSchema() {
+		return schema;
+	}
+	public void setSchema(Schema schema) {
+		this.schema = schema;
+	}
 	public Long getId() {
 		return id;
 	}
