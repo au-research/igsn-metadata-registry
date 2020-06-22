@@ -31,7 +31,15 @@ public class Record {
 	private Registrant registrant;
 	
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
-    private List<Version> versionss;
+    private List<Version> versions;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getStatus() {
 		return status;
@@ -41,6 +49,37 @@ public class Record {
 		this.status = status;
 	}
 
-	
+	public java.util.Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(java.util.Date created) {
+		this.created = created;
+	}
+
+	public java.util.Date getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(java.util.Date updated) {
+		this.updated = updated;
+	}
+
+	public java.util.Date getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(java.util.Date deleted) {
+		this.deleted = deleted;
+	}
+
+	public Registrant getRegistrant() {
+		return registrant;
+	}
+
+	public void setRegistrant(Registrant registrant) {
+		this.registrant = registrant;
+	}
+
 
 }
