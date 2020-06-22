@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.persistence.*;
 
+
+// for reserved name use `` or []
 @Entity
 @Table(name = "`schema`")
 @JsonIdentityInfo(
@@ -78,22 +80,6 @@ public class Schema {
 	public void setLocal_path(String local_path) {
 		this.local_path = local_path;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	public java.util.Date getCreated() {
 		return created;
