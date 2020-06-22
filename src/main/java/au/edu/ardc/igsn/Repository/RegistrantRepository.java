@@ -1,4 +1,4 @@
-package Repository;
+package au.edu.ardc.igsn.Repository;
 
 import org.springframework.stereotype.Repository;
 
