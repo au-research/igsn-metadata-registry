@@ -1,25 +1,19 @@
 package au.edu.ardc.igsn.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import java.util.List;
-
 import javax.persistence.*;
 
 
 // for reserved name use `` or []
 @Entity
 @Table(name = "`schema`")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")
 
 public class Schema {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(length = 125)
+    private String id;
     private String name;
     private String uri;
     private String local_path;
@@ -33,11 +27,11 @@ public class Schema {
     @OneToMany(targetEntity = Version.class, mappedBy = "schema")
     private List<Version> versions;
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

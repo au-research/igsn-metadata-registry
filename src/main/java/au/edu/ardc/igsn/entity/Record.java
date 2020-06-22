@@ -5,19 +5,23 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.List;
 
 @Entity
 @Table(name = "record")
 @JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
+        generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "id")
 
 public class Record {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator="system-uuid")
+	@GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(length = 125)
     private String status;
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date created;
@@ -33,12 +37,14 @@ public class Record {
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
 
-	public Long getId() {
-		return id;
+
+
+	public List<Version> getVersions() {
+		return versions;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setVersions(List<Version> versions) {
+		this.versions = versions;
 	}
 
 	public String getStatus() {
