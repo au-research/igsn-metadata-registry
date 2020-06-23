@@ -9,87 +9,89 @@ import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "version")
+@Table(name = "identifier")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "id")
 
-public class Version {
+public class Identifier {
 	
 	@Id
     @GeneratedValue(generator="system-uuid")
 	@GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(length = 125)
     private String id;
-    private String status;
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date embargo;
+    private String type;
+    private String value;
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date created;
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date updated;
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date ended;
-    
-    
+
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "record_id", nullable = false)
 	private Record record;
-	
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "schema_id", nullable = false)
-	private Schema schema;
-	
     
-	public Record getRecord() {
-		return record;
+    
+	public String getType() {
+		return type;
 	}
-	public void setRecord(Record record) {
-		this.record = record;
+
+
+
+	public void setType(String type) {
+		this.type = type;
 	}
-	public Schema getSchema() {
-		return schema;
+
+
+
+	public String getValue() {
+		return value;
 	}
-	public void setSchema(Schema schema) {
-		this.schema = schema;
+
+
+
+	public void setValue(String value) {
+		this.value = value;
 	}
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	public java.util.Date getEmbargo() {
-		return embargo;
-	}
-	public void setEmbargo(java.util.Date embargo) {
-		this.embargo = embargo;
-	}
+
+
+
 	public java.util.Date getCreated() {
 		return created;
 	}
+
+
+
 	public void setCreated(java.util.Date created) {
 		this.created = created;
 	}
+
+
+
 	public java.util.Date getUpdated() {
 		return updated;
 	}
+
+
+
 	public void setUpdated(java.util.Date updated) {
 		this.updated = updated;
 	}
-	public java.util.Date getEnded() {
-		return ended;
+
+
+
+	public Record getRecord() {
+		return record;
 	}
-	public void setEnded(java.util.Date ended) {
-		this.ended = ended;
+
+
+
+	public void setRecord(Record record) {
+		this.record = record;
 	}
-    
+
+
 
 
 }
