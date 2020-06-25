@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn.Service;
+package au.edu.ardc.igsn.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import au.edu.ardc.igsn.Exceptions.RecordNotFoundException;
-import au.edu.ardc.igsn.Repository.RecordRepository;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.entity.Record;
 
 @Service

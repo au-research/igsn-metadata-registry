@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn.Exceptions;
+package au.edu.ardc.igsn.exception;
 
 public class RecordNotFoundException extends RuntimeException{
 
