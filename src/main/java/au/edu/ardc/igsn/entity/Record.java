@@ -17,10 +17,14 @@ import java.util.List;
         property = "id")
 
 public class Record {
-	
+
+
+
 	@Id
     @GeneratedValue(generator="system-uuid")
 	@GenericGenerator(name="system-uuid", strategy = "uuid")
+	private String id;
+
     @Column(length = 125)
     private String status;
     @Temporal(TemporalType.TIMESTAMP)
@@ -30,14 +34,16 @@ public class Record {
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date deleted;
 	
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "registrant_id", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
+    @JoinColumn(name = "registrant_id", nullable = true)
 	private Registrant registrant;
 	
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
 
-
+	public String getId() {
+		return id;
+	}
 
 	public List<Version> getVersions() {
 		return versions;
