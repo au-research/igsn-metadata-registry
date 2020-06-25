@@ -1,8 +1,7 @@
-package au.edu.ardc.igsn;
+package au.edu.ardc.igsn.integration.repository;
 
-import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.entity.Registrant;
+import au.edu.ardc.igsn.repository.RecordRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.EntityManager;
-
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +38,6 @@ public class RecordRepositoryTest {
     public void canFindAll() {
         // given a record
         Record record = new Record();
-        record.setRegistrant(new Registrant());
         recordRepository.save(record);
 
         // when findsAll, finds 1
@@ -48,7 +45,6 @@ public class RecordRepositoryTest {
 
         // adds another record
         Record record2 = new Record();
-        record.setRegistrant(new Registrant());
         recordRepository.save(record2);
 
         // when findAll, finds 2
@@ -59,7 +55,6 @@ public class RecordRepositoryTest {
     public void canFindById() {
         // given a record
         Record record = new Record();
-        record.setRegistrant(new Registrant());
         recordRepository.save(record);
 
         String id = record.getId();

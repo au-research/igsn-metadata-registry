@@ -3,95 +3,86 @@ package au.edu.ardc.igsn.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import javax.persistence.*;
-
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "record")
+@Table(name = "records")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "id")
 
 public class Record {
 
-
-
-	@Id
-    @GeneratedValue(generator="system-uuid")
-	@GenericGenerator(name="system-uuid", strategy = "uuid")
-	private String id;
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "id", updatable = false, nullable = false)
+    private String id;
 
     @Column(length = 125)
     private String status;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date created;
+    private Date created;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date updated;
+    private Date updated;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date deleted;
-	
-	@ManyToOne(fetch = FetchType.LAZY, optional = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "registrant_id", nullable = true)
-	private Registrant registrant;
-	
+    private Date deleted;
+
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public List<Version> getVersions() {
-		return versions;
-	}
+    public List<Version> getVersions() {
+        return versions;
+    }
 
-	public void setVersions(List<Version> versions) {
-		this.versions = versions;
-	}
+    public void setVersions(List<Version> versions) {
+        this.versions = versions;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public java.util.Date getCreated() {
-		return created;
-	}
+    public Date getCreated() {
+        return created;
+    }
 
-	public void setCreated(java.util.Date created) {
-		this.created = created;
-	}
+    public void setCreated(Date created) {
+        this.created = created;
+    }
 
-	public java.util.Date getUpdated() {
-		return updated;
-	}
+    public Date getUpdated() {
+        return updated;
+    }
 
-	public void setUpdated(java.util.Date updated) {
-		this.updated = updated;
-	}
+    public void setUpdated(Date updated) {
+        this.updated = updated;
+    }
 
-	public java.util.Date getDeleted() {
-		return deleted;
-	}
+    public Date getDeleted() {
+        return deleted;
+    }
 
-	public void setDeleted(java.util.Date deleted) {
-		this.deleted = deleted;
-	}
-
-	public Registrant getRegistrant() {
-		return registrant;
-	}
-
-	public void setRegistrant(Registrant registrant) {
-		this.registrant = registrant;
-	}
-
+    public void setDeleted(Date deleted) {
+        this.deleted = deleted;
+    }
 
 }

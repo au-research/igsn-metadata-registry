@@ -12,7 +12,7 @@ import javax.persistence.*;
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id")
 
-public class URLs {
+public class URL {
 	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

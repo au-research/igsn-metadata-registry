@@ -9,11 +9,10 @@ import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "version")
+@Table(name = "versions")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.UUIDGenerator.class,
         property = "id")
-
 public class Version {
 	
 	@Id
