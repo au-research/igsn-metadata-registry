@@ -1,7 +1,8 @@
-package au.edu.ardc.igsn.integration.repository;
+package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class RecordRepositoryTest {
     }
 
     @Test
-    public void canFindById() {
+    public void repository_can_findById() {
         // given a record
         Record record = new Record();
         recordRepository.save(record);

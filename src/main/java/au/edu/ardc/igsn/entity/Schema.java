@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.entity;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -8,20 +9,45 @@ import java.util.List;
 public class Schema {
 
     @Id
-    @Column(length = 125)
+    @Column(unique = true)
     private String id;
+
     private String name;
+
     private String uri;
+
     private String local_path;
+
     private boolean active;
+
     private boolean editable;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date created;
+    private Date created;
+
     @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date updated;
+    private Date updated;
 
     @OneToMany(targetEntity = Version.class, mappedBy = "schema")
     private List<Version> versions;
+
+    /**
+     * Empty constructor
+     */
+    public Schema() {
+
+    }
+
+    /**
+     * Constructor with id and name
+     *
+     * @param id    unique id of the schema
+     * @param name  display name of the schema
+     */
+    public Schema(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     public String getId() {
         return id;
@@ -71,19 +97,19 @@ public class Schema {
         this.local_path = local_path;
     }
 
-    public java.util.Date getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(java.util.Date created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 
-    public java.util.Date getUpdated() {
+    public Date getUpdated() {
         return updated;
     }
 
-    public void setUpdated(java.util.Date updated) {
+    public void setUpdated(Date updated) {
         this.updated = updated;
     }
 
