@@ -83,6 +83,30 @@ public class SchemaResourceControllerIT {
 
     @Test
     @Transactional
+    public void it_should_show_validation_error() throws Exception {
+        assertThat(service.findById("test")).isNull();
+
+        Schema invalidSchema = new Schema();
+        invalidSchema.setId("test");
+
+        // when POST to /
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/resources/schemas/")
+                        .content(asJsonString(invalidSchema))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.name").exists())
+                .andExpect(jsonPath("$.name").value("Name is mandatory"));
+
+        // schema is not created
+        assertThat(service.findById("test")).isNull();
+    }
+
+    @Test
+    @Transactional
     public void it_should_update_schema_when_put() throws Exception {
         // given a schema
         service.create(new Schema("test", "Original"));
@@ -127,6 +151,5 @@ public class SchemaResourceControllerIT {
         assertThat(service.findById("test")).isNull();
     }
 
-    // TODO test validation
     // TODO test authentication
 }

@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.entity.Schema;
 import au.edu.ardc.igsn.service.SchemaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,16 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.net.URI;
 
-@Tag(name="Schema Resource Controller")
+@Tag(name = "Schema Resource Controller")
 @RestController
 @RequestMapping(value = "/api/resources/schemas")
-public class SchemaResourceController {
+public class SchemaResourceController extends APIController {
 
     @Autowired
     private SchemaService schemaService;
 
+    // TODO Pagination /api/resources/schemas/
     @GetMapping(value = "/")
     public Iterable<Schema> index() {
         return schemaService.findAll();
@@ -28,14 +31,14 @@ public class SchemaResourceController {
     public ResponseEntity<Schema> show(@PathVariable("id") String id) {
         Schema schema = schemaService.findById(id);
         if (schema == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema "+ id+" Not Found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " Not Found");
         }
 
         return ResponseEntity.ok().body(schema);
     }
 
     @PostMapping(value = "/")
-    public ResponseEntity<Schema> store(@RequestBody Schema newSchema) {
+    public ResponseEntity<Schema> store(@Valid @RequestBody Schema newSchema) {
         Schema schema = schemaService.create(newSchema);
 
         URI location = URI.create("/api/resources/schemas/" + schema.getId());
@@ -59,4 +62,6 @@ public class SchemaResourceController {
 
         return ResponseEntity.accepted().build();
     }
+
+
 }

@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.entity;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.List;
 
@@ -10,8 +11,10 @@ public class Schema {
 
     @Id
     @Column(unique = true)
+    @NotBlank(message = "ID is mandatory")
     private String id;
 
+    @NotBlank(message = "Name is mandatory")
     private String name;
 
     private String uri;
