@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.entity.Schema;
 import au.edu.ardc.igsn.service.SchemaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 
+@Tag(name="Schema Resource Controller")
 @RestController
 @RequestMapping(value = "/api/resources/schemas")
 public class SchemaResourceController {
@@ -18,7 +20,6 @@ public class SchemaResourceController {
     private SchemaService schemaService;
 
     @GetMapping(value = "/")
-    @ResponseBody
     public Iterable<Schema> index() {
         return schemaService.findAll();
     }
