@@ -1,0 +1,19 @@
+# Database Setup
+# Make sure to create the database, login credentials and permissions beforehand
+spring.datasource.url= jdbc:mysql://localhost:3306/dbs_igsn?useLegacyDatetimeCode=false&serverTimezone=UTC
+spring.datasource.username = igsn_user
+spring.datasource.password = ******
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+
+# JPA setup
+# set spring.jpa.hibernate.ddl-auto to create initially then update for subsequent runs
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MySQL5Dialect
+
+# allow error message to appear in HTTP response, defaults to never
+server.error.include-message=always
+
+# actuators
+management.endpoints.web.exposure.include=health, info, metrics
+management.endpoint.metrics.enabled=true

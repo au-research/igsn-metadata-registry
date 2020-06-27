@@ -1,11 +1,24 @@
-# IGSN METADATA STORE
+# IGSN Metadata Registry
 
-## Build war file
+## Requirements
+
+* JDK 8+
+
+## Quick Start
 ```
-mvn clean install
+cp /src/main/resources/application.properties.sample /src/main/resources/application.properties
+mvn clean install -DskipTests
+mvn spring-boot:run
 ```
 
-### Build and run using built in Tomcat
+## Test
 ```
-mvn install tomcat:run
+mvn test
 ```
+By default will use the `src/test/resources/application.properties`
+
+Test & generate Jacoco code coverage report
+```
+mvn test jacoco:report
+```
+jacoco HTML test coverage report will now be available with `open target/site/jacoco/index.html` and the binary available at `target/jacoco.exec`
