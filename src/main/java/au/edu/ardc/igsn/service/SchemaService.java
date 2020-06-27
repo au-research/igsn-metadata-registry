@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.entity.Schema;
 import au.edu.ardc.igsn.repository.SchemaRepository;
+import au.edu.ardc.igsn.util.XMLValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,6 @@ public class SchemaService {
         Optional<Schema> opt = repository.findById(id);
 
         return opt.orElse(null);
-
     }
 
     public Iterable<Schema> findAll() {
@@ -55,6 +55,17 @@ public class SchemaService {
 
         repository.delete(existed);
         return true;
+    }
+
+    /**
+     * Validate an XML, given a Schema
+     *
+     * @param xml          the XML as String
+     * @param schema       the Schema, local_path will be used
+     * @return boolean
+     */
+    public boolean validate(String xml, Schema schema) {
+        return XMLValidator.validateXMLStringWithXSDPath(xml, schema.getLocal_path());
     }
 
 }

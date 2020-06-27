@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.entity.Schema;
 import au.edu.ardc.igsn.repository.SchemaRepository;
+import au.edu.ardc.igsn.util.Helpers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,6 +105,21 @@ public class SchemaServiceIT {
     @Test
     public void delete_an_unknown_schema_returns_false() {
         assertThat(service.delete("unknown-schema")).isFalse();
+    }
+
+    @Test
+    @Transactional
+    public void it_can_validate_a_schema_using_local_path() throws IOException {
+        // given an xml as a string
+        String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+
+        // and a csiro-v3 schema
+        Schema schema = new Schema("igsn-csiro-v3.0", "IGSN CSIRO version 3.0");
+        schema.setLocal_path("schemas/igsn-csiro-v3.0/igsn-csiro-v3.0.xsd");
+        service.create(schema);
+
+        // sample IGSN is validated
+        assertThat(service.validate(xml, schema)).isTrue();
     }
 
 }

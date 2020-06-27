@@ -1,8 +1,12 @@
 package au.edu.ardc.igsn.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class Helpers {
 
@@ -42,5 +46,10 @@ public class Helpers {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String readFile(String path) throws IOException {
+        File file = new File(path);
+        return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     }
 }
