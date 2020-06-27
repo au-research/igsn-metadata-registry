@@ -1,8 +1,5 @@
 package au.edu.ardc.igsn.entity;
 
-
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -11,10 +8,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "records")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.UUIDGenerator.class,
-        property = "id")
-
 public class Record {
 
     @Id
@@ -23,7 +16,7 @@ public class Record {
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private String id;
 
     @Column(length = 125)
@@ -40,6 +33,13 @@ public class Record {
 
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
+
+    /**
+     * Empty constructor
+     */
+    public Record() {
+
+    }
 
     public String getId() {
         return id;

@@ -1,26 +1,22 @@
 package au.edu.ardc.igsn.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
-import javax.persistence.*;
-
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "identifiers")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.UUIDGenerator.class,
-        property = "id")
 public class Identifier {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(length = 125)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private String id;
 
     private String type;
