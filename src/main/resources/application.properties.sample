@@ -20,3 +20,17 @@ server.error.include-message=always
 # actuators
 management.endpoints.web.exposure.include=health, info, metrics
 management.endpoint.metrics.enabled=true
+
+# keycloak
+keycloak.enabled=false
+keycloak.realm=
+keycloak.auth-server-url=
+keycloak.ssl-required=external
+keycloak.resource=
+keycloak.credentials.secret=
+keycloak.use-resource-role-mappings=true
+keycloak.enable-basic-auth=true
+keycloak.cors=false
+keycloak.bearer-only=true
+keycloak.security-constraints[0].authRoles[0]=*
+keycloak.security-constraints[0].securityCollections[0].patterns[0]=/api/*

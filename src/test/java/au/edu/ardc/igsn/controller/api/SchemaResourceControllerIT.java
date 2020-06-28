@@ -3,8 +3,11 @@ package au.edu.ardc.igsn.controller.api;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Schema;
 import au.edu.ardc.igsn.service.SchemaService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.keycloak.KeycloakPrincipal;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +16,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.security.Principal;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,28 +29,45 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+//import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.*;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class SchemaResourceControllerIT {
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
+    private WebApplicationContext context;
+
+    @Autowired
     private SchemaService service;
 
+//    @Before
+//    public void setup() {
+//        mockMvc = MockMvcBuilders
+//                .webAppContextSetup(context)
+//                .apply(springSecurity())
+//                .build();
+//    }
+
     @Test
-    @Transactional
     public void it_should_show_all_schemas() throws Exception {
         // given 2 schemas
         service.create(new Schema("first", "First"));
         service.create(new Schema("second", "Second"));
 
+        // with this user
+        KeycloakPrincipal mockPrincipal = Mockito.mock(KeycloakPrincipal.class);
+        Mockito.when(mockPrincipal.getName()).thenReturn("dude");
+
         // when GET /api/resources/schemas/, see that they're there
         mockMvc.perform(get("/api/resources/schemas/"))
-//                .andDo(print())
-                .andExpect(jsonPath("$[*].id").isNotEmpty())
-                .andExpect(status().isOk());
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id").isNotEmpty());
     }
 
     @Test
@@ -68,6 +92,8 @@ public class SchemaResourceControllerIT {
         // when POST to /
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/schemas/")
+//                        .with(httpBasic("user","password"))
+//                        .header("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
                         .content(asJsonString(new Schema("test", "Test")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
@@ -119,7 +145,7 @@ public class SchemaResourceControllerIT {
                         .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
-                .andDo(print())
+//                .andDo(print())
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value("Updated"));
