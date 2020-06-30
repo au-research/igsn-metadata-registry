@@ -24,11 +24,9 @@ public class APILoggingService {
     /**
      * Log the request using the built-in logger
      *
-     * @param request   HttpServletRequest request
+     * @param wrappedRequest   MultiReadHttpServletRequest element
      */
-    public void logRequest(HttpServletRequest request) {
-        MultiReadHttpServletRequest wrappedRequest = new MultiReadHttpServletRequest(request);
-        wrappedRequest.getParameterMap();
+    public void logRequest(MultiReadHttpServletRequest wrappedRequest) {
 
         LinkedHashMap<String, Object> req = new LinkedHashMap<>();
 
@@ -54,7 +52,7 @@ public class APILoggingService {
          * https://stackoverflow.com/questions/10210645/http-servlet-request-lose-params-from-post-body-after-read-it-once
          * https://stackoverflow.com/a/36619972/2257038 and https://stackoverflow.com/a/30748533/2257038
          */
-        // req.put("body", getBody(wrappedRequest));
+         req.put("body", getBody(wrappedRequest));
 
         // logger.info(asJsonString(req));
         logger.info(req.toString());
