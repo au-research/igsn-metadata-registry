@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "schemas")
-public class Schema {
+public class SchemaEntity {
 
     @Id
     @Column(unique = true)
@@ -37,7 +37,7 @@ public class Schema {
     /**
      * Empty constructor
      */
-    public Schema() {
+    public SchemaEntity() {
 
     }
 
@@ -47,7 +47,7 @@ public class Schema {
      * @param id    unique id of the schema
      * @param name  display name of the schema
      */
-    public Schema(String id, String name) {
+    public SchemaEntity(String id, String name) {
         this.id = id;
         this.name = name;
     }

@@ -1,8 +1,8 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.controller.APIController;
-import au.edu.ardc.igsn.entity.Schema;
-import au.edu.ardc.igsn.service.SchemaService;
+import au.edu.ardc.igsn.entity.SchemaEntity;
+import au.edu.ardc.igsn.service.SchemaEntityService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,18 +24,18 @@ public class SchemaResourceController extends APIController {
     Logger logger = LoggerFactory.getLogger(SchemaResourceController.class);
 
     @Autowired
-    private SchemaService schemaService;
+    private SchemaEntityService schemaEntityService;
 
     // TODO Pagination /api/resources/schemas/
     @GetMapping(value = "/")
-    public Iterable<Schema> index() {
+    public Iterable<SchemaEntity> index() {
         logger.info("showing things");
-        return schemaService.findAll();
+        return schemaEntityService.findAll();
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Schema> show(@PathVariable("id") String id) {
-        Schema schema = schemaService.findById(id);
+    public ResponseEntity<SchemaEntity> show(@PathVariable("id") String id) {
+        SchemaEntity schema = schemaEntityService.findById(id);
         if (schema == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " Not Found");
         }
@@ -44,8 +44,8 @@ public class SchemaResourceController extends APIController {
     }
 
     @PostMapping(value = "/")
-    public ResponseEntity<Schema> store(@Valid @RequestBody Schema newSchema) {
-        Schema schema = schemaService.create(newSchema);
+    public ResponseEntity<SchemaEntity> store(@Valid @RequestBody SchemaEntity newSchema) {
+        SchemaEntity schema = schemaEntityService.create(newSchema);
 
         URI location = URI.create("/api/resources/schemas/" + schema.getId());
 
@@ -53,15 +53,15 @@ public class SchemaResourceController extends APIController {
     }
 
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Schema> update(@PathVariable("id") String id, @RequestBody Schema updatedSchema) {
-        Schema schema = schemaService.update(updatedSchema);
+    public ResponseEntity<SchemaEntity> update(@PathVariable("id") String id, @RequestBody SchemaEntity updatedSchema) {
+        SchemaEntity schema = schemaEntityService.update(updatedSchema);
 
         return ResponseEntity.accepted().body(schema);
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") String id) {
-        boolean result = schemaService.delete(id);
+        boolean result = schemaEntityService.delete(id);
         if (!result) {
             return ResponseEntity.badRequest().build();
         }

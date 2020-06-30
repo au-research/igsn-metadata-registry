@@ -38,7 +38,7 @@ public class Version {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "schema_id", nullable = false)
-    private Schema schema;
+    private SchemaEntity schema;
 
 
     public Record getRecord() {
@@ -49,11 +49,11 @@ public class Version {
         this.record = record;
     }
 
-    public Schema getSchema() {
+    public SchemaEntity getSchema() {
         return schema;
     }
 
-    public void setSchema(Schema schema) {
+    public void setSchema(SchemaEntity schema) {
         this.schema = schema;
     }
 

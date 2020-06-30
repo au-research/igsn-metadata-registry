@@ -1,6 +1,6 @@
 package au.edu.ardc.igsn.repository;
 
-import au.edu.ardc.igsn.entity.Schema;
+import au.edu.ardc.igsn.entity.SchemaEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class SchemaRepositoryTest {
+public class SchemaEntityRepositoryTest {
 
     @Autowired
     private SchemaRepository repository;
@@ -22,7 +22,7 @@ public class SchemaRepositoryTest {
     public void repository_can_findAll() {
         // given 100 schemas
         for (int i = 0; i < 100; i++) {
-            repository.save(new Schema("schema " + i, "Schema" + i));
+            repository.save(new SchemaEntity("schema " + i, "Schema" + i));
         }
 
         // when findAll, got 100
@@ -32,15 +32,15 @@ public class SchemaRepositoryTest {
     @Test
     public void repository_can_findById() {
         // given a schema
-        Schema actual = new Schema("csiro-v3-igsn", "CSIRO version 3");
+        SchemaEntity actual = new SchemaEntity("csiro-v3-igsn", "CSIRO version 3");
 
         // when save
         repository.save(actual);
 
         // exists in the repository
-        Optional<Schema> expectedOp = repository.findById("csiro-v3-igsn");
+        Optional<SchemaEntity> expectedOp = repository.findById("csiro-v3-igsn");
         assertThat(expectedOp.isPresent()).isTrue();
-        Schema expected = expectedOp.get();
+        SchemaEntity expected = expectedOp.get();
         assertThat(expected.getName()).isEqualTo(actual.getName());
         assertThat(expected.getId()).isEqualTo(actual.getId());
     }

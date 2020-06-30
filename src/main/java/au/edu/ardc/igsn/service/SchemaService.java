@@ -1,71 +1,83 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.entity.Schema;
-import au.edu.ardc.igsn.repository.SchemaRepository;
-import au.edu.ardc.igsn.util.XMLValidator;
+import au.edu.ardc.igsn.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Properties;
 
+import static java.lang.Boolean.parseBoolean;
+
+/**
+ * A Service that deals with supported Schema
+ */
 @Service
+@PropertySource("classpath:schemas.properties")
 public class SchemaService {
 
+//    @Value("#{'${schemas.supported}'.split(',')}")
+//    List<String> supportedSchemaIDs;
+
     @Autowired
-    SchemaRepository repository;
+    private Environment env;
 
-    public Schema findById(String id) {
-        Optional<Schema> opt = repository.findById(id);
+    /**
+     * Get all supported schema
+     *
+     * @return list of supported schema
+     */
+    public List<Schema> getSupportedSchemas() {
 
-        return opt.orElse(null);
-    }
+        // TODO handle when schemas.supported is empty
 
-    public Iterable<Schema> findAll() {
-        return repository.findAll();
-    }
+        String[] supportedSchemaIDs = env.getProperty("schemas.supported").split(", ");
 
-    public Schema create(String id, String name) {
-        Schema schema = new Schema(id, name);
-        schema.setCreated(new Date());
-        repository.save(schema);
-
-        return schema;
-    }
-
-    public Schema create(Schema schema) {
-        schema.setCreated(new Date());
-        repository.save(schema);
-
-        return schema;
-    }
-
-    public Schema update(Schema schema) {
-        repository.save(schema);
-
-        return schema;
-    }
-
-    public boolean delete(String id) {
-        Schema existed = this.findById(id);
-        if (existed == null) {
-            return false;
+        List<Schema> supported = new LinkedList<>();
+        for (String schemaID : supportedSchemaIDs) {
+            if (supportsSchema(schemaID)) {
+                supported.add(getSchemaByID(schemaID));
+            }
         }
 
-        repository.delete(existed);
-        return true;
+        return supported;
     }
 
     /**
-     * Validate an XML, given a Schema
+     * Get a Schema by ID
      *
-     * @param xml          the XML as String
-     * @param schema       the Schema, local_path will be used
-     * @return boolean
+     * @param schemaID the ID of the supported Schema
+     * @return Schema
      */
-    public boolean validate(String xml, Schema schema) {
-        return XMLValidator.validateXMLStringWithXSDPath(xml, schema.getLocal_path());
+    public Schema getSchemaByID(String schemaID) {
+        if (!supportsSchema(schemaID)) {
+            return null;
+        }
+        Schema schema = new Schema(schemaID);
+        schema.setName(env.getProperty("schemas." + schemaID + ".name"));
+        return schema;
+    }
+
+    public boolean supportsSchema(String schemaID) {
+
+        // it exists in the supportedSchemaIDs
+        List<String> supportedSchemaIDs = Arrays.asList(env.getProperty("schemas.supported").split(", "));
+
+        // it is enabled
+        String isEnabled = env.getProperty("schemas." + schemaID + ".enabled");
+
+        // it has a name
+        String name = env.getProperty("schemas." + schemaID + ".name");
+
+        return supportedSchemaIDs.contains(schemaID) && parseBoolean(isEnabled) && !name.isEmpty();
     }
 
 }
