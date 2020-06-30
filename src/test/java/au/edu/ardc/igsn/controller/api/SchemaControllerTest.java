@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.util.Helpers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class SchemaControllerTest {
                         .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
-                 .andDo(print())
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("csiro-igsn-v3"));
     }
@@ -61,5 +62,42 @@ public class SchemaControllerTest {
         mockMvc.perform(request)
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void it_should_validate_schema() throws Exception {
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+        String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
+
+        String schemaID = "csiro-igsn-v3";
+        MockHttpServletRequestBuilder validRequest =
+                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                        .content(validXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        MockHttpServletRequestBuilder invalidRequest =
+                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                        .content(invalidXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(validRequest).andExpect(status().isOk());
+        mockMvc.perform(invalidRequest).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void it_should_throw_404_if_attempt_to_validate_nonexistent_schema() throws Exception {
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+
+        String schemaID = "non-existence";
+        MockHttpServletRequestBuilder validRequest =
+                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                        .content(validXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(validRequest).andExpect(status().isNotFound());
+    }
+
 
 }

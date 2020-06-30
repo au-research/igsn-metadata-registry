@@ -1,19 +1,15 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.Schema;
+import au.edu.ardc.igsn.util.XMLValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 import static java.lang.Boolean.parseBoolean;
 
@@ -23,9 +19,6 @@ import static java.lang.Boolean.parseBoolean;
 @Service
 @PropertySource("classpath:schemas.properties")
 public class SchemaService {
-
-//    @Value("#{'${schemas.supported}'.split(',')}")
-//    List<String> supportedSchemaIDs;
 
     @Autowired
     private Environment env;
@@ -58,14 +51,17 @@ public class SchemaService {
      * @return Schema
      */
     public Schema getSchemaByID(String schemaID) {
-        if (!supportsSchema(schemaID)) {
-            return null;
-        }
         Schema schema = new Schema(schemaID);
         schema.setName(env.getProperty("schemas." + schemaID + ".name"));
         return schema;
     }
 
+    /**
+     * Tells if a schema by ID is currently supported by the system
+     *
+     * @param schemaID String schemaID
+     * @return boolean
+     */
     public boolean supportsSchema(String schemaID) {
 
         // it exists in the supportedSchemaIDs
@@ -78,6 +74,22 @@ public class SchemaService {
         String name = env.getProperty("schemas." + schemaID + ".name");
 
         return supportedSchemaIDs.contains(schemaID) && parseBoolean(isEnabled) && !name.isEmpty();
+    }
+
+    /**
+     * Validate a payload against a schema
+     *
+     * @param schema  Schema
+     * @param payload String payload
+     * @return boolean validation result
+     */
+    public boolean validate(Schema schema, String payload) {
+        // TODO handle JSON validation
+        // TODO raise SchemaValidationException
+
+        // validate XML schema
+        String schemaPath = env.getProperty("schemas." + schema.getId() + ".path");
+        return XMLValidator.validateXMLStringWithXSDPath(payload, schemaPath);
     }
 
 }
