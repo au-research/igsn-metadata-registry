@@ -1,9 +1,8 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.entity.Schema;
-import au.edu.ardc.igsn.service.SchemaService;
-import org.junit.Before;
+import au.edu.ardc.igsn.entity.SchemaEntity;
+import au.edu.ardc.igsn.service.SchemaEntityService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.keycloak.KeycloakPrincipal;
@@ -16,11 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.security.Principal;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SchemaResourceControllerIT {
+public class SchemaEntityResourceControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,7 +39,7 @@ public class SchemaResourceControllerIT {
     private WebApplicationContext context;
 
     @Autowired
-    private SchemaService service;
+    private SchemaEntityService service;
 
 //    @Before
 //    public void setup() {
@@ -56,8 +52,8 @@ public class SchemaResourceControllerIT {
     @Test
     public void it_should_show_all_schemas() throws Exception {
         // given 2 schemas
-        service.create(new Schema("first", "First"));
-        service.create(new Schema("second", "Second"));
+        service.create(new SchemaEntity("first", "First"));
+        service.create(new SchemaEntity("second", "Second"));
 
         // with this user
         KeycloakPrincipal mockPrincipal = Mockito.mock(KeycloakPrincipal.class);
@@ -74,7 +70,7 @@ public class SchemaResourceControllerIT {
     @Transactional
     public void it_should_show_one_schema() throws Exception {
         // given a schema
-        service.create(new Schema("test", "Show"));
+        service.create(new SchemaEntity("test", "Show"));
 
         // when GET /{id}
         mockMvc.perform(get("/api/resources/schemas/test"))
@@ -94,7 +90,7 @@ public class SchemaResourceControllerIT {
                 MockMvcRequestBuilders.post("/api/resources/schemas/")
 //                        .with(httpBasic("user","password"))
 //                        .header("Authorization", "Basic dXNlcjpwYXNzd29yZA==")
-                        .content(asJsonString(new Schema("test", "Test")))
+                        .content(asJsonString(new SchemaEntity("test", "Test")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -104,7 +100,7 @@ public class SchemaResourceControllerIT {
 
         // schema `test` now exist
         assertThat(service.findById("test")).isNotNull();
-        assertThat(service.findById("test")).isInstanceOf(Schema.class);
+        assertThat(service.findById("test")).isInstanceOf(SchemaEntity.class);
     }
 
     @Test
@@ -112,7 +108,7 @@ public class SchemaResourceControllerIT {
     public void it_should_show_validation_error() throws Exception {
         assertThat(service.findById("test")).isNull();
 
-        Schema invalidSchema = new Schema();
+        SchemaEntity invalidSchema = new SchemaEntity();
         invalidSchema.setId("test");
 
         // when POST to /
@@ -135,12 +131,12 @@ public class SchemaResourceControllerIT {
     @Transactional
     public void it_should_update_schema_when_put() throws Exception {
         // given a schema
-        service.create(new Schema("test", "Original"));
+        service.create(new SchemaEntity("test", "Original"));
 
         // when PUT to /{id}
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.put("/api/resources/schemas/test")
-                        .content(TestHelper.asJsonString(new Schema("test", "Updated")))
+                        .content(TestHelper.asJsonString(new SchemaEntity("test", "Updated")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -151,9 +147,9 @@ public class SchemaResourceControllerIT {
                 .andExpect(jsonPath("$.name").value("Updated"));
 
         // schema now has updated name
-        Schema expected = service.findById("test");
+        SchemaEntity expected = service.findById("test");
 
-        assertThat(expected).isInstanceOf(Schema.class);
+        assertThat(expected).isInstanceOf(SchemaEntity.class);
         assertThat(expected).hasFieldOrPropertyWithValue("name", "Updated");
     }
 
@@ -161,7 +157,7 @@ public class SchemaResourceControllerIT {
     @Transactional
     public void it_should_delete_schema() throws Exception {
         // given a schema that exists
-        service.create(new Schema("test", "Original"));
+        service.create(new SchemaEntity("test", "Original"));
         assertThat(service.findById("test")).isNotNull();
 
         // when DELETE to /{id}

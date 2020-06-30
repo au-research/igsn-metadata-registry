@@ -9,7 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-public class SchemaTest {
+public class SchemaEntityTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -17,14 +17,14 @@ public class SchemaTest {
     @Test(expected = javax.persistence.PersistenceException.class)
     public void throws_exception_when_saving_a_schema_without_id() {
         // given a blank schema, when saved, expects a persistence exception
-        Schema schema = new Schema();
+        SchemaEntity schema = new SchemaEntity();
         entityManager.persistAndFlush(schema);
     }
 
     @Test
     public void a_schema_can_be_saved_with_id_and_name() {
         // given a schema, saving without exception
-        Schema schema = new Schema("csiro-v3-igsn", "CSIRO version 3");
+        SchemaEntity schema = new SchemaEntity("csiro-v3-igsn", "CSIRO version 3");
         entityManager.persistAndFlush(schema);
     }
 
@@ -32,11 +32,11 @@ public class SchemaTest {
     @Test(expected = javax.persistence.EntityExistsException.class)
     public void a_schema_has_unique_id() {
         // given a schema
-        Schema schema = new Schema("csiro-v3-igsn", "CSIRO version 3");
+        SchemaEntity schema = new SchemaEntity("csiro-v3-igsn", "CSIRO version 3");
         entityManager.persistAndFlush(schema);
 
         // when save another 1 with the exact same id, expects exception
-        Schema schema2 = new Schema("csiro-v3-igsn", "CSIRO version 3 duplicate");
+        SchemaEntity schema2 = new SchemaEntity("csiro-v3-igsn", "CSIRO version 3 duplicate");
         entityManager.persistAndFlush(schema2);
     }
 

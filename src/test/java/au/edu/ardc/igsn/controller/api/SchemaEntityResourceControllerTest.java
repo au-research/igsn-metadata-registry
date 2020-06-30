@@ -1,8 +1,8 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.entity.Schema;
-import au.edu.ardc.igsn.service.SchemaService;
+import au.edu.ardc.igsn.entity.SchemaEntity;
+import au.edu.ardc.igsn.service.SchemaEntityService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,20 +28,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SchemaResourceControllerTest {
+public class SchemaEntityResourceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private SchemaService service;
+    private SchemaEntityService service;
 
     @Test
     public void it_should_show_all_schemas() throws Exception {
         // given 2 schemas
-        List<Schema> schemas = new ArrayList<>();
-        schemas.add(new Schema("first", "First"));
-        schemas.add(new Schema("second", "Second"));
+        List<SchemaEntity> schemas = new ArrayList<>();
+        schemas.add(new SchemaEntity("first", "First"));
+        schemas.add(new SchemaEntity("second", "Second"));
 
         when(service.findAll()).thenReturn(schemas);
 
@@ -54,7 +54,7 @@ public class SchemaResourceControllerTest {
     @Test
     public void it_should_find_one_schema() throws Exception {
         // given a schema
-        when(service.findById("test")).thenReturn(new Schema("test", "Test"));
+        when(service.findById("test")).thenReturn(new SchemaEntity("test", "Test"));
 
         // when showing that schema, the id and the name is available
         mockMvc.perform(get("/api/resources/schemas/test"))
@@ -81,11 +81,11 @@ public class SchemaResourceControllerTest {
     @Test
     public void it_should_add_schema_when_post() throws Exception {
 
-        when(service.create(any(Schema.class))).thenReturn(new Schema("test", "Test"));
+        when(service.create(any(SchemaEntity.class))).thenReturn(new SchemaEntity("test", "Test"));
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/schemas/")
-                        .content(TestHelper.asJsonString(new Schema("test", "Test")))
+                        .content(TestHelper.asJsonString(new SchemaEntity("test", "Test")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -97,11 +97,11 @@ public class SchemaResourceControllerTest {
 
     @Test
     public void it_should_update_the_schema_when_put() throws Exception {
-        when(service.update(any(Schema.class))).thenReturn(new Schema("test", "Updated"));
+        when(service.update(any(SchemaEntity.class))).thenReturn(new SchemaEntity("test", "Updated"));
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.put("/api/resources/schemas/test")
-                        .content(TestHelper.asJsonString(new Schema("test", "Updated")))
+                        .content(TestHelper.asJsonString(new SchemaEntity("test", "Updated")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
