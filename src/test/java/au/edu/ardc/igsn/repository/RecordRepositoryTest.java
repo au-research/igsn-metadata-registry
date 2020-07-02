@@ -1,8 +1,6 @@
 package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.repository.RecordRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.EntityManager;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,42 +25,42 @@ public class RecordRepositoryTest {
     private EntityManager entityManager;
 
     @Autowired
-    private RecordRepository recordRepository;
+    private RecordRepository repository;
 
     @Test
     public void injectedComponentsAreNotNull() {
         assertThat(jdbcTemplate).isNotNull();
         assertThat(entityManager).isNotNull();
-        assertThat(recordRepository).isNotNull();
+        assertThat(repository).isNotNull();
     }
 
     @Test
     public void canFindAll() {
         // given a record
         Record record = new Record();
-        recordRepository.save(record);
+        repository.save(record);
 
         // when findsAll, finds 1
-        assertThat(recordRepository.findAll()).hasSize(1);
+        assertThat(repository.findAll()).hasSize(1);
 
         // adds another record
         Record record2 = new Record();
-        recordRepository.save(record2);
+        repository.save(record2);
 
         // when findAll, finds 2
-        assertThat(recordRepository.findAll()).hasSize(2);
+        assertThat(repository.findAll()).hasSize(2);
     }
 
     @Test
     public void repository_can_findById() {
         // given a record
         Record record = new Record();
-        recordRepository.save(record);
+        repository.save(record);
 
         String id = record.getId();
 
         // when findById
-        Optional<Record> dbFound = recordRepository.findById(id);
+        Optional<Record> dbFound = repository.findById(id);
 
         // finds that record
         assertThat(dbFound.isPresent()).isTrue();
@@ -70,5 +69,30 @@ public class RecordRepositoryTest {
         assertThat(found).isInstanceOf(Record.class);
         assertThat(found).isExactlyInstanceOf(Record.class);
         assertThat(found.getId()).isEqualTo(record.getId());
+    }
+
+    @Test
+    public void it_can_find_all_records_created_by_a_user() {
+        // given 3 records owned by Jack
+        String jackUUID = UUID.randomUUID().toString();
+        String janeUUID = UUID.randomUUID().toString();
+        for (int i = 0; i < 3; i++) {
+            Record record = new Record();
+            record.setCreatedBy(jackUUID);
+            repository.save(record);
+        }
+
+        // and 2 records owned by Jane
+        for (int i = 0; i < 2; i++) {
+            Record record = new Record();
+            record.setCreatedBy(janeUUID);
+            repository.save(record);
+        }
+
+        // Jack has 3 records
+        assertThat(repository.findByCreatedBy(jackUUID)).hasSize(3);
+
+        // Jane has 2 records
+        assertThat(repository.findByCreatedBy(janeUUID)).hasSize(2);
     }
 }

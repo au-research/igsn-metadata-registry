@@ -29,4 +29,13 @@ public class RecordTest {
         assertThat(record.getId()).isNotNull();
         assertThat(record.getId()).matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
     }
+
+    @Test
+    public void a_record_has_enumerated_status() {
+        Record record = new Record();
+        record.setStatus(Record.Status.PUBLISHED);
+
+        entityManager.persistAndFlush(record);
+        assertThat(record.getStatus()).isEqualTo(Record.Status.PUBLISHED);
+    }
 }

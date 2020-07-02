@@ -10,26 +10,43 @@ import java.util.List;
 @Table(name = "records")
 public class Record {
 
+    // todo soft delete
+
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", updatable = false, nullable = false, unique = true)
+    @Column(name = "id", length = 36, updatable = false, nullable = false, unique = true)
     private String id;
 
-    @Column(length = 125)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date created;
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updated;
+    private Date updatedAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date deleted;
+    private Date deletedAt;
+
+    @Column(length = 36)
+    private String createdBy;
+
+    @Column(length = 36)
+    private String modifiedBy;
+
+    @Column(length = 36)
+    private String allocationID;
+
+    @Column(length=36)
+    private String dataCenterID;
+
+    @Enumerated(EnumType.STRING)
+    private OwnerType ownerType;
 
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
@@ -39,6 +56,13 @@ public class Record {
      */
     public Record() {
 
+    }
+
+    /**
+     * Constructor with uuid
+     */
+    public Record(String uuid) {
+        this.id = uuid;
     }
 
     public String getId() {
@@ -53,36 +77,76 @@ public class Record {
         this.versions = versions;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
-    public Date getCreated() {
-        return created;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreated(Date created) {
-        this.created = created;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
-    public Date getUpdated() {
-        return updated;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUpdated(Date updated) {
-        this.updated = updated;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public Date getDeleted() {
-        return deleted;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setDeleted(Date deleted) {
-        this.deleted = deleted;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getAllocationID() {
+        return allocationID;
+    }
+
+    public void setAllocationID(String allocationID) {
+        this.allocationID = allocationID;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+    public String getDataCenterID() {
+        return dataCenterID;
+    }
+
+    public void setDataCenterID(String dataCenterID) {
+        this.dataCenterID = dataCenterID;
+    }
+
+    public OwnerType getOwnerType() {
+        return ownerType;
+    }
+
+    public void setOwnerType(OwnerType ownerType) {
+        this.ownerType = ownerType;
+    }
+
+    public static enum Status {
+        PUBLISHED, DRAFT
+    }
+
+    public static enum OwnerType {
+        User, DataCenter
     }
 
 }

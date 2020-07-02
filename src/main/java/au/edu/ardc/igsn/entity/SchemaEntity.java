@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "schemas")
+@Table(name = "schemaEntities")
 public class SchemaEntity {
 
     @Id
