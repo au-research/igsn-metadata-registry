@@ -33,18 +33,18 @@ public class RecordServiceIT {
         record = repository.save(record);
 
         // setting up a modified object with the same id
-        String allocationID, modifiedBy;
-        Record modified = service.findById(record.getId());
-        modified.setAllocationID(allocationID = UUID.randomUUID().toString());
+        UUID allocationID, modifiedBy;
+        Record modified = service.findById(record.getId().toString());
+        modified.setAllocationID(allocationID = UUID.randomUUID());
 
         // when update with the modified object
-        service.update(modified, modifiedBy = UUID.randomUUID().toString());
+        service.update(modified, modifiedBy = UUID.randomUUID());
 
         // record is updated with the new allocationID
-        Record actual = service.findById(record.getId());
+        Record actual = service.findById(record.getId().toString());
         assertThat(actual).isNotNull();
         assertThat(actual.getAllocationID()).isEqualTo(allocationID);
-        assertThat(actual.getModifiedBy()).isEqualTo(modifiedBy);
+        assertThat(actual.getModifierID()).isEqualTo(modifiedBy);
         assertThat(actual.getCreatedAt()).isEqualTo(record.getCreatedAt());
         assertThat(actual.getUpdatedAt()).isAfter(record.getCreatedAt());
     }
@@ -55,16 +55,19 @@ public class RecordServiceIT {
         Record record = new Record();
         record.setCreatedAt(new Date());
         record = repository.save(record);
+        String uuid = record.getId().toString();
 
         // it exists
-        assertThat(service.findById(record.getId())).isNotNull();
+        assertThat(service.findById(uuid)).isNotNull();
+        assertThat(service.exists(uuid)).isTrue();
 
         // when delete
         boolean result = service.delete(record);
 
         // it returns truthy and it's gone
         assertThat(result).isTrue();
-        assertThat(service.findById(record.getId())).isNull();
+        assertThat(service.findById(uuid)).isNull();
+        assertThat(service.exists(uuid)).isFalse();
     }
 
     @Test
@@ -76,7 +79,7 @@ public class RecordServiceIT {
         Record record = repository.save(new Record());
 
         // it exists
-        assertThat(service.exists(record.getId())).isTrue();
+        assertThat(service.exists(record.getId().toString())).isTrue();
     }
 
     @Test
@@ -85,15 +88,15 @@ public class RecordServiceIT {
         Record record = new Record();
         record.setCreatedAt(new Date());
         record = repository.save(record);
-        String uuid = record.getId();
-        assertThat(service.exists(uuid)).isTrue();
+        UUID uuid = record.getId();
+        assertThat(service.exists(uuid.toString())).isTrue();
 
         // when delete
         boolean result = service.delete(record);
 
         // it returns true and it's gone
         assertThat(result).isTrue();
-        assertThat(service.exists(uuid)).isFalse();
+        assertThat(service.exists(uuid.toString())).isFalse();
     }
 
 }

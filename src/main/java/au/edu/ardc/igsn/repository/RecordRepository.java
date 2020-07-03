@@ -13,5 +13,9 @@ import java.util.UUID;
 @Repository
 public interface RecordRepository extends JpaRepository<Record, String> {
 
-    List<Record> findByCreatedBy(String jackUUID);
+    List<Record> findByCreatorID(UUID creatorID);
+
+    Optional<Record> findById(UUID id);
+
+    boolean existsById(UUID id);
 }

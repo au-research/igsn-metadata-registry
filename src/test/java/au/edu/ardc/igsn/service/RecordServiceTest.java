@@ -31,7 +31,7 @@ public class RecordServiceTest {
     @Test
     public void it_can_find_1_record_by_id() {
         // given a record
-        String uuid = UUID.randomUUID().toString();
+        UUID uuid = UUID.randomUUID();
         Record expected = new Record(uuid);
         when(repository.findById(uuid)).thenReturn(Optional.of(expected));
 
@@ -46,31 +46,34 @@ public class RecordServiceTest {
     @Test
     public void it_can_find_all_records_by_creator_id() {
         ArrayList<Record> records = new ArrayList<>();
+        UUID creatorID = UUID.randomUUID();
 
         // given a random number of records
         int max = (int) (Math.random() * 100);
         for (int i = 0; i < max; i++) {
             Record record = new Record();
+            record.setCreatorID(creatorID);
             records.add(record);
         }
-        when(repository.findByCreatedBy(anyString())).thenReturn(records);
+        when(repository.findByCreatorID(creatorID)).thenReturn(records);
 
         // when find by creator, returns the same number of those records
-        assertThat(service.findByCreatorID("something")).hasSize(max);
+        assertThat(service.findByCreatorID(creatorID.toString())).hasSize(max);
     }
 
     @Test
     public void it_can_tell_if_a_record_exists_by_id() {
-        when(repository.existsById(anyString())).thenReturn(true);
-        assertThat(service.exists(anyString())).isTrue();
+        UUID randomUUID = UUID.randomUUID();
+        when(repository.existsById(randomUUID)).thenReturn(true);
+        assertThat(service.exists(randomUUID.toString())).isTrue();
     }
 
     @Test
     public void it_can_create_a_new_record() {
-        String creatorUUID, recordUUID, allocationUUID;
-        Record expected = new Record(recordUUID = UUID.randomUUID().toString());
-        expected.setCreatedBy(creatorUUID = UUID.randomUUID().toString());
-        expected.setAllocationID(allocationUUID = UUID.randomUUID().toString());
+        UUID creatorUUID, recordUUID, allocationUUID;
+        Record expected = new Record(recordUUID = UUID.randomUUID());
+        expected.setCreatorID(creatorUUID = UUID.randomUUID());
+        expected.setAllocationID(allocationUUID = UUID.randomUUID());
         expected.setOwnerType(Record.OwnerType.User);
 
         when(repository.save(any(Record.class))).thenReturn(expected);

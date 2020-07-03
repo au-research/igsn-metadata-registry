@@ -22,7 +22,7 @@ public class RecordService {
      * @return A list of record by creator ID
      */
     public List<Record> findByCreatorID(String creatorID) {
-        return repository.findByCreatedBy(creatorID);
+        return repository.findByCreatorID(UUID.fromString(creatorID));
     }
 
     // todo findOwned
@@ -36,7 +36,7 @@ public class RecordService {
      * @return the record if it exists, null if not
      */
     public Record findById(String id) {
-        Optional<Record> opt = repository.findById(UUID.fromString(id).toString());
+        Optional<Record> opt = repository.findById(UUID.fromString(id));
 
         return opt.orElse(null);
     }
@@ -49,7 +49,7 @@ public class RecordService {
      * @return if the uuid correlate to an existing record
      */
     public boolean exists(String id) {
-        return repository.existsById(id);
+        return repository.existsById(UUID.fromString(id));
     }
 
     /**
@@ -60,10 +60,10 @@ public class RecordService {
      * @param ownerType the enumeration value of the OwnerType of this record
      * @return The record that was created
      */
-    public Record create(String creatorID, String allocationID, Record.OwnerType ownerType) {
+    public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType) {
 
         Record record = new Record();
-        record.setCreatedBy(creatorID);
+        record.setCreatorID(creatorID);
         record.setAllocationID(allocationID);
         record.setOwnerType(ownerType);
 
@@ -79,9 +79,9 @@ public class RecordService {
      * @param record full record to be updated, including all NotNull fields
      * @return The record that has updated
      */
-    public Record update(Record record, String modifedBy) {
+    public Record update(Record record, UUID modifierID) {
 
-        record.setModifiedBy(modifedBy);
+        record.setModifierID(modifierID);
         record.setUpdatedAt(new Date());
         repository.save(record);
 

@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "records")
@@ -18,8 +19,8 @@ public class Record {
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", length = 36, updatable = false, nullable = false, unique = true)
-    private String id;
+    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -33,17 +34,17 @@ public class Record {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
 
-    @Column(length = 36)
-    private String createdBy;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID creatorID;
 
-    @Column(length = 36)
-    private String modifiedBy;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID modifierID;
 
-    @Column(length = 36)
-    private String allocationID;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID allocationID;
 
-    @Column(length=36)
-    private String dataCenterID;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID dataCenterID;
 
     @Enumerated(EnumType.STRING)
     private OwnerType ownerType;
@@ -61,11 +62,11 @@ public class Record {
     /**
      * Constructor with uuid
      */
-    public Record(String uuid) {
+    public Record(UUID uuid) {
         this.id = uuid;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -85,12 +86,12 @@ public class Record {
         this.status = status;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public UUID getCreatorID() {
+        return creatorID;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setCreatorID(UUID createdBy) {
+        this.creatorID = createdBy;
     }
 
     public Date getCreatedAt() {
@@ -109,27 +110,27 @@ public class Record {
         this.updatedAt = updatedAt;
     }
 
-    public String getAllocationID() {
+    public UUID getAllocationID() {
         return allocationID;
     }
 
-    public void setAllocationID(String allocationID) {
+    public void setAllocationID(UUID allocationID) {
         this.allocationID = allocationID;
     }
 
-    public String getModifiedBy() {
-        return modifiedBy;
+    public UUID getModifierID() {
+        return modifierID;
     }
 
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
+    public void setModifierID(UUID modifiedBy) {
+        this.modifierID = modifiedBy;
     }
 
-    public String getDataCenterID() {
+    public UUID getDataCenterID() {
         return dataCenterID;
     }
 
-    public void setDataCenterID(String dataCenterID) {
+    public void setDataCenterID(UUID dataCenterID) {
         this.dataCenterID = dataCenterID;
     }
 

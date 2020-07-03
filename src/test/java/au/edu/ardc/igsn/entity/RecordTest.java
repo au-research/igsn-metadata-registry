@@ -9,6 +9,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -27,7 +29,8 @@ public class RecordTest {
 
         // uuid is generated and is the correct format
         assertThat(record.getId()).isNotNull();
-        assertThat(record.getId()).matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
+        assertThat(record.getId()).isInstanceOf(UUID.class);
+        assertThat(record.getId().toString()).matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
     }
 
     @Test

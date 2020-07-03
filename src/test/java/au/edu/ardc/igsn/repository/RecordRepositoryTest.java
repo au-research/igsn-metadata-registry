@@ -57,7 +57,7 @@ public class RecordRepositoryTest {
         Record record = new Record();
         repository.save(record);
 
-        String id = record.getId();
+        UUID id = record.getId();
 
         // when findById
         Optional<Record> dbFound = repository.findById(id);
@@ -74,25 +74,25 @@ public class RecordRepositoryTest {
     @Test
     public void it_can_find_all_records_created_by_a_user() {
         // given 3 records owned by Jack
-        String jackUUID = UUID.randomUUID().toString();
-        String janeUUID = UUID.randomUUID().toString();
+        UUID jackUUID = UUID.randomUUID();
+        UUID janeUUID = UUID.randomUUID();
         for (int i = 0; i < 3; i++) {
             Record record = new Record();
-            record.setCreatedBy(jackUUID);
+            record.setCreatorID(jackUUID);
             repository.save(record);
         }
 
         // and 2 records owned by Jane
         for (int i = 0; i < 2; i++) {
             Record record = new Record();
-            record.setCreatedBy(janeUUID);
+            record.setCreatorID(janeUUID);
             repository.save(record);
         }
 
         // Jack has 3 records
-        assertThat(repository.findByCreatedBy(jackUUID)).hasSize(3);
+        assertThat(repository.findByCreatorID(jackUUID)).hasSize(3);
 
         // Jane has 2 records
-        assertThat(repository.findByCreatedBy(janeUUID)).hasSize(2);
+        assertThat(repository.findByCreatorID(janeUUID)).hasSize(2);
     }
 }
