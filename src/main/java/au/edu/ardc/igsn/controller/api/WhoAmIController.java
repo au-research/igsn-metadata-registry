@@ -3,6 +3,7 @@ package au.edu.ardc.igsn.controller.api;
 import au.edu.ardc.igsn.service.KeycloakService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.idm.authorization.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,14 +37,9 @@ public class WhoAmIController {
         // map.put("scope", token.getScope());
 
         // attempt to get available resources (if any)
-        try {
-            String accessToken = kcService.getPlainAccessToken(request);
-            List<JsonNode> resources = kcService.getAuthorizedResources(accessToken);
-            map.put("resources", resources);
-        } catch (IOException e) {
-            // TODO log exceptions
-            System.out.println(e.getMessage());
-        }
+        String accessToken = kcService.getPlainAccessToken(request);
+        List<Permission> resources = kcService.getAuthorizedResources(accessToken);
+        map.put("resources", resources);
 
         return ResponseEntity.ok().body(map);
     }

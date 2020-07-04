@@ -9,13 +9,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -27,6 +30,9 @@ public class RecordServiceTest {
 
     @MockBean
     private RecordRepository repository;
+
+    @MockBean
+    private KeycloakService kcService;
 
     @Test
     public void it_can_find_1_record_by_id() {
@@ -82,6 +88,27 @@ public class RecordServiceTest {
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Record.class);
         assertThat(actual.getId()).isEqualTo(recordUUID);
+    }
+
+    @Test
+    public void it_can_find_owned_records() {
+        UUID creatorID = UUID.randomUUID();
+
+        // given a record that is created
+        Record record = new Record();
+        record.setOwnerID(creatorID);
+        List<Record> records = new ArrayList<>();
+        records.add(record);
+
+        // mock the current request out too
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        // when finding an owned record, it tries to obtain the userID from the context
+        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
+        when(repository.findOwned(creatorID)).thenReturn(records);
+
+        // ensure records are returned when findOwned
+        assertThat(service.findOwned(request)).contains(record);
     }
 
 }

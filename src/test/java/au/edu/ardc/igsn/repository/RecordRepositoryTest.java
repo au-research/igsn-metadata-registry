@@ -73,7 +73,7 @@ public class RecordRepositoryTest {
 
     @Test
     public void it_can_find_all_records_created_by_a_user() {
-        // given 3 records owned by Jack
+        // given 3 records created by Jack
         UUID jackUUID = UUID.randomUUID();
         UUID janeUUID = UUID.randomUUID();
         for (int i = 0; i < 3; i++) {
@@ -82,7 +82,7 @@ public class RecordRepositoryTest {
             repository.save(record);
         }
 
-        // and 2 records owned by Jane
+        // and 2 records created by Jane
         for (int i = 0; i < 2; i++) {
             Record record = new Record();
             record.setCreatorID(janeUUID);
@@ -94,5 +94,44 @@ public class RecordRepositoryTest {
 
         // Jane has 2 records
         assertThat(repository.findByCreatorID(janeUUID)).hasSize(2);
+    }
+
+    @Test
+    public void it_can_find_record_owned_by_a_user() {
+
+        // given Jack and Jane
+        UUID jackUUID = UUID.randomUUID();
+        UUID janeUUID = UUID.randomUUID();
+
+        // Jack creates 3 records
+        for (int i = 0; i < 3; i++) {
+            Record record = new Record();
+            record.setCreatorID(jackUUID);
+            record.setOwnerID(jackUUID);
+            record.setOwnerType(Record.OwnerType.User);
+            repository.save(record);
+        }
+
+        // jane creates 2 record
+        for (int i = 0; i < 2; i++) {
+            Record record = new Record();
+            record.setCreatorID(janeUUID);
+            record.setOwnerID(janeUUID);
+            record.setOwnerType(Record.OwnerType.User);
+            repository.save(record);
+        }
+
+        // Jane creates 1 more record, but allocate it to Jack
+        Record record = new Record();
+        record.setCreatorID(janeUUID);
+        record.setOwnerID(jackUUID);
+        record.setOwnerType(Record.OwnerType.User);
+        repository.save(record);
+
+        // there are 6 records in total
+        assertThat(repository.count()).isEqualTo(6);
+
+        // when findOwned for jack, should see 4, 3 he created and 1 he owned
+        assertThat(repository.findOwned(jackUUID)).hasSize(4);
     }
 }

@@ -49,6 +49,9 @@ public class Record {
     @Enumerated(EnumType.STRING)
     private OwnerType ownerType;
 
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID ownerID;
+
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
 
@@ -140,6 +143,14 @@ public class Record {
 
     public void setOwnerType(OwnerType ownerType) {
         this.ownerType = ownerType;
+    }
+
+    public UUID getOwnerID() {
+        return ownerID;
+    }
+
+    public void setOwnerID(UUID ownerID) {
+        this.ownerID = ownerID;
     }
 
     public static enum Status {

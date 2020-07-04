@@ -5,6 +5,7 @@ import au.edu.ardc.igsn.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,9 @@ public class RecordService {
     @Autowired
     private RecordRepository repository;
 
+    @Autowired
+    private KeycloakService kcService;
+
     /**
      * Returns all Records
      *
@@ -25,9 +29,29 @@ public class RecordService {
         return repository.findByCreatorID(UUID.fromString(creatorID));
     }
 
-    // todo findOwned
-    //  all record that has the creator_id the same as the current logged in user
-    //  all record that has the allocation_id that the current logged in user has accesss to
+    /**
+     * Returns all records
+     *
+     * @return a list of all records available in the registry
+     */
+    public List<Record> findAll() {
+        return repository.findAll();
+    }
+
+    /**
+     * Returns all record that the user created
+     * Returns all record that the user owned
+     * Returns all record that the user has access to via allocation
+     *
+     * @param request The current HttpServletRequest
+     * @return a list of records that the currently logged in user owned
+     */
+    public List<Record> findOwned(HttpServletRequest request) {
+         UUID ownerID = kcService.getUserUUID(request);
+
+        return repository.findOwned(ownerID);
+    }
+
 
     /**
      * Find a record by id

@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.entity.Record;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +19,10 @@ public interface RecordRepository extends JpaRepository<Record, String> {
     Optional<Record> findById(UUID id);
 
     boolean existsById(UUID id);
+
+    @Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1")
+    List<Record> findOwned(UUID owner);
+
+    @Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1 OR r.allocationID IN ?2")
+    List<Record> findOwned(UUID owner, List<UUID> allocationIDs);
 }
