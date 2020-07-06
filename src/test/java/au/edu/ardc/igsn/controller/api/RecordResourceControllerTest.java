@@ -1,16 +1,13 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.entity.SchemaEntity;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.keycloak.authorization.client.util.Http;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -23,12 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static au.edu.ardc.igsn.TestHelper.mockRecord;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,8 +52,8 @@ public class RecordResourceControllerTest {
         UUID creatorID = UUID.randomUUID();
 
         ArrayList<Record> expected = new ArrayList<>();
-        for (int i=0;i<2;i++) {
-            Record record = new Record(UUID.randomUUID());
+        for (int i = 0; i < 2; i++) {
+            Record record = TestHelper.mockRecord();
             record.setCreatorID(creatorID);
             expected.add(record);
         }
@@ -82,7 +79,7 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_return_a_record_when_get_by_id() throws Exception {
-        Record record = new Record(UUID.randomUUID());
+        Record record = mockRecord();
         when(service.findById(record.getId().toString())).thenReturn(record);
 
         MockHttpServletRequestBuilder request =
@@ -97,16 +94,11 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_store_record_when_POST() throws Exception {
-        UUID creatorID = UUID.randomUUID();
-        UUID allocationID = UUID.randomUUID();
-        UUID datacenterID = UUID.randomUUID();
 
-        Record record = new Record(UUID.randomUUID());
-        record.setCreatorID(creatorID);
-        record.setAllocationID(allocationID);
-        record.setDataCenterID(datacenterID);
-        record.setOwnerID(creatorID);
-        record.setOwnerType(Record.OwnerType.User);
+        Record record = TestHelper.mockRecord();
+        UUID creatorID = record.getCreatorID();
+        UUID allocationID = record.getAllocationID();
+        UUID datacenterID = record.getDataCenterID();
 
         // given a creator with an allocation and a proposed datacenter
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
@@ -129,16 +121,10 @@ public class RecordResourceControllerTest {
     // todo PUT /{id}
     @Test
     public void it_should_update_record_when_put() throws Exception {
-        UUID creatorID = UUID.randomUUID();
-        UUID allocationID = UUID.randomUUID();
-        UUID datacenterID = UUID.randomUUID();
-
-        Record record = new Record(UUID.randomUUID());
-        record.setCreatorID(creatorID);
-        record.setAllocationID(allocationID);
-        record.setDataCenterID(datacenterID);
-        record.setOwnerID(creatorID);
-        record.setOwnerType(Record.OwnerType.User);
+        Record record = TestHelper.mockRecord();
+        UUID creatorID = record.getCreatorID();
+        UUID allocationID = record.getAllocationID();
+        UUID datacenterID = record.getDataCenterID();
         record.setUpdatedAt(new SimpleDateFormat("yyyy/MM/dd").parse("2000/02/002"));
 
         Date updatedDate = new Date();
@@ -160,25 +146,24 @@ public class RecordResourceControllerTest {
 
         // it should be ok and the data be updated
         mockMvc.perform(request)
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(record.getId().toString()));
     }
 
     @Test
     public void it_should_delete_a_record() throws Exception {
-        UUID randomRecordID = UUID.randomUUID();
-        Record record = new Record(randomRecordID);
-
+        // given a record
+        Record record = mockRecord();
         when(service.findById(record.getId().toString())).thenReturn(record);
         when(service.delete(record)).thenReturn(true);
 
+        // when delete
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.delete("/api/resources/records/" + record.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
-        // it should be ok and the data be updated
+        // it should be accepted
         mockMvc.perform(request)
                 .andExpect(status().isAccepted());
     }

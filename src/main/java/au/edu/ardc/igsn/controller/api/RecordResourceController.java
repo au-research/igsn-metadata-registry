@@ -44,6 +44,7 @@ public class RecordResourceController extends APIController {
             summary = "Get all records",
             description = "Retrieves all record resources that the current user has access to")
     public ResponseEntity<?> index(HttpServletRequest request) {
+        //todo pagination
         UUID userID = kcService.getUserUUID(request);
 
         List<Record> records = service.findOwned(userID);
