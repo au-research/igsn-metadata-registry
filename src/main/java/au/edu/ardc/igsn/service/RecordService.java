@@ -72,9 +72,7 @@ public class RecordService {
      * @param ownerType the enumeration value of the OwnerType of this record
      * @return The record that was created
      */
-    public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType) {
-
-        // todo check if creatorID has access to allocationID
+    public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType, UUID datacenterID) {
 
         Record record = new Record();
         record.setCreatorID(creatorID);
@@ -84,7 +82,7 @@ public class RecordService {
         if (ownerType.equals(Record.OwnerType.User)) {
             record.setOwnerID(creatorID);
         } else if(ownerType.equals(Record.OwnerType.DataCenter)) {
-            // set ownerID to datacenterID
+            record.setOwnerID(datacenterID);
         }
 
         record.setCreatedAt(new Date());

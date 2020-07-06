@@ -22,11 +22,12 @@ public class TestHelper {
      * @return a record with random things
      */
     public static Record mockRecord() {
+        UUID creatorID = UUID.randomUUID();
         Record record = new Record(UUID.randomUUID());
-        record.setCreatorID(UUID.randomUUID());
+        record.setCreatorID(creatorID);
         record.setAllocationID(UUID.randomUUID());
         record.setDataCenterID(UUID.randomUUID());
-        record.setOwnerID(UUID.randomUUID());
+        record.setOwnerID(creatorID);
         record.setOwnerType(Record.OwnerType.User);
         record.setUpdatedAt(new Date());
         record.setCreatedAt(new Date());

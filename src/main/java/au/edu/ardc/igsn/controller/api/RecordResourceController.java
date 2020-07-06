@@ -78,15 +78,18 @@ public class RecordResourceController extends APIController {
             @RequestParam(value = "ownerType", defaultValue = "User") String ownerTypeParam,
             HttpServletRequest request) {
 
-        // todo deal with datacenterIDParam
+        // todo validate ownerType
+
+        Record.OwnerType ownerType = Record.OwnerType.valueOf(ownerTypeParam);
+        UUID dataCenterId = null;
+        if (ownerType.equals(Record.OwnerType.DataCenter)) {
+            dataCenterId = UUID.fromString(dataCenterIDParam);
+        }
 
         // todo validate creatorID has access to allocationID
         UUID creatorID = kcService.getUserUUID(request);
 
-        // todo validate ownerType
-        Record.OwnerType ownerType = Record.OwnerType.valueOf(ownerTypeParam);
-
-        Record record = service.create(creatorID, UUID.fromString(allocationIDParam), ownerType);
+        Record record = service.create(creatorID, UUID.fromString(allocationIDParam), ownerType, dataCenterId);
 
         URI location = URI.create("/api/resources/records/" + record.getId());
 

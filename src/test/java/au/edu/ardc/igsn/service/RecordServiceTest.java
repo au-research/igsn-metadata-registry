@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import org.junit.Test;
@@ -17,9 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -84,7 +83,7 @@ public class RecordServiceTest {
 
         when(repository.save(any(Record.class))).thenReturn(expected);
 
-        Record actual = service.create(creatorUUID, allocationUUID, Record.OwnerType.User);
+        Record actual = service.create(creatorUUID, allocationUUID, Record.OwnerType.User, null);
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Record.class);
         assertThat(actual.getId()).isEqualTo(recordUUID);
@@ -109,6 +108,79 @@ public class RecordServiceTest {
 
         // ensure records are returned when findOwned
         assertThat(service.findOwned(creatorID)).contains(record);
+    }
+
+    @Test
+    public void it_can_create_record_for_user_owner_type() {
+        // setup
+        Record actual = TestHelper.mockRecord();
+        when(repository.save(any(Record.class))).thenReturn(actual);
+
+        // given a creation of a new record
+        Record expected = service.create(actual.getCreatorID(), actual.getAllocationID(), Record.OwnerType.User, null);
+
+        verify(repository, times(1)).save(any(Record.class));
+
+        // ensure record is set on all fields
+        assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
+        assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
+        assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
+        assertThat(expected.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+
+        // the record owner type and owner id is set properly
+        assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.User);
+        assertThat(expected.getOwnerID()).isEqualTo(actual.getCreatorID());
+    }
+
+    @Test
+    public void it_can_create_record_for_datacenter_owner_type() {
+        // setup
+        Record actual = TestHelper.mockRecord();
+        actual.setOwnerType(Record.OwnerType.DataCenter);
+        actual.setOwnerID(actual.getDataCenterID());
+        when(repository.save(any(Record.class))).thenReturn(actual);
+
+        // given a creation of a new record
+        Record expected = service.create(actual.getCreatorID(), actual.getAllocationID(), Record.OwnerType.DataCenter, actual.getDataCenterID());
+
+        verify(repository, times(1)).save(any(Record.class));
+
+        // ensure all fields are set
+        assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
+        assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
+        assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
+        assertThat(expected.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+
+        // the record owner type and owner id is set properly
+        assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.DataCenter);
+        assertThat(expected.getOwnerID()).isEqualTo(actual.getDataCenterID());
+    }
+
+    @Test
+    public void it_updates_record_correctly() {
+        Record actual = TestHelper.mockRecord();
+        when(repository.save(any(Record.class))).thenReturn(actual);
+
+        // when a record is updated with another user
+        UUID anotherUserID = UUID.randomUUID();
+        Record updated = service.update(actual, anotherUserID);
+
+        // the save method is invoked on the repository
+        verify(repository, times(1)).save(any(Record.class));
+
+        // the updated record is returned with updated values
+        assertThat(updated.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+        assertThat(updated.getModifierID()).isEqualTo(anotherUserID);
+    }
+
+    // todo delete
+
+    @Test
+    public void it_deletes_record() {
+        service.delete(TestHelper.mockRecord());
+
+        // invoke the delete method from repository
+        verify(repository, times(1)).delete(any(Record.class));
     }
 
 }

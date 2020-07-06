@@ -93,7 +93,7 @@ public class RecordResourceControllerTest {
     }
 
     @Test
-    public void it_should_store_record_when_POST() throws Exception {
+    public void it_should_store_record_with_creator_owner_by_default() throws Exception {
 
         Record record = TestHelper.mockRecord();
         UUID creatorID = record.getCreatorID();
@@ -102,23 +102,58 @@ public class RecordResourceControllerTest {
 
         // given a creator with an allocation and a proposed datacenter
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-        when(service.create(creatorID, allocationID, Record.OwnerType.User)).thenReturn(record);
+        when(service.create(creatorID, allocationID, Record.OwnerType.User, null))
+                .thenReturn(record);
 
         // when POST to the records endpoint with the allocationID and datacenterID
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/records/")
                         .param("allocationID", allocationID.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(record.getId().toString()))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.allocationID").exists())
+                .andExpect(jsonPath("$.allocationID").value(allocationID.toString()))
+                .andExpect(jsonPath("$.ownerID").value(creatorID.toString()))
+                .andExpect(jsonPath("$.ownerType").value(Record.OwnerType.User.toString()))
+        ;
+    }
+
+    @Test
+    public void it_should_store_the_datacenter_param_when_ownerType_is_set() throws Exception {
+        Record record = TestHelper.mockRecord();
+        record.setOwnerType(Record.OwnerType.DataCenter);
+        UUID creatorID = record.getCreatorID();
+        UUID allocationID = record.getAllocationID();
+        UUID datacenterID = record.getDataCenterID();
+
+        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
+        when(service.create(creatorID, allocationID, Record.OwnerType.DataCenter, datacenterID))
+                .thenReturn(record);
+
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/resources/records/")
+                        .param("allocationID", allocationID.toString())
+                        .param("ownerType", "DataCenter")
                         .param("datacenterID", datacenterID.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
-                .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(record.getId().toString()));
+                .andExpect(jsonPath("$.id").value(record.getId().toString()))
+                .andExpect(jsonPath("$.createdAt").exists())
+                .andExpect(jsonPath("$.allocationID").exists())
+                .andExpect(jsonPath("$.allocationID").value(allocationID.toString()))
+                .andExpect(jsonPath("$.ownerID").value(creatorID.toString()))
+                .andExpect(jsonPath("$.ownerType").value(Record.OwnerType.DataCenter.toString()))
+        ;
     }
 
-    // todo PUT /{id}
     @Test
     public void it_should_update_record_when_put() throws Exception {
         Record record = TestHelper.mockRecord();
