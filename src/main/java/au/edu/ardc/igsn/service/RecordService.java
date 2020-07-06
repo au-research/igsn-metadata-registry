@@ -17,9 +17,6 @@ public class RecordService {
     @Autowired
     private RecordRepository repository;
 
-    @Autowired
-    private KeycloakService kcService;
-
     /**
      * Returns all Records
      *
@@ -30,24 +27,15 @@ public class RecordService {
     }
 
     /**
-     * Returns all records
-     *
-     * @return a list of all records available in the registry
-     */
-    public List<Record> findAll() {
-        return repository.findAll();
-    }
-
-    /**
      * Returns all record that the user created
      * Returns all record that the user owned
      * Returns all record that the user has access to via allocation
      *
-     * @param request The current HttpServletRequest
+     * @param ownerID The current loggedIn user UUID
      * @return a list of records that the currently logged in user owned
      */
-    public List<Record> findOwned(HttpServletRequest request) {
-         UUID ownerID = kcService.getUserUUID(request);
+    public List<Record> findOwned(UUID ownerID) {
+         // todo findOwned by user ID as well as allocation IDs
 
         return repository.findOwned(ownerID);
     }
@@ -86,10 +74,18 @@ public class RecordService {
      */
     public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType) {
 
+        // todo check if creatorID has access to allocationID
+
         Record record = new Record();
         record.setCreatorID(creatorID);
         record.setAllocationID(allocationID);
+
         record.setOwnerType(ownerType);
+        if (ownerType.equals(Record.OwnerType.User)) {
+            record.setOwnerID(creatorID);
+        } else if(ownerType.equals(Record.OwnerType.DataCenter)) {
+            // set ownerID to datacenterID
+        }
 
         record.setCreatedAt(new Date());
         record.setUpdatedAt(new Date());
@@ -116,7 +112,7 @@ public class RecordService {
      * Delete a record
      *
      * @param recordTobeDeleted the Record to be deleted
-     * @return
+     * @return true if the delete is successful
      */
     public boolean delete(Record recordTobeDeleted) {
         // todo soft delete

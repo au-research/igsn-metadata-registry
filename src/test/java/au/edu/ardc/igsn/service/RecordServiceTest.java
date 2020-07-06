@@ -101,14 +101,14 @@ public class RecordServiceTest {
         records.add(record);
 
         // mock the current request out too
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        // HttpServletRequest request = mock(HttpServletRequest.class);
 
         // when finding an owned record, it tries to obtain the userID from the context
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
         when(repository.findOwned(creatorID)).thenReturn(records);
 
         // ensure records are returned when findOwned
-        assertThat(service.findOwned(request)).contains(record);
+        assertThat(service.findOwned(creatorID)).contains(record);
     }
 
 }

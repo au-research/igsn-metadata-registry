@@ -1,21 +1,24 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.service.KeycloakService;
-import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
+@Tag(name = "About Me", description = "Display information about the current logged in user")
+@SecurityRequirement(name = "basic")
+@SecurityRequirement(name = "oauth2")
 public class WhoAmIController {
 
     @Autowired
