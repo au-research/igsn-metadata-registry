@@ -6,31 +6,31 @@ import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.security.SecuritySchemes;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.models.media.UUIDSchema;
-import org.springdoc.core.converters.models.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.print.attribute.standard.Media;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/resources/records")
+@RequestMapping(value = "/api/resources/records", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Record Resource API")
-@SecurityRequirement(name="basic")
-@SecurityRequirement(name="oauth2")
+@SecurityRequirement(name = "basic")
+@SecurityRequirement(name = "oauth2")
 public class RecordResourceController extends APIController {
 
     @Autowired
@@ -43,6 +43,10 @@ public class RecordResourceController extends APIController {
     @Operation(
             summary = "Get all records",
             description = "Retrieves all record resources that the current user has access to")
+    @ApiResponse(
+            responseCode="200",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = Record.class)))
+    )
     public ResponseEntity<?> index(HttpServletRequest request) {
         //todo pagination
         UUID userID = kcService.getUserUUID(request);
@@ -51,16 +55,23 @@ public class RecordResourceController extends APIController {
         return ResponseEntity.ok().body(records);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}")
     @Operation(
-            summary = "Get a single record",
+            summary = "Get a single record by id",
             description = "Retrieve the metadata for a single record by id"
     )
+    @ApiResponse(responseCode="404", description="Record is not found")
+    @ApiResponse(
+            responseCode="200",
+            description="Record is found",
+            content=@Content(schema= @Schema(implementation = Record.class))
+    )
     public ResponseEntity<?> show(
-            @Parameter(required = true, schema = @Schema(
-                    type = "string",
-                    format = "uuid",
-                    description = "The UUID of the record"))
+            @Parameter(
+                    required = true,
+                    description = "the id of the record (uuid)",
+                    schema = @Schema(implementation = UUID.class)
+            )
             @PathVariable String id
     ) {
         Record record = service.findById(id);
@@ -72,10 +83,27 @@ public class RecordResourceController extends APIController {
     }
 
     @PostMapping("/")
+    @Operation(
+            summary = "Creates a new record",
+            description = "Add a new record to the registry"
+    )
+    @ApiResponse(
+            responseCode="201",
+            description="Record is created",
+            content=@Content(schema= @Schema(implementation = Record.class))
+    )
     public ResponseEntity<?> store(
-            @RequestParam("allocationID") String allocationIDParam,
-            @RequestParam(value = "datacenterID", required = false) String dataCenterIDParam,
-            @RequestParam(value = "ownerType", defaultValue = "User") String ownerTypeParam,
+
+            @Parameter(name="Allocation ID", schema=@Schema(implementation = UUID.class))
+            @RequestParam(name = "allocationID") String allocationIDParam,
+
+            @Parameter(name="DataCenter ID", schema=@Schema(implementation = UUID.class))
+            @RequestParam(name = "datacenterID", required = false) String dataCenterIDParam,
+
+            @Parameter(name="Owner Type", description = "The Type of the Owner of this record",
+                    schema= @Schema(implementation = Record.OwnerType.class))
+            @RequestParam(name="ownerType", defaultValue = "User") String ownerTypeParam,
+
             HttpServletRequest request) {
 
         // todo validate ownerType
@@ -97,11 +125,26 @@ public class RecordResourceController extends APIController {
     }
 
     @PutMapping("/{id}")
+    @Operation(
+            summary = "Update a record by ID",
+            description = "Update an existing record"
+    )
+    @ApiResponse(
+            responseCode="202",
+            description="Record is updated",
+            content=@Content(schema= @Schema(implementation = Record.class))
+    )
+    @ApiResponse(responseCode="404", description="Record is not found")
     public ResponseEntity<?> update(
-            @PathVariable String id,
+            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
             @RequestBody Record updatedRecord,
             HttpServletRequest request
     ) {
+        // ensure record exists
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+        }
+
         // todo validate updatedRecord
         UUID modifierID = kcService.getUserUUID(request);
         Record record = service.findById(id);
@@ -112,10 +155,15 @@ public class RecordResourceController extends APIController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a record by ID", description = "Delete a record from the registry")
+    @ApiResponse(responseCode="202", description="Record is deleted")
+    @ApiResponse(responseCode="404", description="Record is not found")
     public ResponseEntity<?> destroy(
-            @PathVariable String id
+            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {
-        // todo validate record exists
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+        }
         Record record = service.findById(id);
 
         // todo validate current user and their ownership

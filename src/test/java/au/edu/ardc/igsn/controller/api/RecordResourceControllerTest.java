@@ -168,6 +168,7 @@ public class RecordResourceControllerTest {
 
         // given a creator with an allocation and a proposed datacenter
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
+        when(service.exists(record.getId().toString())).thenReturn(true);
         when(service.update(any(Record.class), eq(creatorID))).thenReturn(updatedRecord);
 
         // when PUT to the record endpoint
@@ -189,6 +190,7 @@ public class RecordResourceControllerTest {
     public void it_should_delete_a_record() throws Exception {
         // given a record
         Record record = mockRecord();
+        when(service.exists(record.getId().toString())).thenReturn(true);
         when(service.findById(record.getId().toString())).thenReturn(record);
         when(service.delete(record)).thenReturn(true);
 
