@@ -125,7 +125,7 @@ public class RecordServiceTest {
         assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
         assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
         assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
-        assertThat(expected.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+        assertThat(expected.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
 
         // the record owner type and owner id is set properly
         assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.User);
@@ -149,7 +149,7 @@ public class RecordServiceTest {
         assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
         assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
         assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
-        assertThat(expected.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+        assertThat(expected.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
 
         // the record owner type and owner id is set properly
         assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.DataCenter);
@@ -169,7 +169,7 @@ public class RecordServiceTest {
         verify(repository, times(1)).save(any(Record.class));
 
         // the updated record is returned with updated values
-        assertThat(updated.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+        assertThat(updated.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
         assertThat(updated.getModifierID()).isEqualTo(anotherUserID);
     }
 

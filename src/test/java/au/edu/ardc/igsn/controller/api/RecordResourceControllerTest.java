@@ -160,11 +160,11 @@ public class RecordResourceControllerTest {
         UUID creatorID = record.getCreatorID();
         UUID allocationID = record.getAllocationID();
         UUID datacenterID = record.getDataCenterID();
-        record.setUpdatedAt(new SimpleDateFormat("yyyy/MM/dd").parse("2000/02/002"));
+        record.setModifiedAt(new SimpleDateFormat("yyyy/MM/dd").parse("2000/02/002"));
 
         Date updatedDate = new Date();
         Record updatedRecord = record;
-        updatedRecord.setUpdatedAt(updatedDate);
+        updatedRecord.setModifiedAt(updatedDate);
 
         // given a creator with an allocation and a proposed datacenter
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);

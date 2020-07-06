@@ -29,7 +29,7 @@ public class TestHelper {
         record.setDataCenterID(UUID.randomUUID());
         record.setOwnerID(creatorID);
         record.setOwnerType(Record.OwnerType.User);
-        record.setUpdatedAt(new Date());
+        record.setModifiedAt(new Date());
         record.setCreatedAt(new Date());
         return record;
     }

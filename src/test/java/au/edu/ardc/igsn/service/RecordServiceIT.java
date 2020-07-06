@@ -46,7 +46,7 @@ public class RecordServiceIT {
         assertThat(actual.getAllocationID()).isEqualTo(allocationID);
         assertThat(actual.getModifierID()).isEqualTo(modifiedBy);
         assertThat(actual.getCreatedAt()).isEqualTo(record.getCreatedAt());
-        assertThat(actual.getUpdatedAt()).isAfter(record.getCreatedAt());
+        assertThat(actual.getModifiedAt()).isAfter(record.getCreatedAt());
     }
 
     @Test

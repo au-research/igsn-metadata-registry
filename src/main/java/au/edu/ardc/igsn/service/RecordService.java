@@ -5,7 +5,6 @@ import au.edu.ardc.igsn.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +85,7 @@ public class RecordService {
         }
 
         record.setCreatedAt(new Date());
-        record.setUpdatedAt(new Date());
+        record.setModifiedAt(new Date());
 
         return repository.save(record);
     }
@@ -100,7 +99,7 @@ public class RecordService {
     public Record update(Record record, UUID modifierID) {
 
         record.setModifierID(modifierID);
-        record.setUpdatedAt(new Date());
+        record.setModifiedAt(new Date());
         repository.save(record);
 
         return record;

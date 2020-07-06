@@ -29,7 +29,7 @@ public class Record {
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    private Date modifiedAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date deletedAt;
@@ -105,12 +105,12 @@ public class Record {
         this.createdAt = createdAt;
     }
 
-    public Date getUpdatedAt() {
-        return updatedAt;
+    public Date getModifiedAt() {
+        return modifiedAt;
     }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setModifiedAt(Date updatedAt) {
+        this.modifiedAt = updatedAt;
     }
 
     public UUID getAllocationID() {
