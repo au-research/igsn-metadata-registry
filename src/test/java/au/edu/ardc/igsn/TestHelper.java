@@ -1,6 +1,10 @@
 package au.edu.ardc.igsn;
 
+import au.edu.ardc.igsn.entity.Record;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Date;
+import java.util.UUID;
 
 public class TestHelper {
 
@@ -10,5 +14,23 @@ public class TestHelper {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * A helpful method to stub out a Record for testing
+     *
+     * @return a record with random things
+     */
+    public static Record mockRecord() {
+        UUID creatorID = UUID.randomUUID();
+        Record record = new Record(UUID.randomUUID());
+        record.setCreatorID(creatorID);
+        record.setAllocationID(UUID.randomUUID());
+        record.setDataCenterID(UUID.randomUUID());
+        record.setOwnerID(creatorID);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setModifiedAt(new Date());
+        record.setCreatedAt(new Date());
+        return record;
     }
 }

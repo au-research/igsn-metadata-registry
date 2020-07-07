@@ -36,25 +36,12 @@ public class Version {
     @JoinColumn(name = "record_id", nullable = false)
     private Record record;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "schema_id", nullable = false)
-    private SchemaEntity schema;
-
-
     public Record getRecord() {
         return record;
     }
 
     public void setRecord(Record record) {
         this.record = record;
-    }
-
-    public SchemaEntity getSchema() {
-        return schema;
-    }
-
-    public void setSchema(SchemaEntity schema) {
-        this.schema = schema;
     }
 
     public String getId() {

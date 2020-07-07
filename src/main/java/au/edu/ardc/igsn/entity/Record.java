@@ -5,10 +5,13 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "records")
 public class Record {
+
+    // todo soft delete
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -16,20 +19,38 @@ public class Record {
             name = "UUID",
             strategy = "org.hibernate.id.UUIDGenerator"
     )
-    @Column(name = "id", updatable = false, nullable = false, unique = true)
-    private String id;
+    @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
+    private UUID id;
 
-    @Column(length = 125)
-    private String status;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date created;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updated;
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date deleted;
+    private Date modifiedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt;
+
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID creatorID;
+
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID modifierID;
+
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID allocationID;
+
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID dataCenterID;
+
+    @Enumerated(EnumType.STRING)
+    private OwnerType ownerType;
+
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID ownerID;
 
     @OneToMany(targetEntity = Version.class, mappedBy = "record")
     private List<Version> versions;
@@ -41,7 +62,14 @@ public class Record {
 
     }
 
-    public String getId() {
+    /**
+     * Constructor with uuid
+     */
+    public Record(UUID uuid) {
+        this.id = uuid;
+    }
+
+    public UUID getId() {
         return id;
     }
 
@@ -53,36 +81,84 @@ public class Record {
         this.versions = versions;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
-    public Date getCreated() {
-        return created;
+    public UUID getCreatorID() {
+        return creatorID;
     }
 
-    public void setCreated(Date created) {
-        this.created = created;
+    public void setCreatorID(UUID createdBy) {
+        this.creatorID = createdBy;
     }
 
-    public Date getUpdated() {
-        return updated;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setUpdated(Date updated) {
-        this.updated = updated;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public Date getDeleted() {
-        return deleted;
+    public Date getModifiedAt() {
+        return modifiedAt;
     }
 
-    public void setDeleted(Date deleted) {
-        this.deleted = deleted;
+    public void setModifiedAt(Date updatedAt) {
+        this.modifiedAt = updatedAt;
+    }
+
+    public UUID getAllocationID() {
+        return allocationID;
+    }
+
+    public void setAllocationID(UUID allocationID) {
+        this.allocationID = allocationID;
+    }
+
+    public UUID getModifierID() {
+        return modifierID;
+    }
+
+    public void setModifierID(UUID modifiedBy) {
+        this.modifierID = modifiedBy;
+    }
+
+    public UUID getDataCenterID() {
+        return dataCenterID;
+    }
+
+    public void setDataCenterID(UUID dataCenterID) {
+        this.dataCenterID = dataCenterID;
+    }
+
+    public OwnerType getOwnerType() {
+        return ownerType;
+    }
+
+    public void setOwnerType(OwnerType ownerType) {
+        this.ownerType = ownerType;
+    }
+
+    public UUID getOwnerID() {
+        return ownerID;
+    }
+
+    public void setOwnerID(UUID ownerID) {
+        this.ownerID = ownerID;
+    }
+
+    public static enum Status {
+        PUBLISHED, DRAFT
+    }
+
+    public static enum OwnerType {
+        User, DataCenter
     }
 
 }

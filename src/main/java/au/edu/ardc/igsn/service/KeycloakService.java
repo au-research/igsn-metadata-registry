@@ -1,19 +1,21 @@
 package au.edu.ardc.igsn.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.*;
 import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.authorization.client.AuthzClient;
+import org.keycloak.authorization.client.Configuration;
+import org.keycloak.authorization.client.representation.TokenIntrospectionResponse;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.idm.authorization.AuthorizationResponse;
+import org.keycloak.representations.idm.authorization.Permission;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * A service that allows interaction with the Keycloak server manually
@@ -23,13 +25,10 @@ public class KeycloakService {
 
     @Value("${keycloak.auth-server-url:https://test.auth.ardc.edu.au/auth/}")
     private String kcAuthServerURL;
-
     @Value("${keycloak.realm:ARDC}")
     private String kcRealm;
-
     @Value("${keycloak.resource:igsn}")
     private String clientID;
-
     @Value("${keycloak.credentials.secret:secret}")
     private String clientSecret;
 
@@ -58,38 +57,47 @@ public class KeycloakService {
     }
 
     /**
+     * Get the current logged in user UUID
+     *
+     * @param request current HttpServletRequest
+     * @return UUID of the current logged in user
+     */
+    public UUID getUserUUID(HttpServletRequest request) {
+        AccessToken kcToken = getAccessToken(request);
+        String subject = kcToken.getSubject();
+
+        return UUID.fromString(subject);
+    }
+
+    /**
      * Returns a list of protected resources that are available to the current user
      *
      * @param accessToken the access token as string
      * @return a list of resources
-     * @throws IOException exception
      */
-    public List<JsonNode> getAuthorizedResources(String accessToken) throws IOException {
-        OkHttpClient client = new OkHttpClient();
-        RequestBody formBody = new FormBody.Builder()
-                .add("grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket")
-                .add("audience", clientID)
-                .add("client_secret", clientSecret)
-                .add("response_mode", "permissions")
-                .build();
+    public List<Permission> getAuthorizedResources(String accessToken) {
 
-        Request authzReq = new Request.Builder()
-                .url(kcAuthServerURL + "/realms/" + kcRealm + "/protocol/openid-connect/token")
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .post(formBody)
-                .build();
+        // to use the authzClient to obtain permission require a keycloak.json file
+        // that duplicate the information that is already available in application.properties
+        // the Bean KeycloakConfigResolver does not work with AuthzClient yet
 
-        Response response = client.newCall(authzReq).execute();
-        String responseBody = Objects.requireNonNull(response.body()).string();
+        // build a configuration out of the properties
+        Configuration configuration = new Configuration();
+        configuration.setAuthServerUrl(kcAuthServerURL);
+        configuration.setRealm(kcRealm);
+        configuration.setResource(clientID);
+        Map<String, Object> credentials = new HashMap<>();
+        credentials.put("secret", clientSecret);
+        configuration.setCredentials(credentials);
 
-        // TODO map available resources to Allocations instead
-        ObjectMapper objectMapper = new ObjectMapper();
+        // use the authzClient with that configuration so it doesn't fall back to keycloak.json
+        AuthzClient authzClient = AuthzClient.create(configuration);
+        AuthorizationResponse authzResponse = authzClient.authorization(accessToken).authorize();
+        String rpt = authzResponse.getToken();
+        TokenIntrospectionResponse requestingPartyToken = authzClient.protection().introspectRequestingPartyToken(rpt);
 
-        return objectMapper.readValue(
-                responseBody,
-                new TypeReference<List<JsonNode>>() {
-                });
+        // the rpt will contain all the permissions
+        return requestingPartyToken.getPermissions();
     }
 
 }

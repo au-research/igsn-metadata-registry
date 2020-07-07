@@ -40,14 +40,6 @@ public class Helpers {
         return request.getRemoteAddr();
     }
 
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static String readFile(String path) throws IOException {
         File file = new File(path);
         return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
