@@ -16,11 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.print.attribute.standard.Media;
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
@@ -44,7 +42,7 @@ public class RecordResourceController extends APIController {
             summary = "Get all records",
             description = "Retrieves all record resources that the current user has access to")
     @ApiResponse(
-            responseCode="200",
+            responseCode = "200",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = Record.class)))
     )
     public ResponseEntity<?> index(HttpServletRequest request) {
@@ -60,11 +58,11 @@ public class RecordResourceController extends APIController {
             summary = "Get a single record by id",
             description = "Retrieve the metadata for a single record by id"
     )
-    @ApiResponse(responseCode="404", description="Record is not found")
+    @ApiResponse(responseCode = "404", description = "Record is not found")
     @ApiResponse(
-            responseCode="200",
-            description="Record is found",
-            content=@Content(schema= @Schema(implementation = Record.class))
+            responseCode = "200",
+            description = "Record is found",
+            content = @Content(schema = @Schema(implementation = Record.class))
     )
     public ResponseEntity<?> show(
             @Parameter(
@@ -88,21 +86,21 @@ public class RecordResourceController extends APIController {
             description = "Add a new record to the registry"
     )
     @ApiResponse(
-            responseCode="201",
-            description="Record is created",
-            content=@Content(schema= @Schema(implementation = Record.class))
+            responseCode = "201",
+            description = "Record is created",
+            content = @Content(schema = @Schema(implementation = Record.class))
     )
     public ResponseEntity<?> store(
 
-            @Parameter(name="Allocation ID", schema=@Schema(implementation = UUID.class))
+            @Parameter(name = "Allocation ID", schema = @Schema(implementation = UUID.class))
             @RequestParam(name = "allocationID") String allocationIDParam,
 
-            @Parameter(name="DataCenter ID", schema=@Schema(implementation = UUID.class))
+            @Parameter(name = "DataCenter ID", schema = @Schema(implementation = UUID.class))
             @RequestParam(name = "datacenterID", required = false) String dataCenterIDParam,
 
-            @Parameter(name="Owner Type", description = "The Type of the Owner of this record",
-                    schema= @Schema(implementation = Record.OwnerType.class))
-            @RequestParam(name="ownerType", defaultValue = "User") String ownerTypeParam,
+            @Parameter(name = "Owner Type", description = "The Type of the Owner of this record",
+                    schema = @Schema(implementation = Record.OwnerType.class))
+            @RequestParam(name = "ownerType", defaultValue = "User") String ownerTypeParam,
 
             HttpServletRequest request) {
 
@@ -130,11 +128,11 @@ public class RecordResourceController extends APIController {
             description = "Update an existing record"
     )
     @ApiResponse(
-            responseCode="202",
-            description="Record is updated",
-            content=@Content(schema= @Schema(implementation = Record.class))
+            responseCode = "202",
+            description = "Record is updated",
+            content = @Content(schema = @Schema(implementation = Record.class))
     )
-    @ApiResponse(responseCode="404", description="Record is not found")
+    @ApiResponse(responseCode = "404", description = "Record is not found")
     public ResponseEntity<?> update(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
             @RequestBody Record updatedRecord,
@@ -156,8 +154,8 @@ public class RecordResourceController extends APIController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a record by ID", description = "Delete a record from the registry")
-    @ApiResponse(responseCode="202", description="Record is deleted")
-    @ApiResponse(responseCode="404", description="Record is not found")
+    @ApiResponse(responseCode = "202", description = "Record is deleted")
+    @ApiResponse(responseCode = "404", description = "Record is not found")
     public ResponseEntity<?> destroy(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {

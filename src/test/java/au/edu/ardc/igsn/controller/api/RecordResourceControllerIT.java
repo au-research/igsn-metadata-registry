@@ -114,4 +114,8 @@ public class RecordResourceControllerIT {
         mockMvc.perform(request)
                 .andExpect(status().isNotFound());
     }
+
+    // todo post / creates record
+    // todo put /{id} update record
+    // todo delete /{id} delete record
 }

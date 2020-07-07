@@ -37,7 +37,7 @@ public class SchemaController extends APIController {
         return ResponseEntity.ok().body(schema);
     }
 
-    @PostMapping("/{id}/validate")
+    @PostMapping(value = "/{id}/validate")
     public ResponseEntity<?> validateSchema(@PathVariable String id, @RequestBody String payload) {
 
         // TODO handle malformed XML here?

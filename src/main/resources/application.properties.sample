@@ -1,3 +1,14 @@
+# Application Setup
+server.port=8085
+server.servlet.context-path=/igsn
+
+app.name=IGSN Registry
+app.description=A metadata registry for IGSN
+app.version=@project.version@
+app.contact.name=admin
+app.contact.email=admin@localhost
+app.contact.url=https://ardc.edu.au
+
 # Database Setup
 spring.datasource.url=jdbc:h2:mem:proddb
 spring.datasource.username=sa
@@ -17,6 +28,9 @@ spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
 # allow error message to appear in HTTP response, defaults to never
 server.error.include-message=always
 
+# api documentation
+springdoc.swagger-ui.disable-swagger-default-url=true
+
 # actuators
 management.endpoints.web.exposure.include=health, info, metrics
 management.endpoint.metrics.enabled=true
@@ -27,6 +41,7 @@ keycloak.realm=
 keycloak.auth-server-url=
 keycloak.ssl-required=external
 keycloak.resource=
+keycloak-token-url=${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
 keycloak.credentials.secret=
 keycloak.use-resource-role-mappings=true
 keycloak.enable-basic-auth=true
