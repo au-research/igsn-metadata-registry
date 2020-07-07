@@ -155,6 +155,20 @@ public class RecordResourceControllerTest {
     }
 
     @Test
+    public void it_should_404_when_updating_a_nonexistent_record() throws Exception {
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.put("/api/resources/records/" + UUID.randomUUID().toString())
+                        .content(asJsonString(TestHelper.mockRecord()))
+                        .param("allocationID", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        // it should be ok and the data be updated
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void it_should_update_record_when_put() throws Exception {
         Record record = TestHelper.mockRecord();
         UUID creatorID = record.getCreatorID();
@@ -184,6 +198,18 @@ public class RecordResourceControllerTest {
         mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(record.getId().toString()));
+    }
+
+    @Test
+    public void it_should_404_when_deleting_a_nonexistent_record() throws Exception {
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.delete("/api/resources/records/" + UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        // it should be ok and the data be updated
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
     }
 
     @Test
