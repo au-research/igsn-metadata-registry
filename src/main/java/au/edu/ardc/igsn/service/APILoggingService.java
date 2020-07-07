@@ -102,7 +102,7 @@ public class APILoggingService {
      */
     private String getBody(MultiReadHttpServletRequest wrappedRequest) {
         try {
-            return IOUtils.toString(wrappedRequest.getInputStream());
+            return IOUtils.toString(wrappedRequest.getInputStream(), wrappedRequest.getCharacterEncoding());
         } catch (Exception e) {
             return "";
         }
