@@ -39,7 +39,7 @@ public class SchemaControllerTest {
 
     @Test
     public void it_should_get_a_single_schema() throws Exception {
-        String schemaID = "csiro-igsn-v3";
+        String schemaID = "igsn-csiro-v3-descriptive";
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get("/api/schemas/" + schemaID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -48,7 +48,7 @@ public class SchemaControllerTest {
         mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("csiro-igsn-v3"));
+                .andExpect(jsonPath("$.id").value("igsn-csiro-v3-descriptive"));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class SchemaControllerTest {
         String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
         String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
 
-        String schemaID = "csiro-igsn-v3";
+        String schemaID = "igsn-csiro-v3-descriptive";
         MockHttpServletRequestBuilder validRequest =
                 MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
                         .content(validXML)
