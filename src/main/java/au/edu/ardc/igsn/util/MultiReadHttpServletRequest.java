@@ -1,20 +1,17 @@
 package au.edu.ardc.igsn.util;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.apache.commons.io.IOUtils;
+
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import org.apache.commons.io.IOUtils;
+import java.io.*;
 
 /**
  * A wrapper for HttpServletRequest in an attempt to read the request body more than once
  *
- * @link https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/
+ * @see <a href="https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/">Reading a Servlet/Spring Request Body Multiple Times</a>
  */
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     private ByteArrayOutputStream cachedBytes;

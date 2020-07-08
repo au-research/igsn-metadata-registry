@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import static au.edu.ardc.igsn.util.Helpers.getClientIpAddress;
 
 /**
- * A Service to enable logging specific for API requests & response
+ * A Service to enable logging specific for API requests and response
  */
 @Service
 public class APILoggingService {

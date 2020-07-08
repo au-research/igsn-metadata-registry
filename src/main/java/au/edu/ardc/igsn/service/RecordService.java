@@ -19,6 +19,7 @@ public class RecordService {
     /**
      * Returns all Records
      *
+     * @param creatorID the String uuid of the creator
      * @return A list of record by creator ID
      */
     public List<Record> findByCreatorID(String creatorID) {
@@ -69,6 +70,7 @@ public class RecordService {
      * @param creatorID UUID of the user that created this record
      * @param allocationID UUID of the resource that allocates this record
      * @param ownerType the enumeration value of the OwnerType of this record
+     * @param datacenterID the UUID of the data center that the record could be owned by
      * @return The record that was created
      */
     public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType, UUID datacenterID) {
@@ -94,6 +96,7 @@ public class RecordService {
      * Update a record
      *
      * @param record full record to be updated, including all NotNull fields
+     * @param modifierID the UUID of the user who modifies this record
      * @return The record that has updated
      */
     public Record update(Record record, UUID modifierID) {
