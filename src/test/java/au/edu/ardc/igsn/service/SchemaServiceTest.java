@@ -36,21 +36,21 @@ public class SchemaServiceTest {
 
     @Test
     public void it_should_find_schema_by_id() {
-        Schema schema = service.getSchemaByID("csiro-igsn-v3");
+        Schema schema = service.getSchemaByID("igsn-csiro-v3-descriptive");
         assertThat(schema).isInstanceOf(Schema.class);
         assertThat(schema.getName()).isNotNull();
     }
 
     @Test
     public void it_should_support_schema() {
-        assertThat(service.supportsSchema("csiro-igsn-v3")).isTrue();
+        assertThat(service.supportsSchema("igsn-csiro-v3-descriptive")).isTrue();
         assertThat(service.supportsSchema("non-exist")).isFalse();
     }
 
     @Test
     public void a_schema_can_be_validated() throws IOException {
-        // validate csiro-igsn-v3
-        Schema csiroigsnv3 = service.getSchemaByID("csiro-igsn-v3");
+        // validate igsn-csiro-v3-descriptive
+        Schema csiroigsnv3 = service.getSchemaByID("igsn-csiro-v3-descriptive");
 
         // given an xml as a string
         String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
