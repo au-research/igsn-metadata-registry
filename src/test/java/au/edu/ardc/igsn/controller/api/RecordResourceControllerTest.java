@@ -79,7 +79,7 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_return_a_record_when_get_by_id() throws Exception {
-        Record record = mockRecord();
+        Record record = new Record(UUID.randomUUID());
         when(service.findById(record.getId().toString())).thenReturn(record);
 
         MockHttpServletRequestBuilder request =
@@ -95,7 +95,7 @@ public class RecordResourceControllerTest {
     @Test
     public void it_should_store_record_with_creator_owner_by_default() throws Exception {
 
-        Record record = TestHelper.mockRecord();
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
         UUID creatorID = record.getCreatorID();
         UUID allocationID = record.getAllocationID();
         UUID datacenterID = record.getDataCenterID();
@@ -125,7 +125,7 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_store_the_datacenter_param_when_ownerType_is_set() throws Exception {
-        Record record = TestHelper.mockRecord();
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerType(Record.OwnerType.DataCenter);
         UUID creatorID = record.getCreatorID();
         UUID allocationID = record.getAllocationID();
@@ -170,7 +170,7 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_update_record_when_put() throws Exception {
-        Record record = TestHelper.mockRecord();
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
         UUID creatorID = record.getCreatorID();
         UUID allocationID = record.getAllocationID();
         UUID datacenterID = record.getDataCenterID();
@@ -215,7 +215,7 @@ public class RecordResourceControllerTest {
     @Test
     public void it_should_delete_a_record() throws Exception {
         // given a record
-        Record record = mockRecord();
+        Record record = new Record(UUID.randomUUID());
         when(service.exists(record.getId().toString())).thenReturn(true);
         when(service.findById(record.getId().toString())).thenReturn(record);
         when(service.delete(record)).thenReturn(true);
