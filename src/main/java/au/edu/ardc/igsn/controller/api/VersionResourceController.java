@@ -18,10 +18,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,7 +32,7 @@ import java.util.UUID;
 public class VersionResourceController {
 
     @Autowired
-    private VersionService versionService;
+    private VersionService service;
 
     @Autowired
     private RecordService recordService;
@@ -46,7 +46,11 @@ public class VersionResourceController {
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class)))
     )
     public ResponseEntity<?> index() {
-        throw new NotImplementedException();
+        // todo obtain user from the kcService and find owned from said user
+        // todo pagination
+        List<Version> versions = service.findOwned();
+
+        return ResponseEntity.ok(versions);
     }
 
     @GetMapping(value = "/{id}")
@@ -68,7 +72,7 @@ public class VersionResourceController {
             )
             @PathVariable String id
     ) {
-        Version version = versionService.findById(id);
+        Version version = service.findById(id);
         if (version == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Version " + id + " is not found");
         }
@@ -86,32 +90,31 @@ public class VersionResourceController {
             description = "Version is created",
             content = @Content(schema = @Schema(implementation = Version.class))
     )
-    public ResponseEntity<?> store() {
-        throw new NotImplementedException();
-    }
+    public ResponseEntity<?> store(
+            @RequestBody String content,
+            @RequestParam String recordID,
+            @RequestParam String schemaID) {
+        Version version = new Version();
 
-    @PutMapping("/{id}")
-    @Operation(
-            summary = "Update a version by ID",
-            description = "Update an existing version"
-    )
-    @ApiResponse(
-            responseCode = "202",
-            description = "Version is updated",
-            content = @Content(schema = @Schema(implementation = Version.class))
-    )
-    @ApiResponse(responseCode = "404", description = "Version is not found")
-    public ResponseEntity<?> update(
-            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
-            @RequestBody Record updatedVersion,
-            HttpServletRequest request
-    ) {
-        // ensure record exists
-//        if (!service.exists(id)) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
-//        }
+        // todo validate schemaID
+        version.setSchema(schemaID);
 
-        throw new NotImplementedException();
+        // todo validate content
+        version.setContent(content.getBytes());
+
+        // todo validate record
+        Record record = recordService.findById(recordID);
+        version.setRecord(record);
+
+        // todo if the user has the scope igsn:import, allow direct repository access
+        version.setCreatedAt(new Date());
+        // todo creator
+
+        Version createdVersion = service.create(version);
+
+        URI location = URI.create("/api/resources/versions/" + createdVersion.getId());
+
+        return ResponseEntity.created(location).body(createdVersion);
     }
 
     @DeleteMapping("/{id}")
@@ -121,9 +124,34 @@ public class VersionResourceController {
     public ResponseEntity<?> destroy(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {
-//        if (!service.exists(id)) {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
-//        }
-        throw new NotImplementedException();
+        // todo consider PUT /{id} with {state:ENDED} to end a version instead
+        // todo DELETE a resource should always delete it
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+        }
+
+        Version version = service.findById(id);
+
+        // upon deleting a version, end the version instead
+        version = service.end(version);
+
+        return ResponseEntity.accepted().body(version);
+    }
+
+    @GetMapping(value = "/{id}/content", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    @Operation(summary = "Get a version content", description = "Get a version content by ID")
+    @ApiResponse(responseCode = "200", description = "Version content is found and delivered")
+    @ApiResponse(responseCode = "404", description = "Version is not found")
+    public ResponseEntity<?> content(
+            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
+    ) {
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+        }
+        Version version = service.findById(id);
+
+        String content = new String(version.getContent());
+
+        return ResponseEntity.ok(content);
     }
 }

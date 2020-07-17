@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.Optional;
@@ -69,5 +70,22 @@ public class VersionServiceTest {
 
         // false case
         assertThat(service.exists(UUID.randomUUID().toString())).isFalse();
+    }
+
+    @Test
+    public void it_can_delete_version_by_id() {
+        UUID id = UUID.randomUUID();
+
+        service.delete(id.toString());
+        // ensure repository call deleteById
+        verify(repository, times(1)).deleteById(any(String.class));
+    }
+
+    @Test
+    @Transactional
+    public void it_can_create_a_version() {
+        Version newVersion = TestHelper.mockVersion();
+        service.create(newVersion);
+        verify(repository, times(1)).save(newVersion);
     }
 }

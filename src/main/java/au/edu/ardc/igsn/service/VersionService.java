@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,15 +26,15 @@ public class VersionService {
     public Version end(Version version) {
         version.setEndedAt(new Date());
         version.setStatus(Version.Status.SUPERSEDED);
+        // todo endBy currently logged in user
         repository.save(version);
-
         return version;
     }
 
     /**
      * Find a version by id
      *
-     * @param id String representation of an uuid
+     * @param id the uuid of the Version
      * @return the version if it exists, null if not
      */
     public Version findById(String id) {
@@ -43,12 +44,38 @@ public class VersionService {
     }
 
     /**
+     * Retrieve all owned versions
+     * Owned versions are the versions that which records the user have access to
+     *
+     * todo accept User UUID as a parameter
+     * todo update findOwned at the repository level
+     * @return a list of Versions that is owned by the user
+     */
+    public List<Version> findOwned() {
+        return repository.findAll();
+    }
+
+    /**
      * Tell if a version exists by id
      *
-     * @param id String uuid
+     * @param id the uuid of the Version
      * @return if the uuid correlate to an existing version
      */
     public boolean exists(String id) {
         return repository.existsById(UUID.fromString(id));
+    }
+
+    // create
+    public Version create(Version newVersion) {
+        return repository.save(newVersion);
+    }
+
+    /**
+     * Permanently delete the version
+     *
+     * @param id the uuid of the Version
+     */
+    public void delete(String id) {
+        repository.deleteById(id);
     }
 }

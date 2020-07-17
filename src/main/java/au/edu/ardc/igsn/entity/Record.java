@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -53,8 +54,13 @@ public class Record {
     @Column(columnDefinition = "BINARY(16)")
     private UUID ownerID;
 
-    @OneToMany(mappedBy = "record")
+    @JsonIgnore
+    @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
     private Set<Version> versions;
+
+    @JsonIgnore
+    @Lob
+    private byte[] data;
 
     /**
      * Empty constructor

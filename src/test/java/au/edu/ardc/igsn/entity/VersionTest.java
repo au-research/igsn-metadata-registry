@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.mysql.cj.util.StringUtils.getBytes;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -56,6 +57,22 @@ public class VersionTest {
     public void a_version_must_have_creator() {
         Version version = TestHelper.mockVersion();
         assertThat(version.getCreatorID()).isInstanceOf(UUID.class);
+    }
+
+    @Test
+    public void a_version_can_have_content() {
+        String expected = "Some content";
+        Record record = TestHelper.mockRecord();
+        entityManager.persistAndFlush(record);
+        entityManager.clear();
+        Version version = new Version();
+
+        version.setRecord(record);
+        version.setContent(getBytes(expected));
+        entityManager.persistAndFlush(version);
+
+        String actual = new String(version.getContent());
+        assertThat(expected).isEqualTo(actual);
     }
 
 }

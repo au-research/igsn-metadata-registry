@@ -63,6 +63,7 @@ public class TestHelper {
         version.setStatus(Version.Status.CURRENT);
         version.setCreatorID(UUID.randomUUID());
         version.setRecord(record);
+        version.setSchema("test-schema");
         return version;
     }
 
@@ -78,6 +79,7 @@ public class TestHelper {
         version.setStatus(Version.Status.CURRENT);
         version.setCreatorID(UUID.randomUUID());
         version.setRecord(record);
+        version.setSchema("test-schema");
         return version;
     }
 

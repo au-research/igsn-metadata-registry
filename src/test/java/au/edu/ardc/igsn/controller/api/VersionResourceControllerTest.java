@@ -17,10 +17,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,6 +62,58 @@ public class VersionResourceControllerTest {
 
         mockMvc.perform(request)
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void it_should_404_when_delete_by_non_existence_uuid() throws Exception {
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.delete("/api/resources/versions/" + UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void it_should_delete_a_version_when_delete_by_by_uuid() throws Exception {
+        Version version = TestHelper.mockVersion();
+
+        Version endedVersion = TestHelper.mockVersion(version.getId());
+        endedVersion.setStatus(Version.Status.SUPERSEDED);
+        endedVersion.setEndedAt(new Date());
+
+        when(service.exists(version.getId().toString())).thenReturn(true);
+        when(service.findById(version.getId().toString())).thenReturn(version);
+        when(service.end(version)).thenReturn(endedVersion);
+
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.delete("/api/resources/versions/" + version.getId().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.status").value(Version.Status.SUPERSEDED.toString()))
+        ;
+    }
+
+    @Test
+    public void it_should_create_a_version_when_post() throws Exception {
+        Version version = TestHelper.mockVersion();
+        when(service.create(any(Version.class))).thenReturn(version);
+
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/resources/versions/")
+                        .param("recordID", UUID.randomUUID().toString())
+                        .param("schemaID", "test-schema")
+                        .content(TestHelper.asJsonString(version))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists());
     }
 
 }

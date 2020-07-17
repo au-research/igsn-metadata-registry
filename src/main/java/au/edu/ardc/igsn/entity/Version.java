@@ -1,9 +1,11 @@
 package au.edu.ardc.igsn.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
@@ -32,9 +34,18 @@ public class Version {
     @Column(columnDefinition = "BINARY(16)")
     private UUID creatorID;
 
-    @ManyToOne
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "record_id", nullable = false)
     private Record record;
+
+    @Column(name = "schema_id")
+    private String schema;
+
+    @JsonIgnore
+    @Lob
+    @Column(columnDefinition="BLOB")
+    private byte[] content;
 
     /**
      * Empty constructor
@@ -95,6 +106,22 @@ public class Version {
 
     public void setCreatorID(UUID creatorID) {
         this.creatorID = creatorID;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public void setContent(byte[] content) {
+        this.content = content;
     }
 
     public static enum Status {
