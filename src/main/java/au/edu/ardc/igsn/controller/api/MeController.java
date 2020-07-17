@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +52,22 @@ public class MeController {
             map.put("groups", otherClaims.get("groups"));
         }
         // map.put("resource access", token.getResourceAccess());
-        // map.put("scope", token.getScope());
+//         map.put("scope", token.getScope());
 
         // attempt to get available resources (if any)
         String accessToken = kcService.getPlainAccessToken(request);
+        ArrayList<Object> allocations = new ArrayList<>();
+
         List<Permission> resources = kcService.getAuthorizedResources(accessToken);
-        map.put("allocations", resources);
+        for (Permission permission: resources) {
+            Map<String, Object> resourceMap = new LinkedHashMap<>();
+            resourceMap.put("id", permission.getResourceId());
+            resourceMap.put("name", permission.getResourceName());
+            resourceMap.put("scopes", permission.getScopes());
+            allocations.add(resourceMap);
+        }
+
+        map.put("allocations", allocations);
 
         return ResponseEntity.ok().body(map);
     }

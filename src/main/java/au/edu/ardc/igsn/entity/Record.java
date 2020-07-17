@@ -1,10 +1,12 @@
 package au.edu.ardc.igsn.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -52,8 +54,13 @@ public class Record {
     @Column(columnDefinition = "BINARY(16)")
     private UUID ownerID;
 
-    @OneToMany(targetEntity = Version.class, mappedBy = "record")
-    private List<Version> versions;
+    @JsonIgnore
+    @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
+    private Set<Version> versions;
+
+    @JsonIgnore
+    @Lob
+    private byte[] data;
 
     /**
      * Empty constructor
@@ -76,11 +83,11 @@ public class Record {
         return id;
     }
 
-    public List<Version> getVersions() {
+    public Set<Version> getVersions() {
         return versions;
     }
 
-    public void setVersions(List<Version> versions) {
+    public void setVersions(Set<Version> versions) {
         this.versions = versions;
     }
 

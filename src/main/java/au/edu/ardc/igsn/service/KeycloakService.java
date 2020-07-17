@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A service that allows interaction with the Keycloak server manually
@@ -91,13 +88,19 @@ public class KeycloakService {
         configuration.setCredentials(credentials);
 
         // use the authzClient with that configuration so it doesn't fall back to keycloak.json
-        AuthzClient authzClient = AuthzClient.create(configuration);
-        AuthorizationResponse authzResponse = authzClient.authorization(accessToken).authorize();
-        String rpt = authzResponse.getToken();
-        TokenIntrospectionResponse requestingPartyToken = authzClient.protection().introspectRequestingPartyToken(rpt);
+        try {
+            AuthzClient authzClient = AuthzClient.create(configuration);
+            AuthorizationResponse authzResponse = authzClient.authorization(accessToken).authorize();
+            String rpt = authzResponse.getToken();
+            TokenIntrospectionResponse requestingPartyToken = authzClient.protection().introspectRequestingPartyToken(rpt);
+            return requestingPartyToken.getPermissions();
+        } catch (Exception e) {
+            // return a blank list if there's an authorization error
+            return new ArrayList<>();
+        }
 
         // the rpt will contain all the permissions
-        return requestingPartyToken.getPermissions();
+
     }
 
 }
