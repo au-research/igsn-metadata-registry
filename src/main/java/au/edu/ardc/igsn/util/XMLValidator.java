@@ -16,7 +16,8 @@ public class XMLValidator {
     public static boolean validateXMLStringWithXSDPath(String xmlString, String xsdPath) {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new File(xsdPath));
+            File schemaFile = new File(xsdPath);
+            Schema schema = factory.newSchema(schemaFile);
             Validator validator = schema.newValidator();
 
             StringReader reader = new StringReader(xmlString);

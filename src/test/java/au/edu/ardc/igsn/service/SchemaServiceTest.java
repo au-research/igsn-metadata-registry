@@ -47,6 +47,7 @@ public class SchemaServiceTest {
     public void it_should_support_schema() {
         assertThat(service.supportsSchema("igsn-csiro-v3-descriptive")).isTrue();
         assertThat(service.supportsSchema("igsn-descriptive-v1")).isTrue();
+        assertThat(service.supportsSchema("igsn-registration-v1")).isTrue();
         assertThat(service.supportsSchema("non-exist")).isFalse();
     }
 
@@ -64,6 +65,13 @@ public class SchemaServiceTest {
         // validate invalid xml
         String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
         assertThat(service.validate(csiroigsnv3, invalidXML)).isFalse();
+    }
+
+    @Test
+    public void validate_igsn_registration_v1() throws IOException {
+        Schema schema = service.getSchemaByID("igsn-registration-v1");
+        String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_descriptive_v1.xml");
+        assertThat(service.validate(schema, xml)).isTrue();
     }
 
 }
