@@ -1,12 +1,14 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.IGSNMetadataRegistry;
 import au.edu.ardc.igsn.Schema;
 import au.edu.ardc.igsn.util.Helpers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@ContextConfiguration(classes = IGSNMetadataRegistry.class, loader = AnnotationConfigContextLoader.class)
 public class SchemaServiceTest {
 
     @Autowired
@@ -44,6 +46,7 @@ public class SchemaServiceTest {
     @Test
     public void it_should_support_schema() {
         assertThat(service.supportsSchema("igsn-csiro-v3-descriptive")).isTrue();
+        assertThat(service.supportsSchema("igsn-descriptive-v1")).isTrue();
         assertThat(service.supportsSchema("non-exist")).isFalse();
     }
 

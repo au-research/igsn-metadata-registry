@@ -32,7 +32,7 @@ public class SchemaService {
 
         // TODO handle when schemas.supported is empty
 
-        String[] supportedSchemaIDs = env.getProperty("schemas.supported").split(", ");
+        String[] supportedSchemaIDs = env.getProperty("schemas.supported").split(",");
 
         List<Schema> supported = new LinkedList<>();
         for (String schemaID : supportedSchemaIDs) {
@@ -65,7 +65,7 @@ public class SchemaService {
     public boolean supportsSchema(String schemaID) {
 
         // it exists in the supportedSchemaIDs
-        List<String> supportedSchemaIDs = Arrays.asList(env.getProperty("schemas.supported").split(", "));
+        List<String> supportedSchemaIDs = Arrays.asList(env.getProperty("schemas.supported").split(","));
 
         // it is enabled
         String isEnabled = env.getProperty("schemas." + schemaID + ".enabled");
