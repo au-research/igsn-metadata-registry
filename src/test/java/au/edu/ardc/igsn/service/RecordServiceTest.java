@@ -83,7 +83,7 @@ public class RecordServiceTest {
 
         when(repository.save(any(Record.class))).thenReturn(expected);
 
-        Record actual = service.create(creatorUUID, allocationUUID, Record.OwnerType.User, null);
+        Record actual = service.create(expected);
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(Record.class);
         assertThat(actual.getId()).isEqualTo(recordUUID);
@@ -117,7 +117,7 @@ public class RecordServiceTest {
         when(repository.save(any(Record.class))).thenReturn(actual);
 
         // given a creation of a new record
-        Record expected = service.create(actual.getCreatorID(), actual.getAllocationID(), Record.OwnerType.User, null);
+        Record expected = service.create(actual);
 
         verify(repository, times(1)).save(any(Record.class));
 
@@ -141,7 +141,7 @@ public class RecordServiceTest {
         when(repository.save(any(Record.class))).thenReturn(actual);
 
         // given a creation of a new record
-        Record expected = service.create(actual.getCreatorID(), actual.getAllocationID(), Record.OwnerType.DataCenter, actual.getDataCenterID());
+        Record expected = service.create(actual);
 
         verify(repository, times(1)).save(any(Record.class));
 

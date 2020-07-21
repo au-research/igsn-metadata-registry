@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.User;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -100,7 +100,27 @@ public class KeycloakService {
         }
 
         // the rpt will contain all the permissions
+    }
 
+    public User getLoggedInUser(HttpServletRequest request) {
+        AccessToken token = getAccessToken(request);
+
+        User user = new User(UUID.fromString(token.getSubject()));
+        user.setUsername(token.getPreferredUsername());
+        user.setName(token.getName());
+        user.setEmail(token.getEmail());
+        user.setRoles(new ArrayList<>(token.getRealmAccess().getRoles()));
+
+        // groups belongs to otherClaims
+        Map<String, Object> otherClaims = token.getOtherClaims();
+        if (otherClaims.containsKey("groups")) {
+            List<String> groups = new ArrayList<>();
+            groups.addAll((Collection<? extends String>) otherClaims.get("groups"));
+            user.setGroups(groups);
+        }
+
+        user.setAllocations(getAuthorizedResources(getPlainAccessToken(request)));
+        return user;
     }
 
 }

@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import static au.edu.ardc.igsn.util.Helpers.getClientIpAddress;
 
@@ -24,7 +26,7 @@ public class APILoggingService {
     /**
      * Log the request using the built-in logger
      *
-     * @param wrappedRequest   MultiReadHttpServletRequest element
+     * @param wrappedRequest MultiReadHttpServletRequest element
      */
     public void logRequest(MultiReadHttpServletRequest wrappedRequest) {
 
@@ -39,7 +41,9 @@ public class APILoggingService {
         req.put("url", String.valueOf(wrappedRequest.getRequestURL()));
 
         // include Headers
-        req.put("headers", getHeadersAsString(wrappedRequest));
+        List<String> excludedHeaders = new ArrayList<>();
+        excludedHeaders.add("authorization");
+        req.put("headers", getHeadersAsString(wrappedRequest, excludedHeaders));
 
         /*
          * Include Body
@@ -52,7 +56,7 @@ public class APILoggingService {
          * https://stackoverflow.com/questions/10210645/http-servlet-request-lose-params-from-post-body-after-read-it-once
          * https://stackoverflow.com/a/36619972/2257038 and https://stackoverflow.com/a/30748533/2257038
          */
-         req.put("body", getBody(wrappedRequest));
+        req.put("body", getBody(wrappedRequest));
 
         // logger.info(asJsonString(req));
         logger.info(req.toString());
@@ -61,7 +65,7 @@ public class APILoggingService {
     /**
      * Log the response using the built-in logger
      *
-     * @param response  HttpServletResponse
+     * @param response HttpServletResponse
      */
     public void logResponse(HttpServletResponse response) {
         LinkedHashMap<String, Object> res = new LinkedHashMap<>();
@@ -76,21 +80,22 @@ public class APILoggingService {
      * A helper method to display a collection of Headers provided in a request as a string format
      *
      * @param wrappedRequest  MultiReadHttpServletRequest
+     * @param excludedHeaders The headers to not log (eg, authorization)
      * @return headers
      */
-    private String getHeadersAsString(HttpServletRequest wrappedRequest) {
-        String headers = "";
+    private String getHeadersAsString(HttpServletRequest wrappedRequest, List<String> excludedHeaders) {
+        StringBuilder headers = new StringBuilder();
         Enumeration<String> headerNames = wrappedRequest.getHeaderNames();
         if (headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
                 String headerValue = wrappedRequest.getHeader(headerName);
-                if (headerValue != null) {
-                    headers += headerName + ": " + headerValue + " ";
+                if (headerValue != null && !excludedHeaders.contains(headerName.toLowerCase())) {
+                    headers.append(headerName).append(": ").append(headerValue).append(" ");
                 }
             }
         }
-        return headers;
+        return headers.toString();
     }
 
     /**

@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.service.KeycloakService;
@@ -92,34 +93,38 @@ public class RecordResourceController extends APIController {
     )
     public ResponseEntity<?> store(
 
-            @Parameter(name = "Allocation ID", schema = @Schema(implementation = UUID.class))
-            @RequestParam(name = "allocationID") String allocationIDParam,
-
-            @Parameter(name = "DataCenter ID", schema = @Schema(implementation = UUID.class))
-            @RequestParam(name = "datacenterID", required = false) String dataCenterIDParam,
-
-            @Parameter(name = "Owner Type", description = "The Type of the Owner of this record",
-                    schema = @Schema(implementation = Record.OwnerType.class))
-            @RequestParam(name = "ownerType", defaultValue = "User") String ownerTypeParam,
-
+            @RequestBody Record newRecord,
             HttpServletRequest request) {
 
-        // todo validate ownerType
+        User user = kcService.getLoggedInUser(request);
 
-        Record.OwnerType ownerType = Record.OwnerType.valueOf(ownerTypeParam);
-        UUID dataCenterId = null;
-        if (ownerType.equals(Record.OwnerType.DataCenter)) {
-            dataCenterId = UUID.fromString(dataCenterIDParam);
+        // validate the user has access to allocationID
+        String allocationID = newRecord.getAllocationID().toString();
+        if (!user.hasPermission(allocationID)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    String.format("you don't have access to %s", allocationID)
+            );
         }
 
-        // todo validate creatorID has access to allocationID
-        UUID creatorID = kcService.getUserUUID(request);
+        // validate user has access to the igsn:create scope
+        if (!user.hasPermission(allocationID, "igsn:create")) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    String.format("you don't have access to create resource for %s", allocationID)
+            );
+        }
+        // todo validate OwnerType && datacenterID
 
-        Record record = service.create(creatorID, UUID.fromString(allocationIDParam), ownerType, dataCenterId);
-
-        URI location = URI.create("/api/resources/records/" + record.getId());
-
-        return ResponseEntity.created(location).body(record);
+        // if the user has access to igsn:import scope, directly insert it
+        if (user.hasPermission(allocationID, "igsn:import")) {
+            Record record = service.create(newRecord);
+            return ResponseEntity.created(URI.create("/api/resources/records/" + record.getId())).body(record);
+        } else {
+            // create it normally
+            Record record = service.create(user.getId(), newRecord.getAllocationID());
+            return ResponseEntity.created(URI.create("/api/resources/records/" + record.getId())).body(record);
+        }
     }
 
     @PutMapping("/{id}")

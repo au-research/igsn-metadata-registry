@@ -1,11 +1,14 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.keycloak.representations.idm.authorization.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,10 +23,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
-import static au.edu.ardc.igsn.TestHelper.mockRecord;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -94,21 +97,30 @@ public class RecordResourceControllerTest {
 
     @Test
     public void it_should_store_record_with_creator_owner_by_default() throws Exception {
+        User user = new User(UUID.randomUUID());
+
+        // mock a user resources
+        List<Permission> permissions = new ArrayList<>();
+        Permission permission = new Permission();
+        UUID res1 = UUID.randomUUID();
+        permission.setResourceId(res1.toString());
+        permission.setResourceName("Resource 1");
+        permission.setScopes(Sets.newHashSet("igsn:create"));
+        permissions.add(permission);
+        user.setAllocations(permissions);
 
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        UUID creatorID = record.getCreatorID();
-        UUID allocationID = record.getAllocationID();
-        UUID datacenterID = record.getDataCenterID();
+        record.setOwnerID(user.getId());
+        record.setAllocationID(res1);
 
         // given a creator with an allocation and a proposed datacenter
-        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-        when(service.create(creatorID, allocationID, Record.OwnerType.User, null))
-                .thenReturn(record);
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+        when(service.create(user.getId(), res1)).thenReturn(record);
 
         // when POST to the records endpoint with the allocationID and datacenterID
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/records/")
-                        .param("allocationID", allocationID.toString())
+                        .content(asJsonString(record))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -117,42 +129,88 @@ public class RecordResourceControllerTest {
                 .andExpect(jsonPath("$.id").value(record.getId().toString()))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.allocationID").exists())
-                .andExpect(jsonPath("$.allocationID").value(allocationID.toString()))
-                .andExpect(jsonPath("$.ownerID").value(creatorID.toString()))
+                .andExpect(jsonPath("$.allocationID").value(res1.toString()))
+                .andExpect(jsonPath("$.ownerID").value(user.getId().toString()))
                 .andExpect(jsonPath("$.ownerType").value(Record.OwnerType.User.toString()))
         ;
     }
 
     @Test
-    public void it_should_store_the_datacenter_param_when_ownerType_is_set() throws Exception {
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setOwnerType(Record.OwnerType.DataCenter);
-        UUID creatorID = record.getCreatorID();
-        UUID allocationID = record.getAllocationID();
-        UUID datacenterID = record.getDataCenterID();
+    public void it_should_403_when_a_user_without_permission_trying_to_insert_data() throws Exception {
+        User user = new User(UUID.randomUUID());
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 
-        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-        when(service.create(creatorID, allocationID, Record.OwnerType.DataCenter, datacenterID))
-                .thenReturn(record);
+        Record actual = TestHelper.mockRecord();
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/records/")
-                        .param("allocationID", allocationID.toString())
-                        .param("ownerType", "DataCenter")
-                        .param("datacenterID", datacenterID.toString())
+                        .content(asJsonString(actual))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void it_should_403_when_a_user_without_sufficient_permission_trying_to_insert_data() throws Exception {
+        User user = new User(UUID.randomUUID());
+
+        // mock a user resources
+        List<Permission> permissions = new ArrayList<>();
+        Permission permission = new Permission();
+        UUID res1 = UUID.randomUUID();
+        permission.setResourceId(res1.toString());
+        permission.setResourceName("Resource 1");
+        permission.setScopes(Sets.newHashSet("igsn:update"));
+        permissions.add(permission);
+        user.setAllocations(permissions);
+
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+
+        Record actual = TestHelper.mockRecord();
+
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/resources/records/")
+                        .content(asJsonString(actual))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void it_should_import_a_record_properly() throws Exception {
+        User user = new User(UUID.randomUUID());
+
+        // mock a user resources
+        List<Permission> permissions = new ArrayList<>();
+        Permission permission = new Permission();
+        UUID res1 = UUID.randomUUID();
+        permission.setResourceId(res1.toString());
+        permission.setResourceName("Resource 1");
+        permission.setScopes(Sets.newHashSet("igsn:import", "igsn:create", "igsn:update"));
+        permissions.add(permission);
+        user.setAllocations(permissions);
+
+        Record actual = TestHelper.mockRecord(UUID.randomUUID());
+        actual.setAllocationID(res1);
+
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+        when(service.create(any(Record.class))).thenReturn(actual);
+
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/resources/records/")
+                        .content(asJsonString(actual))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
         mockMvc.perform(request)
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(record.getId().toString()))
-                .andExpect(jsonPath("$.createdAt").exists())
-                .andExpect(jsonPath("$.allocationID").exists())
-                .andExpect(jsonPath("$.allocationID").value(allocationID.toString()))
-                .andExpect(jsonPath("$.ownerID").value(creatorID.toString()))
-                .andExpect(jsonPath("$.ownerType").value(Record.OwnerType.DataCenter.toString()))
-        ;
+                .andExpect(jsonPath("$.id").exists());
     }
+
 
     @Test
     public void it_should_404_when_updating_a_nonexistent_record() throws Exception {
