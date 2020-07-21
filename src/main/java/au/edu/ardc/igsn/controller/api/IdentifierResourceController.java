@@ -109,4 +109,24 @@ public class IdentifierResourceController {
 
         return ResponseEntity.created(location).body(createdIdentifier);
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an identifier by ID", description = "Delete an identifier from the registry")
+    @ApiResponse(responseCode = "202", description = "Identifier is deleted")
+    @ApiResponse(responseCode = "404", description = "Identifier is not found")
+    public ResponseEntity<?> destroy(
+            @PathVariable String id
+    ) {
+        // todo DELETE a resource should always delete it
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
+        }
+
+        Identifier identifier = service.findById(id);
+
+        service.delete(id);
+
+        return ResponseEntity.accepted().body(identifier);
+    }
+
 }
