@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.service.KeycloakService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,16 +43,11 @@ public class MeControllerTest {
 
         // mock a user access
         UUID userUUID = UUID.randomUUID();
-        AccessToken token = new AccessToken();
-        token.setSubject(userUUID.toString());
-        token.setPreferredUsername("minhd");
-        token.setName("Minh Duc Nguyen");
-        token.setEmail("minh.nguyen@ardc.edu.au");
-        token.setRealmAccess(new AccessToken.Access().addRole("IGSN_USER"));
-        ArrayList<String> groups = new ArrayList<>();
-        groups.add("Developer");
-        token.setOtherClaims("groups", groups);
-        when(kcServiceMock.getAccessToken(any(HttpServletRequest.class))).thenReturn(token);
+        User user = new User(userUUID);
+        user.setRoles(Arrays.asList("IGSN_USER", "IGSN_ADMIN"));
+        user.setName("Minh Duc Nguyen");
+        user.setEmail("minh.nguyen@ardc.edu.au");
+        user.setGroups(Arrays.asList("Developer", "ARDC"));
 
         // mock a user resources
         List<Permission> permissions = new ArrayList<>();
@@ -59,8 +56,9 @@ public class MeControllerTest {
         permission.setResourceId(res1.toString());
         permission.setResourceName("Resource 1");
         permissions.add(permission);
-        when(kcServiceMock.getPlainAccessToken(any(HttpServletRequest.class))).thenReturn("asdf");
-        when(kcServiceMock.getAuthorizedResources(any(String.class))).thenReturn(permissions);
+        user.setAllocations(permissions);
+
+        when(kcServiceMock.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get("/api/me/")

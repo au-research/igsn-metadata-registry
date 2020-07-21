@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.service.KeycloakService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,41 +35,9 @@ public class MeController {
             description = "Retrieve the current user details"
     )
     @ApiResponse(responseCode = "200")
-    public ResponseEntity<?> whoami(HttpServletRequest request) {
-        // todo rather than returns a Map, returns a POJO for Schema API documentation (eg. UserDetail)
-        Map<String, Object> map = new LinkedHashMap<>();
+    public ResponseEntity<User> whoami(HttpServletRequest request) {
 
-        AccessToken token = kcService.getAccessToken(request);
-
-        map.put("id", token.getSubject());
-        map.put("username", token.getPreferredUsername());
-        map.put("name", token.getName());
-        map.put("email", token.getEmail());
-        map.put("roles", token.getRealmAccess().getRoles());
-
-        //map.put("otherClaims", token.getOtherClaims());
-        Map<String, Object> otherClaims = token.getOtherClaims();
-        if (otherClaims.containsKey("groups")) {
-            map.put("groups", otherClaims.get("groups"));
-        }
-        // map.put("resource access", token.getResourceAccess());
-//         map.put("scope", token.getScope());
-
-        // attempt to get available resources (if any)
-        String accessToken = kcService.getPlainAccessToken(request);
-        ArrayList<Object> allocations = new ArrayList<>();
-
-        List<Permission> resources = kcService.getAuthorizedResources(accessToken);
-        for (Permission permission: resources) {
-            Map<String, Object> resourceMap = new LinkedHashMap<>();
-            resourceMap.put("id", permission.getResourceId());
-            resourceMap.put("name", permission.getResourceName());
-            resourceMap.put("scopes", permission.getScopes());
-            allocations.add(resourceMap);
-        }
-
-        map.put("allocations", allocations);
-
-        return ResponseEntity.ok().body(map);
+        User user = kcService.getLoggedInUser(request);
+        return ResponseEntity.ok(user);
     }
 }

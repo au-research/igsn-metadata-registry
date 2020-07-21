@@ -57,7 +57,7 @@ public class RecordResourceControllerIT {
         for (int i=0;i<2;i++) {
             Record record = new Record(UUID.randomUUID());
             record.setCreatorID(creatorID);
-            service.create(creatorID, allocationID, Record.OwnerType.User, null);
+            service.create(record);
         }
 
         when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
@@ -84,7 +84,7 @@ public class RecordResourceControllerIT {
         Record record = mockRecord();
 
         // when saved, it has a different UUID now
-        Record saved = service.create(record.getCreatorID(), record.getAllocationID(), Record.OwnerType.User, null);
+        Record saved = service.create(record);
 
         // when get by id
         MockHttpServletRequestBuilder request =

@@ -65,30 +65,31 @@ public class RecordService {
     }
 
     /**
-     * Create a new record
+     * Persist a newRecord
      *
-     * @param creatorID UUID of the user that created this record
-     * @param allocationID UUID of the resource that allocates this record
-     * @param ownerType the enumeration value of the OwnerType of this record
-     * @param datacenterID the UUID of the data center that the record could be owned by
-     * @return The record that was created
+     * @param newRecord a Valid Record
+     * @return the newly persisted record with updated uuid
      */
-    public Record create(UUID creatorID, UUID allocationID, Record.OwnerType ownerType, UUID datacenterID) {
+    public Record create(Record newRecord) {
+        return repository.save(newRecord);
+    }
 
+    /**
+     * Create a record with the owner
+     * defaults to owned by the user
+     *
+     * @param ownerID UUID of the owner
+     * @param allocationID UUID of the allocation
+     * @return newly persisted record
+     */
+    public Record create(UUID ownerID, UUID allocationID) {
         Record record = new Record();
-        record.setCreatorID(creatorID);
+        record.setCreatorID(ownerID);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(ownerID);
         record.setAllocationID(allocationID);
-
-        record.setOwnerType(ownerType);
-        if (ownerType.equals(Record.OwnerType.User)) {
-            record.setOwnerID(creatorID);
-        } else if(ownerType.equals(Record.OwnerType.DataCenter)) {
-            record.setOwnerID(datacenterID);
-        }
-
         record.setCreatedAt(new Date());
         record.setModifiedAt(new Date());
-
         return repository.save(record);
     }
 
