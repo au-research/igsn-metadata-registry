@@ -1,10 +1,13 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
-import au.edu.ardc.igsn.exception.APIExceptionResponse;
-import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.exception.*;
+import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +40,12 @@ public class VersionResourceController {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private SchemaService schemaService;
+
+    @Autowired
+    private KeycloakService kcService;
 
     @GetMapping("/")
     @Operation(
@@ -93,27 +103,43 @@ public class VersionResourceController {
     public ResponseEntity<?> store(
             @RequestBody String content,
             @RequestParam String recordID,
-            @RequestParam String schemaID) {
+            @RequestParam String schemaID,
+            HttpServletRequest request) {
         Version version = new Version();
 
-        // todo validate schemaID
+        // validate the schema
+        if (!schemaService.supportsSchema(schemaID)) {
+            throw new SchemaNotSupportedException(schemaID);
+        }
         version.setSchema(schemaID);
+
+        // validate record
+        if (!recordService.exists(recordID)) {
+            throw new RecordNotFoundException(recordID);
+        }
+        Record record = recordService.findById(recordID);
+
+        // validate record ownership to allocation
+        User user = kcService.getLoggedInUser(request);
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasPermission(allocationID.toString())) {
+            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
+        }
+
+        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
+            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
+        }
+
+        // todo validate record ownership
+        version.setRecord(record);
 
         // todo validate content
         version.setContent(content.getBytes());
 
-        // todo validate record
-        Record record = recordService.findById(recordID);
-        version.setRecord(record);
-
-        // todo if the user has the scope igsn:import, allow direct repository access
         version.setCreatedAt(new Date());
-        // todo creator
 
         Version createdVersion = service.create(version);
-
         URI location = URI.create("/api/resources/versions/" + createdVersion.getId());
-
         return ResponseEntity.created(location).body(createdVersion);
     }
 
