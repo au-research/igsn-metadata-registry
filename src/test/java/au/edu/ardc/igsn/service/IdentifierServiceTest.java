@@ -3,6 +3,7 @@ package au.edu.ardc.igsn.service;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,5 +72,26 @@ public class IdentifierServiceTest {
         Identifier newIdentifier = TestHelper.mockIdentifier();
         service.create(newIdentifier);
         verify(repository, times(1)).save(newIdentifier);
+    }
+
+    @Test
+    public void it_updates_identifier_correctly() {
+        String new_value = "changed_Value";
+        Identifier actual = TestHelper.mockIdentifier();
+        String update_id = actual.getId().toString();
+        String original_value = actual.getValue();
+        when(repository.save(any(Identifier.class))).thenReturn(actual);
+        actual.setValue(new_value);
+        Identifier updated = service.update(actual);
+
+        // the save method is invoked on the repository
+        verify(repository, times(1)).save(any(Identifier.class));
+        String compare_id = updated.getId().toString();
+        String updated_value = updated.getValue();
+
+        // the updated identifier is returned with updated values
+        Assertions.assertThat(updated.getUpdatedAt()).isAfterOrEqualTo(actual.getUpdatedAt());
+        Assertions.assertThat(update_id.equals(compare_id));
+        Assertions.assertThat(new_value.equals(updated_value));
     }
 }

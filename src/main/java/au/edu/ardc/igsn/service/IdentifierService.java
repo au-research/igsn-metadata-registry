@@ -1,11 +1,13 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.entity.Identifier;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,6 +56,17 @@ public class IdentifierService {
         return repository.save(newIdentifier);
     }
 
+    /**
+     * Update a record
+     *
+     * @param identifier to be updated
+     * @return The identifier that has updated
+     */
+    public Identifier update(Identifier identifier) {
+        identifier.setUpdatedAt(new Date());
+        repository.save(identifier);
+        return identifier;
+    }
     /**
      * Permanently delete the identifier
      *

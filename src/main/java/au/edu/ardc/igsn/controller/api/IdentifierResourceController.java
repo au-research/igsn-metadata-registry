@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +109,36 @@ public class IdentifierResourceController {
         URI location = URI.create("/api/resources/identifiers/" + createdIdentifier.getId());
 
         return ResponseEntity.created(location).body(createdIdentifier);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "Update an identifier by ID",
+            description = "Update an existing identifier"
+    )
+    @ApiResponse(
+            responseCode = "202",
+            description = "Identifier is updated",
+            content = @Content(schema = @Schema(implementation = Record.class))
+    )
+    @ApiResponse(responseCode = "404", description = "Identifier is not found")
+    public ResponseEntity<?> update(
+            @PathVariable String id,
+            @RequestBody Identifier updatedIdentifier,
+            HttpServletRequest request
+    ) {
+        // ensure record exists
+        if (!service.exists(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
+        }
+
+        // todo validate updatedRecord
+        // UUID modifierID = kcService.getUserUUID(request);
+        // Identifier identifier = service.findById(id);
+        // todo validate record & updatedRecord
+        Identifier updated = service.update(updatedIdentifier);
+
+        return ResponseEntity.ok().body(updated);
     }
 
     @DeleteMapping("/{id}")
