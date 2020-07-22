@@ -3,6 +3,7 @@ package au.edu.ardc.igsn.controller.api;
 import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.service.KeycloakService;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -122,11 +124,13 @@ public class VersionResourceControllerTest {
 
     @Test
     public void it_should_404_when_creating_a_version_with_an_unknown_record() throws Exception {
+        VersionDTO versionDTO = new VersionDTO();
+        versionDTO.setRecord(UUID.randomUUID().toString());
+        versionDTO.setSchema("igsn-registration-v1");
+
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .param("recordID", UUID.randomUUID().toString())
-                        .param("schemaID", "igsn-registration-v1")
-                        .content(TestHelper.asJsonString(TestHelper.mockVersion()))
+                        .content(TestHelper.asJsonString(versionDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -142,8 +146,9 @@ public class VersionResourceControllerTest {
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerID(john.getId());
 
-        Version version = TestHelper.mockVersion();
-        version.setRecord(record);
+        VersionDTO versionDTO = new VersionDTO();
+        versionDTO.setRecord(record.getId().toString());
+        versionDTO.setSchema("igsn-registration-v1");
 
         when(recordService.exists(record.getId().toString())).thenReturn(true);
         when(recordService.findById(record.getId().toString())).thenReturn(record);
@@ -151,9 +156,7 @@ public class VersionResourceControllerTest {
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .param("recordID", record.getId().toString())
-                        .param("schemaID", "igsn-registration-v1")
-                        .content("random text")
+                        .content(TestHelper.asJsonString(versionDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -175,12 +178,15 @@ public class VersionResourceControllerTest {
         when(recordService.findById(record.getId().toString())).thenReturn(record);
         when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(john);
 
+        VersionDTO versionDTO = new VersionDTO();
+        versionDTO.setSchema("igsn-registration-v1");
+        versionDTO.setRecord(record.getId().toString());
+        versionDTO.setContent("stuff");
+
         // when attempt to create a version
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .param("recordID", record.getId().toString())
-                        .param("schemaID", "igsn-registration-v1")
-                        .content("some content")
+                        .content(TestHelper.asJsonString(versionDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -201,6 +207,12 @@ public class VersionResourceControllerTest {
         record.setAllocationID(allocationID);
 
         Version version = TestHelper.mockVersion();
+        version.setRecord(record);
+
+        VersionDTO versionDTO = new VersionDTO();
+        versionDTO.setRecord(record.getId().toString());
+        versionDTO.setSchema("igsn-registration-v1");
+        versionDTO.setContent(Base64.getEncoder().encodeToString("stuff".getBytes()));
 
         when(service.create(any(Version.class))).thenReturn(version);
         when(recordService.exists(record.getId().toString())).thenReturn(true);
@@ -209,9 +221,7 @@ public class VersionResourceControllerTest {
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .param("recordID", record.getId().toString())
-                        .param("schemaID", "igsn-registration-v1")
-                        .content(TestHelper.asJsonString(version))
+                        .content(TestHelper.asJsonString(versionDTO))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 

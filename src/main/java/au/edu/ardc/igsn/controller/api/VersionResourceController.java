@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.*;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.text.ParseException;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -74,7 +78,7 @@ public class VersionResourceController {
             description = "Version is found",
             content = @Content(schema = @Schema(implementation = Version.class))
     )
-    public ResponseEntity<?> show(
+    public ResponseEntity<VersionDTO> show(
             @Parameter(
                     required = true,
                     description = "the id of the version (uuid)",
@@ -86,8 +90,8 @@ public class VersionResourceController {
         if (version == null) {
             throw new VersionNotFoundException(id);
         }
-
-        return ResponseEntity.ok().body(version);
+        VersionDTO versionDTO = convertToDTO(version);
+        return ResponseEntity.ok().body(versionDTO);
     }
 
     @PostMapping("/")
@@ -101,23 +105,19 @@ public class VersionResourceController {
             content = @Content(schema = @Schema(implementation = Version.class))
     )
     public ResponseEntity<?> store(
-            @RequestBody String content,
-            @RequestParam String recordID,
-            @RequestParam String schemaID,
+            @RequestBody VersionDTO versionDTO,
             HttpServletRequest request) {
-        Version version = new Version();
 
         // validate the schema
-        if (!schemaService.supportsSchema(schemaID)) {
-            throw new SchemaNotSupportedException(schemaID);
+        if (!schemaService.supportsSchema(versionDTO.getSchema())) {
+            throw new SchemaNotSupportedException(versionDTO.getSchema());
         }
-        version.setSchema(schemaID);
 
         // validate record
-        if (!recordService.exists(recordID)) {
-            throw new RecordNotFoundException(recordID);
+        if (!recordService.exists(versionDTO.getRecord())) {
+            throw new RecordNotFoundException(versionDTO.getRecord());
         }
-        Record record = recordService.findById(recordID);
+        Record record = recordService.findById(versionDTO.getRecord());
 
         // validate record ownership to allocation
         User user = kcService.getLoggedInUser(request);
@@ -131,16 +131,15 @@ public class VersionResourceController {
         }
 
         // todo validate record ownership
-        version.setRecord(record);
+        // todo validate versionDTO content
 
-        // todo validate content
-        version.setContent(content.getBytes());
-
-        version.setCreatedAt(new Date());
+        Version version = convertToEntity(versionDTO);
 
         Version createdVersion = service.create(version);
+
+        VersionDTO createdVersionDTO = convertToDTO(createdVersion);
         URI location = URI.create("/api/resources/versions/" + createdVersion.getId());
-        return ResponseEntity.created(location).body(createdVersion);
+        return ResponseEntity.created(location).body(createdVersionDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -179,5 +178,25 @@ public class VersionResourceController {
         String content = new String(version.getContent());
 
         return ResponseEntity.ok(content);
+    }
+
+    @Autowired
+    ModelMapper modelMapper;
+
+    private Version convertToEntity(VersionDTO versionDTO) {
+        Version version = modelMapper.map(versionDTO, Version.class);
+        version.setRecord(recordService.findById(versionDTO.getRecord()));
+        version.setContent(Base64.getDecoder().decode(versionDTO.getContent()));
+        return version;
+    }
+
+    private VersionDTO convertToDTO(Version version) {
+        VersionDTO versionDTO = modelMapper.map(version, VersionDTO.class);
+        versionDTO.setRecord(version.getRecord().getId().toString());
+        if (version.getId() == null) {
+            versionDTO.setId(version.getId().toString());
+        }
+//        versionDTO.setContent(Base64.getEncoder().encodeToString(version.getContent()));
+        return versionDTO;
     }
 }

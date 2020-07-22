@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -64,10 +65,12 @@ public class Version {
         this.id = uuid;
     }
 
+    @JsonIgnore
     public Record getRecord() {
         return record;
     }
 
+    @JsonProperty
     public void setRecord(Record record) {
         this.record = record;
     }
