@@ -95,12 +95,12 @@ public class User {
      * @param scope string representation of the scope
      * @return true if the user has access to the resource and the scope
      */
-    public boolean hasPermission(String rsID, String scope) {
+    public boolean hasPermission(String rsID, Scope scope) {
         if (this.allocations == null) {
             return false;
         }
         for (Permission permission : this.allocations) {
-            if (permission.getResourceId().equals(rsID) && permission.getScopes().contains(scope)) {
+            if (permission.getResourceId().equals(rsID) && permission.getScopes().contains(scope.getValue())) {
                 return true;
             }
         }

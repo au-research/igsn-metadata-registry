@@ -5,9 +5,9 @@ import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.keycloak.representations.idm.authorization.Permission;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 public class TestHelper {
 
@@ -179,6 +179,27 @@ public class TestHelper {
         url.setStatus(URL.Status.UNKNOWN);
         url.setRecord(record);
         return url;
+    }
+
+    public static User mockUser() {
+        User user = new User(UUID.randomUUID());
+        user.setName("John Wick");
+        user.setEmail("jwick@localhost.com");
+        return user;
+
+        // mock a user resources
+
+    }
+
+    public static void addResourceAndScopePermissionToUser(User user, String resourceID, Set<String> scopes) {
+        List<Permission> permissions = new ArrayList<>();
+        Permission permission = new Permission();
+        permission.setResourceId(resourceID);
+        permission.setResourceName(String.format("Test Resource %s", resourceID));
+        permission.setScopes(scopes);
+        permissions.add(permission);
+
+        user.setAllocations(permissions);
     }
 
 }

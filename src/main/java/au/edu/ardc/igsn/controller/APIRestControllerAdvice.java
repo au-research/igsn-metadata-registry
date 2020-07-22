@@ -1,9 +1,6 @@
 package au.edu.ardc.igsn.controller;
 
-import au.edu.ardc.igsn.exception.APIExceptionResponse;
-import au.edu.ardc.igsn.exception.ForbiddenOperationException;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
-import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -47,5 +44,15 @@ public class APIRestControllerAdvice {
         response.setError(HttpStatus.FORBIDDEN.toString());
         response.setPath(request.getServletPath());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(value = {SchemaNotSupportedException.class})
+    public ResponseEntity<Object> handleBadArgument(RuntimeException ex, HttpServletRequest request) {
+        APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
+        response.setTimestamp(new Date());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setError(HttpStatus.BAD_REQUEST.toString());
+        response.setPath(request.getServletPath());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

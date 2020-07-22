@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.entity.Record;
@@ -114,13 +115,13 @@ public class RecordResourceController extends APIController {
         }
 
         // validate user has access to the igsn:create scope
-        if (!user.hasPermission(allocationID, "igsn:create")) {
+        if (!user.hasPermission(allocationID, Scope.CREATE)) {
             throw new ForbiddenOperationException(String.format("you don't have access to create resource for %s", allocationID));
         }
         // todo validate OwnerType && datacenterID
 
         // if the user has access to igsn:import scope, directly insert it
-        if (user.hasPermission(allocationID, "igsn:import")) {
+        if (user.hasPermission(allocationID, Scope.IMPORT)) {
             Record record = service.create(newRecord);
             return ResponseEntity.created(URI.create("/api/resources/records/" + record.getId())).body(record);
         } else {
