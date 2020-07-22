@@ -119,7 +119,7 @@ public class IdentifierResourceController {
     @ApiResponse(
             responseCode = "202",
             description = "Identifier is updated",
-            content = @Content(schema = @Schema(implementation = Record.class))
+            content = @Content(schema = @Schema(implementation = Identifier.class))
     )
     @ApiResponse(responseCode = "404", description = "Identifier is not found")
     public ResponseEntity<?> update(

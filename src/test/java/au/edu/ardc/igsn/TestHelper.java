@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn;
 
 import au.edu.ardc.igsn.entity.Identifier;
+import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -137,6 +138,47 @@ public class TestHelper {
         identifier.setType(Identifier.Type.IGSN);
         identifier.setRecord(record);
         return identifier;
+    }
+
+    /**
+     * Mock a url
+     *
+     * @return a url with a mocked up record
+     */
+    public static URL mockUrl() {
+        Record record = mockRecord();
+        URL url = new URL(UUID.randomUUID());
+        url.setCreatedAt(new Date());
+        url.setStatus(URL.Status.UNKNOWN);
+        url.setRecord(record);
+        return url;
+    }
+
+    /**
+     * Mock a url
+     *
+     * @return a url with a record
+     */
+    public static URL mockUrl(Record record) {
+        URL url = new URL();
+        url.setCreatedAt(new Date());
+        url.setStatus(URL.Status.UNKNOWN);
+        url.setRecord(record);
+        return url;
+    }
+
+    /**
+     * Mock a url
+     *
+     * @return a url with a record
+     */
+    public static URL mockUrl(UUID id) {
+        Record record = mockRecord();
+        URL url = new URL(id);
+        url.setCreatedAt(new Date());
+        url.setStatus(URL.Status.UNKNOWN);
+        url.setRecord(record);
+        return url;
     }
 
 }
