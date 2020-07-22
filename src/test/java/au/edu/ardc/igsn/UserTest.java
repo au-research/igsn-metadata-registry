@@ -41,12 +41,12 @@ public class UserTest {
         UUID res1 = UUID.randomUUID();
         permission.setResourceId(res1.toString());
         permission.setResourceName("Resource 1");
-        permission.setScopes(Sets.newHashSet("igsn:update", "igsn:create"));
+        permission.setScopes(Sets.newHashSet(Scope.UPDATE.getValue(), Scope.CREATE.getValue()));
         permissions.add(permission);
         user.setAllocations(permissions);
 
-        assertThat(user.hasPermission(res1.toString(), "igsn:update")).isTrue();
-        assertThat(user.hasPermission(res1.toString(), "igsn:import")).isFalse();
+        assertThat(user.hasPermission(res1.toString(), Scope.UPDATE)).isTrue();
+        assertThat(user.hasPermission(res1.toString(), Scope.IMPORT)).isFalse();
     }
 
 }
