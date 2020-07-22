@@ -2,6 +2,8 @@ package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.VersionNotFoundException;
 import au.edu.ardc.igsn.service.RecordService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,11 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.Date;
@@ -58,7 +58,7 @@ public class VersionResourceController {
             summary = "Get a single version by id",
             description = "Retrieve the metadata for a single version by id"
     )
-    @ApiResponse(responseCode = "404", description = "Version is not found")
+    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     @ApiResponse(
             responseCode = "200",
             description = "Version is found",
@@ -74,7 +74,7 @@ public class VersionResourceController {
     ) {
         Version version = service.findById(id);
         if (version == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Version " + id + " is not found");
+            throw new VersionNotFoundException(id);
         }
 
         return ResponseEntity.ok().body(version);
@@ -120,14 +120,14 @@ public class VersionResourceController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a version by ID", description = "Delete a version from the registry")
     @ApiResponse(responseCode = "202", description = "Version is deleted")
-    @ApiResponse(responseCode = "404", description = "Version is not found")
+    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     public ResponseEntity<?> destroy(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {
         // todo consider PUT /{id} with {state:ENDED} to end a version instead
         // todo DELETE a resource should always delete it
         if (!service.exists(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+            throw new VersionNotFoundException(id);
         }
 
         Version version = service.findById(id);
@@ -141,12 +141,12 @@ public class VersionResourceController {
     @GetMapping(value = "/{id}/content", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Operation(summary = "Get a version content", description = "Get a version content by ID")
     @ApiResponse(responseCode = "200", description = "Version content is found and delivered")
-    @ApiResponse(responseCode = "404", description = "Version is not found")
+    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     public ResponseEntity<?> content(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {
         if (!service.exists(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Record " + id + " is not found");
+            throw new VersionNotFoundException(id);
         }
         Version version = service.findById(id);
 
