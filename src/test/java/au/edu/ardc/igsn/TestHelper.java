@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn;
 
+import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,5 +98,45 @@ public class TestHelper {
         return version;
     }
 
+    /**
+     * Mock an identifier given a record
+     * @param record the record that the identifier will belong to
+     * @return a Identifier
+     */
+    public static Identifier mockIdentifier(Record record) {
+        Identifier identifier = new Identifier();
+        identifier.setCreatedAt(new Date());
+        identifier.setType(Identifier.Type.IGSN);
+        identifier.setRecord(record);
+        return identifier;
+    }
+
+    /**
+     * Mock an identifier
+     *
+     * @return an Identifier with a mocked up record
+     */
+    public static Identifier mockIdentifier(UUID id) {
+        Record record = mockRecord(id);
+        Identifier identifier = new Identifier(UUID.randomUUID());
+        identifier.setCreatedAt(new Date());
+        identifier.setType(Identifier.Type.IGSN);
+        identifier.setRecord(record);
+        return identifier;
+    }
+
+    /**
+     * Mock a version
+     *
+     * @return an Identifier with a mocked up record
+     */
+    public static Identifier mockIdentifier() {
+        Record record = mockRecord();
+        Identifier identifier = new Identifier(UUID.randomUUID());
+        identifier.setCreatedAt(new Date());
+        identifier.setType(Identifier.Type.IGSN);
+        identifier.setRecord(record);
+        return identifier;
+    }
 
 }
