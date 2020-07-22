@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.controller;
 
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,22 @@ public class APIRestControllerAdvice {
         response.setError(HttpStatus.NOT_FOUND.toString());
         response.setPath(request.getServletPath());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handles forbidden 403 operations
+     *
+     * @param ex      The RuntimeException that is encountered
+     * @param request the HttpServeletRequest, to display the path
+     * @return ResponseEntity
+     */
+    @ExceptionHandler(value = {ForbiddenOperationException.class})
+    public ResponseEntity<Object> handleForbidden(RuntimeException ex, HttpServletRequest request) {
+        APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
+        response.setTimestamp(new Date());
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setError(HttpStatus.FORBIDDEN.toString());
+        response.setPath(request.getServletPath());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }

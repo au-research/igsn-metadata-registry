@@ -4,6 +4,7 @@ import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
@@ -16,11 +17,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
@@ -97,8 +96,12 @@ public class RecordResourceController extends APIController {
             description = "Record is created",
             content = @Content(schema = @Schema(implementation = Record.class))
     )
+    @ApiResponse(
+            responseCode = "403",
+            description = "Operation is forbidden",
+            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
+    )
     public ResponseEntity<?> store(
-
             @RequestBody Record newRecord,
             HttpServletRequest request) {
 
@@ -107,18 +110,12 @@ public class RecordResourceController extends APIController {
         // validate the user has access to allocationID
         String allocationID = newRecord.getAllocationID().toString();
         if (!user.hasPermission(allocationID)) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    String.format("you don't have access to %s", allocationID)
-            );
+            throw new ForbiddenOperationException(String.format("you don't have access to %s", allocationID));
         }
 
         // validate user has access to the igsn:create scope
         if (!user.hasPermission(allocationID, "igsn:create")) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    String.format("you don't have access to create resource for %s", allocationID)
-            );
+            throw new ForbiddenOperationException(String.format("you don't have access to create resource for %s", allocationID));
         }
         // todo validate OwnerType && datacenterID
 
