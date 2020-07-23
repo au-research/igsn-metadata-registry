@@ -1,19 +1,24 @@
 package au.edu.ardc.igsn.dto;
 
 import au.edu.ardc.igsn.entity.Version;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.util.Base64;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VersionDTO {
     private String id;
+
+    @NotNull
     private String schema;
     private Version.Status status;
     private Date createdAt;
     private String creatorID;
+
+    @NotNull
     private String record;
+
     private String content;
 
     public String getRecord() {
@@ -32,9 +37,12 @@ public class VersionDTO {
         this.schema = schema;
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getContent() {
         return this.content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public String getId() {
@@ -61,7 +69,11 @@ public class VersionDTO {
         this.creatorID = creatorID;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public Version.Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Version.Status status) {
+        this.status = status;
     }
 }

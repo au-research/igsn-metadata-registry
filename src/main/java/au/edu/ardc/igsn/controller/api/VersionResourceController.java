@@ -2,7 +2,9 @@ package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.*;
@@ -18,16 +20,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.net.URI;
-import java.text.ParseException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -40,14 +40,13 @@ import java.util.UUID;
 public class VersionResourceController {
 
     @Autowired
+    VersionMapper versionMapper;
+    @Autowired
     private VersionService service;
-
     @Autowired
     private RecordService recordService;
-
     @Autowired
     private SchemaService schemaService;
-
     @Autowired
     private KeycloakService kcService;
 
@@ -90,7 +89,7 @@ public class VersionResourceController {
         if (version == null) {
             throw new VersionNotFoundException(id);
         }
-        VersionDTO versionDTO = convertToDTO(version);
+        VersionDTO versionDTO = versionMapper.convertToDTO(version);
         return ResponseEntity.ok().body(versionDTO);
     }
 
@@ -105,16 +104,16 @@ public class VersionResourceController {
             content = @Content(schema = @Schema(implementation = Version.class))
     )
     public ResponseEntity<?> store(
-            @RequestBody VersionDTO versionDTO,
+            @Valid @RequestBody VersionDTO versionDTO,
             HttpServletRequest request) {
 
         // validate the schema
-        if (!schemaService.supportsSchema(versionDTO.getSchema())) {
+        if (versionDTO.getSchema() == null || !schemaService.supportsSchema(versionDTO.getSchema())) {
             throw new SchemaNotSupportedException(versionDTO.getSchema());
         }
 
         // validate record
-        if (!recordService.exists(versionDTO.getRecord())) {
+        if (versionDTO.getRecord() == null || !recordService.exists(versionDTO.getRecord())) {
             throw new RecordNotFoundException(versionDTO.getRecord());
         }
         Record record = recordService.findById(versionDTO.getRecord());
@@ -131,13 +130,23 @@ public class VersionResourceController {
         }
 
         // todo validate record ownership
+
         // todo validate versionDTO content
 
-        Version version = convertToEntity(versionDTO);
+        Version version = versionMapper.convertToEntity(versionDTO);
+        version.setCreatedAt(new Date());
+        version.setCreatorID(user.getId());
+
+        // allow igsn:import scope to overwrite data
+        if (user.hasPermission(allocationID.toString(), Scope.IMPORT)) {
+            version.setCreatedAt(versionDTO.getCreatedAt() != null ? versionDTO.getCreatedAt() : version.getCreatedAt());
+            version.setCreatorID(versionDTO.getCreatorID() != null ? UUID.fromString(versionDTO.getCreatorID()) : version.getCreatorID());
+            version.setStatus(versionDTO.getStatus() != null ? versionDTO.getStatus() : version.getStatus());
+        }
 
         Version createdVersion = service.create(version);
 
-        VersionDTO createdVersionDTO = convertToDTO(createdVersion);
+        VersionDTO createdVersionDTO = versionMapper.convertToDTO(createdVersion);
         URI location = URI.create("/api/resources/versions/" + createdVersion.getId());
         return ResponseEntity.created(location).body(createdVersionDTO);
     }
@@ -180,23 +189,4 @@ public class VersionResourceController {
         return ResponseEntity.ok(content);
     }
 
-    @Autowired
-    ModelMapper modelMapper;
-
-    private Version convertToEntity(VersionDTO versionDTO) {
-        Version version = modelMapper.map(versionDTO, Version.class);
-        version.setRecord(recordService.findById(versionDTO.getRecord()));
-        version.setContent(Base64.getDecoder().decode(versionDTO.getContent()));
-        return version;
-    }
-
-    private VersionDTO convertToDTO(Version version) {
-        VersionDTO versionDTO = modelMapper.map(version, VersionDTO.class);
-        versionDTO.setRecord(version.getRecord().getId().toString());
-        if (version.getId() == null) {
-            versionDTO.setId(version.getId().toString());
-        }
-//        versionDTO.setContent(Base64.getEncoder().encodeToString(version.getContent()));
-        return versionDTO;
-    }
 }

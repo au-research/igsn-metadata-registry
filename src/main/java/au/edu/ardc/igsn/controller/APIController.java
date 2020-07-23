@@ -11,22 +11,6 @@ import java.util.Map;
 
 public abstract class APIController {
 
-    /**
-     * A global response for all Validation Exception
-     *
-     * @param ex handles MethodArgumentNotValidException
-     * @return Map of errors
-     */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
-    }
+
 
 }

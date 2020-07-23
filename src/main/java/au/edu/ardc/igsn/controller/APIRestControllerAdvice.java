@@ -3,11 +3,16 @@ package au.edu.ardc.igsn.controller;
 import au.edu.ardc.igsn.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class APIRestControllerAdvice {
@@ -53,6 +58,31 @@ public class APIRestControllerAdvice {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setError(HttpStatus.BAD_REQUEST.toString());
         response.setPath(request.getServletPath());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * A global response for all Validation Exception
+     *
+     * @param ex handles MethodArgumentNotValidException
+     * @return Map of errors
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
+        response.setTimestamp(new Date());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setError(HttpStatus.BAD_REQUEST.toString());
+        response.setPath(request.getServletPath());
+
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }
