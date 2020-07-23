@@ -1,8 +1,13 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.entity.Identifier;
+import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
+import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import au.edu.ardc.igsn.service.URLService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,6 +44,9 @@ public class URLResourceController {
     @Autowired
     private RecordService recordService;
 
+    @Autowired
+    private KeycloakService kcService;
+
     @GetMapping("/")
     @Operation(
             summary = "Get all URLs",
@@ -60,7 +68,10 @@ public class URLResourceController {
             summary = "Get a single URL by id",
             description = "Retrieve the metadata for a single url by id"
     )
-    @ApiResponse(responseCode = "404", description = "URL is not found")
+    @ApiResponse(
+            responseCode = "404",
+            description = "URL is not found",
+            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     @ApiResponse(
             responseCode = "200",
             description = "URL is found",
@@ -93,17 +104,34 @@ public class URLResourceController {
             content = @Content(schema = @Schema(implementation = URL.class))
     )
     public ResponseEntity<?> store(
-            @RequestParam String recordID) {
+            @RequestBody URL newUrl,
+            @RequestParam String recordID,
+            HttpServletRequest request) {
         URL url = new URL();
 
         // todo validate record
+        if (!recordService.exists(recordID)) {
+            throw new RecordNotFoundException(recordID);
+        }
         Record record = recordService.findById(recordID);
+
+        // validate record ownership to allocation
+        User user = kcService.getLoggedInUser(request);
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasPermission(allocationID.toString())) {
+            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
+        }
+
+        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
+            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
+        }
+
         url.setRecord(record);
 
-        // todo if the user has the scope igsn:import, allow direct repository access
         url.setCreatedAt(new Date());
 
-        // todo creator
+        url.setUrl(newUrl.getUrl());
+
         URL createdUrl = service.create(url);
 
         URI location = URI.create("/api/resources/urls/" + createdUrl.getId());
@@ -132,10 +160,19 @@ public class URLResourceController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL " + id + " is not found");
         }
 
-        // todo validate updatedRecord
-        // UUID modifierID = kcService.getUserUUID(request);
-        // URL url = service.findById(id);
-        // todo validate record & updatedRecord
+        Record record = updatedURL.getRecord();
+
+        // validate record ownership to allocation
+        User user = kcService.getLoggedInUser(request);
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasPermission(allocationID.toString())) {
+            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
+        }
+
+        if (!user.hasPermission(allocationID.toString(), Scope.UPDATE)) {
+            throw new ForbiddenOperationException(String.format("User does not have access to update for the record allocation %s", allocationID.toString()));
+        }
+
         URL updated = service.update(updatedURL);
 
         return ResponseEntity.ok().body(updated);

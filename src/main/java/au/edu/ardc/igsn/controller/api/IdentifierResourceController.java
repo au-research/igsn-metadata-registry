@@ -1,7 +1,14 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.entity.URL;
+import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import au.edu.ardc.igsn.service.IdentifierService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +44,9 @@ public class IdentifierResourceController {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private KeycloakService kcService;
 
     @GetMapping("/")
     @Operation(
@@ -93,13 +103,30 @@ public class IdentifierResourceController {
             content = @Content(schema = @Schema(implementation = Identifier.class))
     )
     public ResponseEntity<?> store(
-            @RequestParam String recordID) {
+            @RequestBody Identifier newIdentifier,
+            @RequestParam String recordID,
+            HttpServletRequest request) {
         Identifier identifier = new Identifier();
 
         // todo validate record
+        if (!recordService.exists(recordID)) {
+            throw new RecordNotFoundException(recordID);
+        }
         Record record = recordService.findById(recordID);
-        identifier.setRecord(record);
 
+        // validate record ownership to allocation
+        User user = kcService.getLoggedInUser(request);
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasPermission(allocationID.toString())) {
+            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
+        }
+
+        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
+            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
+        }
+        identifier.setRecord(record);
+        identifier.setType(newIdentifier.getType());
+        identifier.setValue(newIdentifier.getValue());
         // todo if the user has the scope igsn:import, allow direct repository access
         identifier.setCreatedAt(new Date());
 
@@ -121,21 +148,30 @@ public class IdentifierResourceController {
             description = "Identifier is updated",
             content = @Content(schema = @Schema(implementation = Identifier.class))
     )
-    @ApiResponse(responseCode = "404", description = "Identifier is not found")
+    @ApiResponse(responseCode = "404", description = "Identifier is not found",content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     public ResponseEntity<?> update(
             @PathVariable String id,
             @RequestBody Identifier updatedIdentifier,
             HttpServletRequest request
     ) {
-        // ensure record exists
+        // ensure identifier exists
         if (!service.exists(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
         }
 
-        // todo validate updatedRecord
-        // UUID modifierID = kcService.getUserUUID(request);
-        // Identifier identifier = service.findById(id);
-        // todo validate record & updatedRecord
+        Record record = updatedIdentifier.getRecord();
+
+        // validate record ownership to allocation
+        User user = kcService.getLoggedInUser(request);
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasPermission(allocationID.toString())) {
+            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
+        }
+
+        if (!user.hasPermission(allocationID.toString(), Scope.UPDATE)) {
+            throw new ForbiddenOperationException(String.format("User does not have access to update for the record allocation %s", allocationID.toString()));
+        }
+
         Identifier updated = service.update(updatedIdentifier);
 
         return ResponseEntity.ok().body(updated);
