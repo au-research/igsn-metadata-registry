@@ -6,13 +6,17 @@ import java.util.List;
 import java.util.UUID;
 
 public class User {
-    private final UUID id;
+    private UUID id;
     private String username;
     private String email;
     private String name;
     private List<String> roles;
     private List<String> groups;
     private List<Permission> allocations;
+
+    public User() {
+
+    }
 
     public User(UUID id) {
         this.id = id;
