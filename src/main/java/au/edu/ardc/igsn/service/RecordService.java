@@ -29,7 +29,7 @@ public class RecordService {
      * Returns all record that the user created
      * Returns all record that the user owned
      * Returns all record that the user has access to via allocation
-     * todo refactor to return List<RecordDTO>
+     * todo refactor to return a page of RecordDTO
      * todo refactor to use Pageable
      *
      * @param ownerID The current loggedIn user UUID

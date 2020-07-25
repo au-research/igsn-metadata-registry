@@ -65,7 +65,8 @@ public class APIRestControllerAdvice {
      * A global response for all Validation Exception
      *
      * @param ex handles MethodArgumentNotValidException
-     * @return Map of errors
+     * @param request The current request
+     * @return APIExceptionResponse
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
