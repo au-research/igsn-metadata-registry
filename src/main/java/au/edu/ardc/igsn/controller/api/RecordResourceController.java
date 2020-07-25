@@ -1,11 +1,11 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.User;
 import au.edu.ardc.igsn.controller.APIController;
+import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
-import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,9 @@ public class RecordResourceController extends APIController {
 
     @Autowired
     private KeycloakService kcService;
+
+    @Autowired
+    private RecordMapper mapper;
 
     @GetMapping("/")
     @Operation(
@@ -77,13 +81,11 @@ public class RecordResourceController extends APIController {
                     description = "the id of the record (uuid)",
                     schema = @Schema(implementation = UUID.class)
             )
-            @PathVariable String id
+            @PathVariable String id,
+            HttpServletRequest request
     ) {
-        Record record = service.findById(id);
-        if (record == null) {
-            throw new RecordNotFoundException(id);
-        }
-
+        User user = kcService.getLoggedInUser(request);
+        RecordDTO record = service.findById(id, user);
         return ResponseEntity.ok().body(record);
     }
 
@@ -102,33 +104,12 @@ public class RecordResourceController extends APIController {
             description = "Operation is forbidden",
             content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
     )
-    public ResponseEntity<?> store(
-            @RequestBody Record newRecord,
+    public ResponseEntity<RecordDTO> store(
+            @RequestBody RecordDTO recordDTO,
             HttpServletRequest request) {
-
         User user = kcService.getLoggedInUser(request);
-
-        // validate the user has access to allocationID
-        String allocationID = newRecord.getAllocationID().toString();
-        if (!user.hasPermission(allocationID)) {
-            throw new ForbiddenOperationException(String.format("you don't have access to %s", allocationID));
-        }
-
-        // validate user has access to the igsn:create scope
-        if (!user.hasPermission(allocationID, Scope.CREATE)) {
-            throw new ForbiddenOperationException(String.format("you don't have access to create resource for %s", allocationID));
-        }
-        // todo validate OwnerType && datacenterID
-
-        // if the user has access to igsn:import scope, directly insert it
-        if (user.hasPermission(allocationID, Scope.IMPORT)) {
-            Record record = service.create(newRecord);
-            return ResponseEntity.created(URI.create("/api/resources/records/" + record.getId())).body(record);
-        } else {
-            // create it normally
-            Record record = service.create(user.getId(), newRecord.getAllocationID());
-            return ResponseEntity.created(URI.create("/api/resources/records/" + record.getId())).body(record);
-        }
+        RecordDTO resultDTO = service.create(recordDTO, user);
+        return ResponseEntity.created(URI.create("/api/resources/records/" + resultDTO.getId())).body(resultDTO);
     }
 
     @PutMapping("/{id}")
@@ -146,23 +127,15 @@ public class RecordResourceController extends APIController {
             description = "Record is not found",
             content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
     )
-    public ResponseEntity<?> update(
+    public ResponseEntity<RecordDTO> update(
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
-            @RequestBody Record updatedRecord,
+            @RequestBody RecordDTO recordDTO,
             HttpServletRequest request
     ) {
-        // ensure record exists
-        if (!service.exists(id)) {
-            throw new RecordNotFoundException(id);
-        }
-
-        // todo validate updatedRecord
-        UUID modifierID = kcService.getUserUUID(request);
-        //Record record = service.findById(id);
-        // todo validate record & updatedRecord
-        Record updated = service.update(updatedRecord, modifierID);
-
-        return ResponseEntity.ok().body(updated);
+        recordDTO.setId(UUID.fromString(id));
+        User user = kcService.getLoggedInUser(request);
+        RecordDTO resultDTO = service.update(recordDTO, user);
+        return ResponseEntity.accepted().body(resultDTO);
     }
 
     @DeleteMapping("/{id}")
@@ -174,17 +147,11 @@ public class RecordResourceController extends APIController {
             content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
     )
     public ResponseEntity<?> destroy(
-            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
+            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
+            HttpServletRequest request
     ) {
-        if (!service.exists(id)) {
-            throw new RecordNotFoundException(id);
-        }
-        Record record = service.findById(id);
-
-        // todo validate current user and their ownership
-
-        service.delete(record);
-
+        User user = kcService.getLoggedInUser(request);
+        service.delete(id, user);
         return ResponseEntity.accepted().body(null);
     }
 

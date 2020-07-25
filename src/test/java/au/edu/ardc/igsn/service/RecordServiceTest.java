@@ -1,8 +1,14 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.Scope;
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +17,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,153 +39,322 @@ public class RecordServiceTest {
     private KeycloakService kcService;
 
     @Test
-    public void it_can_find_1_record_by_id() {
-        // given a record
-        UUID uuid = UUID.randomUUID();
-        Record expected = new Record(uuid);
-        when(repository.findById(uuid)).thenReturn(Optional.of(expected));
+    public void findById_recordExists_returnRecord() {
+        // given a record & user
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        User user = TestHelper.mockUser();
+
+        // mock repository
+        when(repository.findById(record.getId())).thenReturn(Optional.of(record));
 
         // when findById
-        Record actual = service.findById(uuid.toString());
+        RecordDTO actual = service.findById(record.getId().toString(), user);
 
         // returns the same record
         assertThat(actual).isNotNull();
-        assertThat(actual.getId()).isEqualTo(expected.getId());
+        assertThat(actual).isInstanceOf(RecordDTO.class);
+        assertThat(actual.getId()).isEqualTo(record.getId());
+    }
+
+    @Test(expected=RecordNotFoundException.class)
+    public void findById_recordDoesNotExist_ExceptionRecordNotFound(){
+        // given a record & a user
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        User user = TestHelper.mockUser();
+
+        // mock repository
+        when(repository.findById(record.getId())).thenReturn(Optional.empty());
+
+        // when findById expects RecordNotFoundException
+        service.findById(record.getId().toString(), user);
     }
 
     @Test
-    public void it_can_find_all_records_by_creator_id() {
-        ArrayList<Record> records = new ArrayList<>();
-        UUID creatorID = UUID.randomUUID();
-
-        // given a random number of records
-        int max = (int) (Math.random() * 100);
-        for (int i = 0; i < max; i++) {
-            Record record = new Record();
-            record.setCreatorID(creatorID);
-            records.add(record);
-        }
-        when(repository.findByCreatorID(creatorID)).thenReturn(records);
-
-        // when find by creator, returns the same number of those records
-        assertThat(service.findByCreatorID(creatorID.toString())).hasSize(max);
-    }
-
-    @Test
-    public void it_can_tell_if_a_record_exists_by_id() {
+    public void exists_recordExist_returnTrue() {
         UUID randomUUID = UUID.randomUUID();
         when(repository.existsById(randomUUID)).thenReturn(true);
         assertThat(service.exists(randomUUID.toString())).isTrue();
     }
 
     @Test
-    public void it_can_create_a_new_record() {
-        UUID creatorUUID, recordUUID, allocationUUID;
-        Record expected = new Record(recordUUID = UUID.randomUUID());
-        expected.setCreatorID(creatorUUID = UUID.randomUUID());
-        expected.setAllocationID(allocationUUID = UUID.randomUUID());
-        expected.setOwnerType(Record.OwnerType.User);
+    public void exists_recordDoesNotExist_returnFalse() {
+        UUID randomUUID = UUID.randomUUID();
+        when(repository.existsById(randomUUID)).thenReturn(false);
+        assertThat(service.exists(randomUUID.toString())).isFalse();
+    }
 
+    @Test(expected = ForbiddenOperationException.class)
+    public void validate_UserDoesNotHaveAccessToAnyAllocation_throwsException() {
+        // given a User & Record
+        User user = TestHelper.mockUser();
+        Record record = TestHelper.mockRecord();
+
+        // when validate expects ForbiddenOperationException
+        service.validate(record, user);
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void validate_UserDoesNotHaveAccessToAllocation_throwsException() {
+        // given a User & Record
+        User user = TestHelper.mockUser();
+        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        Record record = TestHelper.mockRecord();
+
+        // when validate expects ForbiddenOperationException
+        service.validate(record, user);
+    }
+
+    @Test
+    public void validate_UserHaveAccessToRightAllocation_returnsTrue() {
+        // given a User & Record
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(resourceID);
+
+        // when validate
+        boolean actual = service.validate(record, user);
+
+        assertThat(actual).isTrue();
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void validate_UserDoesNotHaveAccessToScope_throwsException() {
+        // given a User & Record
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(resourceID);
+
+        // when validate expects ForbiddenOperationException
+        service.validate(record, user, Scope.IMPORT);
+    }
+
+    @Test
+    public void validate_UserHaveAccessToRightScope_returnsTrue() {
+        // given a User & Record
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(resourceID);
+
+        // when validate
+        boolean actual =  service.validate(record, user, Scope.CREATE);
+
+        assertThat(actual).isTrue();
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void create_UserDoesNotHaveAccessToAllocation_throwsException() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setAllocationID(resourceID);
+
+        // expects ForbiddenOperationException
+        service.create(dto, user);
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void create_UserDoesNotHaveScope_throwsException() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setAllocationID(resourceID);
+
+        // expects ForbiddenOperationException
+        service.create(dto, user);
+    }
+
+    @Test
+    public void create_UserHasSufficientPermission_returnsDTO() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setAllocationID(resourceID);
+
+        // setup repository mock
+        Record expected = TestHelper.mockRecord(UUID.randomUUID());
         when(repository.save(any(Record.class))).thenReturn(expected);
 
-        Record actual = service.create(expected);
-        assertThat(actual).isNotNull();
-        assertThat(actual).isInstanceOf(Record.class);
-        assertThat(actual.getId()).isEqualTo(recordUUID);
-    }
+        // when the service creates the record with the dto and the user
+        RecordDTO result = service.create(dto, user);
 
-    @Test
-    public void it_can_find_owned_records() {
-        UUID creatorID = UUID.randomUUID();
-
-        // given a record that is created
-        Record record = new Record();
-        record.setOwnerID(creatorID);
-        List<Record> records = new ArrayList<>();
-        records.add(record);
-
-        // mock the current request out too
-        // HttpServletRequest request = mock(HttpServletRequest.class);
-
-        // when finding an owned record, it tries to obtain the userID from the context
-        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-        when(repository.findOwned(creatorID)).thenReturn(records);
-
-        // ensure records are returned when findOwned
-        assertThat(service.findOwned(creatorID)).contains(record);
-    }
-
-    @Test
-    public void it_can_create_record_for_user_owner_type() {
-        // setup
-        Record actual = TestHelper.mockRecord();
-        when(repository.save(any(Record.class))).thenReturn(actual);
-
-        // given a creation of a new record
-        Record expected = service.create(actual);
-
+        // dto exists and repository.save is called
+        assertThat(result).isInstanceOf(RecordDTO.class);
+        assertThat(result.getId()).isNotNull();
         verify(repository, times(1)).save(any(Record.class));
+    }
 
-        // ensure record is set on all fields
-        assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
-        assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
-        assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
-        assertThat(expected.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
+    // todo delete_UserDoesNotHaveAllocation_throwsException
 
-        // the record owner type and owner id is set properly
-        assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.User);
-        assertThat(expected.getOwnerID()).isEqualTo(actual.getCreatorID());
+    @Test(expected = ForbiddenOperationException.class)
+    public void delete_UserDoesNotHaveRightScope_throwsException() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
+
+        // given a record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
+
+        // record exists for deletion
+        when(repository.existsById(record.getId())).thenReturn(true);
+        when(repository.findById(record.getId())).thenReturn(Optional.of(record));
+
+        // expects ForbiddenOperationException
+        service.delete(record.getId().toString(), user);
     }
 
     @Test
-    public void it_can_create_record_for_datacenter_owner_type() {
-        // setup
-        Record actual = TestHelper.mockRecord();
-        actual.setOwnerType(Record.OwnerType.DataCenter);
-        actual.setOwnerID(actual.getDataCenterID());
-        when(repository.save(any(Record.class))).thenReturn(actual);
+    public void delete_UserSufficientPermission_returnsTrue() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
 
-        // given a creation of a new record
-        Record expected = service.create(actual);
+        // given a record with that allocation
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
 
-        verify(repository, times(1)).save(any(Record.class));
+        // record exists for deletion
+        when(repository.existsById(record.getId())).thenReturn(true);
+        when(repository.findById(record.getId())).thenReturn(Optional.of(record));
 
-        // ensure all fields are set
-        assertThat(expected.getCreatorID()).isEqualTo(actual.getCreatorID());
-        assertThat(expected.getAllocationID()).isEqualTo(actual.getAllocationID());
-        assertThat(expected.getCreatedAt()).isAfterOrEqualTo(actual.getCreatedAt());
-        assertThat(expected.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
+        // when delete
+        boolean result = service.delete(record.getId().toString(), user);
 
-        // the record owner type and owner id is set properly
-        assertThat(expected.getOwnerType()).isEqualTo(Record.OwnerType.DataCenter);
-        assertThat(expected.getOwnerID()).isEqualTo(actual.getDataCenterID());
-    }
-
-    @Test
-    public void it_updates_record_correctly() {
-        Record actual = TestHelper.mockRecord();
-        when(repository.save(any(Record.class))).thenReturn(actual);
-
-        // when a record is updated with another user
-        UUID anotherUserID = UUID.randomUUID();
-        Record updated = service.update(actual, anotherUserID);
-
-        // the save method is invoked on the repository
-        verify(repository, times(1)).save(any(Record.class));
-
-        // the updated record is returned with updated values
-        assertThat(updated.getModifiedAt()).isAfterOrEqualTo(actual.getModifiedAt());
-        assertThat(updated.getModifierID()).isEqualTo(anotherUserID);
-    }
-
-    // todo delete
-
-    @Test
-    public void it_deletes_record() {
-        service.delete(TestHelper.mockRecord());
-
-        // invoke the delete method from repository
+        assertThat(result).isTrue();
         verify(repository, times(1)).delete(any(Record.class));
+    }
+
+    @Test(expected = RecordNotFoundException.class)
+    public void update_RecordDoesNotExist_throwsException() {
+        // given a random dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(UUID.randomUUID());
+
+        // when update with a random user expects RecordNotFoundException
+        service.update(dto, TestHelper.mockUser());
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void update_UserDoesNotHaveAllocation_throwsException() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+
+        // an existing record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(record.getId());
+
+        // pass the existence test
+        when(repository.existsById(dto.getId())).thenReturn(true);
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
+
+        // expects ForbiddenOperationException
+        service.update(dto, user);
+    }
+
+    @Test(expected = ForbiddenOperationException.class)
+    public void update_UserDoesNotHaveRightScope_throwsException() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
+
+        // an existing record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(record.getId());
+
+        // pass the exist test
+        when(repository.existsById(dto.getId())).thenReturn(true);
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
+
+        // expects ForbiddenOperationException
+        service.update(dto, user);
+    }
+
+    @Test
+    public void update_UserSufficientPermission_returnsDTO() {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
+
+        // an existing record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(record.getId());
+
+        // make sure when repository.save call returns a mockRecord and the record exists
+        when(repository.existsById(dto.getId())).thenReturn(true);
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
+        when(repository.save(any(Record.class))).thenReturn(record);
+
+        RecordDTO expected = service.update(dto, user);
+        assertThat(expected).isInstanceOf(RecordDTO.class);
+        verify(repository, times(1)).save(any(Record.class));
+    }
+
+    @Test
+    public void update_UserImportScope_returnsDTO() throws ParseException {
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
+        UUID resourceID = UUID.randomUUID();
+        TestHelper.addResourceAndScopePermissionToUser(
+                user,
+                resourceID.toString(),
+                Sets.newHashSet(Scope.IMPORT.getValue(), Scope.UPDATE.getValue())
+        );
+
+        // given existing record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setAllocationID(resourceID);
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(record.getId());
+        dto.setCreatedAt(new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989"));
+        dto.setModifiedAt(new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989"));
+        dto.setCreatorID(UUID.randomUUID());
+
+        // make sure when repository.save call returns a mockRecord and the record exists
+        when(repository.existsById(dto.getId())).thenReturn(true);
+        when(repository.findById(dto.getId())).thenReturn(Optional.of(record));
+        when(repository.save(any(Record.class))).thenReturn(TestHelper.mockRecord());
+
+        RecordDTO expected = service.update(dto, user);
+        assertThat(expected).isInstanceOf(RecordDTO.class);
+        verify(repository, times(1)).save(any(Record.class));
     }
 
 }

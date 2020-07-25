@@ -26,6 +26,7 @@ public class TestHelper {
      */
     public static Record mockRecord() {
         Record record = new Record();
+        record.setStatus(Record.Status.PUBLISHED);
         record = populateWithOwner(record, UUID.randomUUID());
         return record;
     }
@@ -49,6 +50,7 @@ public class TestHelper {
         record.setOwnerID(creatorID);
         record.setOwnerType(Record.OwnerType.User);
         record.setModifiedAt(new Date());
+        record.setModifierID(creatorID);
         record.setCreatedAt(new Date());
         return record;
     }

@@ -58,10 +58,6 @@ public class Record {
     @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
     private Set<Version> versions;
 
-    @JsonIgnore
-    @Lob
-    private byte[] data;
-
     /**
      * Empty constructor
      */
@@ -81,6 +77,10 @@ public class Record {
 
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public Set<Version> getVersions() {

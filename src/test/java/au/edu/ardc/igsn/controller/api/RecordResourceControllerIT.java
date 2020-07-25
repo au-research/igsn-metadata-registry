@@ -1,121 +1,166 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.service.KeycloakService;
-import au.edu.ardc.igsn.service.RecordService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
+import au.edu.ardc.igsn.IGSNMetadataRegistry;
+import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.repository.RecordRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.EnabledIf;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import javax.xml.bind.DatatypeConverter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.UUID;
 
-import static au.edu.ardc.igsn.TestHelper.mockRecord;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {IGSNMetadataRegistry.class})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@EnabledIf(expression = "${keycloak.enabled}", reason = "Disable test if keycloak is not enabled", loadContext = true)
+@ActiveProfiles("integration")
 public class RecordResourceControllerIT {
 
-    @Autowired
-    MockMvc mockMvc;
+    @LocalServerPort
+    int localPort;
 
     @Autowired
-    RecordService service;
+    TestRestTemplate restTemplate;
 
-    /**
-     * Still have to mock the kcService
-     * because the http testing still can't access keycloak yet
-     */
-    @MockBean
-    KeycloakService kcService;
+    @Autowired
+    RecordRepository repository;
 
-    @Test
-    @Transactional
-    public void it_should_return_all_owned_records_when_get() throws Exception {
+    @Value("${test.kc.user.username}")
+    private String username;
 
-        // given a creator with 2 records
-        UUID creatorID = UUID.randomUUID();
-        UUID allocationID = UUID.randomUUID();
+    @Value("${test.kc.user.password}")
+    private String password;
 
-        for (int i=0;i<2;i++) {
-            Record record = new Record(UUID.randomUUID());
-            record.setCreatorID(creatorID);
-            service.create(record);
-        }
+    private String baseUrl;
 
-        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-
-        // when GET /
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/resources/records/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        // returns 2 records
-        mockMvc.perform(request)
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].id").exists());
+    @BeforeEach
+    public void setup() {
+        baseUrl = "http://localhost:" + localPort + "/api/resources/records/";
     }
 
-    // todo get_/_pagination
+    @Test
+    void index_NotLoggedIn_401() throws URISyntaxException {
+        URI uri = new URI(baseUrl);
+        ResponseEntity<?> result = restTemplate.getForEntity(uri, Object.class);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    // todo index_hasRecords_showRecords()
+    // todo index_hasManyRecords_showPagination()
 
     @Test
-    @Transactional
-    public void it_should_return_a_record_when_get_by_id() throws Exception {
+    void show_NotLoggedIn_401() throws URISyntaxException {
         // given a record
-        Record record = mockRecord();
+        Record record = TestHelper.mockRecord();
+        repository.saveAndFlush(record);
 
-        // when saved, it has a different UUID now
-        Record saved = service.create(record);
+        // when show without permission
+        URI uri = new URI(baseUrl + record.getId().toString());
+        ResponseEntity<?> result = restTemplate.getForEntity(uri, Object.class);
 
-        // when get by id
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/resources/records/" + saved.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        // it's the same record
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(saved.getId().toString()))
-                .andExpect(jsonPath("$.createdAt").exists())
-                .andExpect(jsonPath("$.creatorID").value(record.getCreatorID().toString()))
-        ;
+        // 401
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    @Transactional
-    public void it_should_return_404_when_get_by_id_non_existence_record() throws Exception {
-        // given a non existence record
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/resources/records/" + UUID.randomUUID().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+    void show_recordDoesNotExist_404() throws URISyntaxException {
+        HttpHeaders requestHeaders = getAuthenticatedHeader(username, password);
+        HttpEntity<?> requestEntity = new HttpEntity<>(requestHeaders);
 
-        // it's 404
-        mockMvc.perform(request)
-                .andExpect(status().isNotFound());
+        // when show with authentication
+        URI uri = new URI(baseUrl + UUID.randomUUID().toString());
+        ResponseEntity<?> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, Object.class);
+
+        // 404
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    // todo post / creates record
-    // todo put /{id} update record
-    // todo delete /{id} delete record
+    @Test
+    void show_recordExist_200() throws URISyntaxException {
+        // given a record
+        Record expected = TestHelper.mockRecord();
+        repository.saveAndFlush(expected);
+
+        HttpHeaders requestHeaders = getAuthenticatedHeader(username, password);
+        HttpEntity<?> requestEntity = new HttpEntity<>(requestHeaders);
+
+        // when show with authentication
+        URI uri = new URI(baseUrl + expected.getId().toString());
+        ResponseEntity<RecordDTO> result = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, RecordDTO.class);
+
+        // 200
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // result is a valid recordDTO that matches the initial record
+        RecordDTO actual = result.getBody();
+        assertThat(actual).isNotNull();
+        assertThat(actual).isInstanceOf(RecordDTO.class);
+        assertThat(actual.getId()).isEqualTo(expected.getId());
+        assertThat(actual.getStatus()).isEqualTo(expected.getStatus());
+        assertThat(actual.getCreatedAt()).isEqualTo(expected.getCreatedAt());
+    }
+
+    @Test
+    void create_NotLoggedIn_401() throws URISyntaxException {
+        // when POST without logged in
+        URI uri = new URI(baseUrl);
+        HttpEntity<?> requestEntity = new HttpEntity<>(new HttpHeaders());
+        ResponseEntity<?> result = restTemplate.exchange(uri, HttpMethod.POST, requestEntity, Object.class);
+
+        // 401
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void create_InsufficientPermission_403() throws URISyntaxException {
+        // the request is for a different allocation that the user did not have access to
+        RecordDTO requestDTO = new RecordDTO();
+        requestDTO.setAllocationID(UUID.randomUUID());
+        HttpEntity<?> requestEntity = new HttpEntity<>(
+                requestDTO, getAuthenticatedHeader(username, password)
+        );
+
+        // when POST
+        URI uri = new URI(baseUrl);
+        ResponseEntity<?> result = restTemplate.exchange(uri, HttpMethod.POST, requestEntity, Object.class);
+
+        // get 403
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    // todo create_SufficientPermission_201WithLocation
+    // todo update_NotLoggedIn_401
+    // todo update_InsufficientPermission_403
+    // todo update_SufficientPermission_202
+    // todo delete_NotLoggedIn_401
+    // todo delete_InsufficientPermission_403
+    // todo delete_SufficientPermission_202
+
+    private HttpHeaders getAuthenticatedHeader(String username, String password) {
+        String authorizationHeader = "Basic " + DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        requestHeaders.add("Authorization", authorizationHeader);
+        return requestHeaders;
+    }
 }

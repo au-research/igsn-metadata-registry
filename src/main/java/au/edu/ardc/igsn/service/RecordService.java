@@ -1,6 +1,12 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,34 +22,28 @@ public class RecordService {
     @Autowired
     private RecordRepository repository;
 
-    /**
-     * Returns all Records
-     *
-     * @param creatorID the String uuid of the creator
-     * @return A list of record by creator ID
-     */
-    public List<Record> findByCreatorID(String creatorID) {
-        return repository.findByCreatorID(UUID.fromString(creatorID));
-    }
+    @Autowired
+    private RecordMapper mapper;
 
     /**
      * Returns all record that the user created
      * Returns all record that the user owned
      * Returns all record that the user has access to via allocation
+     * todo refactor to return List<RecordDTO>
+     * todo refactor to use Pageable
      *
      * @param ownerID The current loggedIn user UUID
      * @return a list of records that the currently logged in user owned
      */
     public List<Record> findOwned(UUID ownerID) {
-         // todo findOwned by user ID as well as allocation IDs
+        // todo findOwned by user ID as well as allocation IDs
 
         return repository.findOwned(ownerID);
     }
 
-
     /**
      * Find a record by id
-     *
+     * todo unit test
      * @param id String representation of a uuid
      * @return the record if it exists, null if not
      */
@@ -52,6 +52,22 @@ public class RecordService {
 
         return opt.orElse(null);
     }
+
+    /**
+     * todo unit test
+     *
+     * @param id uuid of the record
+     * @param user the current logged in user
+     * @return RecordDTO
+     */
+    public RecordDTO findById(String id, User user) {
+        Optional<Record> opt = repository.findById(UUID.fromString(id));
+        Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
+        return mapper.convertToDTO(record);
+    }
+
+    // todo List<RecordDTO> findOwnedBy(User)
+    // todo List<RecordDTO> findCreatedBy(User)
 
     /**
      * Tell if a record exists by id
@@ -65,8 +81,91 @@ public class RecordService {
     }
 
     /**
-     * Persist a newRecord
+     * Creates the Record
      *
+     * @param recordDTO Validated RecordDTO
+     * @param user User Model
+     * @return RecordDTO if the creation is successful
+     */
+    public RecordDTO create(RecordDTO recordDTO, User user) {
+        // recordDTO should already be @Valid
+        Record record = mapper.convertToEntity(recordDTO);
+
+        // validate user access
+        validate(record, user);
+        validate(record, user, Scope.CREATE);
+
+        // default record sets
+        record.setCreatedAt(new Date());
+        record.setCreatorID(user.getId());
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(user.getId());
+
+        // allow igsn:import scope to overwrite default data
+        if (user.hasPermission(recordDTO.getAllocationID().toString(), Scope.IMPORT)) {
+            record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
+            record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
+            record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
+        }
+
+        record = repository.save(record);
+
+        return mapper.convertToDTO(record);
+    }
+
+    /**
+     * Deletes a record completely from the repository
+     *
+     * @param id the id of the record to be deleted
+     * @param user The User Model
+     * @return true if the record is deleted
+     */
+    public boolean delete(String id, User user) {
+        if (!exists(id)) {
+            throw new RecordNotFoundException(id);
+        }
+        Record record = findById(id);
+        validate(record, user);
+        validate(record, user, Scope.UPDATE);
+        repository.delete(record);
+        return true;
+    }
+
+    /**
+     * Validates if the user owns the record
+     * The user owned the record if they have access to the allocation
+     *
+     * @param record Record
+     * @param user User model
+     * @return true if user has access
+     */
+    public boolean validate(Record record, User user) {
+        String allocationID = record.getAllocationID().toString();
+        if (!user.hasPermission(allocationID)) {
+            throw new ForbiddenOperationException(String.format("Insufficient permission, required access to resource %s", allocationID));
+        }
+        return true;
+    }
+
+    /**
+     * Validates if the User has access to the allocation and the required scope
+     *
+     * @param record Record
+     * @param user User
+     * @param scope Scope
+     * @return true if user has access
+     */
+    public boolean validate(Record record, User user, Scope scope) {
+        String allocationID = record.getAllocationID().toString();
+        if (!user.hasPermission(allocationID, scope)) {
+            throw new ForbiddenOperationException(String.format("Insufficient permission, required %s on resource %s", scope.getValue(), allocationID));
+        }
+        return true;
+    }
+
+    /**
+     * Persist a newRecord
+     * todo refactor remove
      * @param newRecord a Valid Record
      * @return the newly persisted record with updated uuid
      */
@@ -75,51 +174,42 @@ public class RecordService {
     }
 
     /**
-     * Create a record with the owner
-     * defaults to owned by the user
+     * Updates a record
+     * Validates record existence
+     * Validates User ownership
      *
-     * @param ownerID UUID of the owner
-     * @param allocationID UUID of the allocation
-     * @return newly persisted record
+     * @param recordDTO the dto of the record
+     * @param user User model
+     * @return RecordDTO
      */
-    public Record create(UUID ownerID, UUID allocationID) {
-        Record record = new Record();
-        record.setCreatorID(ownerID);
-        record.setOwnerType(Record.OwnerType.User);
-        record.setOwnerID(ownerID);
-        record.setAllocationID(allocationID);
-        record.setCreatedAt(new Date());
+    public RecordDTO update(RecordDTO recordDTO, User user) {
+        if (!exists(recordDTO.getId().toString())) {
+            throw new RecordNotFoundException(recordDTO.getId().toString());
+        }
+        Record record = findById(recordDTO.getId().toString());
+        validate(record, user);
+        validate(record, user, Scope.UPDATE);
+
+        // can update Status, AllocationID, OwnerID and OwnerType
+        record.setStatus(recordDTO.getStatus() != null ? recordDTO.getStatus() : record.getStatus());
+        record.setAllocationID(recordDTO.getAllocationID() != null ? recordDTO.getAllocationID() : record.getAllocationID());
+        record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
+        record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
+
+        // modification timestamp
+        record.setModifierID(user.getId());
         record.setModifiedAt(new Date());
-        return repository.save(record);
+
+        // allow igsn:import scope to overwrite certain fields
+        if (user.hasPermission(record.getAllocationID().toString(), Scope.IMPORT)) {
+            record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
+            record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
+            record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
+        }
+
+        record = repository.save(record);
+
+        return mapper.convertToDTO(record);
     }
 
-    /**
-     * Update a record
-     *
-     * @param record full record to be updated, including all NotNull fields
-     * @param modifierID the UUID of the user who modifies this record
-     * @return The record that has updated
-     */
-    public Record update(Record record, UUID modifierID) {
-
-        record.setModifierID(modifierID);
-        record.setModifiedAt(new Date());
-        repository.save(record);
-
-        return record;
-    }
-
-    /**
-     * Delete a record
-     *
-     * @param recordTobeDeleted the Record to be deleted
-     * @return true if the delete is successful
-     */
-    public boolean delete(Record recordTobeDeleted) {
-        // todo soft delete
-        repository.delete(recordTobeDeleted);
-
-        // todo handle cascaded entities
-        return true;
-    }
 }

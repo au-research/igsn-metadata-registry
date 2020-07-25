@@ -74,7 +74,7 @@ public class MeControllerIT {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         User user = result.getBody();
-        assert user != null;
+        assertThat(user).isNotNull();
         assertThat(user.getEmail()).isEqualTo(username);
     }
 }
