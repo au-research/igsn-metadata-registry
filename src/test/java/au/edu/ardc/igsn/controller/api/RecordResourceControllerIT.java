@@ -20,7 +20,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
@@ -45,7 +44,6 @@ public class RecordResourceControllerIT {
 
     @Autowired
     private WebTestClient webTestClient;
-
 
     @Test
     void index_NotLoggedIn_401() {
@@ -108,7 +106,7 @@ public class RecordResourceControllerIT {
     }
 
     @Test
-    void create_InsufficientPermission_403() throws URISyntaxException {
+    void create_InsufficientPermission_403() {
         // the request is for a different allocation that the user did not have access to
         RecordDTO requestDTO = new RecordDTO();
         requestDTO.setAllocationID(UUID.randomUUID());
@@ -153,11 +151,118 @@ public class RecordResourceControllerIT {
                 .expectStatus().isUnauthorized();
     }
 
-    // todo update_InsufficientPermission_403
-    // todo update_SufficientPermission_202
-    // todo delete_NotLoggedIn_401
-    // todo delete_InsufficientPermission_403
-    // todo delete_SufficientPermission_202
+    @Test
+    void update_RecordNotFound_404() {
+        // the request is to update the creatorID
+        RecordDTO requestDTO = new RecordDTO();
+
+        // when PUT without logged in, 401
+        this.webTestClient
+                .put().uri("/api/resources/records/" + UUID.randomUUID().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .body(Mono.just(requestDTO), RecordDTO.class)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void update_InsufficientPermission_403() {
+        // given a record with a random Allocation
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(UUID.randomUUID());
+        repository.saveAndFlush(record);
+
+        // the request is to update the creatorID
+        RecordDTO requestDTO = new RecordDTO();
+        requestDTO.setCreatorID(UUID.randomUUID());
+
+        // when PUT with default credentials (does not have access to that allocation), 403
+        // todo refactor update will affect this
+        this.webTestClient
+                .put().uri("/api/resources/records/" + record.getId().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .body(Mono.just(requestDTO), RecordDTO.class)
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void update_SufficientPermission_202() {
+        // given a record with a the same allocation as the credentials
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(UUID.fromString(resourceID));
+        record.setStatus(Record.Status.DRAFT);
+        repository.saveAndFlush(record);
+
+        // the request is to update the status
+        RecordDTO requestDTO = new RecordDTO();
+        requestDTO.setStatus(Record.Status.PUBLISHED);
+
+        // when PUT with default credentials (does not have access to that allocation), 202, status is updated
+        // todo refactor update will affect this
+        this.webTestClient
+                .put().uri("/api/resources/records/" + record.getId().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .body(Mono.just(requestDTO), RecordDTO.class)
+                .exchange()
+                .expectStatus().isAccepted()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(record.getId().toString())
+                .jsonPath("$.status").isEqualTo(Record.Status.PUBLISHED.toString());
+    }
+
+    @Test
+    void delete_NotLoggedIn_401() {
+        // given a record
+        Record record = TestHelper.mockRecord();
+        repository.saveAndFlush(record);
+
+        // when DELETE without logging in, 401
+        this.webTestClient
+                .post().uri("/api/resources/records/" + record.getId().toString())
+                .exchange()
+                .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void delete_RecordNotFound_404() {
+        // when DELETE with credentials on a non existence record, expects 404
+        this.webTestClient
+                .delete().uri("/api/resources/records/" + UUID.randomUUID().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void delete_InsufficientPermission_403() {
+        // given a record with a random allocation
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(UUID.randomUUID());
+        repository.saveAndFlush(record);
+
+        // when DELETE with credentials, expects 403
+        this.webTestClient
+                .delete().uri("/api/resources/records/" + record.getId().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isForbidden();
+    }
+
+    @Test
+    void delete_SufficientPermission_202() {
+        // given a record owned by the user
+        Record record = TestHelper.mockRecord();
+        record.setAllocationID(UUID.fromString(resourceID));
+        repository.saveAndFlush(record);
+
+        // when DELETE with credentials, expects 202
+        this.webTestClient
+                .delete().uri("/api/resources/records/" + record.getId().toString())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isAccepted();
+    }
 
     private String getBasicAuthenticationHeader(String username, String password) {
         return "Basic " + DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
