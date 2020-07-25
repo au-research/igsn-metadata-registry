@@ -20,7 +20,12 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import javax.xml.bind.DatatypeConverter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
+
+import static org.exparity.hamcrest.date.DateMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {IGSNMetadataRegistry.class})
@@ -135,7 +140,32 @@ public class RecordResourceControllerIT {
                 .expectStatus().isCreated()
                 .expectHeader().exists("Location")
                 .expectBody()
-                .jsonPath("$.id").exists();
+                .jsonPath("$.id").exists()
+                .jsonPath("$.createdAt").exists();
+    }
+
+    @Test
+    void create_ImportPermission_201OverwriteData() throws ParseException {
+        // this test requires the provided credentials have igsn:import scope against the allocation
+
+        // request a record with the associated allocation, with the overwritten createdAt date
+        RecordDTO requestDTO = new RecordDTO();
+        requestDTO.setAllocationID(UUID.fromString(resourceID));
+        Date expectedDate =  new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
+        requestDTO.setCreatedAt(expectedDate);
+
+        // when POST, expects 201, Location Header, and the record ID in the body
+        this.webTestClient
+                .post().uri("/api/resources/records/")
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .body(Mono.just(requestDTO), RecordDTO.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().exists("Location")
+                .expectBody()
+                .jsonPath("$.id").exists()
+                .jsonPath("$.createdAt").exists()
+                .jsonPath("$.createdAt", sameDay(expectedDate)).hasJsonPath();
     }
 
     @Test
