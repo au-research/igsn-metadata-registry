@@ -1,8 +1,8 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
@@ -30,7 +30,6 @@ import java.util.UUID;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;

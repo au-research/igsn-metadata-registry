@@ -1,17 +1,15 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.KeycloakService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -48,7 +46,6 @@ public class MeControllerTest {
         user.setRoles(Arrays.asList("IGSN_USER", "IGSN_ADMIN"));
         user.setName("Minh Duc Nguyen");
         user.setEmail("minh.nguyen@ardc.edu.au");
-        user.setGroups(Arrays.asList("Developer", "ARDC"));
 
         // mock a user resources
         List<Permission> permissions = new ArrayList<>();
@@ -69,13 +66,6 @@ public class MeControllerTest {
         // it should be ok and the data be updated
         mockMvc.perform(request)
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userUUID.toString()))
-                .andExpect(jsonPath("$.roles").isArray())
-                .andExpect(jsonPath("$.groups").isArray())
-                .andExpect(jsonPath("$.allocations").isArray())
-                .andExpect(jsonPath("$.roles").isNotEmpty())
-                .andExpect(jsonPath("$.groups").isNotEmpty())
-                .andExpect(jsonPath("$.allocations").isNotEmpty())
-        ;
+                .andExpect(jsonPath("$.id").value(userUUID.toString()));
     }
 }

@@ -1,6 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.Schema;
+import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.service.SchemaService;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,7 +1,7 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.IGSNMetadataRegistry;
-import au.edu.ardc.igsn.Schema;
+import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.util.Helpers;
 import org.junit.Test;
 import org.junit.runner.RunWith;

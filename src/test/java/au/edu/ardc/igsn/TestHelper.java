@@ -4,6 +4,7 @@ import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.keycloak.representations.idm.authorization.Permission;
 
@@ -187,6 +188,8 @@ public class TestHelper {
         User user = new User(UUID.randomUUID());
         user.setName("John Wick");
         user.setEmail("jwick@localhost.com");
+        user.setDataCenters(new ArrayList<>());
+        user.setPermissions(new ArrayList<>());
         return user;
 
         // mock a user resources

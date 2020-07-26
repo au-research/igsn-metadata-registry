@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn;
+package au.edu.ardc.igsn.model;
 
 public class Schema {
 

@@ -1,14 +1,24 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
+import au.edu.ardc.igsn.model.DataCenter;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.TokenIntrospectionResponse;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 import org.keycloak.representations.idm.authorization.Permission;
+import org.keycloak.representations.idm.authorization.ResourceRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +38,9 @@ public class KeycloakService {
     private String clientID;
     @Value("${keycloak.credentials.secret:secret}")
     private String clientSecret;
+
+    @Autowired
+    private Environment env;
 
     /**
      * Get the Keycloak Access Token for the current request
@@ -98,8 +111,6 @@ public class KeycloakService {
             // return a blank list if there's an authorization error
             return new ArrayList<>();
         }
-
-        // the rpt will contain all the permissions
     }
 
     public User getLoggedInUser(HttpServletRequest request) {
@@ -116,11 +127,100 @@ public class KeycloakService {
         if (otherClaims.containsKey("groups")) {
             List<String> groups = new ArrayList<>();
             groups.addAll((Collection<? extends String>) otherClaims.get("groups"));
-            user.setGroups(groups);
+            List<DataCenter> userDataCenters = new ArrayList<>();
+            for (String group : groups) {
+                try {
+                    DataCenter dc = getDataCenterByGroupName(group);
+                    userDataCenters.add(dc);
+                } catch (Exception e) {
+                    // log exception here, user doesn't get this datacenter
+                }
+            }
+            user.setDataCenters(userDataCenters);
+            // user.setGroups(groups);
         }
+
+        // Allocations in authorizedResources
+        List<Permission> permissions = getAuthorizedResources(getPlainAccessToken(request));
+        List<Allocation> userPermissions = new ArrayList<>();
+        for (Permission permission : permissions) {
+            try {
+                Allocation allocation = getAllocationByResourceID(permission.getResourceId());
+                List<Scope> scopes = new ArrayList<>();
+                for (String scope : permission.getScopes()) {
+                    scopes.add(Scope.fromString(scope));
+                }
+                allocation.setScopes(scopes);
+                userPermissions.add(allocation);
+            } catch (Exception ex) {
+                // todo logging
+                System.out.println(ex);
+            }
+        }
+        user.setPermissions(userPermissions);
 
         user.setAllocations(getAuthorizedResources(getPlainAccessToken(request)));
         return user;
+    }
+
+    /**
+     * @param name The name (path) of the Group
+     * @throws Exception normally when the environment is not properly set or (rarely) group name doesn't exist
+     * @return DataCenter representation of a keycloak Group
+     */
+    public DataCenter getDataCenterByGroupName(String name) throws Exception {
+        Keycloak keycloak = getAdminClient();
+        GroupRepresentation group = keycloak.realm(kcRealm).getGroupByPath(name);
+
+        DataCenter dataCenter = new DataCenter(UUID.fromString(group.getId()));
+        dataCenter.setName(group.getName());
+        return dataCenter;
+    }
+
+    public Allocation getAllocationByResourceID(String id) throws Exception {
+        AuthzClient authzClient = getAuthzClient();
+        ResourceRepresentation resource = authzClient.protection().resource().findById(id);
+
+        Allocation allocation = new Allocation(UUID.fromString(resource.getId()));
+        allocation.setName(resource.getName());
+        allocation.setType(resource.getType());
+        Map<String, List<String>> attributes = resource.getAttributes();
+        allocation.setStatus(attributes.containsKey("status") ? String.valueOf(attributes.get("status")): null);
+        return allocation;
+    }
+
+    /**
+     * @return an Admin Keycloak client
+     * @throws Exception when the environment is not properly set
+     */
+    private Keycloak getAdminClient() throws Exception {
+        String username = env.getProperty("keycloak-admin.username");
+        String password = env.getProperty("keycloak-admin.password");
+        if (username == null || password == null) {
+            throw new Exception("Keycloak credentials is not properly configured");
+        }
+        Keycloak keycloak = KeycloakBuilder
+                .builder().serverUrl(kcAuthServerURL)
+                .realm("master").username(username).password(password)
+                .clientId("admin-cli")
+                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build())
+                .build();
+
+        return keycloak;
+    }
+
+    private AuthzClient getAuthzClient() throws Exception {
+        Configuration configuration = new Configuration();
+        configuration.setAuthServerUrl(kcAuthServerURL);
+        configuration.setRealm(kcRealm);
+        configuration.setResource(clientID);
+        Map<String, Object> credentials = new HashMap<>();
+        credentials.put("secret", clientSecret);
+        configuration.setCredentials(credentials);
+
+        AuthzClient authzClient = AuthzClient.create(configuration);
+
+        return authzClient;
     }
 
 }

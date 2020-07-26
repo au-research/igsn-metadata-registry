@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn;
+package au.edu.ardc.igsn.model;
 
 import org.keycloak.representations.idm.authorization.Permission;
 
@@ -11,8 +11,10 @@ public class User {
     private String email;
     private String name;
     private List<String> roles;
-    private List<String> groups;
     private List<Permission> allocations;
+
+    private List<DataCenter> dataCenters;
+    private List<Allocation> permissions;
 
     public User() {
 
@@ -52,14 +54,6 @@ public class User {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
-    }
-
-    public List<String> getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List<String> groups) {
-        this.groups = groups;
     }
 
     public UUID getId() {
@@ -109,5 +103,51 @@ public class User {
             }
         }
         return false;
+    }
+
+    public List<DataCenter> getDataCenters() {
+        return dataCenters;
+    }
+
+    public void setDataCenters(List<DataCenter> dataCenters) {
+        this.dataCenters = dataCenters;
+    }
+
+    public List<Allocation> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<Allocation> permissions) {
+        this.permissions = permissions;
+    }
+
+    public boolean belongsToDataCenter(UUID dataCenterID) {
+        for (DataCenter dc : dataCenters) {
+            if (dc.getId().equals(dataCenterID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasAllocation(UUID allocationID) {
+        for (Allocation allocation : permissions) {
+            if (allocation.getId().equals(allocationID)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Allocation getAllocationById(UUID allocationID) {
+        for (Allocation allocation : permissions) {
+            if (allocation.getId().equals(allocationID)) {
+                return allocation;
+            }
+        }
+
+        return null;
     }
 }

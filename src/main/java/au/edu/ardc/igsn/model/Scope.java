@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn;
+package au.edu.ardc.igsn.model;
 
 public enum Scope {
     UPDATE("igsn:update"),
@@ -13,5 +13,14 @@ public enum Scope {
 
     public String getValue() {
         return value;
+    }
+
+    public static Scope fromString(String text) {
+        for (Scope b : Scope.values()) {
+            if (b.value.equalsIgnoreCase(text)) {
+                return b;
+            }
+        }
+        return null;
     }
 }

@@ -1,8 +1,10 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.DataCenter;
+import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
@@ -16,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -151,12 +152,9 @@ public class RecordServiceTest {
     public void create_UserDoesNotHaveAccessToAllocation_throwsException() {
         // given a User with the wrong permission
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
 
         // given a dto
         RecordDTO dto = new RecordDTO();
-        dto.setAllocationID(resourceID);
 
         // expects ForbiddenOperationException
         service.create(dto, user);
@@ -164,14 +162,15 @@ public class RecordServiceTest {
 
     @Test(expected = ForbiddenOperationException.class)
     public void create_UserDoesNotHaveScope_throwsException() {
-        // given a User with the wrong permission
+        // given a User with the wrong scope
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.UPDATE));
+        user.setPermissions(Arrays.asList(allocation));
 
         // given a dto
         RecordDTO dto = new RecordDTO();
-        dto.setAllocationID(resourceID);
+        dto.setAllocationID(allocation.getId());
 
         // expects ForbiddenOperationException
         service.create(dto, user);
@@ -179,14 +178,15 @@ public class RecordServiceTest {
 
     @Test
     public void create_UserHasSufficientPermission_returnsDTO() {
-        // given a User with the wrong permission
+        // given a User with the right permission
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.CREATE));
+        user.setPermissions(Arrays.asList(allocation));
 
         // given a dto
         RecordDTO dto = new RecordDTO();
-        dto.setAllocationID(resourceID);
+        dto.setAllocationID(allocation.getId());
 
         // setup repository mock
         Record expected = TestHelper.mockRecord(UUID.randomUUID());
@@ -201,18 +201,15 @@ public class RecordServiceTest {
         verify(repository, times(1)).save(any(Record.class));
     }
 
-    // todo delete_UserDoesNotHaveAllocation_throwsException
-
     @Test(expected = ForbiddenOperationException.class)
-    public void delete_UserDoesNotHaveRightScope_throwsException() {
+    public void delete_NotOwned_throwsException() {
         // given a User with the wrong permission
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
 
         // given a record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerType(Record.OwnerType.DataCenter);
+        record.setOwnerID(UUID.randomUUID());
 
         // record exists for deletion
         when(repository.existsById(record.getId())).thenReturn(true);
@@ -226,12 +223,11 @@ public class RecordServiceTest {
     public void delete_UserSufficientPermission_returnsTrue() {
         // given a User with the wrong permission
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
 
         // given a record with that allocation
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerID(user.getId());
+        record.setOwnerType(Record.OwnerType.User);
 
         // record exists for deletion
         when(repository.existsById(record.getId())).thenReturn(true);
@@ -255,15 +251,14 @@ public class RecordServiceTest {
     }
 
     @Test(expected = ForbiddenOperationException.class)
-    public void update_UserDoesNotHaveAllocation_throwsException() {
-        // given a User with the wrong permission
-        User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
-
+    public void update_OwnerTypeUserUserDoesNotHavePermission_throwsException() {
         // an existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(UUID.randomUUID());
+
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
 
         // given a dto
         RecordDTO dto = new RecordDTO();
@@ -278,15 +273,14 @@ public class RecordServiceTest {
     }
 
     @Test(expected = ForbiddenOperationException.class)
-    public void update_UserDoesNotHaveRightScope_throwsException() {
-        // given a User with the wrong permission
-        User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.IMPORT.getValue()));
-
+    public void update_OnwerTypeDataCenter_throwsException() {
         // an existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerType(Record.OwnerType.DataCenter);
+        record.setOwnerID(UUID.randomUUID());
+
+        // given a User with the wrong permission
+        User user = TestHelper.mockUser();
 
         // given a dto
         RecordDTO dto = new RecordDTO();
@@ -301,15 +295,42 @@ public class RecordServiceTest {
     }
 
     @Test
-    public void update_UserSufficientPermission_returnsDTO() {
-        // given a User with the wrong permission
+    public void update_OnwerTypeUser_returnsDTO() {
+        // given a User
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
 
-        // an existing record
+        // owns an existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(user.getId());
+
+        // given a dto
+        RecordDTO dto = new RecordDTO();
+        dto.setId(record.getId());
+
+        // make sure when repository.save call returns a mockRecord and the record exists
+        when(repository.existsById(dto.getId())).thenReturn(true);
+        when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
+        when(repository.save(any(Record.class))).thenReturn(record);
+
+        RecordDTO expected = service.update(dto, user);
+        assertThat(expected).isInstanceOf(RecordDTO.class);
+        verify(repository, times(1)).save(any(Record.class));
+    }
+
+    @Test
+    public void update_OnwerTypeDataCenter_returnsDTO() {
+        // datacenter
+        DataCenter dataCenter = new DataCenter(UUID.randomUUID());
+
+        // given a User
+        User user = TestHelper.mockUser();
+        user.setDataCenters(Arrays.asList(dataCenter));
+
+        // owns an existing record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setOwnerType(Record.OwnerType.DataCenter);
+        record.setOwnerID(dataCenter.getId());
 
         // given a dto
         RecordDTO dto = new RecordDTO();
@@ -327,18 +348,16 @@ public class RecordServiceTest {
 
     @Test
     public void update_UserImportScope_returnsDTO() throws ParseException {
-        // given a User with the wrong permission
+        // given a User with the import scope to the record
         User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(
-                user,
-                resourceID.toString(),
-                Sets.newHashSet(Scope.IMPORT.getValue(), Scope.UPDATE.getValue())
-        );
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.UPDATE, Scope.IMPORT));
 
         // given existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(resourceID);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(user.getId());
+        record.setAllocationID(allocation.getId());
 
         // given a dto
         RecordDTO dto = new RecordDTO();

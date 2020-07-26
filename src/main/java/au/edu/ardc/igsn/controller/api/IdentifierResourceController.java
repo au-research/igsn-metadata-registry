@@ -1,10 +1,9 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.Scope;
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;

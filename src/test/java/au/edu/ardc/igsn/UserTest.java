@@ -1,5 +1,7 @@
 package au.edu.ardc.igsn;
 
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;

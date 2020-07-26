@@ -1,12 +1,11 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

@@ -1,8 +1,9 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.Scope;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -57,16 +59,15 @@ public class RecordServiceIT {
 
     @Test
     public void create_UserSufficientPermission_returnsDTO() {
-        // given an allocation
-        UUID allocationID = UUID.randomUUID();
-
         // given the user with proper permission
         User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(user, allocationID.toString(), Sets.newHashSet(Scope.CREATE.getValue(), Scope.IMPORT.getValue()));
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.CREATE));
+        user.setPermissions(Arrays.asList(allocation));
 
         // given the dto
         RecordDTO dto = new RecordDTO();
-        dto.setAllocationID(allocationID);
+        dto.setAllocationID(allocation.getId());
 
         // when create
         RecordDTO result = service.create(dto, user);
@@ -85,22 +86,18 @@ public class RecordServiceIT {
 
     @Test
     public void create_UserImportScope_returnsNonDefaultDTO() throws ParseException {
-        // given an allocation
-        UUID allocationID = UUID.randomUUID();
-
         // given the user with proper permission
         User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(
-                user, allocationID.toString(),
-                Sets.newHashSet(Scope.CREATE.getValue(), Scope.IMPORT.getValue())
-        );
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.IMPORT));
+        user.setPermissions(Arrays.asList(allocation));
 
         // given the dto
         Date updatedCreatedAt = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
         Date updatedModifiedAt = new SimpleDateFormat("dd/MM/yyyy").parse("03/03/1989");
         UUID updatedCreatorID = UUID.randomUUID();
         RecordDTO dto = new RecordDTO();
-        dto.setAllocationID(allocationID);
+        dto.setAllocationID(allocation.getId());
         dto.setModifiedAt(updatedModifiedAt);
         dto.setCreatedAt(updatedCreatedAt);
         dto.setCreatorID(updatedCreatorID);
@@ -120,18 +117,15 @@ public class RecordServiceIT {
 
     @Test
     public void update_UserSufficientPermission_returnsDTO() {
-        // given an allocation
-        UUID allocationID = UUID.randomUUID();
-
         // given the user with proper permission
         User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(user, allocationID.toString(), Sets.newHashSet(Scope.UPDATE.getValue(), Scope.IMPORT.getValue()));
 
         // given a record
         Record record = TestHelper.mockRecord();
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(user.getId());
         record.setStatus(Record.Status.DRAFT);
         record.setCreatedAt(new Date());
-        record.setAllocationID(allocationID);
         record = repository.saveAndFlush(record);
 
         // when update with a dto to change
@@ -154,18 +148,20 @@ public class RecordServiceIT {
     @Test
     public void update_UserImportScope_returnsOverwrittenDTO() throws ParseException {
 
+        // given the user
+        Allocation allocation = new Allocation(UUID.randomUUID());
+        allocation.setScopes(Arrays.asList(Scope.UPDATE, Scope.IMPORT));
+        User user = TestHelper.mockUser();
+        user.setPermissions(Arrays.asList(allocation));
+
         // given a record
         Record record = TestHelper.mockRecord();
         record.setStatus(Record.Status.DRAFT);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setAllocationID(allocation.getId());
+        record.setOwnerID(user.getId());
         record.setCreatedAt(new Date());
         record = repository.saveAndFlush(record);
-
-        // given the user with proper permission
-        User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(
-                user, record.getAllocationID().toString(),
-                Sets.newHashSet(Scope.UPDATE.getValue(), Scope.IMPORT.getValue())
-        );
 
         // the update payload contains new createdAt, modifiedAt and creatorID
         Date updatedCreatedAt = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
@@ -206,17 +202,15 @@ public class RecordServiceIT {
 
     @Test
     public void delete_UserSufficientPermission_returnsTrue() {
-        // given an allocation
-        UUID allocationID = UUID.randomUUID();
 
         // given a user with update scope to that allocation
         User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(user, allocationID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
 
         // given a record that has that allocation
         Record record = new Record();
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(user.getId());
         record.setCreatedAt(new Date());
-        record.setAllocationID(allocationID);
         record = repository.save(record);
 
         // (sanity check) that record exists

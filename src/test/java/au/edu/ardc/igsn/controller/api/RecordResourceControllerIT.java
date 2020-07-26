@@ -38,6 +38,9 @@ public class RecordResourceControllerIT {
     @Autowired
     RecordRepository repository;
 
+    @Value("${test.kc.user.id}")
+    private String userID;
+
     @Value("${test.kc.user.username}")
     private String username;
 
@@ -222,14 +225,15 @@ public class RecordResourceControllerIT {
         Record record = TestHelper.mockRecord();
         record.setAllocationID(UUID.fromString(resourceID));
         record.setStatus(Record.Status.DRAFT);
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(UUID.fromString(userID));
         repository.saveAndFlush(record);
 
         // the request is to update the status
         RecordDTO requestDTO = new RecordDTO();
         requestDTO.setStatus(Record.Status.PUBLISHED);
 
-        // when PUT with default credentials (does not have access to that allocation), 202, status is updated
-        // todo refactor update will affect this
+        // when PUT with default credentials, 202, status is updated
         this.webTestClient
                 .put().uri("/api/resources/records/" + record.getId().toString())
                 .header("Authorization", getBasicAuthenticationHeader(username, password))
@@ -266,9 +270,10 @@ public class RecordResourceControllerIT {
 
     @Test
     void delete_InsufficientPermission_403() {
-        // given a record with a random allocation
+        // given a record
         Record record = TestHelper.mockRecord();
-        record.setAllocationID(UUID.randomUUID());
+        record.setOwnerID(UUID.randomUUID());
+        record.setOwnerType(Record.OwnerType.User);
         repository.saveAndFlush(record);
 
         // when DELETE with credentials, expects 403
@@ -283,7 +288,8 @@ public class RecordResourceControllerIT {
     void delete_SufficientPermission_202() {
         // given a record owned by the user
         Record record = TestHelper.mockRecord();
-        record.setAllocationID(UUID.fromString(resourceID));
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(UUID.fromString(userID));
         repository.saveAndFlush(record);
 
         // when DELETE with credentials, expects 202

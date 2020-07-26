@@ -1,7 +1,8 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.Scope;
-import au.edu.ardc.igsn.User;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
@@ -92,8 +93,9 @@ public class RecordService {
         Record record = mapper.convertToEntity(recordDTO);
 
         // validate user access
-        validate(record, user);
-        validate(record, user, Scope.CREATE);
+        if (!validateCreate(record, user)) {
+            throw new ForbiddenOperationException("User does not have access to create record for this allocation");
+        }
 
         // default record sets
         record.setCreatedAt(new Date());
@@ -102,7 +104,7 @@ public class RecordService {
         record.setOwnerID(user.getId());
 
         // allow igsn:import scope to overwrite default data
-        if (user.hasPermission(recordDTO.getAllocationID().toString(), Scope.IMPORT)) {
+        if (validateImport(record, user)) {
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
@@ -125,8 +127,7 @@ public class RecordService {
             throw new RecordNotFoundException(id);
         }
         Record record = findById(id);
-        validate(record, user);
-        validate(record, user, Scope.UPDATE);
+        validateUpdate(record, user);
         repository.delete(record);
         return true;
     }
@@ -145,6 +146,46 @@ public class RecordService {
             throw new ForbiddenOperationException(String.format("Insufficient permission, required access to resource %s", allocationID));
         }
         return true;
+    }
+
+    public boolean validateUpdate(Record record, User user) {
+        if (record.getOwnerType().equals(Record.OwnerType.User) && record.getOwnerID().equals(user.getId())) {
+            return true;
+        }
+
+        if (record.getOwnerType().equals(Record.OwnerType.DataCenter) && user.belongsToDataCenter(record.getOwnerID())) {
+            return true;
+        }
+
+        throw new ForbiddenOperationException("You don't have permission to update this record");
+    }
+
+    public boolean validateCreate(Record record, User user) {
+        // todo simplify
+        // if the user has igsn:create scope according to the claimed allocation
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasAllocation(allocationID)) {
+            return false;
+        }
+        Allocation userAllocation = user.getAllocationById(allocationID);
+
+        if (userAllocation.getScopes().contains(Scope.CREATE)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean validateImport(Record record, User user) {
+        UUID allocationID = record.getAllocationID();
+        if (!user.hasAllocation(allocationID)) {
+            return false;
+        }
+        Allocation userAllocation = user.getAllocationById(allocationID);
+
+        if (userAllocation.getScopes().contains(Scope.IMPORT)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -187,8 +228,7 @@ public class RecordService {
             throw new RecordNotFoundException(recordDTO.getId().toString());
         }
         Record record = findById(recordDTO.getId().toString());
-        validate(record, user);
-        validate(record, user, Scope.UPDATE);
+        validateUpdate(record, user);
 
         // can update Status, AllocationID, OwnerID and OwnerType
         record.setStatus(recordDTO.getStatus() != null ? recordDTO.getStatus() : record.getStatus());
@@ -201,7 +241,7 @@ public class RecordService {
         record.setModifiedAt(new Date());
 
         // allow igsn:import scope to overwrite certain fields
-        if (user.hasPermission(record.getAllocationID().toString(), Scope.IMPORT)) {
+        if (validateImport(record, user)) {
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());

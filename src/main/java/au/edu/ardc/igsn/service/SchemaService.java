@@ -1,6 +1,6 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.Schema;
+import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.util.XMLValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
