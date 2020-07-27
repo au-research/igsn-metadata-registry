@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn.controller.api;
+package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.controller.APIController;

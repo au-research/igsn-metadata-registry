@@ -1,4 +1,4 @@
-package au.edu.ardc.igsn.controller.api;
+package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.KeycloakIntegrationTest;
 import au.edu.ardc.igsn.TestHelper;
