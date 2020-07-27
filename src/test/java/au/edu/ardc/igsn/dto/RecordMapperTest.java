@@ -4,11 +4,14 @@ import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.ui.ModelMap;
 
 import java.util.Date;
 import java.util.UUID;
@@ -17,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@BootstrapWith(SpringBootTestContextBootstrapper.class)
+@ContextConfiguration(classes = {RecordMapper.class, ModelMapper.class})
 public class RecordMapperTest {
 
     @Autowired

@@ -1,33 +1,38 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.model.Allocation;
-import au.edu.ardc.igsn.model.DataCenter;
-import au.edu.ardc.igsn.model.Scope;
+
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.DataCenter;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.RecordRepository;
-import com.google.common.collect.Sets;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {RecordService.class, RecordMapper.class, ModelMapper.class, ValidationService.class})
 public class RecordServiceTest {
 
     @Autowired
@@ -36,11 +41,8 @@ public class RecordServiceTest {
     @MockBean
     private RecordRepository repository;
 
-    @MockBean
-    private KeycloakService kcService;
-
     @Test
-    public void findById_recordExists_returnRecord() {
+    void findById_recordExists_returnRecord() {
         // given a record & user
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         User user = TestHelper.mockUser();
@@ -57,7 +59,7 @@ public class RecordServiceTest {
         assertThat(actual.getId()).isEqualTo(record.getId());
     }
 
-    @Test(expected=RecordNotFoundException.class)
+    @Test
     public void findById_recordDoesNotExist_ExceptionRecordNotFound(){
         // given a record & a user
         Record record = TestHelper.mockRecord(UUID.randomUUID());
@@ -67,7 +69,9 @@ public class RecordServiceTest {
         when(repository.findById(record.getId())).thenReturn(Optional.empty());
 
         // when findById expects RecordNotFoundException
-        service.findById(record.getId().toString(), user);
+        Assertions.assertThrows(RecordNotFoundException.class, () -> {
+            service.findById(record.getId().toString(), user);
+        });
     }
 
     @Test
@@ -84,71 +88,7 @@ public class RecordServiceTest {
         assertThat(service.exists(randomUUID.toString())).isFalse();
     }
 
-    @Test(expected = ForbiddenOperationException.class)
-    public void validate_UserDoesNotHaveAccessToAnyAllocation_throwsException() {
-        // given a User & Record
-        User user = TestHelper.mockUser();
-        Record record = TestHelper.mockRecord();
-
-        // when validate expects ForbiddenOperationException
-        service.validate(record, user);
-    }
-
-    @Test(expected = ForbiddenOperationException.class)
-    public void validate_UserDoesNotHaveAccessToAllocation_throwsException() {
-        // given a User & Record
-        User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(user, UUID.randomUUID().toString(), Sets.newHashSet(Scope.CREATE.getValue()));
-        Record record = TestHelper.mockRecord();
-
-        // when validate expects ForbiddenOperationException
-        service.validate(record, user);
-    }
-
     @Test
-    public void validate_UserHaveAccessToRightAllocation_returnsTrue() {
-        // given a User & Record
-        User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
-        Record record = TestHelper.mockRecord();
-        record.setAllocationID(resourceID);
-
-        // when validate
-        boolean actual = service.validate(record, user);
-
-        assertThat(actual).isTrue();
-    }
-
-    @Test(expected = ForbiddenOperationException.class)
-    public void validate_UserDoesNotHaveAccessToScope_throwsException() {
-        // given a User & Record
-        User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
-        Record record = TestHelper.mockRecord();
-        record.setAllocationID(resourceID);
-
-        // when validate expects ForbiddenOperationException
-        service.validate(record, user, Scope.IMPORT);
-    }
-
-    @Test
-    public void validate_UserHaveAccessToRightScope_returnsTrue() {
-        // given a User & Record
-        User user = TestHelper.mockUser();
-        UUID resourceID = UUID.randomUUID();
-        TestHelper.addResourceAndScopePermissionToUser(user, resourceID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
-        Record record = TestHelper.mockRecord();
-        record.setAllocationID(resourceID);
-
-        // when validate
-        boolean actual =  service.validate(record, user, Scope.CREATE);
-
-        assertThat(actual).isTrue();
-    }
-
-    @Test(expected = ForbiddenOperationException.class)
     public void create_UserDoesNotHaveAccessToAllocation_throwsException() {
         // given a User with the wrong permission
         User user = TestHelper.mockUser();
@@ -157,10 +97,12 @@ public class RecordServiceTest {
         RecordDTO dto = new RecordDTO();
 
         // expects ForbiddenOperationException
-        service.create(dto, user);
+        Assertions.assertThrows(ForbiddenOperationException.class, () -> {
+            service.create(dto, user);
+        });
     }
 
-    @Test(expected = ForbiddenOperationException.class)
+    @Test
     public void create_UserDoesNotHaveScope_throwsException() {
         // given a User with the wrong scope
         User user = TestHelper.mockUser();
@@ -173,7 +115,9 @@ public class RecordServiceTest {
         dto.setAllocationID(allocation.getId());
 
         // expects ForbiddenOperationException
-        service.create(dto, user);
+        Assertions.assertThrows(ForbiddenOperationException.class, () -> {
+            service.create(dto, user);
+        });
     }
 
     @Test
@@ -201,7 +145,7 @@ public class RecordServiceTest {
         verify(repository, times(1)).save(any(Record.class));
     }
 
-    @Test(expected = ForbiddenOperationException.class)
+    @Test
     public void delete_NotOwned_throwsException() {
         // given a User with the wrong permission
         User user = TestHelper.mockUser();
@@ -216,7 +160,9 @@ public class RecordServiceTest {
         when(repository.findById(record.getId())).thenReturn(Optional.of(record));
 
         // expects ForbiddenOperationException
-        service.delete(record.getId().toString(), user);
+        Assertions.assertThrows(ForbiddenOperationException.class, () -> {
+            service.delete(record.getId().toString(), user);
+        });
     }
 
     @Test
@@ -240,17 +186,19 @@ public class RecordServiceTest {
         verify(repository, times(1)).delete(any(Record.class));
     }
 
-    @Test(expected = RecordNotFoundException.class)
+    @Test
     public void update_RecordDoesNotExist_throwsException() {
         // given a random dto
         RecordDTO dto = new RecordDTO();
         dto.setId(UUID.randomUUID());
 
         // when update with a random user expects RecordNotFoundException
-        service.update(dto, TestHelper.mockUser());
+        Assertions.assertThrows(RecordNotFoundException.class, () -> {
+            service.update(dto, TestHelper.mockUser());
+        });
     }
 
-    @Test(expected = ForbiddenOperationException.class)
+    @Test
     public void update_OwnerTypeUserUserDoesNotHavePermission_throwsException() {
         // an existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
@@ -269,10 +217,12 @@ public class RecordServiceTest {
         when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
 
         // expects ForbiddenOperationException
-        service.update(dto, user);
+        Assertions.assertThrows(ForbiddenOperationException.class, () -> {
+            service.update(dto, user);
+        });
     }
 
-    @Test(expected = ForbiddenOperationException.class)
+    @Test
     public void update_OnwerTypeDataCenter_throwsException() {
         // an existing record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
@@ -291,7 +241,9 @@ public class RecordServiceTest {
         when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
 
         // expects ForbiddenOperationException
-        service.update(dto, user);
+        Assertions.assertThrows(ForbiddenOperationException.class, () -> {
+            service.update(dto, user);
+        });
     }
 
     @Test
@@ -331,6 +283,7 @@ public class RecordServiceTest {
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerType(Record.OwnerType.DataCenter);
         record.setOwnerID(dataCenter.getId());
+        record.setDataCenterID(dataCenter.getId());
 
         // given a dto
         RecordDTO dto = new RecordDTO();

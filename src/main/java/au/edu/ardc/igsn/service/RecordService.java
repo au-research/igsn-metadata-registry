@@ -26,6 +26,9 @@ public class RecordService {
     @Autowired
     private RecordMapper mapper;
 
+    @Autowired
+    private ValidationService validationService;
+
     /**
      * Returns all record that the user created
      * Returns all record that the user owned
@@ -93,7 +96,8 @@ public class RecordService {
         Record record = mapper.convertToEntity(recordDTO);
 
         // validate user access
-        if (!validateCreate(record, user)) {
+        Allocation allocation = new Allocation(record.getAllocationID());
+        if (!validationService.validateAllocationScope(allocation, user, Scope.CREATE)) {
             throw new ForbiddenOperationException("User does not have access to create record for this allocation");
         }
 
@@ -104,7 +108,7 @@ public class RecordService {
         record.setOwnerID(user.getId());
 
         // allow igsn:import scope to overwrite default data
-        if (validateImport(record, user)) {
+        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
@@ -127,80 +131,10 @@ public class RecordService {
             throw new RecordNotFoundException(id);
         }
         Record record = findById(id);
-        validateUpdate(record, user);
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("You don't have permission to update this record");
+        }
         repository.delete(record);
-        return true;
-    }
-
-    /**
-     * Validates if the user owns the record
-     * The user owned the record if they have access to the allocation
-     *
-     * @param record Record
-     * @param user User model
-     * @return true if user has access
-     */
-    public boolean validate(Record record, User user) {
-        String allocationID = record.getAllocationID().toString();
-        if (!user.hasPermission(allocationID)) {
-            throw new ForbiddenOperationException(String.format("Insufficient permission, required access to resource %s", allocationID));
-        }
-        return true;
-    }
-
-    public boolean validateUpdate(Record record, User user) {
-        if (record.getOwnerType().equals(Record.OwnerType.User) && record.getOwnerID().equals(user.getId())) {
-            return true;
-        }
-
-        if (record.getOwnerType().equals(Record.OwnerType.DataCenter) && user.belongsToDataCenter(record.getOwnerID())) {
-            return true;
-        }
-
-        throw new ForbiddenOperationException("You don't have permission to update this record");
-    }
-
-    public boolean validateCreate(Record record, User user) {
-        // todo simplify
-        // if the user has igsn:create scope according to the claimed allocation
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasAllocation(allocationID)) {
-            return false;
-        }
-        Allocation userAllocation = user.getAllocationById(allocationID);
-
-        if (userAllocation.getScopes().contains(Scope.CREATE)) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean validateImport(Record record, User user) {
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasAllocation(allocationID)) {
-            return false;
-        }
-        Allocation userAllocation = user.getAllocationById(allocationID);
-
-        if (userAllocation.getScopes().contains(Scope.IMPORT)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Validates if the User has access to the allocation and the required scope
-     *
-     * @param record Record
-     * @param user User
-     * @param scope Scope
-     * @return true if user has access
-     */
-    public boolean validate(Record record, User user, Scope scope) {
-        String allocationID = record.getAllocationID().toString();
-        if (!user.hasPermission(allocationID, scope)) {
-            throw new ForbiddenOperationException(String.format("Insufficient permission, required %s on resource %s", scope.getValue(), allocationID));
-        }
         return true;
     }
 
@@ -228,7 +162,10 @@ public class RecordService {
             throw new RecordNotFoundException(recordDTO.getId().toString());
         }
         Record record = findById(recordDTO.getId().toString());
-        validateUpdate(record, user);
+
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("You don't have permission to update this record");
+        }
 
         // can update Status, AllocationID, OwnerID and OwnerType
         record.setStatus(recordDTO.getStatus() != null ? recordDTO.getStatus() : record.getStatus());
@@ -241,7 +178,7 @@ public class RecordService {
         record.setModifiedAt(new Date());
 
         // allow igsn:import scope to overwrite certain fields
-        if (validateImport(record, user)) {
+        if (validationService.validateAllocationScope(new Allocation(record.getAllocationID()), user, Scope.IMPORT)) {
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());

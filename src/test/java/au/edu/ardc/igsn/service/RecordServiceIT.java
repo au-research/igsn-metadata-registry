@@ -26,7 +26,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration
 @SpringBootTest
 @Transactional
 public class RecordServiceIT {
