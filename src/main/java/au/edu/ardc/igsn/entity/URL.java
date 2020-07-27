@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -9,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "urls")
-
 public class URL {
 
 	@Id
@@ -23,8 +23,7 @@ public class URL {
 
     private String url;
 
-	@Enumerated(EnumType.STRING)
-	private URL.Status status;
+	private boolean resolvable;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -35,12 +34,17 @@ public class URL {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date checkedAt;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "record_id", nullable = false)
 	private Record record;
 
-	public static enum Status {
-		RESOLVABLE, UNKNOWN, BROKEN
+	public boolean isResolvable() {
+		return resolvable;
+	}
+
+	public void setResolvable(boolean resolvable) {
+		this.resolvable = resolvable;
 	}
 
 	/**
@@ -66,13 +70,6 @@ public class URL {
 		this.url = url;
 	}
 
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
 
 	public Date getCreatedAt() {
 		return createdAt;

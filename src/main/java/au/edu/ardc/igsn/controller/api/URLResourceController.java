@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.dto.URLDTO;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.entity.Record;
@@ -104,39 +105,12 @@ public class URLResourceController {
             content = @Content(schema = @Schema(implementation = URL.class))
     )
     public ResponseEntity<?> store(
-            @RequestBody URL newUrl,
-            @RequestParam String recordID,
+            @RequestBody URLDTO urlDTO,
             HttpServletRequest request) {
-        URL url = new URL();
-
-        // todo validate record
-        if (!recordService.exists(recordID)) {
-            throw new RecordNotFoundException(recordID);
-        }
-        Record record = recordService.findById(recordID);
-
-        // validate record ownership to allocation
         User user = kcService.getLoggedInUser(request);
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasPermission(allocationID.toString())) {
-            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
-        }
-
-        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
-            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
-        }
-
-        url.setRecord(record);
-
-        url.setCreatedAt(new Date());
-
-        url.setUrl(newUrl.getUrl());
-
-        URL createdUrl = service.create(url);
-
-        URI location = URI.create("/api/resources/urls/" + createdUrl.getId());
-
-        return ResponseEntity.created(location).body(createdUrl);
+        URLDTO resultDTO = service.create(urlDTO, user);
+        URI location = URI.create("/api/resources/urls/" + resultDTO.getId());
+        return ResponseEntity.created(location).body(resultDTO);
     }
 
     @PutMapping("/{id}")

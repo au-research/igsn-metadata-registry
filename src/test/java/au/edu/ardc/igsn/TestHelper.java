@@ -152,7 +152,7 @@ public class TestHelper {
         Record record = mockRecord();
         URL url = new URL(UUID.randomUUID());
         url.setCreatedAt(new Date());
-        url.setStatus(URL.Status.UNKNOWN);
+        url.setResolvable(false);
         url.setRecord(record);
         return url;
     }
@@ -165,7 +165,7 @@ public class TestHelper {
     public static URL mockUrl(Record record) {
         URL url = new URL();
         url.setCreatedAt(new Date());
-        url.setStatus(URL.Status.UNKNOWN);
+        url.setResolvable(false);
         url.setRecord(record);
         return url;
     }
@@ -179,7 +179,7 @@ public class TestHelper {
         Record record = mockRecord();
         URL url = new URL(id);
         url.setCreatedAt(new Date());
-        url.setStatus(URL.Status.UNKNOWN);
+        url.setResolvable(false);
         url.setRecord(record);
         return url;
     }

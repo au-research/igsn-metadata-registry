@@ -1,5 +1,7 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.dto.URLDTO;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.model.User;
@@ -99,38 +101,26 @@ public class URLResourceControllerTest {
                 .andExpect(status().isAccepted());
     }
 
-    @Test
-    public void it_should_404_when_creating_a_url_with_an_unknown_record() throws Exception {
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.post("/api/resources/urls/")
-                        .param("recordID", UUID.randomUUID().toString())
-                        .content(TestHelper.asJsonString(TestHelper.mockUrl()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(request).andExpect(status().isNotFound());
-    }
 
     @Test
-    public void it_should_403_when_the_user_has_the_wrong_scope_to_the_resource() throws Exception {
-        // given a user with inadequate allocation
-        UUID allocationID = UUID.randomUUID();
-        User john = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(john, allocationID.toString(), Sets.newHashSet(Scope.UPDATE.toString()));
-
-        // and a record
+    public void store_RecordNotOwned_403() throws Exception {
+        // given a user & record, no relation
+        User user = TestHelper.mockUser();
         Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setAllocationID(allocationID);
 
-        when(recordService.exists(record.getId().toString())).thenReturn(true);
-        when(recordService.findById(record.getId().toString())).thenReturn(record);
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(john);
+        // and a request dto of a new url for that record
+        URLDTO dto = new URLDTO();
+        dto.setRecord(record.getId());
+
+        // when service throws Forbidden, it bubbles up
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+        when(service.create(any(URLDTO.class), any(User.class))).thenThrow(ForbiddenOperationException.class);
 
         // when attempt to create a version
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/urls/")
                         .param("recordID", record.getId().toString())
-                        .content(TestHelper.asJsonString(TestHelper.mockUrl()))
+                        .content(TestHelper.asJsonString(dto))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -138,29 +128,18 @@ public class URLResourceControllerTest {
     }
 
     @Test
-    public void it_should_create_a_url_when_post() throws Exception {
-        UUID allocationID = UUID.randomUUID();
+    public void store_validRequest_returnsDTO() throws Exception {
 
-        // given a logged in user with the right scope and permission
-        User john = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(john, allocationID.toString(), Sets.newHashSet(Scope.CREATE.getValue()));
+        URLDTO resultDTO = new URLDTO();
+        resultDTO.setId(UUID.randomUUID());
 
-        // and a record that is owned by John
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setOwnerID(john.getId());
-        record.setAllocationID(allocationID);
+        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
+        when(service.create(any(URLDTO.class), any(User.class))).thenReturn(resultDTO);
 
-        URL url = TestHelper.mockUrl();
-
-        when(service.create(any(URL.class))).thenReturn(url);
-        when(recordService.exists(record.getId().toString())).thenReturn(true);
-        when(recordService.findById(record.getId().toString())).thenReturn(record);
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(john);
 
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/urls/")
-                        .param("recordID", record.getId().toString())
-                        .content(TestHelper.asJsonString(url))
+                        .content(TestHelper.asJsonString(new URLDTO()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -169,38 +148,5 @@ public class URLResourceControllerTest {
                 .andExpect(jsonPath("$.id").exists());
     }
 
-    @Test
-    public void it_should_update_a_url_when_put() throws Exception {
-        UUID allocationID = UUID.randomUUID();
-
-        // given a logged in user with the right scope and permission
-        User john = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(john, allocationID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
-
-        // and a record that is owned by John
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setOwnerID(john.getId());
-        record.setAllocationID(allocationID);
-
-        URL url = TestHelper.mockUrl(UUID.randomUUID());
-        url.setRecord(record);
-
-        when(recordService.exists(record.getId().toString())).thenReturn(true);
-        when(service.exists(url.getId().toString())).thenReturn(true);
-        when(service.update(any(URL.class))).thenReturn(url);
-        when(service.findById(url.getId().toString())).thenReturn(url);
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(john);
-
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.put("/api/resources/urls/" + url.getId().toString())
-                        .content(TestHelper.asJsonString(url))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        // it should be ok and the data be updated
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists());
-    }
-
+    // todo update
 }

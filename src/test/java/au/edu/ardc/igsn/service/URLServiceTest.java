@@ -1,16 +1,24 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import au.edu.ardc.igsn.dto.URLDTO;
+import au.edu.ardc.igsn.dto.URLMapper;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.URLRepository;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,8 +27,8 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes={URLService.class, URLMapper.class, ModelMapper.class})
 public class URLServiceTest {
 
     @Autowired
@@ -28,6 +36,65 @@ public class URLServiceTest {
 
     @MockBean
     private URLRepository repository;
+
+    @MockBean
+    RecordService recordService;
+
+    @MockBean
+    ValidationService validationService;
+
+    @Test
+    void create_RecordNotFound_throwsException() {
+        URLDTO dto = new URLDTO();
+        dto.setRecord(UUID.randomUUID());
+        dto.setUrl("https://researchdata.edu.au");
+
+        Assert.assertThrows(RecordNotFoundException.class, () -> {
+            service.create(dto, TestHelper.mockUser());
+        });
+    }
+
+    @Test
+    void create_Forbidden_throwsException() {
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        URLDTO dto = new URLDTO();
+        dto.setRecord(record.getId());
+        dto.setUrl("https://researchdata.edu.au");
+
+        // record exists
+        when(recordService.exists(record.getId().toString())).thenReturn(true);
+
+        // mockUser does not have the right ownership
+        Assert.assertThrows(ForbiddenOperationException.class, () -> {
+            service.create(dto, TestHelper.mockUser());
+        });
+    }
+
+    @Test
+    void create_Valid_returnsDTO() {
+        // given a user owns a record
+        User user = TestHelper.mockUser();
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setOwnerID(user.getId());
+        record.setOwnerType(Record.OwnerType.User);
+
+        // and a url dto request
+        URLDTO dto = new URLDTO();
+        dto.setRecord(record.getId());
+        dto.setUrl("https://researchdata.edu.au");
+
+        // setup the world
+        when(recordService.exists(record.getId().toString())).thenReturn(true);
+        when(recordService.findById(record.getId().toString())).thenReturn(record);
+        when(validationService.validateRecordOwnership(record, user)).thenReturn(true);
+        when(repository.save(any(URL.class))).thenReturn(TestHelper.mockUrl());
+
+        // when create
+        service.create(dto, user);
+
+        // verify save is called
+        verify(repository, times(1)).save(any(URL.class));
+    }
 
     @Test
     public void it_can_find_url_by_id() {
@@ -67,7 +134,6 @@ public class URLServiceTest {
     }
 
     @Test
-    @Transactional
     public void it_can_create_a_url() {
         URL newUrl = TestHelper.mockUrl();
         service.create(newUrl);

@@ -1,7 +1,14 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.dto.URLDTO;
+import au.edu.ardc.igsn.dto.URLMapper;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.URLRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +22,15 @@ public class URLService {
 
     @Autowired
     private URLRepository repository;
+
+    @Autowired
+    private URLMapper mapper;
+
+    @Autowired
+    ValidationService validationService;
+
+    @Autowired
+    RecordService recordService;
 
     /**
      * Find a url by id
@@ -53,6 +69,31 @@ public class URLService {
     // create
     public URL create(URL newUrl) {
         return repository.save(newUrl);
+    }
+
+    public URLDTO create(URLDTO dto, User user) {
+        URL url = mapper.convertToEntity(dto);
+
+        // validate record existence
+        if (!recordService.exists(dto.getRecord().toString())) {
+            throw new RecordNotFoundException(dto.getRecord().toString());
+        }
+
+        // validate record ownership
+        Record record = recordService.findById(dto.getRecord().toString());
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("User does not have access to create URL for this record");
+        }
+
+        //defaults
+        url.setRecord(record);
+        url.setCreatedAt(new Date());
+        url.setResolvable(false);
+
+        // todo import
+
+        url = repository.save(url);
+        return mapper.convertToDTO(url);
     }
 
     /**

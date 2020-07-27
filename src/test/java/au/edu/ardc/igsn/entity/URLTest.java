@@ -1,11 +1,13 @@
 package au.edu.ardc.igsn.entity;
 
 import au.edu.ardc.igsn.TestHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
@@ -13,16 +15,22 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
-public class URLTest {
+class URLTest {
 
     @Autowired
     TestEntityManager entityManager;
 
     @Test
-    public void a_url_should_have_auto_generated_uuid() {
-        URL url = TestHelper.mockUrl();
+    void a_url_should_have_auto_generated_uuid() {
+        // given a persisted record
+        Record record = new Record();
+        entityManager.persistAndFlush(record);
+
+        // that has a persisted url
+        URL url = TestHelper.mockUrl(record);
+        entityManager.persistAndFlush(url);
 
         // uuid is generated and is the correct format
         assertThat(url.getId()).isNotNull();
@@ -31,19 +39,19 @@ public class URLTest {
     }
 
     @Test
-    public void a_url_must_have_a_record() {
+    void a_url_must_have_a_record() {
         URL url = TestHelper.mockUrl();
         assertThat(url.getRecord()).isInstanceOf(Record.class);
     }
 
     @Test
-    public void a_url_must_have_a_date() {
+    void a_url_must_have_a_date() {
         URL url = TestHelper.mockUrl();
         assertThat(url.getCreatedAt()).isInstanceOf(Date.class);
     }
 
     @Test
-    public void a_url_must_have_a_url() {
+    void a_url_must_have_a_url() {
         String expected = "http://aurl.com";
         URL  url = TestHelper.mockUrl();
         url.setUrl(expected);
@@ -52,16 +60,14 @@ public class URLTest {
     }
 
     @Test
-    public void a_url_must_have_a_status() {
-        URL.Status expected = URL.Status.RESOLVABLE;
-        URL  url = TestHelper.mockUrl();
-        url.setStatus(expected);
-        URL.Status actual= url.getStatus();
-        assertThat(expected).isEqualTo(actual);
+    void a_url_can_be_resolvable() {
+        URL url = TestHelper.mockUrl();
+        url.setResolvable(true);
+        assertThat(url.isResolvable()).isTrue();
     }
 
     @Test
-    public void an_identifier_must_set_dates() {
+    void an_identifier_must_set_dates() {
         Date expected = new Date();
         URL url = TestHelper.mockUrl();
         url.setUpdatedAt(expected);
