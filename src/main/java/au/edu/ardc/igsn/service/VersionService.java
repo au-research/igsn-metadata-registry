@@ -1,8 +1,12 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,15 @@ public class VersionService {
 
     @Autowired
     private VersionRepository repository;
+
+    @Autowired
+    private VersionMapper mapper;
+
+    @Autowired
+    private SchemaService schemaService;
+
+    @Autowired
+    private RecordService recordService;
 
     /**
      * End the life of a version
@@ -66,6 +79,33 @@ public class VersionService {
     // create
     public Version create(Version newVersion) {
         return repository.save(newVersion);
+    }
+
+    public VersionDTO create(VersionDTO dto, User user) {
+        // versionDTO should already be @Valid from controller
+        Version version = mapper.convertToEntity(dto);
+
+        // validate schema
+        if (!schemaService.supportsSchema(version.getSchema())) {
+            throw new SchemaNotSupportedException(version.getSchema());
+        }
+
+        if (dto.getRecord() == null || !recordService.exists(dto.getRecord())) {
+            throw new RecordNotFoundException(dto.getRecord());
+        }
+
+        // todo validate user ownership
+        // todo validate version content -> schema validation
+
+        // default
+        version.setCreatedAt(new Date());
+        version.setCreatorID(user.getId());
+
+        // todo allow import scope to overwrite data
+
+        version = repository.save(version);
+
+        return mapper.convertToDTO(version);
     }
 
     /**

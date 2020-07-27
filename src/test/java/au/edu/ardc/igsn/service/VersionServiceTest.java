@@ -1,7 +1,12 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +31,64 @@ public class VersionServiceTest {
     private VersionService service;
 
     @MockBean
+    private RecordService recordService;
+
+    @MockBean
     private VersionRepository repository;
+
+    @Test
+    public void create_ValidRequest_returnsDTO() {
+        // given a record & user
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        User user = TestHelper.mockUser();
+
+        // given a version dto
+        VersionDTO dto = new VersionDTO();
+        dto.setRecord(record.getId().toString());
+        dto.setSchema("igsn-descriptive-v1");
+        dto.setContent("blah");
+
+        // setup repository mock
+        Version expected = TestHelper.mockVersion(record.getId());
+        when(recordService.exists(anyString())).thenReturn(true);
+        when(repository.save(any(Version.class))).thenReturn(expected);
+
+        // when the service creates the version, verify the save method is called
+        VersionDTO resultDTO = service.create(dto, user);
+        assertThat(resultDTO).isNotNull();
+        assertThat(resultDTO).isInstanceOf(VersionDTO.class);
+        verify(repository, times(1)).save(any(Version.class));
+    }
+
+    @Test(expected = SchemaNotSupportedException.class)
+    public void create_InvalidSchema_throwsException() {
+        // given a record & user
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        User user = TestHelper.mockUser();
+
+        // given a version dto
+        VersionDTO dto = new VersionDTO();
+        dto.setRecord(record.getId().toString());
+        dto.setSchema("not-supported");
+        dto.setContent("blah");
+
+        // when the service creates the version, expects exception
+        service.create(dto, user);
+    }
+
+    @Test(expected = RecordNotFoundException.class)
+    public void create_RecordNotFound_throwsException() {
+        // given a version dto
+        VersionDTO dto = new VersionDTO();
+        dto.setRecord(UUID.randomUUID().toString());
+        dto.setSchema("igsn-descriptive-v1");
+        dto.setContent("blah");
+
+        // when the service creates the version, expects exception
+        service.create(dto, TestHelper.mockUser());
+    }
+
+    // todo create_UserDoesNotHavePermission_throwsException
 
 
     @Test
