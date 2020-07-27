@@ -4,8 +4,12 @@ import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
+import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,9 @@ public class VersionService {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private ValidationService validationService;
 
     /**
      * End the life of a version
@@ -93,27 +100,41 @@ public class VersionService {
         if (dto.getRecord() == null || !recordService.exists(dto.getRecord())) {
             throw new RecordNotFoundException(dto.getRecord());
         }
+        Record record = recordService.findById(dto.getRecord());
 
-        // todo validate user ownership
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("You don't own this record");
+        }
         // todo validate version content -> schema validation
 
         // default
         version.setCreatedAt(new Date());
         version.setCreatorID(user.getId());
 
-        // todo allow import scope to overwrite data
+        // allow igsn:import scope to overwrite data
+        Allocation allocation = new Allocation(record.getAllocationID());
+        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+            version.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : version.getCreatedAt());
+            version.setCreatorID(dto.getCreatorID() != null ? UUID.fromString(dto.getCreatorID()) : version.getCreatorID());
+            version.setStatus(dto.getStatus() != null ? dto.getStatus() : version.getStatus());
+        }
 
         version = repository.save(version);
 
         return mapper.convertToDTO(version);
     }
 
-    /**
-     * Permanently delete the version
-     *
-     * @param id the uuid of the Version
-     */
-    public void delete(String id) {
+    public boolean delete(String id, User user) {
+        if (!repository.existsById(UUID.fromString(id))) {
+            throw new VersionNotFoundException(id);
+        }
+        Version version = findById(id);
+        Record record = version.getRecord();
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("You don't have access to delete this version");
+        }
+
         repository.deleteById(id);
+        return true;
     }
 }

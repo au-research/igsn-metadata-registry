@@ -43,10 +43,6 @@ public class VersionResourceController {
     @Autowired
     private VersionService service;
     @Autowired
-    private RecordService recordService;
-    @Autowired
-    private SchemaService schemaService;
-    @Autowired
     private KeycloakService kcService;
 
     @GetMapping("/")
@@ -105,49 +101,11 @@ public class VersionResourceController {
     public ResponseEntity<?> store(
             @Valid @RequestBody VersionDTO versionDTO,
             HttpServletRequest request) {
-
-        // validate the schema
-        if (versionDTO.getSchema() == null || !schemaService.supportsSchema(versionDTO.getSchema())) {
-            throw new SchemaNotSupportedException(versionDTO.getSchema());
-        }
-
-        // validate record
-        if (versionDTO.getRecord() == null || !recordService.exists(versionDTO.getRecord())) {
-            throw new RecordNotFoundException(versionDTO.getRecord());
-        }
-        Record record = recordService.findById(versionDTO.getRecord());
-
-        // validate record ownership to allocation
         User user = kcService.getLoggedInUser(request);
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasPermission(allocationID.toString())) {
-            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
-        }
+        VersionDTO resultDTO = service.create(versionDTO, user);
 
-        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
-            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
-        }
-
-        // todo validate record ownership
-
-        // todo validate versionDTO content
-
-        Version version = versionMapper.convertToEntity(versionDTO);
-        version.setCreatedAt(new Date());
-        version.setCreatorID(user.getId());
-
-        // allow igsn:import scope to overwrite data
-        if (user.hasPermission(allocationID.toString(), Scope.IMPORT)) {
-            version.setCreatedAt(versionDTO.getCreatedAt() != null ? versionDTO.getCreatedAt() : version.getCreatedAt());
-            version.setCreatorID(versionDTO.getCreatorID() != null ? UUID.fromString(versionDTO.getCreatorID()) : version.getCreatorID());
-            version.setStatus(versionDTO.getStatus() != null ? versionDTO.getStatus() : version.getStatus());
-        }
-
-        Version createdVersion = service.create(version);
-
-        VersionDTO createdVersionDTO = versionMapper.convertToDTO(createdVersion);
-        URI location = URI.create("/api/resources/versions/" + createdVersion.getId());
-        return ResponseEntity.created(location).body(createdVersionDTO);
+        URI location = URI.create("/api/resources/versions/" + resultDTO.getId());
+        return ResponseEntity.created(location).body(resultDTO);
     }
 
     @DeleteMapping("/{id}")

@@ -19,6 +19,7 @@ public class VersionDTO {
     @NotNull
     private String record;
 
+    @NotNull
     private String content;
 
     public String getRecord() {
