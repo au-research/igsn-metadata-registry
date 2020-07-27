@@ -1,11 +1,10 @@
 package au.edu.ardc.igsn.util;
 
-import au.edu.ardc.igsn.TestHelper;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class XMLValidatorTest {
 

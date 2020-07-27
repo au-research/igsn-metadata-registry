@@ -30,9 +30,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        VersionService.class, SchemaService.class, RecordService.class,
-        VersionMapper.class, ModelMapper.class, VersionRepository.class,
-        ValidationService.class
+        VersionService.class, SchemaService.class,
+        VersionMapper.class, ModelMapper.class
 })
 public class VersionServiceTest {
 

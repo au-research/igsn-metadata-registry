@@ -32,7 +32,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {RecordService.class, RecordMapper.class, ModelMapper.class, ValidationService.class})
+@ContextConfiguration(classes = {
+        RecordService.class, RecordMapper.class, ModelMapper.class, ValidationService.class
+})
 public class RecordServiceTest {
 
     @Autowired
