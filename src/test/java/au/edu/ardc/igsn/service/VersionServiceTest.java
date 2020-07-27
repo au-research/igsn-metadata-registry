@@ -2,18 +2,25 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
+
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
+
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
@@ -24,9 +31,10 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {VersionService.class, SchemaService.class, RecordService.class, VersionMapper.class, ModelMapper.class, VersionRepository.class})
 public class VersionServiceTest {
+
     @Autowired
     private VersionService service;
 
@@ -60,7 +68,7 @@ public class VersionServiceTest {
         verify(repository, times(1)).save(any(Version.class));
     }
 
-    @Test(expected = SchemaNotSupportedException.class)
+    @Test
     public void create_InvalidSchema_throwsException() {
         // given a record & user
         Record record = TestHelper.mockRecord(UUID.randomUUID());
@@ -73,10 +81,12 @@ public class VersionServiceTest {
         dto.setContent("blah");
 
         // when the service creates the version, expects exception
-        service.create(dto, user);
+        Assert.assertThrows(SchemaNotSupportedException.class, () -> {
+            service.create(dto, user);
+        });
     }
 
-    @Test(expected = RecordNotFoundException.class)
+    @Test
     public void create_RecordNotFound_throwsException() {
         // given a version dto
         VersionDTO dto = new VersionDTO();
@@ -85,7 +95,9 @@ public class VersionServiceTest {
         dto.setContent("blah");
 
         // when the service creates the version, expects exception
-        service.create(dto, TestHelper.mockUser());
+        Assert.assertThrows(RecordNotFoundException.class, () -> {
+            service.create(dto, TestHelper.mockUser());
+        });
     }
 
     // todo create_UserDoesNotHavePermission_throwsException
@@ -141,13 +153,5 @@ public class VersionServiceTest {
         service.delete(id.toString());
         // ensure repository call deleteById
         verify(repository, times(1)).deleteById(any(String.class));
-    }
-
-    @Test
-    @Transactional
-    public void it_can_create_a_version() {
-        Version newVersion = TestHelper.mockVersion();
-        service.create(newVersion);
-        verify(repository, times(1)).save(newVersion);
     }
 }
