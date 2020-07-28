@@ -1,8 +1,15 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.dto.IdentifierDTO;
+import au.edu.ardc.igsn.dto.IdentifierMapper;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +24,15 @@ public class IdentifierService {
 
     @Autowired
     private IdentifierRepository repository;
+
+    @Autowired
+    private IdentifierMapper mapper;
+
+    @Autowired
+    private RecordService recordService;
+
+    @Autowired
+    private ValidationService validationService;
 
     /**
      * Find an identifier by id
@@ -55,6 +71,37 @@ public class IdentifierService {
     // create
     public Identifier create(Identifier newIdentifier) {
         return repository.save(newIdentifier);
+    }
+
+    public IdentifierDTO create(IdentifierDTO dto, User user) {
+        Identifier identifier = mapper.convertToEntity(dto);
+
+        // validate record existence
+        if (!recordService.exists(dto.getRecord().toString())) {
+            throw new RecordNotFoundException(dto.getRecord().toString());
+        }
+
+        // validate record ownership
+        Record record = recordService.findById(dto.getRecord().toString());
+        if (!validationService.validateRecordOwnership(record, user)) {
+            throw new ForbiddenOperationException("User does not have access to create Identifier for this record");
+        }
+
+        // defaults
+        identifier.setRecord(record);
+        identifier.setCreatedAt(new Date());
+        identifier.setUpdatedAt(new Date());
+
+        // import scope overwrite
+        Allocation allocation = new Allocation(record.getAllocationID());
+        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+            identifier.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : identifier.getCreatedAt());
+            identifier.setUpdatedAt(dto.getUpdatedAt() != null ? dto.getUpdatedAt() : identifier.getUpdatedAt());
+        }
+
+        identifier = repository.save(identifier);
+
+        return mapper.convertToDTO(identifier);
     }
 
     /**

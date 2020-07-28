@@ -136,7 +136,7 @@ public class URLResourceControllerTest {
         when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
         when(service.create(any(URLDTO.class), any(User.class))).thenReturn(resultDTO);
 
-
+        // mock a valid return from the service
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.post("/api/resources/urls/")
                         .content(TestHelper.asJsonString(new URLDTO()))

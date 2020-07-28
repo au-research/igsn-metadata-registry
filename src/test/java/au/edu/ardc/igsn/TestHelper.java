@@ -111,6 +111,7 @@ public class TestHelper {
         Identifier identifier = new Identifier();
         identifier.setCreatedAt(new Date());
         identifier.setType(Identifier.Type.IGSN);
+        identifier.setStatus(Identifier.Status.ACCESSIBLE);
         identifier.setRecord(record);
         return identifier;
     }
@@ -125,6 +126,7 @@ public class TestHelper {
         Identifier identifier = new Identifier(UUID.randomUUID());
         identifier.setCreatedAt(new Date());
         identifier.setType(Identifier.Type.IGSN);
+        identifier.setStatus(Identifier.Status.ACCESSIBLE);
         identifier.setRecord(record);
         return identifier;
     }
@@ -136,9 +138,10 @@ public class TestHelper {
      */
     public static Identifier mockIdentifier() {
         Record record = mockRecord();
-        Identifier identifier = new Identifier(UUID.randomUUID());
+        Identifier identifier = new Identifier();
         identifier.setCreatedAt(new Date());
         identifier.setType(Identifier.Type.IGSN);
+        identifier.setStatus(Identifier.Status.ACCESSIBLE);
         identifier.setRecord(record);
         return identifier;
     }

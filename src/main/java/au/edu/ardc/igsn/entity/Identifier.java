@@ -23,6 +23,9 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private Type type;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     private String value;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -96,8 +99,20 @@ public class Identifier {
         this.record = record;
     }
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     public enum Type {
         IGSN;
+    }
+
+    public enum Status {
+        RESERVED, PENDING, ACCESSIBLE
     }
 
 }

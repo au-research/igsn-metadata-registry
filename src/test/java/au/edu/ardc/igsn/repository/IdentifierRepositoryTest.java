@@ -1,56 +1,42 @@
 package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Identifier;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import au.edu.ardc.igsn.entity.Record;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
-public class IdentifierRepositoryTest {
+class IdentifierRepositoryTest {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    TestEntityManager entityManager;
 
     @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private IdentifierRepository identifierRepository;
-
-    @Autowired
-    private RecordRepository recordRepository;
+    IdentifierRepository repository;
 
     @Test
-    public void injectedComponentsAreNotNull() {
-        assertThat(jdbcTemplate).isNotNull();
-        assertThat(entityManager).isNotNull();
-        assertThat(identifierRepository).isNotNull();
-    }
-
-    @Test
-    public void repository_can_find_by_id() {
+    void findById_findByUUID_returnsIdentifier() {
         // given an identifier
         Record record = TestHelper.mockRecord();
-        recordRepository.save(record);
+        entityManager.persistAndFlush(record);
         Identifier identifier = TestHelper.mockIdentifier(record);
-        identifierRepository.save(identifier);
+        repository.save(identifier);
 
         UUID id = identifier.getId();
 
         // when findById
-        Optional<Identifier> dbFound = identifierRepository.findById(id);
+        Optional<Identifier> dbFound = repository.findById(id);
 
         // finds that version
         assertThat(dbFound.isPresent()).isTrue();
@@ -58,5 +44,19 @@ public class IdentifierRepositoryTest {
         Identifier found = dbFound.get();
         assertThat(found).isInstanceOf(Identifier.class);
         assertThat(found.getId()).isEqualTo(identifier.getId());
+    }
+
+    @Test
+    void existsById_byUUID_returnsTrue() {
+        // given an identifier
+        Record record = TestHelper.mockRecord();
+        entityManager.persistAndFlush(record);
+        Identifier identifier = TestHelper.mockIdentifier(record);
+        repository.save(identifier);
+
+        UUID id = identifier.getId();
+
+        // when existsById returns true
+        assertThat(repository.existsById(id)).isTrue();
     }
 }

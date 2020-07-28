@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
+import au.edu.ardc.igsn.dto.IdentifierDTO;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.entity.Identifier;
@@ -102,39 +103,12 @@ public class IdentifierResourceController {
             content = @Content(schema = @Schema(implementation = Identifier.class))
     )
     public ResponseEntity<?> store(
-            @RequestBody Identifier newIdentifier,
-            @RequestParam String recordID,
+            @RequestBody IdentifierDTO dto,
             HttpServletRequest request) {
-        Identifier identifier = new Identifier();
-
-        // todo validate record
-        if (!recordService.exists(recordID)) {
-            throw new RecordNotFoundException(recordID);
-        }
-        Record record = recordService.findById(recordID);
-
-        // validate record ownership to allocation
         User user = kcService.getLoggedInUser(request);
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasPermission(allocationID.toString())) {
-            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
-        }
-
-        if (!user.hasPermission(allocationID.toString(), Scope.CREATE)) {
-            throw new ForbiddenOperationException(String.format("User does not have access to create for the record allocation %s", allocationID.toString()));
-        }
-        identifier.setRecord(record);
-        identifier.setType(newIdentifier.getType());
-        identifier.setValue(newIdentifier.getValue());
-        // todo if the user has the scope igsn:import, allow direct repository access
-        identifier.setCreatedAt(new Date());
-
-        // todo creator
-        Identifier createdIdentifier = service.create(identifier);
-
-        URI location = URI.create("/api/resources/identifiers/" + createdIdentifier.getId());
-
-        return ResponseEntity.created(location).body(createdIdentifier);
+        IdentifierDTO resultDTO = service.create(dto, user);
+        URI location = URI.create("/api/resources/identifiers/" + resultDTO.getId());
+        return ResponseEntity.created(location).body(resultDTO);
     }
 
     @PutMapping("/{id}")
