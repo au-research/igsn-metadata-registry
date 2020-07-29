@@ -14,9 +14,13 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
@@ -48,7 +52,6 @@ import org.springframework.context.annotation.Bean;
                         email = "${app.contact.email}",
                         url = "${app.contact.url}"
                 ),
-                version = "${app.version}",
                 license = @License(
                         name = "Apache 2.0",
                         url = "https://www.apache.org/licenses/LICENSE-2.0.html"
