@@ -1,15 +1,13 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.dto.URLDTO;
-import au.edu.ardc.igsn.model.Scope;
-import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.KeycloakService;
-import au.edu.ardc.igsn.service.RecordService;
 import au.edu.ardc.igsn.service.URLService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,12 +40,9 @@ public class URLResourceController {
     private URLService service;
 
     @Autowired
-    private RecordService recordService;
-
-    @Autowired
     private KeycloakService kcService;
 
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
             summary = "Get all URLs",
             description = "Retrieves all url resources that the current user has access to")

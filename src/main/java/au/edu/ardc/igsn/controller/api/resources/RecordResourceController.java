@@ -1,11 +1,9 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
-import au.edu.ardc.igsn.model.User;
-import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +29,7 @@ import java.util.UUID;
 @Tag(name = "Record Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
-public class RecordResourceController extends APIController {
+public class RecordResourceController {
 
     @Autowired
     private RecordService service;
@@ -39,10 +37,7 @@ public class RecordResourceController extends APIController {
     @Autowired
     private KeycloakService kcService;
 
-    @Autowired
-    private RecordMapper mapper;
-
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
             summary = "Get all records",
             description = "Retrieves all record resources that the current user has access to")

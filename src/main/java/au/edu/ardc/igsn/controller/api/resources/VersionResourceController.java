@@ -1,15 +1,12 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
-import au.edu.ardc.igsn.model.Scope;
-import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
-import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
-import au.edu.ardc.igsn.exception.*;
+import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.KeycloakService;
-import au.edu.ardc.igsn.service.RecordService;
-import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +41,7 @@ public class VersionResourceController {
     @Autowired
     private KeycloakService kcService;
 
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
             summary = "Get all versions",
             description = "Retrieves all versions resources that the current user has access to")

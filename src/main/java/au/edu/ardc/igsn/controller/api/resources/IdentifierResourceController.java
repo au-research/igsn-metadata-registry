@@ -1,16 +1,14 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.dto.IdentifierDTO;
-import au.edu.ardc.igsn.model.Scope;
-import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
-import au.edu.ardc.igsn.service.KeycloakService;
-import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.model.Scope;
+import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.IdentifierService;
+import au.edu.ardc.igsn.service.KeycloakService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,12 +40,9 @@ public class IdentifierResourceController {
     private IdentifierService service;
 
     @Autowired
-    private RecordService recordService;
-
-    @Autowired
     private KeycloakService kcService;
 
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
             summary = "Get all identifiers",
             description = "Retrieves all identifier resources that the current user has access to")
@@ -56,7 +50,6 @@ public class IdentifierResourceController {
             responseCode = "200",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = Identifier.class)))
     )
-
     public ResponseEntity<?> index() {
         // todo obtain user from the kcService and find owned from said user
         // todo pagination
@@ -121,7 +114,7 @@ public class IdentifierResourceController {
             description = "Identifier is updated",
             content = @Content(schema = @Schema(implementation = Identifier.class))
     )
-    @ApiResponse(responseCode = "404", description = "Identifier is not found",content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Identifier is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     public ResponseEntity<?> update(
             @PathVariable String id,
             @RequestBody Identifier updatedIdentifier,

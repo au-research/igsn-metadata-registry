@@ -1,7 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.model.Schema;
-import au.edu.ardc.igsn.controller.APIController;
 import au.edu.ardc.igsn.service.SchemaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +14,12 @@ import java.util.List;
 @Tag(name = "Schema API")
 @RestController
 @RequestMapping("/api/schemas")
-public class SchemaController extends APIController {
+public class SchemaController {
 
     @Autowired
     SchemaService service;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> getSupportedSchemas() {
         List<Schema> schemas = service.getSupportedSchemas();
 
