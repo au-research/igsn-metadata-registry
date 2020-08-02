@@ -6,6 +6,8 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
+import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.URLRepository;
 import org.modelmapper.ModelMapper;
@@ -90,7 +92,12 @@ public class URLService {
         url.setCreatedAt(new Date());
         url.setResolvable(false);
 
-        // todo import
+        // import scope to overwrite certain fields
+        Allocation allocation = new Allocation(record.getAllocationID());
+        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+            url.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : url.getCreatedAt());
+            url.setResolvable(dto.isResolvable() ? dto.isResolvable() : url.isResolvable());
+        }
 
         url = repository.save(url);
         return mapper.convertToDTO(url);

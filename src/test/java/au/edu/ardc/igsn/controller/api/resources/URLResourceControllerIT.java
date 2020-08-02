@@ -16,6 +16,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
+import static org.exparity.hamcrest.date.DateMatchers.isSaturday;
 import static org.exparity.hamcrest.date.DateMatchers.sameDay;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -108,6 +111,7 @@ class URLResourceControllerIT extends KeycloakIntegrationTest {
         Record record = TestHelper.mockRecord();
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(UUID.fromString(userID));
+        record.setAllocationID(UUID.fromString(resourceID));
         recordRepository.saveAndFlush(record);
 
         // given a request dto
@@ -118,16 +122,21 @@ class URLResourceControllerIT extends KeycloakIntegrationTest {
         dto.setUrl("https://researchdata.edu.au/");
 
         // when POST, expects 201, Location Header, and the ID in the body
-        this.webTestClient
+        URLDTO resultDTO = this.webTestClient
                 .post().uri(resourceBaseUrl)
                 .header("Authorization", getBasicAuthenticationHeader(username, password))
                 .body(Mono.just(dto), URLDTO.class)
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().exists("Location")
-                .expectBody()
-                .jsonPath("$.id").exists()
-                .jsonPath("$.createdAt").exists()
-                .jsonPath("$.createdAt", sameDay(expectedDate)).hasJsonPath();
+                .expectBody(URLDTO.class)
+                .returnResult().getResponseBody();
+
+        // expects the dates to be overwritten
+        assertThat(resultDTO).isNotNull();
+        assertThat(resultDTO.getId()).isNotNull();
+        assertThat(resultDTO.getCreatedAt()).isNotNull();
+        assertThat(resultDTO.getCreatedAt()).isNotNull();
+        assertThat(resultDTO.getCreatedAt()).isInSameDayAs(expectedDate);
     }
 }
