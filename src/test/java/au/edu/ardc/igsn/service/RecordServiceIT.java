@@ -95,11 +95,15 @@ public class RecordServiceIT {
         Date updatedCreatedAt = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
         Date updatedModifiedAt = new SimpleDateFormat("dd/MM/yyyy").parse("03/03/1989");
         UUID updatedCreatorID = UUID.randomUUID();
+        UUID updatedOwnerID = UUID.randomUUID();
+        UUID updatedDataCenterID = UUID.randomUUID();
         RecordDTO dto = new RecordDTO();
         dto.setAllocationID(allocation.getId());
         dto.setModifiedAt(updatedModifiedAt);
         dto.setCreatedAt(updatedCreatedAt);
         dto.setCreatorID(updatedCreatorID);
+        dto.setOwnerID(updatedOwnerID);
+        dto.setDataCenterID(updatedDataCenterID);
 
         // when create
         RecordDTO result = service.create(dto, user);
@@ -112,6 +116,8 @@ public class RecordServiceIT {
         assertThat(actualRecord.getCreatedAt()).isEqualTo(updatedCreatedAt);
         assertThat(actualRecord.getModifiedAt()).isEqualTo(updatedModifiedAt);
         assertThat(actualRecord.getCreatorID()).isEqualTo(updatedCreatorID);
+        assertThat(actualRecord.getOwnerID()).isEqualTo(updatedOwnerID);
+        assertThat(actualRecord.getDataCenterID()).isEqualTo(updatedDataCenterID);
     }
 
     @Test
@@ -162,14 +168,16 @@ public class RecordServiceIT {
         record.setCreatedAt(new Date());
         record = repository.saveAndFlush(record);
 
-        // the update payload contains new createdAt, modifiedAt and creatorID
+        // the update payload contains new fields
         Date updatedCreatedAt = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
         Date updatedModifiedAt = new SimpleDateFormat("dd/MM/yyyy").parse("03/03/1989");
+        UUID updatedOwnerID = UUID.randomUUID();
         UUID updatedCreatorID = UUID.randomUUID();
         RecordDTO dto = mapper.convertToDTO(record);
         dto.setModifiedAt(updatedModifiedAt);
         dto.setCreatedAt(updatedCreatedAt);
         dto.setCreatorID(updatedCreatorID);
+        dto.setOwnerID(updatedOwnerID);
 
         // when update
         RecordDTO resultDTO = service.update(dto, user);
@@ -179,6 +187,7 @@ public class RecordServiceIT {
         assertThat(resultDTO.getCreatedAt()).isEqualTo(updatedCreatedAt);
         assertThat(resultDTO.getModifiedAt()).isEqualTo(updatedModifiedAt);
         assertThat(resultDTO.getCreatorID()).isEqualTo(updatedCreatorID);
+        assertThat(resultDTO.getOwnerID()).isEqualTo(updatedOwnerID);
 
         // and the result record in the database contains the updated fields
         Record actualRecord = service.findById(record.getId().toString());

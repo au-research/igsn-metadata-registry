@@ -34,6 +34,8 @@ public class RecordDTO {
     @NotNull
     private UUID ownerID;
 
+    private UUID dataCenterID;
+
     public UUID getId() {
         return id;
     }
@@ -104,5 +106,13 @@ public class RecordDTO {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public UUID getDataCenterID() {
+        return dataCenterID;
+    }
+
+    public void setDataCenterID(UUID dataCenterID) {
+        this.dataCenterID = dataCenterID;
     }
 }
