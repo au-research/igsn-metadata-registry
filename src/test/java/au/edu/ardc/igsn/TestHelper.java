@@ -64,7 +64,7 @@ public class TestHelper {
         Record record = mockRecord();
         Version version = new Version(UUID.randomUUID());
         version.setCreatedAt(new Date());
-        version.setStatus(Version.Status.CURRENT);
+        version.setCurrent(true);
         version.setCreatorID(UUID.randomUUID());
         version.setRecord(record);
         version.setSchema("test-schema");
@@ -80,7 +80,7 @@ public class TestHelper {
         Record record = mockRecord(id);
         Version version = new Version(UUID.randomUUID());
         version.setCreatedAt(new Date());
-        version.setStatus(Version.Status.CURRENT);
+        version.setCurrent(true);
         version.setCreatorID(UUID.randomUUID());
         version.setRecord(record);
         version.setSchema("test-schema");
@@ -95,7 +95,7 @@ public class TestHelper {
     public static Version mockVersion(Record record) {
         Version version = new Version();
         version.setCreatedAt(new Date());
-        version.setStatus(Version.Status.CURRENT);
+        version.setCurrent(true);
         version.setRecord(record);
         version.setCreatorID(record.getCreatorID());
         return version;

@@ -189,7 +189,7 @@ public class VersionServiceTest {
         // ensure the repository call save
         verify(repository, times(1)).save(version);
 
-        assertThat(endedVersion.getStatus()).isEqualTo(Version.Status.SUPERSEDED);
+        assertThat(endedVersion.isCurrent()).isFalse();
         assertThat(endedVersion.getEndedAt()).isNotNull();
         assertThat(endedVersion.getEndedAt()).isInstanceOf(Date.class);
     }

@@ -43,7 +43,8 @@ public class VersionService {
      */
     public Version end(Version version) {
         version.setEndedAt(new Date());
-        version.setStatus(Version.Status.SUPERSEDED);
+        version.setCurrent(false);
+
         // todo endBy currently logged in user
         repository.save(version);
         return version;
@@ -110,14 +111,17 @@ public class VersionService {
         // default
         version.setCreatedAt(new Date());
         version.setCreatorID(user.getId());
+        version.setCurrent(true);
 
         // allow igsn:import scope to overwrite data
         Allocation allocation = new Allocation(record.getAllocationID());
         if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
             version.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : version.getCreatedAt());
             version.setCreatorID(dto.getCreatorID() != null ? UUID.fromString(dto.getCreatorID()) : version.getCreatorID());
-            version.setStatus(dto.getStatus() != null ? dto.getStatus() : version.getStatus());
+            version.setCurrent(dto.isCurrent());
         }
+
+        // todo if this version is the current, end all other version of the same schema
 
         version = repository.save(version);
 

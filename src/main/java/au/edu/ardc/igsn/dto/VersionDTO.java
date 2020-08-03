@@ -1,6 +1,5 @@
 package au.edu.ardc.igsn.dto;
 
-import au.edu.ardc.igsn.entity.Version;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotNull;
@@ -12,7 +11,7 @@ public class VersionDTO {
 
     @NotNull
     private String schema;
-    private Version.Status status;
+    private boolean current;
     private Date createdAt;
     private String creatorID;
 
@@ -70,11 +69,11 @@ public class VersionDTO {
         this.creatorID = creatorID;
     }
 
-    public Version.Status getStatus() {
-        return status;
+    public boolean isCurrent() {
+        return current;
     }
 
-    public void setStatus(Version.Status status) {
-        this.status = status;
+    public void setCurrent(boolean current) {
+        this.current = current;
     }
 }

@@ -23,8 +23,7 @@ public class Version {
     @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    private boolean current = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -79,14 +78,6 @@ public class Version {
         return id;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -127,8 +118,11 @@ public class Version {
         this.content = content;
     }
 
-    public static enum Status {
-        CURRENT, SUPERSEDED
+    public boolean isCurrent() {
+        return current;
     }
 
+    public void setCurrent(boolean current) {
+        this.current = current;
+    }
 }
