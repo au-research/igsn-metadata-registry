@@ -1,14 +1,18 @@
 package au.edu.ardc.igsn.repository;
 
+import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -133,5 +137,30 @@ public class RecordRepositoryTest {
 
         // when findOwned for jack, should see 4, 3 he created and 1 he owned
         assertThat(repository.findOwned(jackUUID)).hasSize(4);
+    }
+
+    @Test
+    public void findAllByVisibleIsTrue_pageable() {
+        // given 3 visible records
+        for (int i = 0; i < 3; i++) {
+            Record record = TestHelper.mockRecord();
+            record.setVisible(true);
+            entityManager.persist(record);
+        }
+
+        // and 2 private records
+        for (int i = 0; i < 2; i++) {
+            Record record = TestHelper.mockRecord();
+            record.setVisible(false);
+            entityManager.persist(record);
+        }
+
+        entityManager.flush();
+
+        Page<Record> firstPage2Records = repository.findAllByVisibleIsTrue(PageRequest.of(0, 2));
+        assertThat(firstPage2Records.getContent()).hasSize(2);
+
+        Page<Record> allVisibleRecords = repository.findAllByVisibleIsTrue(PageRequest.of(0, 100));
+        assertThat(allVisibleRecords.getContent()).hasSize(3);
     }
 }

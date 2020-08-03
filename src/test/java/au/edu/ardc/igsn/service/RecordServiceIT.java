@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +55,26 @@ public class RecordServiceIT {
         assertThat(actual).isNotNull();
         assertThat(actual).isInstanceOf(RecordDTO.class);
         assertThat(actual.getId()).isEqualTo(expected.getId());
+    }
+
+    @Test
+    public void findPublic_2Public1Private_2Returns() {
+        // given 2 public records
+        for (int i = 0; i < 2 ; i ++) {
+            Record record = TestHelper.mockRecord();
+            record.setVisible(true);
+            repository.saveAndFlush(record);
+        }
+        // and 1 private record
+        Record record = TestHelper.mockRecord();
+        record.setVisible(false);
+        repository.saveAndFlush(record);
+
+        // found 2 records when findPublic
+        assertThat(service.findPublic(PageRequest.of(0, 10))).hasSize(2);
+
+        // found 1 record when findPublic with 1 per page
+        assertThat(service.findPublic(PageRequest.of(0, 1))).hasSize(1);
     }
 
     @Test

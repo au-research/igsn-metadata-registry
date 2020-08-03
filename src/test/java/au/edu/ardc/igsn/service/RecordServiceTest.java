@@ -15,17 +15,20 @@ import au.edu.ardc.igsn.repository.RecordRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -331,4 +334,33 @@ public class RecordServiceTest {
         verify(repository, times(1)).save(any(Record.class));
     }
 
+    @Test
+    void findPublic_10records_callsRepository() {
+        // given 10 records
+        List<Record> mockResult = new ArrayList<>();
+        for (int i = 0; i < 10; i ++) {
+            Record record = TestHelper.mockRecord(UUID.randomUUID());
+            record.setVisible(true);
+            mockResult.add(record);
+        }
+
+        // setup the world
+        Page<Record> mockPage = new PageImpl(mockResult);
+        when(repository.findAllByVisibleIsTrue(any(Pageable.class))).thenReturn(mockPage);
+
+        // when findPublic
+        Page<RecordDTO> actual = service.findPublic(PageRequest.of(0, 10));
+
+        // is a valid Page<RecordDTO>
+        assertThat(actual.getContent()).hasSize(10);
+        assertThat(actual.getTotalElements()).isEqualTo(10);
+        assertThat(actual.getTotalPages()).isEqualTo(1);
+
+        // contains only RecordDTO
+        long countOfRecordDTO = actual.stream().filter(t -> t instanceof RecordDTO).count();
+        assertThat(countOfRecordDTO).isEqualTo(10);
+
+        // repository is called
+        verify(repository, times(1)).findAllByVisibleIsTrue(any(Pageable.class));
+    }
 }

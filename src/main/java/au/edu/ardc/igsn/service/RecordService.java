@@ -9,13 +9,17 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import com.google.common.base.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class RecordService {
@@ -43,6 +47,28 @@ public class RecordService {
         // todo findOwned by user ID as well as allocation IDs
 
         return repository.findOwned(ownerID);
+    }
+
+    /**
+     * Return all publicly available records
+     *
+     * @param pageable Pageable
+     * @return a list of RecordDTO that fits the criteria
+     */
+    public Page<RecordDTO> findPublic(Pageable pageable) {
+        Page<Record> result = repository.findAllByVisibleIsTrue(pageable);
+        Page<RecordDTO> resultDTOs = result.map(new Converter<Record, RecordDTO>() {
+            @Override
+            protected RecordDTO doForward(Record record) {
+                return mapper.convertToDTO(record);
+            }
+
+            @Override
+            protected Record doBackward(RecordDTO recordDTO) {
+                return mapper.convertToEntity(recordDTO);
+            }
+        });
+        return resultDTOs;
     }
 
     /**
