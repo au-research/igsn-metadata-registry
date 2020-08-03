@@ -21,6 +21,8 @@ public class VersionDTO {
     @NotNull
     private String content;
 
+    private String hash;
+
     public String getRecord() {
         return record;
     }
@@ -75,5 +77,13 @@ public class VersionDTO {
 
     public void setCurrent(boolean current) {
         this.current = current;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 }

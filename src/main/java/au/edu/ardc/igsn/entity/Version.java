@@ -47,6 +47,8 @@ public class Version {
     @Column(columnDefinition="BLOB")
     private byte[] content;
 
+    private String hash;
+
     /**
      * Empty constructor
      */
@@ -124,5 +126,13 @@ public class Version {
 
     public void setCurrent(boolean current) {
         this.current = current;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 }

@@ -14,4 +14,9 @@ public interface VersionRepository extends JpaRepository<Version, String> {
 
     boolean existsById(UUID id);
 
+    boolean existsByHash(String hash);
+
+    boolean existsBySchemaAndHash(String schema, String hash);
+
+    boolean existsBySchemaAndHashAndCurrent(String schema, String hash, boolean visible);
 }

@@ -43,7 +43,7 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
         dto.setSchema("igsn-descriptive-v1");
-        dto.setContent(Base64.encodeBase64String("stuff".getBytes()));
+        dto.setContent(Base64.encodeBase64String("some-string".getBytes()));
 
         // when POST, expects 201 with a header
         this.webTestClient
@@ -56,7 +56,6 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
                 .expectBody()
                 .jsonPath("$.id").exists()
                 .jsonPath("$.createdAt").exists();
-
     }
 
     @Test

@@ -11,6 +11,7 @@ import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
 import au.edu.ardc.igsn.exception.VersionNotFoundException;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,6 +72,30 @@ public class VersionServiceTest {
         assertThat(resultDTO).isNotNull();
         assertThat(resultDTO).isInstanceOf(VersionDTO.class);
         verify(repository, times(1)).save(any(Version.class));
+    }
+
+    @Test
+    public void create_HashAlreadyExists_throwsException() {
+        // given a creation request
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        User user = TestHelper.mockUser();
+        VersionDTO dto = new VersionDTO();
+        dto.setRecord(record.getId().toString());
+        dto.setSchema("igsn-descriptive-v1");
+        dto.setContent("blah");
+
+        // setup repository mock
+        Version expected = TestHelper.mockVersion(record.getId());
+        when(recordService.exists(anyString())).thenReturn(true);
+        when(recordService.findById(anyString())).thenReturn(record);
+        when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
+        when(repository.save(any(Version.class))).thenReturn(expected);
+
+        // throws ForbiddenOpereationException if repository has existsBySchemaAndHashAndCurrent
+        when(repository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean())).thenReturn(true);
+        Assert.assertThrows(ForbiddenOperationException.class, () -> {
+            service.create(dto, user);
+        });
     }
 
     @Test
@@ -172,6 +197,14 @@ public class VersionServiceTest {
         // when delete, repository.deleteById is called
         service.delete(version.getId().toString(), TestHelper.mockUser());
         verify(repository, times(1)).deleteById(version.getId().toString());
+    }
+
+    @Test
+    void getHash_ValidVersion_returnsHash() {
+        Version version = TestHelper.mockVersion();
+        version.setContent("random".getBytes());
+        String actual = service.getHash(version);
+        assertThat(actual).isEqualTo(DigestUtils.sha1Hex("random"));
     }
 
     // todo update

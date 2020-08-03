@@ -12,10 +12,14 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class VersionService {
@@ -106,12 +110,20 @@ public class VersionService {
         if (!validationService.validateRecordOwnership(record, user)) {
             throw new ForbiddenOperationException("You don't own this record");
         }
+
+        // there's already a version with this data, schema and is current
+        String hash = getHash(version);
+        if (repository.existsBySchemaAndHashAndCurrent(version.getSchema(), hash, true)) {
+            throw new ForbiddenOperationException("The repository already contains a current version with this data");
+        }
+
         // todo validate version content -> schema validation
 
         // default
         version.setCreatedAt(new Date());
         version.setCreatorID(user.getId());
         version.setCurrent(true);
+        version.setHash(getHash(version));
 
         // allow igsn:import scope to overwrite data
         Allocation allocation = new Allocation(record.getAllocationID());
@@ -140,5 +152,9 @@ public class VersionService {
 
         repository.deleteById(id);
         return true;
+    }
+
+    public String getHash(Version version) {
+        return DigestUtils.sha1Hex(version.getContent());
     }
 }

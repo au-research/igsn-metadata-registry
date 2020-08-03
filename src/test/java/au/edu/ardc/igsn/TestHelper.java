@@ -98,6 +98,7 @@ public class TestHelper {
         version.setCurrent(true);
         version.setRecord(record);
         version.setCreatorID(record.getCreatorID());
+        version.setContent("random".getBytes());
         return version;
     }
 
