@@ -13,7 +13,7 @@ import java.util.List;
 
 @Tag(name = "Schema API")
 @RestController
-@RequestMapping("/api/schemas")
+@RequestMapping("/api/resources/schemas")
 public class SchemaController {
 
     @Autowired

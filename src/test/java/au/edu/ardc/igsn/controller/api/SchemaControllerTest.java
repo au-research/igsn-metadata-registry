@@ -24,10 +24,12 @@ public class SchemaControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private final String baseUrl = "/api/resources/schemas/";
+
     @Test
     public void it_should_get_all_supported_schemas() throws Exception {
         MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/schemas/")
+                MockMvcRequestBuilders.get(baseUrl)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -41,7 +43,7 @@ public class SchemaControllerTest {
     public void it_should_get_a_single_schema() throws Exception {
         String schemaID = "igsn-csiro-v3-descriptive";
         MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/schemas/" + schemaID)
+                MockMvcRequestBuilders.get(baseUrl + schemaID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -55,7 +57,7 @@ public class SchemaControllerTest {
     public void it_should_throw_notFound_if_there_is_no_such_schemaID() throws Exception {
         String schemaID = "non-exist";
         MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/schemas/" + schemaID)
+                MockMvcRequestBuilders.get(baseUrl + schemaID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 
@@ -70,13 +72,13 @@ public class SchemaControllerTest {
 
         String schemaID = "igsn-csiro-v3-descriptive";
         MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
                         .content(validXML)
                         .contentType(MediaType.APPLICATION_XML)
                         .accept(MediaType.APPLICATION_JSON);
 
         MockHttpServletRequestBuilder invalidRequest =
-                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
                         .content(invalidXML)
                         .contentType(MediaType.APPLICATION_XML)
                         .accept(MediaType.APPLICATION_JSON);
@@ -91,7 +93,7 @@ public class SchemaControllerTest {
 
         String schemaID = "non-existence";
         MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post("/api/schemas/" + schemaID + "/validate")
+                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
                         .content(validXML)
                         .contentType(MediaType.APPLICATION_XML)
                         .accept(MediaType.APPLICATION_JSON);
