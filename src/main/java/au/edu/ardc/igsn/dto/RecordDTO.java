@@ -10,8 +10,7 @@ import java.util.UUID;
 public class RecordDTO {
     private UUID id;
 
-    @NotNull
-    private Record.Status status;
+    private boolean visible = true;
 
     @NotNull
     private Date createdAt;
@@ -92,14 +91,6 @@ public class RecordDTO {
         this.id = id;
     }
 
-    public Record.Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Record.Status status) {
-        this.status = status;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -114,5 +105,13 @@ public class RecordDTO {
 
     public void setDataCenterID(UUID dataCenterID) {
         this.dataCenterID = dataCenterID;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

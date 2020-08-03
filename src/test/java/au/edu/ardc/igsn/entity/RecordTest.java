@@ -32,11 +32,14 @@ class RecordTest {
     }
 
     @Test
-    void a_record_has_enumerated_status() {
+    void a_record_has_visible() {
         Record record = new Record();
-        record.setStatus(Record.Status.PUBLISHED);
-
+        record.setVisible(false);
         entityManager.persistAndFlush(record);
-        assertThat(record.getStatus()).isEqualTo(Record.Status.PUBLISHED);
+        assertThat(record.isVisible()).isFalse();
+
+        Record record2 = new Record();
+        entityManager.persistAndFlush(record);
+        assertThat(record2.isVisible()).isTrue();
     }
 }

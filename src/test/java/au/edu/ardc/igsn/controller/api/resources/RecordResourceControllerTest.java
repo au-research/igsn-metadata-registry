@@ -171,7 +171,6 @@ public class RecordResourceControllerTest {
         // given a record
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         RecordDTO dto = mapper.convertToDTO(record);
-        dto.setStatus(Record.Status.DRAFT);
 
         // setting up the world
         when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());

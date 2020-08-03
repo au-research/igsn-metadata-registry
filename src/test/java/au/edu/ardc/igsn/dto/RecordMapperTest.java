@@ -60,6 +60,6 @@ public class RecordMapperTest {
         assertThat(dto.getModifiedAt()).isEqualTo(record.getModifiedAt());
         assertThat(dto.getModifierID()).isEqualTo(record.getModifierID());
         assertThat(dto.getCreatedAt()).isEqualTo(record.getCreatedAt());
-        assertThat(dto.getStatus()).isEqualTo(record.getStatus());
+        assertThat(dto.isVisible()).isEqualTo(record.isVisible());
     }
 }

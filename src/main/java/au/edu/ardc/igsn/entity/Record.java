@@ -13,8 +13,6 @@ import java.util.UUID;
 @Table(name = "records")
 public class Record {
 
-    // todo soft delete
-
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -24,17 +22,13 @@ public class Record {
     @Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    private boolean visible = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedAt;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date deletedAt;
 
     @Column(columnDefinition = "BINARY(16)")
     private UUID creatorID;
@@ -89,14 +83,6 @@ public class Record {
 
     public void setVersions(Set<Version> versions) {
         this.versions = versions;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
     }
 
     public UUID getCreatorID() {
@@ -173,8 +159,12 @@ public class Record {
         this.ownerID = ownerID;
     }
 
-    public static enum Status {
-        PUBLISHED, DRAFT
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     public static enum OwnerType {

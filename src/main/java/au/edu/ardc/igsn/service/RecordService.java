@@ -106,9 +106,11 @@ public class RecordService {
         record.setCreatorID(user.getId());
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(user.getId());
+        record.setVisible(true);
 
         // allow igsn:import scope to overwrite default data
         if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+            record.setVisible(recordDTO.isVisible());
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
@@ -170,8 +172,8 @@ public class RecordService {
             throw new ForbiddenOperationException("You don't have permission to update this record");
         }
 
-        // can update Status, AllocationID, OwnerID and OwnerType
-        record.setStatus(recordDTO.getStatus() != null ? recordDTO.getStatus() : record.getStatus());
+        // can update
+        record.setVisible(recordDTO.isVisible());
         record.setAllocationID(recordDTO.getAllocationID() != null ? recordDTO.getAllocationID() : record.getAllocationID());
         record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
         record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
@@ -186,6 +188,7 @@ public class RecordService {
             record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
             record.setDataCenterID(recordDTO.getDataCenterID() != null ? recordDTO.getDataCenterID() : record.getDataCenterID());
+            record.setModifierID(recordDTO.getModifierID() != null ? recordDTO.getModifierID() : record.getModifierID());
         }
 
         record = repository.save(record);

@@ -69,7 +69,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(record.getId().toString())
-                .jsonPath("$.status").isEqualTo(record.getStatus().toString())
+                .jsonPath("$.visible").isEqualTo(record.isVisible())
                 .jsonPath("$.createdAt").exists();
     }
 
@@ -193,14 +193,14 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
         // given a record with a the same allocation as the credentials
         Record record = TestHelper.mockRecord();
         record.setAllocationID(UUID.fromString(resourceID));
-        record.setStatus(Record.Status.DRAFT);
+        record.setVisible(true);
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(UUID.fromString(userID));
         repository.saveAndFlush(record);
 
         // the request is to update the status
         RecordDTO requestDTO = new RecordDTO();
-        requestDTO.setStatus(Record.Status.PUBLISHED);
+        requestDTO.setVisible(false);
 
         // when PUT with default credentials, 202, status is updated
         this.webTestClient
@@ -211,7 +211,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
                 .expectStatus().isAccepted()
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(record.getId().toString())
-                .jsonPath("$.status").isEqualTo(Record.Status.PUBLISHED.toString());
+                .jsonPath("$.visible").isEqualTo(false);
     }
 
     @Test

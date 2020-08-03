@@ -27,7 +27,6 @@ public class TestHelper {
      */
     public static Record mockRecord() {
         Record record = new Record();
-        record.setStatus(Record.Status.PUBLISHED);
         record = populateWithOwner(record, UUID.randomUUID());
         return record;
     }

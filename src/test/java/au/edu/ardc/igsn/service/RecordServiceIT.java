@@ -129,14 +129,14 @@ public class RecordServiceIT {
         Record record = TestHelper.mockRecord();
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(user.getId());
-        record.setStatus(Record.Status.DRAFT);
+        record.setVisible(true);
         record.setCreatedAt(new Date());
         record = repository.saveAndFlush(record);
 
         // when update with a dto to change
         RecordDTO dto = new RecordDTO();
         dto.setId(record.getId());
-        dto.setStatus(Record.Status.PUBLISHED);
+        dto.setVisible(false);
 
         // when update with the modified object
         RecordDTO resultDTO = service.update(dto, user);
@@ -147,7 +147,7 @@ public class RecordServiceIT {
         // record is updated with the new status
         Record actual = service.findById(record.getId().toString());
         assertThat(actual).isNotNull();
-        assertThat(actual.getStatus()).isEqualTo(Record.Status.PUBLISHED);
+        assertThat(actual.isVisible()).isFalse();
     }
 
     @Test
@@ -161,7 +161,6 @@ public class RecordServiceIT {
 
         // given a record
         Record record = TestHelper.mockRecord();
-        record.setStatus(Record.Status.DRAFT);
         record.setOwnerType(Record.OwnerType.User);
         record.setAllocationID(allocation.getId());
         record.setOwnerID(user.getId());
