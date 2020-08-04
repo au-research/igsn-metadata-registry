@@ -2,6 +2,10 @@
 server.port=8085
 server.servlet.context-path=/igsn
 
+# Logging Setup
+logging.file.name=logs/igsn-registry.log
+
+# Application Setup
 app.name=IGSN Registry
 app.description=A metadata registry for IGSN
 app.version=@project.version@

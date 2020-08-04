@@ -12,6 +12,7 @@ import au.edu.ardc.igsn.model.DataCenter;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -362,5 +363,42 @@ public class RecordServiceTest {
 
         // repository is called
         verify(repository, times(1)).findAllByVisibleIsTrue(any(Pageable.class));
+    }
+
+    @Test
+    void findPublicById_notfound_throwsException() {
+        // given no record
+        when(repository.findById(anyString())).thenReturn(null);
+
+        // when findPublicById, throws Exception
+        Assert.assertThrows(RecordNotFoundException.class, () -> {
+           service.findPublicById(UUID.randomUUID().toString());
+        });
+    }
+
+    @Test
+    void findPublicById_privateRecord_throwsException() {
+        // given a private record
+        Record record = TestHelper.mockRecord();
+        record.setVisible(false);
+        when(repository.findById(anyString())).thenReturn(Optional.of(record));
+
+        // when findPublicById, throws Exception
+        Assert.assertThrows(RecordNotFoundException.class, () -> {
+            service.findPublicById(UUID.randomUUID().toString());
+        });
+    }
+
+    @Test
+    void findPublicById_foundRecord_returnsDTO() {
+        // given a public record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+        record.setVisible(true);
+        when(repository.findById(record.getId())).thenReturn(Optional.of(record));
+
+        // when findPublicById, returns a RecordDTO
+        RecordDTO dto = service.findPublicById(record.getId().toString());
+        assertThat(dto).isNotNull();
+        assertThat(dto).isInstanceOf(RecordDTO.class);
     }
 }

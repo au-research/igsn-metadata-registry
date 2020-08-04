@@ -72,6 +72,20 @@ public class RecordService {
     }
 
     /**
+     * Find and return a publicly available record
+     *
+     * @param id uuid of the record
+     * @return RecordDTO
+     */
+    public RecordDTO findPublicById(String id) {
+        Record record = findById(id);
+        if (record == null || !record.isVisible()) {
+            throw new RecordNotFoundException(id);
+        }
+        return mapper.convertToDTO(record);
+    }
+
+    /**
      * Find a record by id
      * todo unit test
      * @param id String representation of a uuid
