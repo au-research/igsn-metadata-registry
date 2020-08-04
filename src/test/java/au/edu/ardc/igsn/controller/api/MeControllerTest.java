@@ -31,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class MeControllerTest {
 
+    private final String baseUrl = "/api/me/";
+
     @Autowired
     MockMvc mockMvc;
 
@@ -59,7 +61,7 @@ public class MeControllerTest {
         when(kcServiceMock.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 
         MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/me/")
+                MockMvcRequestBuilders.get(baseUrl)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON);
 

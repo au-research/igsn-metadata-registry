@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Test;
 
 class MeControllerIT extends KeycloakIntegrationTest {
 
+    private final String baseUrl = "/api/me/";
+
     @Test
     void whoami_NotLoggedIn_401() {
         this.webTestClient
-                .get().uri("/api/me/")
+                .get().uri(baseUrl)
                 .exchange()
                 .expectStatus().isUnauthorized();
     }
@@ -17,7 +19,7 @@ class MeControllerIT extends KeycloakIntegrationTest {
     @Test
     public void whoami_LoggedIn_showUserProfile() {
         this.webTestClient
-                .get().uri("/api/me/")
+                .get().uri(baseUrl)
                 .header("Authorization", getBasicAuthenticationHeader(username, password))
                 .exchange()
                 .expectStatus().isOk()

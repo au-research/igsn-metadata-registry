@@ -19,7 +19,9 @@ import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -50,6 +52,11 @@ public class KeycloakService {
      */
     public AccessToken getAccessToken(HttpServletRequest request) {
         KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) (request.getAttribute(KeycloakSecurityContext.class.getName()));
+
+        // if there is no security context for keycloak, then the user is not logged in
+        if (keycloakSecurityContext == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You have to log in");
+        }
 
         return keycloakSecurityContext.getToken();
     }
