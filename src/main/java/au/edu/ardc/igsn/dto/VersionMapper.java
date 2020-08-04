@@ -33,7 +33,8 @@ public class VersionMapper {
             versionDTO.setId(version.getId().toString());
         }
         versionDTO.setContent(null);
-        //versionDTO.setContent(new String(version.getContent()));
+        // todo hide the content but still store it somehow
+//        versionDTO.setContent(new String(version.getContent()));
 
         return versionDTO;
     }

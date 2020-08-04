@@ -74,6 +74,18 @@ public class VersionService {
         return opt.orElse(null);
     }
 
+    public VersionDTO findPublicById(String id) {
+        Version version = findById(id);
+        if (version == null || !version.getRecord().isVisible()) {
+            throw new VersionNotFoundException(id);
+        }
+        return mapper.convertToDTO(version);
+    }
+
+    public VersionMapper getMapper() {
+        return mapper;
+    }
+
     public Page<VersionDTO> search(VersionSpecification specs, Pageable pageable) {
         Page<Version> versions = repository.findAll(specs, pageable);
         return versions.map(getDTOConverter());

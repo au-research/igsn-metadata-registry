@@ -6,9 +6,13 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.util.Helpers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.util.UUID;
 
 class VersionsPublicControllerIT extends WebIntegrationTest {
     private final String baseUrl = "/api/public/versions/";
@@ -19,8 +23,15 @@ class VersionsPublicControllerIT extends WebIntegrationTest {
     @Autowired
     RecordRepository recordRepository;
 
+    @BeforeEach
+    void setUp() {
+        versionRepository.flush();
+        versionRepository.deleteAll();
+        versionRepository.flush();
+    }
+
     @Test
-    void show_mixedVersions_showOnlyPublicVersions() {
+    void index_mixedVersions_showOnlyPublicVersions() {
         // given a record
         Record record = TestHelper.mockRecord();
         record.setVisible(true);
@@ -55,7 +66,7 @@ class VersionsPublicControllerIT extends WebIntegrationTest {
     }
 
     @Test
-    void show_filterBySchema_onlySchemaReturns() {
+    void index_filterBySchema() {
         // given a record
         Record record = TestHelper.mockRecord();
         record.setVisible(true);
@@ -110,10 +121,96 @@ class VersionsPublicControllerIT extends WebIntegrationTest {
                 .jsonPath("$.content[0].schema").isEqualTo("igsn-csiro-v3");
     }
 
-    @BeforeEach
-    void setUp() {
-        versionRepository.flush();
-        versionRepository.deleteAll();
-        versionRepository.flush();
+    @Test
+    void index_filterByRecord() {
+        // given a public version
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        recordRepository.saveAndFlush(record);
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        versionRepository.saveAndFlush(version);
+
+        // given a public version
+        Record anotherRecord = TestHelper.mockRecord();
+        anotherRecord.setVisible(true);
+        recordRepository.saveAndFlush(anotherRecord);
+        Version anotherVersion = TestHelper.mockVersion(anotherRecord);
+        anotherVersion.setCurrent(true);
+        versionRepository.saveAndFlush(anotherVersion);
+
+        // when filter by ?record=record, only 1 returns
+        this.webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(baseUrl)
+                        .queryParam("record", record.getId().toString())
+                        .build())
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(1)
+                .jsonPath("$.content[0].record").isEqualTo(record.getId().toString());
+    }
+
+    @Test
+    void show_notfoundOrPrivate_404() {
+        // given a notFound record
+        this.webTestClient
+                .get()
+                .uri(baseUrl + UUID.randomUUID().toString())
+                .exchange().expectStatus().isNotFound();
+
+        // given a private version
+        Record record = TestHelper.mockRecord();
+        record.setVisible(false);
+        recordRepository.saveAndFlush(record);
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        versionRepository.saveAndFlush(version);
+
+        this.webTestClient
+                .get()
+                .uri(baseUrl + version.getId().toString())
+                .exchange().expectStatus().isNotFound();
+    }
+
+    @Test
+    void show_publicVersion_200() {
+        // given a public version
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        recordRepository.saveAndFlush(record);
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        versionRepository.saveAndFlush(version);
+
+        this.webTestClient
+                .get()
+                .uri(baseUrl + version.getId().toString())
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(version.getId().toString())
+                .jsonPath("$.record").isEqualTo(record.getId().toString());
+    }
+
+    @Test
+    void showContent_public_200XML() throws IOException {
+        // given a public version
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        recordRepository.saveAndFlush(record);
+        Version version = TestHelper.mockVersion(record);
+        String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+        version.setSchema("igsn-descriptive-csiro-v3");
+        version.setContent(xml.getBytes());
+        version.setCurrent(true);
+        versionRepository.saveAndFlush(version);
+
+        this.webTestClient
+                .get()
+                .uri(baseUrl + version.getId().toString() + "/content")
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .xml(xml);
     }
 }
