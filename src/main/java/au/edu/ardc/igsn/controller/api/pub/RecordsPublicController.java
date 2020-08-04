@@ -2,15 +2,13 @@ package au.edu.ardc.igsn.controller.api.pub;
 
 import au.edu.ardc.igsn.controller.api.PageableOperation;
 import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
-import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 @RestController
@@ -35,7 +32,10 @@ import java.util.UUID;
 public class RecordsPublicController {
 
     @Autowired
-    private RecordService service;
+    RecordService service;
+
+    @Autowired
+    VersionService versionService;
 
     @GetMapping("")
     @Operation(
@@ -72,5 +72,37 @@ public class RecordsPublicController {
     ) {
         RecordDTO dto = service.findPublicById(id);
         return ResponseEntity.ok().body(dto);
+    }
+
+    @GetMapping(value = "/{id}/versions")
+    @Operation(
+            summary = "Get all versions for a record",
+            description = "Retrieve the versions for a single record by id"
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Record is not found",
+            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Versions are found",
+            content = @Content(schema = @Schema(implementation = Page.class))
+    )
+    public ResponseEntity<?> showVersions(
+            @Parameter(
+                    required = true,
+                    description = "the id of the record (uuid)",
+                    schema = @Schema(implementation = UUID.class)
+            )
+            @PathVariable String id,
+            Pageable pageable
+    ) {
+        // try to reuse the business logic of finding public record
+        RecordDTO dto = service.findPublicById(id);
+
+        Record record = service.getMapper().convertToEntity(dto);
+        Page<VersionDTO> result = versionService.findAllVersionsForRecord(record, pageable);
+        return ResponseEntity.ok().body(result);
     }
 }

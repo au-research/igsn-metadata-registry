@@ -1,6 +1,9 @@
 package au.edu.ardc.igsn.repository;
 
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +23,6 @@ public interface VersionRepository extends JpaRepository<Version, String> {
     boolean existsBySchemaAndHash(String schema, String hash);
 
     boolean existsBySchemaAndHashAndCurrent(String schema, String hash, boolean visible);
+
+    Page<Version> findAllByRecord(Record record, Pageable pageable);
 }

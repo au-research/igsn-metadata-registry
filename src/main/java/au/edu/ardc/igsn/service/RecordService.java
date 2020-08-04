@@ -183,6 +183,10 @@ public class RecordService {
         return true;
     }
 
+    public RecordMapper getMapper() {
+        return mapper;
+    }
+
     /**
      * Persist a newRecord
      * todo refactor remove

@@ -1,11 +1,10 @@
 package au.edu.ardc.igsn.controller.api.pub;
 
 import au.edu.ardc.igsn.TestHelper;
-import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.RecordRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import au.edu.ardc.igsn.repository.VersionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +20,14 @@ import java.util.UUID;
 @AutoConfigureWebTestClient
 class RecordsPublicControllerIT {
 
+    private final String baseUrl = "/api/public/records/";
     @Autowired
     public WebTestClient webTestClient;
-
-    private final String baseUrl = "/api/public/records/";
-
     @Autowired
     RecordRepository repository;
+
+    @Autowired
+    VersionRepository versionRepository;
 
     @Test
     void index_show_shouldReturnAllRecords() {
@@ -108,8 +108,29 @@ class RecordsPublicControllerIT {
                 .jsonPath("$.id").isEqualTo(record.getId().toString());
     }
 
-    @BeforeEach
-    void setUp() {
+    @Test
+    void showVersions_publicRecord_returnsListOfVersions() {
+        // given a public record
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        repository.saveAndFlush(record);
 
+        // and 3 versions
+        for (int i = 0; i < 3; i++) {
+            Version version = TestHelper.mockVersion(record);
+            versionRepository.saveAndFlush(version);
+        }
+
+        this.webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(baseUrl + record.getId().toString() + "/versions")
+                        .queryParam("page", "0")
+                        .queryParam("size", "5")
+                        .build())
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(3)
+                .jsonPath("$.content[0].id").isNotEmpty();
     }
 }

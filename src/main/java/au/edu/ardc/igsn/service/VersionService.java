@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.service;
 
+import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
@@ -12,8 +13,11 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import com.google.common.base.Converter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -64,6 +68,25 @@ public class VersionService {
         Optional<Version> opt = repository.findById(UUID.fromString(id));
 
         return opt.orElse(null);
+    }
+
+    public Page<VersionDTO> findAllVersionsForRecord(Record record, Pageable pageable) {
+        Page<Version> result = repository.findAllByRecord(record, pageable);
+        return result.map(getDTOConverter());
+    }
+
+    public Converter<Version, VersionDTO> getDTOConverter() {
+        return new Converter<Version, VersionDTO>() {
+            @Override
+            protected VersionDTO doForward(Version version) {
+                return mapper.convertToDTO(version);
+            }
+
+            @Override
+            protected Version doBackward(VersionDTO versionDTO) {
+                return mapper.convertToEntity(versionDTO);
+            }
+        };
     }
 
     /**

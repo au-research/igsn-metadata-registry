@@ -9,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -123,5 +125,26 @@ public class VersionRepositoryTest {
         assertThat(versionRepository.existsBySchemaAndHashAndCurrent(schema, hash, true)).isTrue();
         assertThat(versionRepository.existsBySchemaAndHashAndCurrent(schema, hash, false)).isFalse();
         assertThat(versionRepository.existsBySchemaAndHashAndCurrent(schema, DigestUtils.sha1Hex("some random string"), true)).isFalse();
+    }
+
+    @Test
+    public void findAllByRecord() {
+        // given a record
+        Record record = TestHelper.mockRecord();
+        entityManager.persistAndFlush(record);
+
+        // with 2 versions
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        entityManager.persistAndFlush(version);
+
+        Version version2 = TestHelper.mockVersion(record);
+        version2.setCurrent(false);
+        entityManager.persistAndFlush(version2);
+
+        // when findAllByRecord
+        Page<Version> versions =  versionRepository.findAllByRecord(record, PageRequest.of(0, 20));
+
+        assertThat(versions.getContent()).hasSize(2);
     }
 }

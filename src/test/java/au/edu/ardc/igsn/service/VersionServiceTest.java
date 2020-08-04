@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
@@ -12,18 +13,21 @@ import au.edu.ardc.igsn.exception.VersionNotFoundException;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -205,6 +209,38 @@ public class VersionServiceTest {
         version.setContent("random".getBytes());
         String actual = service.getHash(version);
         assertThat(actual).isEqualTo(DigestUtils.sha1Hex("random"));
+    }
+
+    @Test
+    void findAllVersionsForRecord() {
+        // given a record
+        Record record = TestHelper.mockRecord(UUID.randomUUID());
+
+        // and 5 versions
+        List<Version> mockResult = new ArrayList<>();
+        for (int i = 0; i < 10; i ++) {
+            Version version = TestHelper.mockVersion(record);
+            mockResult.add(version);
+        }
+
+        // setup the world
+        Page<Version> mockPage = new PageImpl(mockResult);
+        when(repository.findAllByRecord(any(Record.class), any(Pageable.class))).thenReturn(mockPage);
+
+        // when findAllVersionsForRecord
+        Page<VersionDTO> actual = service.findAllVersionsForRecord(record, PageRequest.of(0, 5));
+
+        // is a valid Page<VersionDTO>
+        Assertions.assertThat(actual.getContent()).hasSize(10);
+        Assertions.assertThat(actual.getTotalElements()).isEqualTo(10);
+        Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
+
+        // contains only RecordDTO
+        long countOfVersionDTO = actual.stream().filter(t -> t instanceof VersionDTO).count();
+        Assertions.assertThat(countOfVersionDTO).isEqualTo(10);
+
+        // repository is called
+        verify(repository, times(1)).findAllByRecord(any(Record.class), any(Pageable.class));
     }
 
     // todo update
