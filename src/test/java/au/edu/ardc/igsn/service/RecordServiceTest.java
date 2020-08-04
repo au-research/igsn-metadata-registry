@@ -12,11 +12,11 @@ import au.edu.ardc.igsn.model.DataCenter;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import au.edu.ardc.igsn.repository.specs.RecordSpecification;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -347,10 +347,10 @@ public class RecordServiceTest {
 
         // setup the world
         Page<Record> mockPage = new PageImpl(mockResult);
-        when(repository.findAllByVisibleIsTrue(any(Pageable.class))).thenReturn(mockPage);
+        when(repository.findAll(any(RecordSpecification.class), any(Pageable.class))).thenReturn(mockPage);
 
         // when findPublic
-        Page<RecordDTO> actual = service.findPublic(PageRequest.of(0, 10));
+        Page<RecordDTO> actual = service.findAllPublic(PageRequest.of(0, 10));
 
         // is a valid Page<RecordDTO>
         assertThat(actual.getContent()).hasSize(10);
@@ -362,7 +362,7 @@ public class RecordServiceTest {
         assertThat(countOfRecordDTO).isEqualTo(10);
 
         // repository is called
-        verify(repository, times(1)).findAllByVisibleIsTrue(any(Pageable.class));
+        verify(repository, times(1)).findAll(any(RecordSpecification.class), any(Pageable.class));
     }
 
     @Test

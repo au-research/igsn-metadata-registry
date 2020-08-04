@@ -2,6 +2,9 @@ package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.repository.specs.RecordSpecification;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,5 +165,34 @@ public class RecordRepositoryTest {
 
         Page<Record> allVisibleRecords = repository.findAllByVisibleIsTrue(PageRequest.of(0, 100));
         assertThat(allVisibleRecords.getContent()).hasSize(3);
+    }
+
+    @Test
+    public void specificationsTest() {
+        // given 3 visible records
+        for (int i = 0; i < 3; i++) {
+            Record record = TestHelper.mockRecord();
+            record.setVisible(true);
+            entityManager.persist(record);
+        }
+
+        // and 2 private records
+        for (int i = 0; i < 2; i++) {
+            Record record = TestHelper.mockRecord();
+            record.setVisible(false);
+            entityManager.persist(record);
+        }
+
+        // found 3 visible records
+        RecordSpecification visibleSpec = new RecordSpecification();
+        visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
+        List<Record> visibleRecord = repository.findAll(visibleSpec);
+        assertThat(visibleRecord).hasSize(3);
+
+        // found 2 private records
+        RecordSpecification privateSpecs = new RecordSpecification();
+        privateSpecs.add(new SearchCriteria("visible", false, SearchOperation.EQUAL));
+        List<Record> privateRecords = repository.findAll(privateSpecs);
+        assertThat(privateRecords).hasSize(2);
     }
 }

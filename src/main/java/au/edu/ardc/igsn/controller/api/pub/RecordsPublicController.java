@@ -43,7 +43,7 @@ public class RecordsPublicController {
             description = "Retrieves all publicly available records")
     @PageableOperation
     public ResponseEntity<Page<RecordDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable) {
-        Page<RecordDTO> result = service.findPublic(pageable);
+        Page<RecordDTO> result = service.findAllPublic(pageable);
         return ResponseEntity.ok().body(result);
     }
 

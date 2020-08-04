@@ -1,11 +1,13 @@
 package au.edu.ardc.igsn.repository;
 
 import au.edu.ardc.igsn.entity.Record;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.UUID;
 
 
 @Repository
-public interface RecordRepository extends JpaRepository<Record, String> {
+public interface RecordRepository extends JpaRepository<Record, String>, JpaSpecificationExecutor<Record> {
 
     List<Record> findByCreatorID(UUID creatorID);
 
@@ -29,4 +31,5 @@ public interface RecordRepository extends JpaRepository<Record, String> {
     List<Record> findOwned(UUID owner, List<UUID> allocationIDs, Pageable pageable);
 
     Page<Record> findAllByVisibleIsTrue(Pageable pageable);
+
 }

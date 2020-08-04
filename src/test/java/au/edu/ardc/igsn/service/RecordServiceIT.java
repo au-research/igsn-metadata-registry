@@ -8,11 +8,9 @@ import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -71,10 +69,10 @@ public class RecordServiceIT {
         repository.saveAndFlush(record);
 
         // found 2 records when findPublic
-        assertThat(service.findPublic(PageRequest.of(0, 10))).hasSize(2);
+        assertThat(service.findAllPublic(PageRequest.of(0, 10))).hasSize(2);
 
         // found 1 record when findPublic with 1 per page
-        assertThat(service.findPublic(PageRequest.of(0, 1))).hasSize(1);
+        assertThat(service.findAllPublic(PageRequest.of(0, 1))).hasSize(1);
     }
 
     @Test

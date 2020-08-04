@@ -44,9 +44,7 @@ class RecordsPublicControllerIT {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.content").exists()
-                .jsonPath("$.content[*].id").isArray()
-
-        ;
+                .jsonPath("$.content[*].id").isArray();
     }
 
     @Test

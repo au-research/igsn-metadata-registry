@@ -9,10 +9,14 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import au.edu.ardc.igsn.repository.specs.RecordSpecification;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
 import com.google.common.base.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -49,15 +53,30 @@ public class RecordService {
         return repository.findOwned(ownerID);
     }
 
+    public Page<RecordDTO> search(Specification<Record> specs, Pageable pageable) {
+        Page<Record> result = repository.findAll(specs, pageable);
+        return result.map(getDTOConverter());
+    }
+
     /**
      * Return all publicly available records
      *
      * @param pageable Pageable
      * @return a list of RecordDTO that fits the criteria
      */
-    public Page<RecordDTO> findPublic(Pageable pageable) {
-        Page<Record> result = repository.findAllByVisibleIsTrue(pageable);
-        Page<RecordDTO> resultDTOs = result.map(new Converter<Record, RecordDTO>() {
+    public Page<RecordDTO> findAllPublic(Pageable pageable) {
+        RecordSpecification visibleSpec = new RecordSpecification();
+        visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
+        return search(visibleSpec, pageable);
+    }
+
+    /**
+     * Reusable DTO converter for use within the class
+     *
+     * @return Converter between Record and RecordDTO
+     */
+    private Converter<Record, RecordDTO> getDTOConverter() {
+        return new Converter<Record, RecordDTO>() {
             @Override
             protected RecordDTO doForward(Record record) {
                 return mapper.convertToDTO(record);
@@ -67,8 +86,7 @@ public class RecordService {
             protected Record doBackward(RecordDTO recordDTO) {
                 return mapper.convertToEntity(recordDTO);
             }
-        });
-        return resultDTOs;
+        };
     }
 
     /**
