@@ -1,30 +1,24 @@
 package au.edu.ardc.igsn.controller.api.pub;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.WebIntegrationTest;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.UUID;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
-class RecordsPublicControllerIT {
+class RecordsPublicControllerIT extends WebIntegrationTest {
 
     private final String baseUrl = "/api/public/records/";
+
     @Autowired
-    public WebTestClient webTestClient;
-    @Autowired
-    RecordRepository repository;
+    RecordRepository recordRepository;
 
     @Autowired
     VersionRepository versionRepository;
@@ -35,9 +29,9 @@ class RecordsPublicControllerIT {
         for (int i = 0; i < 5; i++) {
             Record record = TestHelper.mockRecord();
             record.setVisible(true);
-            repository.save(record);
+            recordRepository.save(record);
         }
-        repository.flush();
+        recordRepository.flush();
 
         this.webTestClient.get().uri(baseUrl)
                 .exchange()
@@ -53,9 +47,9 @@ class RecordsPublicControllerIT {
         for (int i = 0; i < 5; i++) {
             Record record = TestHelper.mockRecord();
             record.setVisible(true);
-            repository.save(record);
+            recordRepository.save(record);
         }
-        repository.flush();
+        recordRepository.flush();
 
         this.webTestClient
                 .get()
@@ -81,7 +75,7 @@ class RecordsPublicControllerIT {
         // given a private record
         Record record = TestHelper.mockRecord();
         record.setVisible(false);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // private record returns 404
         this.webTestClient
@@ -95,7 +89,7 @@ class RecordsPublicControllerIT {
         // given a public record
         Record record = TestHelper.mockRecord();
         record.setVisible(true);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         this.webTestClient
                 .get()
@@ -111,7 +105,7 @@ class RecordsPublicControllerIT {
         // given a public record
         Record record = TestHelper.mockRecord();
         record.setVisible(true);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // and 3 versions
         for (int i = 0; i < 3; i++) {
@@ -137,7 +131,7 @@ class RecordsPublicControllerIT {
         // given a record
         Record record = TestHelper.mockRecord();
         record.setVisible(true);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // with a version of schema igsn-descriptive-v1
         Version version = TestHelper.mockVersion(record);

@@ -6,6 +6,7 @@ import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.URLDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -37,8 +37,7 @@ public class SearchSpecification {
                 predicates.add(builder.notEqual(
                         root.get(criteria.getKey()), criteria.getValue()));
             } else if (criteria.getOperation().equals(SearchOperation.EQUAL)) {
-                predicates.add(builder.equal(
-                        root.get(criteria.getKey()), criteria.getValue()));
+                predicates.add(builder.equal(root.get(criteria.getKey()), criteria.getValue()));
             } else if (criteria.getOperation().equals(SearchOperation.MATCH)) {
                 predicates.add(builder.like(
                         builder.lower(root.get(criteria.getKey())),
@@ -55,6 +54,9 @@ public class SearchSpecification {
                 predicates.add(builder.in(root.get(criteria.getKey())).value(criteria.getValue()));
             } else if (criteria.getOperation().equals(SearchOperation.NOT_IN)) {
                 predicates.add(builder.not(root.get(criteria.getKey())).in(criteria.getValue()));
+            } else if (criteria.getOperation().equals(SearchOperation.RECORD_EQUAL)) {
+                // special join to the record table
+                predicates.add(builder.equal(root.join("record").get(criteria.getKey()), criteria.getValue()));
             }
         }
 

@@ -100,7 +100,8 @@ public class RecordsPublicController {
             Pageable pageable
     ) {
         // try to reuse the business logic of finding public record
-        RecordDTO dto = service.findPublicById(id);        Record record = service.getMapper().convertToEntity(dto);
+        RecordDTO dto = service.findPublicById(id);
+        Record record = service.getMapper().convertToEntity(dto);
 
         VersionSpecification specs = new VersionSpecification();
         specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));

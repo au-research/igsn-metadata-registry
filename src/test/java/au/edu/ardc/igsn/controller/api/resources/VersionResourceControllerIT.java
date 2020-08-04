@@ -6,6 +6,7 @@ import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
@@ -20,7 +21,7 @@ import static org.exparity.hamcrest.date.DateMatchers.sameDay;
 class VersionResourceControllerIT extends KeycloakIntegrationTest {
 
     @Autowired
-    RecordRepository repository;
+    RecordRepository recordRepository;
 
     @Test
     void store_NotLoggedIn_401() {
@@ -37,7 +38,7 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
         Record record = TestHelper.mockRecord();
         record.setOwnerID(UUID.fromString(userID));
         record.setOwnerType(Record.OwnerType.User);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // dto of a new version
         VersionDTO dto = new VersionDTO();
@@ -64,7 +65,7 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
         Record record = TestHelper.mockRecord();
         record.setOwnerID(UUID.fromString(userID));
         record.setOwnerType(Record.OwnerType.User);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // dto of a new version
         VersionDTO dto = new VersionDTO();

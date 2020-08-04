@@ -163,4 +163,39 @@ public class VersionRepositoryTest {
         Page<Version> allCurrentVersions = versionRepository.findAll(recordAndCurrentSpec, PageRequest.of(0, 10));
         assertThat(allCurrentVersions).hasSize(1);
     }
+
+    @Test
+    public void testSpecificationJoin() {
+        // given a record
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        entityManager.persistAndFlush(record);
+
+        // with a current version
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        entityManager.persistAndFlush(version);
+
+        // and a superseded version
+        Version superseded = TestHelper.mockVersion(record);
+        superseded.setCurrent(false);
+        entityManager.persistAndFlush(superseded);
+
+        // given a record
+        Record privateRecord = TestHelper.mockRecord();
+        privateRecord.setVisible(false);
+        entityManager.persistAndFlush(privateRecord);
+
+        // current version on private record
+        Version privateVersion = TestHelper.mockVersion(privateRecord);
+        privateVersion.setCurrent(true);
+        entityManager.persistAndFlush(privateVersion);
+
+        // find all current version for public record should return 1
+        VersionSpecification spec = new VersionSpecification();
+        spec.add(new SearchCriteria("current", true, SearchOperation.EQUAL));
+        spec.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
+        Page<Version> results = versionRepository.findAll(spec, PageRequest.of(0, 10));
+        assertThat(results.getContent()).hasSize(1);
+    }
 }

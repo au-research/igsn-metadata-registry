@@ -6,6 +6,7 @@ import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
@@ -20,7 +21,7 @@ import static org.exparity.hamcrest.date.DateMatchers.sameDay;
 class RecordResourceControllerIT extends KeycloakIntegrationTest {
 
     @Autowired
-    RecordRepository repository;
+    RecordRepository recordRepository;
 
     @Test
     void index_NotLoggedIn_401() {
@@ -37,7 +38,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
     void show_NotLoggedIn_401() {
         // given a record
         Record record = TestHelper.mockRecord();
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when show without permission, get 401
         this.webTestClient
@@ -59,7 +60,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
     void show_recordExist_200() {
         // given a record
         Record record = TestHelper.mockRecord();
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when show with authentication, gets 200 and the record
         this.webTestClient
@@ -144,7 +145,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
     void update_NotLoggedIn_401() {
         // given a record
         Record record = TestHelper.mockRecord();
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when PUT without logged in, 401
         this.webTestClient
@@ -172,7 +173,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
         // given a record with a random Allocation
         Record record = TestHelper.mockRecord();
         record.setAllocationID(UUID.randomUUID());
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // the request is to update the creatorID
         RecordDTO requestDTO = new RecordDTO();
@@ -196,7 +197,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
         record.setVisible(true);
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(UUID.fromString(userID));
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // the request is to update the status
         RecordDTO requestDTO = new RecordDTO();
@@ -218,7 +219,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
     void delete_NotLoggedIn_401() {
         // given a record
         Record record = TestHelper.mockRecord();
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when DELETE without logging in, 401
         this.webTestClient
@@ -243,7 +244,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
         Record record = TestHelper.mockRecord();
         record.setOwnerID(UUID.randomUUID());
         record.setOwnerType(Record.OwnerType.User);
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when DELETE with credentials, expects 403
         this.webTestClient
@@ -259,7 +260,7 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
         Record record = TestHelper.mockRecord();
         record.setOwnerType(Record.OwnerType.User);
         record.setOwnerID(UUID.fromString(userID));
-        repository.saveAndFlush(record);
+        recordRepository.saveAndFlush(record);
 
         // when DELETE with credentials, expects 202
         this.webTestClient
