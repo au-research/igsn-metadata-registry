@@ -16,6 +16,8 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -31,6 +33,8 @@ import java.util.*;
  */
 @Service
 public class KeycloakService {
+
+    Logger logger = LoggerFactory.getLogger(KeycloakService.class);
 
     @Value("${keycloak.auth-server-url:https://test.auth.ardc.edu.au/auth/}")
     private String kcAuthServerURL;
@@ -51,7 +55,10 @@ public class KeycloakService {
      * @return AccessToken access token
      */
     public AccessToken getAccessToken(HttpServletRequest request) {
+        logger.debug("Obtaining AccessToken.class for current request");
         KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) (request.getAttribute(KeycloakSecurityContext.class.getName()));
+
+        logger.debug(String.format("Obtained keycloakSecurityContext: %s", keycloakSecurityContext));
 
         // if there is no security context for keycloak, then the user is not logged in
         if (keycloakSecurityContext == null) {
@@ -68,8 +75,8 @@ public class KeycloakService {
      * @return String access token
      */
     public String getPlainAccessToken(HttpServletRequest request) {
+        logger.debug("Obtaining PlainAccessToken for current request");
         KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) (request.getAttribute(KeycloakSecurityContext.class.getName()));
-
         return keycloakSecurityContext.getTokenString();
     }
 
@@ -93,7 +100,7 @@ public class KeycloakService {
      * @return a list of resources
      */
     public List<Permission> getAuthorizedResources(String accessToken) {
-
+        logger.debug(String.format("Obtaining Authorized Resources for AccessToken: %s", accessToken));
         // to use the authzClient to obtain permission require a keycloak.json file
         // that duplicate the information that is already available in application.properties
         // the Bean KeycloakConfigResolver does not work with AuthzClient yet
@@ -106,22 +113,28 @@ public class KeycloakService {
         Map<String, Object> credentials = new HashMap<>();
         credentials.put("secret", clientSecret);
         configuration.setCredentials(credentials);
+        logger.debug("Built configuration set for AuthzClient");
 
         // use the authzClient with that configuration so it doesn't fall back to keycloak.json
         try {
             AuthzClient authzClient = AuthzClient.create(configuration);
+            logger.debug("Attempt Authz authorization");
             AuthorizationResponse authzResponse = authzClient.authorization(accessToken).authorize();
             String rpt = authzResponse.getToken();
+            logger.debug("Obtained rpt. Introspecting...");
             TokenIntrospectionResponse requestingPartyToken = authzClient.protection().introspectRequestingPartyToken(rpt);
             return requestingPartyToken.getPermissions();
         } catch (Exception e) {
+            logger.error(String.format("KeyCloak Authorization error: %s Cause: %s", e.getMessage(), e.getCause()));
             // return a blank list if there's an authorization error
             return new ArrayList<>();
         }
     }
 
     public User getLoggedInUser(HttpServletRequest request) {
+        logger.debug("Building currently logged in user for current HttpServletRequest request");
         AccessToken token = getAccessToken(request);
+        logger.debug("Obtained access Token: " + token);
 
         User user = new User(UUID.fromString(token.getSubject()));
         user.setUsername(token.getPreferredUsername());
@@ -130,17 +143,21 @@ public class KeycloakService {
         user.setRoles(new ArrayList<>(token.getRealmAccess().getRoles()));
 
         // groups belongs to otherClaims
+        logger.debug(String.format("Building groups for user based on otherClaims size: %s", token.getOtherClaims().size()));
         Map<String, Object> otherClaims = token.getOtherClaims();
         if (otherClaims.containsKey("groups")) {
             List<String> groups = new ArrayList<>();
             groups.addAll((Collection<? extends String>) otherClaims.get("groups"));
+            logger.debug(String.format("Group size: %s", groups.size()));
+
             List<DataCenter> userDataCenters = new ArrayList<>();
+            logger.debug("Building DataCenter instance for each group");
             for (String group : groups) {
                 try {
                     DataCenter dc = getDataCenterByGroupName(group);
                     userDataCenters.add(dc);
                 } catch (Exception e) {
-                    // log exception here, user doesn't get this datacenter
+                    logger.error(String.format("Failed building data center for group %s ,Message: %s ,Cause: %s", group, e.getMessage(), e.getCause()));
                 }
             }
             user.setDataCenters(userDataCenters);
@@ -149,8 +166,10 @@ public class KeycloakService {
 
         // Allocations in authorizedResources
         List<Permission> permissions = getAuthorizedResources(getPlainAccessToken(request));
+        logger.debug(String.format("Obtained permissions, length: %s", permissions.size()));
         List<Allocation> userPermissions = new ArrayList<>();
         for (Permission permission : permissions) {
+            logger.debug("Building Allocation for each permission");
             try {
                 Allocation allocation = getAllocationByResourceID(permission.getResourceId());
                 List<Scope> scopes = new ArrayList<>();
@@ -159,14 +178,12 @@ public class KeycloakService {
                 }
                 allocation.setScopes(scopes);
                 userPermissions.add(allocation);
-            } catch (Exception ex) {
-                // todo logging
-                System.out.println(ex);
+            } catch (Exception e) {
+                logger.error(String.format("Failed obtaining Allocation for resourceid: %s ,Message: %s ,Cause: %s", permission.getResourceId(), e.getMessage(), e.getCause()));
             }
         }
         user.setPermissions(userPermissions);
-
-        user.setAllocations(getAuthorizedResources(getPlainAccessToken(request)));
+        user.setAllocations(permissions);
         return user;
     }
 
@@ -176,18 +193,22 @@ public class KeycloakService {
      * @return DataCenter representation of a keycloak Group
      */
     public DataCenter getDataCenterByGroupName(String name) throws Exception {
+        // todo cache
+        logger.debug("Obtaining DataCenter for group: " + name);
         Keycloak keycloak = getAdminClient();
         GroupRepresentation group = keycloak.realm(kcRealm).getGroupByPath(name);
-
+        logger.debug(String.format("Obtained GroupRepresentation %s", group));
         DataCenter dataCenter = new DataCenter(UUID.fromString(group.getId()));
         dataCenter.setName(group.getName());
         return dataCenter;
     }
 
     public Allocation getAllocationByResourceID(String id) throws Exception {
+        // todo cache
+        logger.debug("Obtaining Allocation for resourceID: " + id);
         AuthzClient authzClient = getAuthzClient();
         ResourceRepresentation resource = authzClient.protection().resource().findById(id);
-
+        logger.debug(String.format("Obtained ResourceRepresentation id:%s %s: ", resource.getId(), resource.getId()));
         Allocation allocation = new Allocation(UUID.fromString(resource.getId()));
         allocation.setName(resource.getName());
         allocation.setType(resource.getType());
