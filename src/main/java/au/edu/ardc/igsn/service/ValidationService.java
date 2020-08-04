@@ -21,10 +21,19 @@ public class ValidationService {
      * @return true if the user owns the record
      */
     public boolean validateRecordOwnership(Record record, User user) {
+
+        // elevated permission the user has ImportScope
+        Allocation allocation = new Allocation(record.getAllocationID());
+        if (validateAllocationScope(allocation, user, Scope.IMPORT)) {
+            return true;
+        }
+
+        // OwnerType=User
         if (record.getOwnerType().equals(Record.OwnerType.User) && record.getOwnerID().equals(user.getId())) {
             return true;
         }
 
+        // OwnerType=DataCenter
         return record.getOwnerType().equals(Record.OwnerType.DataCenter)
                 && user.belongsToDataCenter(record.getDataCenterID())
                 && record.getOwnerID().equals(record.getDataCenterID());
