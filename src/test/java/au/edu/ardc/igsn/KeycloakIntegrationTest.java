@@ -5,7 +5,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.EnabledIf;
 
 @EnabledIf(expression = "${keycloak.enabled}", reason = "Disable test if keycloak is not enabled", loadContext = true)
-@ActiveProfiles("integration")
 public abstract class KeycloakIntegrationTest extends WebIntegrationTest {
 
     @Value("${test.kc.user.id}")
