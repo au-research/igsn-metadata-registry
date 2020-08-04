@@ -129,6 +129,38 @@ class RecordsPublicControllerIT {
                 .exchange().expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.numberOfElements").isEqualTo(3)
-                .jsonPath("$.content[0].id").isNotEmpty();
+                .jsonPath("$.content[*].id").isNotEmpty();
+    }
+
+    @Test
+    void showVersions_filterBySchema_returnTheRightSet() {
+        // given a record
+        Record record = TestHelper.mockRecord();
+        record.setVisible(true);
+        repository.saveAndFlush(record);
+
+        // with a version of schema igsn-descriptive-v1
+        Version version = TestHelper.mockVersion(record);
+        version.setCurrent(true);
+        version.setSchema("igsn-descriptive-v1");
+        versionRepository.saveAndFlush(version);
+
+        // and another version of schema igsn-csiro-v3
+        Version version2 = TestHelper.mockVersion(record);
+        version2.setCurrent(true);
+        version2.setSchema("igsn-csiro-v3");
+        versionRepository.saveAndFlush(version2);
+
+        // when filter by ?schema=igsn-descriptive-v1, only 1 returns
+        this.webTestClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(baseUrl + record.getId().toString() + "/versions")
+                        .queryParam("schema", "igsn-descriptive-v1")
+                        .build())
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(1)
+                .jsonPath("$.content[0].schema").isEqualTo("igsn-descriptive-v1");
     }
 }

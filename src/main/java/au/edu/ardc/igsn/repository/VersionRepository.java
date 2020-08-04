@@ -5,14 +5,14 @@ import au.edu.ardc.igsn.entity.Version;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface VersionRepository extends JpaRepository<Version, String> {
+public interface VersionRepository extends JpaRepository<Version, String>, JpaSpecificationExecutor<Version> {
 
     Optional<Version> findById(UUID id);
 
@@ -23,6 +23,4 @@ public interface VersionRepository extends JpaRepository<Version, String> {
     boolean existsBySchemaAndHash(String schema, String hash);
 
     boolean existsBySchemaAndHashAndCurrent(String schema, String hash, boolean visible);
-
-    Page<Version> findAllByRecord(Record record, Pageable pageable);
 }

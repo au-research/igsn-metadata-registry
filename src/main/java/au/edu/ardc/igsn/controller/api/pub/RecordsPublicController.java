@@ -5,6 +5,9 @@ import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import au.edu.ardc.igsn.service.RecordService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,10 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -96,13 +96,20 @@ public class RecordsPublicController {
                     schema = @Schema(implementation = UUID.class)
             )
             @PathVariable String id,
+            @RequestParam(required = false) String schema,
             Pageable pageable
     ) {
         // try to reuse the business logic of finding public record
-        RecordDTO dto = service.findPublicById(id);
+        RecordDTO dto = service.findPublicById(id);        Record record = service.getMapper().convertToEntity(dto);
 
-        Record record = service.getMapper().convertToEntity(dto);
-        Page<VersionDTO> result = versionService.findAllVersionsForRecord(record, pageable);
+        VersionSpecification specs = new VersionSpecification();
+        specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+
+        if (schema != null) {
+            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+        }
+
+        Page<VersionDTO> result = versionService.search(specs, pageable);
         return ResponseEntity.ok().body(result);
     }
 }

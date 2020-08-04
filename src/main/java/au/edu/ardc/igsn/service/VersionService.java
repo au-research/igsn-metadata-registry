@@ -13,10 +13,14 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import com.google.common.base.Converter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -70,9 +74,15 @@ public class VersionService {
         return opt.orElse(null);
     }
 
+    public Page<VersionDTO> search(VersionSpecification specs, Pageable pageable) {
+        Page<Version> versions = repository.findAll(specs, pageable);
+        return versions.map(getDTOConverter());
+    }
+
     public Page<VersionDTO> findAllVersionsForRecord(Record record, Pageable pageable) {
-        Page<Version> result = repository.findAllByRecord(record, pageable);
-        return result.map(getDTOConverter());
+        VersionSpecification specs = new VersionSpecification();
+        specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+        return search(specs, pageable);
     }
 
     public Converter<Version, VersionDTO> getDTOConverter() {

@@ -3,6 +3,9 @@ package au.edu.ardc.igsn.repository;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -128,23 +132,35 @@ public class VersionRepositoryTest {
     }
 
     @Test
-    public void findAllByRecord() {
+    public void testSpecifications() {
         // given a record
         Record record = TestHelper.mockRecord();
         entityManager.persistAndFlush(record);
 
-        // with 2 versions
+        // with a current version of schema igsn-descriptive-v1
         Version version = TestHelper.mockVersion(record);
         version.setCurrent(true);
         entityManager.persistAndFlush(version);
 
-        Version version2 = TestHelper.mockVersion(record);
-        version2.setCurrent(false);
-        entityManager.persistAndFlush(version2);
+        // and 5 superseded version of schema igsn-descriptive-v1
+        for (int i=0;i < 5;i++) {
+            Version superseded = TestHelper.mockVersion(record);
+            superseded.setCurrent(false);
+            entityManager.persist(superseded);
+        }
+        entityManager.flush();
 
-        // when findAllByRecord
-        Page<Version> versions =  versionRepository.findAllByRecord(record, PageRequest.of(0, 20));
+        // find all version by record
+        VersionSpecification specs = new VersionSpecification();
+        specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+        Page<Version> allVersions = versionRepository.findAll(specs, PageRequest.of(0, 10));
+        assertThat(allVersions).hasSize(6);
 
-        assertThat(versions.getContent()).hasSize(2);
+        // find all version by record and current
+        VersionSpecification recordAndCurrentSpec = new VersionSpecification();
+        recordAndCurrentSpec.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+        recordAndCurrentSpec.add(new SearchCriteria("current", true, SearchOperation.EQUAL));
+        Page<Version> allCurrentVersions = versionRepository.findAll(recordAndCurrentSpec, PageRequest.of(0, 10));
+        assertThat(allCurrentVersions).hasSize(1);
     }
 }

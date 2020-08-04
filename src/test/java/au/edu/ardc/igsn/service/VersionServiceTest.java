@@ -12,6 +12,7 @@ import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
 import au.edu.ardc.igsn.exception.VersionNotFoundException;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -225,7 +226,7 @@ public class VersionServiceTest {
 
         // setup the world
         Page<Version> mockPage = new PageImpl(mockResult);
-        when(repository.findAllByRecord(any(Record.class), any(Pageable.class))).thenReturn(mockPage);
+        when(repository.findAll(any(VersionSpecification.class), any(Pageable.class))).thenReturn(mockPage);
 
         // when findAllVersionsForRecord
         Page<VersionDTO> actual = service.findAllVersionsForRecord(record, PageRequest.of(0, 5));
@@ -240,7 +241,7 @@ public class VersionServiceTest {
         Assertions.assertThat(countOfVersionDTO).isEqualTo(10);
 
         // repository is called
-        verify(repository, times(1)).findAllByRecord(any(Record.class), any(Pageable.class));
+        verify(repository, times(1)).findAll(any(VersionSpecification.class), any(Pageable.class));
     }
 
     // todo update
