@@ -51,7 +51,7 @@ public class APIRestControllerAdvice {
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(value = {SchemaNotSupportedException.class})
+    @ExceptionHandler(value = {SchemaNotSupportedException.class, VersionContentAlreadyExisted.class})
     public ResponseEntity<Object> handleBadArgument(RuntimeException ex, HttpServletRequest request) {
         APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
         response.setTimestamp(new Date());
@@ -69,7 +69,7 @@ public class APIRestControllerAdvice {
      * @return APIExceptionResponse
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
         response.setTimestamp(new Date());

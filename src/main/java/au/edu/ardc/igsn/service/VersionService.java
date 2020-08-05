@@ -1,14 +1,10 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
-import au.edu.ardc.igsn.exception.ForbiddenOperationException;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
-import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
-import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.exception.*;
 import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
@@ -20,7 +16,6 @@ import com.google.common.base.Converter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -114,9 +109,10 @@ public class VersionService {
     /**
      * Retrieve all owned versions
      * Owned versions are the versions that which records the user have access to
-     *
+     * <p>
      * todo accept User UUID as a parameter
      * todo update findOwned at the repository level
+     *
      * @return a list of Versions that is owned by the user
      */
     public List<Version> findOwned() {
@@ -159,7 +155,7 @@ public class VersionService {
         // there's already a version with this data, schema and is current
         String hash = getHash(version);
         if (repository.existsBySchemaAndHashAndCurrent(version.getSchema(), hash, true)) {
-            throw new ForbiddenOperationException("The repository already contains a current version with this data");
+            throw new VersionContentAlreadyExisted(version.getSchema(), hash);
         }
 
         // todo validate version content -> schema validation
