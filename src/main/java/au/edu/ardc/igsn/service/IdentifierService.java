@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.dto.IdentifierDTO;
 import au.edu.ardc.igsn.dto.IdentifierMapper;
+import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
@@ -11,7 +12,12 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
+import au.edu.ardc.igsn.repository.specs.IdentifierSpecification;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
+import com.google.common.base.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -33,6 +39,25 @@ public class IdentifierService {
 
     @Autowired
     private ValidationService validationService;
+
+    public Page<IdentifierDTO> search(IdentifierSpecification specs, Pageable pageable) {
+        Page<Identifier> identifiers = repository.findAll(specs, pageable);
+        return identifiers.map(getDTOConverter());
+    }
+
+    public Converter<Identifier, IdentifierDTO> getDTOConverter() {
+        return new Converter<Identifier, IdentifierDTO>() {
+            @Override
+            protected IdentifierDTO doForward(Identifier version) {
+                return mapper.convertToDTO(version);
+            }
+
+            @Override
+            protected Identifier doBackward(IdentifierDTO versionDTO) {
+                return mapper.convertToEntity(versionDTO);
+            }
+        };
+    }
 
     /**
      * Find an identifier by id

@@ -52,7 +52,6 @@ public class VersionsPublicController {
         specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
         specs.add(new SearchCriteria("current", true, SearchOperation.EQUAL));
 
-
         if (schema != null) {
             specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
         }
