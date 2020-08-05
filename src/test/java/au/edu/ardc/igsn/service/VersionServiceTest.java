@@ -6,10 +6,7 @@ import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
-import au.edu.ardc.igsn.exception.ForbiddenOperationException;
-import au.edu.ardc.igsn.exception.RecordNotFoundException;
-import au.edu.ardc.igsn.exception.SchemaNotSupportedException;
-import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.exception.*;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.VersionRepository;
 import au.edu.ardc.igsn.repository.specs.VersionSpecification;
@@ -98,7 +95,7 @@ public class VersionServiceTest {
 
         // throws ForbiddenOpereationException if repository has existsBySchemaAndHashAndCurrent
         when(repository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean())).thenReturn(true);
-        Assert.assertThrows(ForbiddenOperationException.class, () -> {
+        Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
             service.create(dto, user);
         });
     }
