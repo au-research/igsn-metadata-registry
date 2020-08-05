@@ -199,7 +199,6 @@ public class RecordResourceControllerTest {
 
         // given a user that has access to said allocation update scope
         User user = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(user, record.getAllocationID().toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
 
         when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
         when(service.exists(record.getId().toString())).thenReturn(true);

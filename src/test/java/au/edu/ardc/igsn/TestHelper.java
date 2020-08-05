@@ -192,22 +192,11 @@ public class TestHelper {
         user.setName("John Wick");
         user.setEmail("jwick@localhost.com");
         user.setDataCenters(new ArrayList<>());
-        user.setPermissions(new ArrayList<>());
+        user.setAllocations(new ArrayList<>());
         return user;
 
         // mock a user resources
 
-    }
-
-    public static void addResourceAndScopePermissionToUser(User user, String resourceID, Set<String> scopes) {
-        List<Permission> permissions = new ArrayList<>();
-        Permission permission = new Permission();
-        permission.setResourceId(resourceID);
-        permission.setResourceName(String.format("Test Resource %s", resourceID));
-        permission.setScopes(scopes);
-        permissions.add(permission);
-
-        user.setAllocations(permissions);
     }
 
 }

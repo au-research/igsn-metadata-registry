@@ -81,7 +81,7 @@ public class RecordServiceIT {
         User user = TestHelper.mockUser();
         Allocation allocation = new Allocation(UUID.randomUUID());
         allocation.setScopes(Arrays.asList(Scope.CREATE));
-        user.setPermissions(Arrays.asList(allocation));
+        user.setAllocations(Arrays.asList(allocation));
 
         // given the dto
         RecordDTO dto = new RecordDTO();
@@ -108,7 +108,7 @@ public class RecordServiceIT {
         User user = TestHelper.mockUser();
         Allocation allocation = new Allocation(UUID.randomUUID());
         allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.IMPORT));
-        user.setPermissions(Arrays.asList(allocation));
+        user.setAllocations(Arrays.asList(allocation));
 
         // given the dto
         Date updatedCreatedAt = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
@@ -176,7 +176,7 @@ public class RecordServiceIT {
         Allocation allocation = new Allocation(UUID.randomUUID());
         allocation.setScopes(Arrays.asList(Scope.UPDATE, Scope.IMPORT));
         User user = TestHelper.mockUser();
-        user.setPermissions(Arrays.asList(allocation));
+        user.setAllocations(Arrays.asList(allocation));
 
         // given a record
         Record record = TestHelper.mockRecord();

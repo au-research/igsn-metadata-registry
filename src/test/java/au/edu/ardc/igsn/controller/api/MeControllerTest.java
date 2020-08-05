@@ -49,15 +49,6 @@ public class MeControllerTest {
         user.setName("Minh Duc Nguyen");
         user.setEmail("minh.nguyen@ardc.edu.au");
 
-        // mock a user resources
-        List<Permission> permissions = new ArrayList<>();
-        Permission permission = new Permission();
-        UUID res1 = UUID.randomUUID();
-        permission.setResourceId(res1.toString());
-        permission.setResourceName("Resource 1");
-        permissions.add(permission);
-        user.setAllocations(permissions);
-
         when(kcServiceMock.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 
         MockHttpServletRequestBuilder request =

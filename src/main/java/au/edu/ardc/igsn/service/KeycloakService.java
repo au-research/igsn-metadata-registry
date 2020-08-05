@@ -168,7 +168,6 @@ public class KeycloakService {
                 }
             }
             user.setDataCenters(userDataCenters);
-            // user.setGroups(groups);
         }
 
         // Allocations in authorizedResources
@@ -188,8 +187,8 @@ public class KeycloakService {
                 logger.error(String.format("Failed obtaining Allocation for resourceid: %s ,Message: %s ,Cause: %s", permission.getResourceId(), e.getMessage(), e.getCause()));
             }
         }
-        user.setPermissions(userPermissions);
-        user.setAllocations(permissions);
+        user.setAllocations(userPermissions);
+        //user.setAllocations(permissions);
         return user;
     }
 

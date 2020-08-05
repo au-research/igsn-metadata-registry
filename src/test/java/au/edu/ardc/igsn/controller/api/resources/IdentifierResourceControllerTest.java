@@ -135,37 +135,5 @@ public class IdentifierResourceControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    public void it_should_update_an_identifier_when_put() throws Exception {
-        UUID allocationID = UUID.randomUUID();
 
-        // given a logged in user with the right scope and permission
-        User john = TestHelper.mockUser();
-        TestHelper.addResourceAndScopePermissionToUser(john, allocationID.toString(), Sets.newHashSet(Scope.UPDATE.getValue()));
-
-        // and a record that is owned by John
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setOwnerID(john.getId());
-        record.setAllocationID(allocationID);
-
-        Identifier identifier = TestHelper.mockIdentifier(UUID.randomUUID());
-        identifier.setRecord(record);
-
-        when(recordService.exists(record.getId().toString())).thenReturn(true);
-        when(service.exists(identifier.getId().toString())).thenReturn(true);
-        when(service.update(any(Identifier.class))).thenReturn(identifier);
-        when(service.findById(identifier.getId().toString())).thenReturn(identifier);
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(john);
-
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.put("/api/resources/identifiers/" + identifier.getId().toString())
-                        .content(TestHelper.asJsonString(identifier))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        // it should be ok and the data be updated
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").exists());
-    }
 }

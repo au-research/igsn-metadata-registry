@@ -127,16 +127,9 @@ public class IdentifierResourceController {
 
         Record record = updatedIdentifier.getRecord();
 
-        // validate record ownership to allocation
+        // todo validate record ownership
+        // todo validate user update scope
         User user = kcService.getLoggedInUser(request);
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasPermission(allocationID.toString())) {
-            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
-        }
-
-        if (!user.hasPermission(allocationID.toString(), Scope.UPDATE)) {
-            throw new ForbiddenOperationException(String.format("User does not have access to update for the record allocation %s", allocationID.toString()));
-        }
 
         Identifier updated = service.update(updatedIdentifier);
 

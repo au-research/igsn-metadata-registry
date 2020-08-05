@@ -114,7 +114,7 @@ public class RecordServiceTest {
         User user = TestHelper.mockUser();
         Allocation allocation = new Allocation(UUID.randomUUID());
         allocation.setScopes(Arrays.asList(Scope.UPDATE));
-        user.setPermissions(Arrays.asList(allocation));
+        user.setAllocations(Arrays.asList(allocation));
 
         // given a dto
         RecordDTO dto = new RecordDTO();
@@ -132,7 +132,7 @@ public class RecordServiceTest {
         User user = TestHelper.mockUser();
         Allocation allocation = new Allocation(UUID.randomUUID());
         allocation.setScopes(Arrays.asList(Scope.CREATE));
-        user.setPermissions(Arrays.asList(allocation));
+        user.setAllocations(Arrays.asList(allocation));
 
         // given a dto
         RecordDTO dto = new RecordDTO();

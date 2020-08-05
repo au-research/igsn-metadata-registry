@@ -1,7 +1,5 @@
 package au.edu.ardc.igsn.model;
 
-import org.keycloak.representations.idm.authorization.Permission;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -10,11 +8,10 @@ public class User {
     private String username;
     private String email;
     private String name;
-    private List<String> roles;
-    private List<Permission> allocations;
 
+    private List<String> roles;
     private List<DataCenter> dataCenters;
-    private List<Allocation> permissions;
+    private List<Allocation> allocations;
 
     public User() {
 
@@ -60,51 +57,6 @@ public class User {
         return id;
     }
 
-    public List<Permission> getAllocations() {
-        return allocations;
-    }
-
-    public void setAllocations(List<Permission> allocations) {
-        this.allocations = allocations;
-    }
-
-    /**
-     * Check whether a User has access to an allocation Permission
-     *
-     * @param rsID the resource ID
-     * @return true if the user has access to the resource
-     */
-    public boolean hasPermission(String rsID) {
-        if (this.allocations == null) {
-            return false;
-        }
-        for (Permission permission : this.allocations) {
-            if (permission.getResourceId().equals(rsID)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check whether a User has access to the allocation Permission and the provided scope
-     *
-     * @param rsID  string uuid of the resource
-     * @param scope string representation of the scope
-     * @return true if the user has access to the resource and the scope
-     */
-    public boolean hasPermission(String rsID, Scope scope) {
-        if (this.allocations == null) {
-            return false;
-        }
-        for (Permission permission : this.allocations) {
-            if (permission.getResourceId().equals(rsID) && permission.getScopes().contains(scope.getValue())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public List<DataCenter> getDataCenters() {
         return dataCenters;
     }
@@ -113,14 +65,20 @@ public class User {
         this.dataCenters = dataCenters;
     }
 
-    public List<Allocation> getPermissions() {
-        return permissions;
+    public List<Allocation> getAllocations() {
+        return allocations;
     }
 
-    public void setPermissions(List<Allocation> permissions) {
-        this.permissions = permissions;
+    public void setAllocations(List<Allocation> allocations) {
+        this.allocations = allocations;
     }
 
+    /**
+     * Returns if the user has the DataCenter is in the User list
+     *
+     * @param dataCenterID the uuid of the data center
+     * @return true if the DataCenter is present
+     */
     public boolean belongsToDataCenter(UUID dataCenterID) {
         for (DataCenter dc : dataCenters) {
             if (dc.getId().equals(dataCenterID)) {
@@ -131,8 +89,14 @@ public class User {
         return false;
     }
 
+    /**
+     * Returns if the User has access to the Allocation by the provided ID
+     *
+     * @param allocationID the uuid of the Allocation
+     * @return true if the Allocation is present
+     */
     public boolean hasAllocation(UUID allocationID) {
-        for (Allocation allocation : permissions) {
+        for (Allocation allocation : allocations) {
             if (allocation.getId().equals(allocationID)) {
                 return true;
             }
@@ -141,8 +105,14 @@ public class User {
         return false;
     }
 
+    /**
+     * Returns the Allocation that the User has access to by ID
+     *
+     * @param allocationID the UUID of the Allocation
+     * @return the Requested Allocation
+     */
     public Allocation getAllocationById(UUID allocationID) {
-        for (Allocation allocation : permissions) {
+        for (Allocation allocation : allocations) {
             if (allocation.getId().equals(allocationID)) {
                 return allocation;
             }

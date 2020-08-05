@@ -130,16 +130,9 @@ public class URLResourceController {
 
         Record record = updatedURL.getRecord();
 
-        // validate record ownership to allocation
-        User user = kcService.getLoggedInUser(request);
-        UUID allocationID = record.getAllocationID();
-        if (!user.hasPermission(allocationID.toString())) {
-            throw new ForbiddenOperationException(String.format("User does not have access to the record allocation %s", allocationID.toString()));
-        }
+        // todo validate record ownership
 
-        if (!user.hasPermission(allocationID.toString(), Scope.UPDATE)) {
-            throw new ForbiddenOperationException(String.format("User does not have access to update for the record allocation %s", allocationID.toString()));
-        }
+        // todo validate user permission to update record
 
         URL updated = service.update(updatedURL);
 
