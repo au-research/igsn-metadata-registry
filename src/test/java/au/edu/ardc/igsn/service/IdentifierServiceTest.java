@@ -3,23 +3,28 @@ package au.edu.ardc.igsn.service;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.IdentifierDTO;
 import au.edu.ardc.igsn.dto.IdentifierMapper;
-import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
+import au.edu.ardc.igsn.repository.specs.IdentifierSpecification;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,7 +34,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {IdentifierService.class, IdentifierMapper.class, ModelMapper.class})
-public class IdentifierServiceTest {
+class IdentifierServiceTest {
 
     @MockBean
     ValidationService validationService;
@@ -44,7 +49,7 @@ public class IdentifierServiceTest {
     private IdentifierRepository repository;
 
     @Test
-    public void findById_IdentifierFound_returnsIdentifier() {
+    void findById_IdentifierFound_returnsIdentifier() {
         UUID id = UUID.randomUUID();
         Identifier identifier = TestHelper.mockIdentifier(id);
         when(repository.findById(id)).thenReturn(Optional.of(identifier));
@@ -58,7 +63,7 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void findById_IdentifierNotFound_returnsNull() {
+    void findById_IdentifierNotFound_returnsNull() {
         Identifier actual = service.findById(UUID.randomUUID().toString());
 
         // ensure repository call findById
@@ -67,7 +72,7 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void exists_callsExistsByID_returnsTrue() {
+    void exists_callsExistsByID_returnsTrue() {
         UUID id = UUID.randomUUID();
         when(repository.existsById(id)).thenReturn(true);
 
@@ -81,7 +86,7 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void create_RecordNotFound_throwsException() {
+    void create_RecordNotFound_throwsException() {
         // given a version dto
         IdentifierDTO dto = new IdentifierDTO();
         dto.setRecord(UUID.randomUUID());
@@ -116,7 +121,7 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void create_ValidRequest_returnsDTO() {
+    void create_ValidRequest_returnsDTO() {
         // given a record & user
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         User user = TestHelper.mockUser();
@@ -142,7 +147,7 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void it_can_delete_version_by_id() {
+    void delete_call_repository() {
         UUID id = UUID.randomUUID();
 
         service.delete(id.toString());
@@ -151,9 +156,19 @@ public class IdentifierServiceTest {
     }
 
     @Test
-    public void it_can_create_a_version() {
-        Identifier newIdentifier = TestHelper.mockIdentifier();
-        service.create(newIdentifier);
-        verify(repository, times(1)).save(newIdentifier);
+    void search_validSearchSpec_returnsPageOfDTO() {
+        // given a page of 2 Identifier (as result)
+        // and repository.findAll(spec, page) returns a page of 2 Identifier
+        Page<Identifier> mockPage = new PageImpl(Arrays.asList(TestHelper.mockIdentifier(), TestHelper.mockIdentifier()));
+        when(repository.findAll(any(IdentifierSpecification.class), any(Pageable.class))).thenReturn(mockPage);
+
+        // when service.search
+        Page<IdentifierDTO> result = service.search(new IdentifierSpecification(), PageRequest.of(0, 2));
+
+        // the result is a Page of IdentifierDTO
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(2);
+        assertThat(result.getContent()).extracting("class").containsOnly(IdentifierDTO.class);
+        verify(repository, times(1)).findAll(any(IdentifierSpecification.class), any(Pageable.class));
     }
 }
