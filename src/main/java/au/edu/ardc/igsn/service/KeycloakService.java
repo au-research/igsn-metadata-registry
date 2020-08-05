@@ -20,13 +20,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A service that allows interaction with the Keycloak server manually
@@ -47,6 +50,10 @@ public class KeycloakService {
 
     @Autowired
     private Environment env;
+
+    // Self-autowired reference for @Cachable
+    @Resource
+    private KeycloakService self;
 
     /**
      * Get the Keycloak Access Token for the current request
@@ -154,7 +161,7 @@ public class KeycloakService {
             logger.debug("Building DataCenter instance for each group");
             for (String group : groups) {
                 try {
-                    DataCenter dc = getDataCenterByGroupName(group);
+                    DataCenter dc = self.getDataCenterByGroupName(group);
                     userDataCenters.add(dc);
                 } catch (Exception e) {
                     logger.error(String.format("Failed building data center for group %s ,Message: %s ,Cause: %s", group, e.getMessage(), e.getCause()));
@@ -169,13 +176,12 @@ public class KeycloakService {
         logger.debug(String.format("Obtained permissions, length: %s", permissions.size()));
         List<Allocation> userPermissions = new ArrayList<>();
         for (Permission permission : permissions) {
-            logger.debug("Building Allocation for each permission");
+            logger.debug("Building Allocation for permission: "+ permission.getResourceId());
             try {
-                Allocation allocation = getAllocationByResourceID(permission.getResourceId());
-                List<Scope> scopes = new ArrayList<>();
-                for (String scope : permission.getScopes()) {
-                    scopes.add(Scope.fromString(scope));
-                }
+                Allocation allocation = self.getAllocationByResourceID(permission.getResourceId());
+                List<Scope> scopes = permission.getScopes().stream()
+                        .map(Scope::fromString)
+                        .collect(Collectors.toList());
                 allocation.setScopes(scopes);
                 userPermissions.add(allocation);
             } catch (Exception e) {
@@ -192,6 +198,7 @@ public class KeycloakService {
      * @throws Exception normally when the environment is not properly set or (rarely) group name doesn't exist
      * @return DataCenter representation of a keycloak Group
      */
+    @Cacheable("datacenters")
     public DataCenter getDataCenterByGroupName(String name) throws Exception {
         // todo cache
         logger.debug("Obtaining DataCenter for group: " + name);
@@ -203,6 +210,7 @@ public class KeycloakService {
         return dataCenter;
     }
 
+    @Cacheable("allocations")
     public Allocation getAllocationByResourceID(String id) throws Exception {
         // todo cache
         logger.debug("Obtaining Allocation for resourceID: " + id);
