@@ -71,6 +71,10 @@ public class IdentifierService {
         return opt.orElse(null);
     }
 
+    public Identifier findByValueAndType(String value, Identifier.Type type) {
+        return repository.findByValueAndType(value, type);
+    }
+
     /**
      * Tell if an identifier exists by id
      *

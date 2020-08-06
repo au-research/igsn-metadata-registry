@@ -24,7 +24,7 @@ public class APIRestControllerAdvice {
      * @param request the HttpServeletRequest, to display the path
      * @return ResponseEntity
      */
-    @ExceptionHandler(value = {RecordNotFoundException.class, VersionNotFoundException.class})
+    @ExceptionHandler(value = {RecordNotFoundException.class, VersionNotFoundException.class, NotFoundException.class})
     public ResponseEntity<Object> handleNotfound(RuntimeException ex, HttpServletRequest request) {
         APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
         response.setTimestamp(new Date());

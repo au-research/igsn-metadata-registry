@@ -7,6 +7,7 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,8 +98,9 @@ class IdentifiersPublicControllerIT extends WebIntegrationTest {
                 .jsonPath("$.numberOfElements").isEqualTo(1);
     }
 
+    @BeforeEach
     @AfterEach
-    void tearDown() {
+    void clear() {
         identifierRepository.deleteAll();
         identifierRepository.flush();
     }

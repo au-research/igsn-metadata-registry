@@ -92,6 +92,11 @@ public class VersionService {
         return search(specs, pageable);
     }
 
+    public Version findVersionForRecord(Record record, String schema) {
+        Version version = repository.findByRecordAndSchemaAndCurrentIsTrue(record, schema);
+        return version;
+    }
+
     public Converter<Version, VersionDTO> getDTOConverter() {
         return new Converter<Version, VersionDTO>() {
             @Override

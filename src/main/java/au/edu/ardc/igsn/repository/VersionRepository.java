@@ -23,4 +23,6 @@ public interface VersionRepository extends JpaRepository<Version, String>, JpaSp
     boolean existsBySchemaAndHash(String schema, String hash);
 
     boolean existsBySchemaAndHashAndCurrent(String schema, String hash, boolean visible);
+
+    Version findByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
 }
