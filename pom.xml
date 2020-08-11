@@ -147,7 +147,11 @@
 <!--			<scope>test</scope>-->
 <!--		</dependency>-->
 
-
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>1.5.3</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.openclover</groupId>
