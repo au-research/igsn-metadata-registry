@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.lang.annotation.Native;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +27,6 @@ public interface VersionRepository extends JpaRepository<Version, String>, JpaSp
     boolean existsBySchemaAndHashAndCurrent(String schema, String hash, boolean visible);
 
     Version findByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
+
+    Version findFirstByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
 }

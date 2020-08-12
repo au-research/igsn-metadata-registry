@@ -258,4 +258,7 @@ public class RecordService {
         return mapper.convertToDTO(record);
     }
 
+    public Record save(Record record) {
+        return repository.saveAndFlush(record);
+    }
 }

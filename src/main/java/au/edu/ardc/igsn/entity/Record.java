@@ -24,6 +24,8 @@ public class Record {
 
     private boolean visible = true;
 
+    private String title;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
@@ -165,6 +167,14 @@ public class Record {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public static enum OwnerType {

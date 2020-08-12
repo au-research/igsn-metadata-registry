@@ -93,7 +93,7 @@ public class VersionService {
     }
 
     public Version findVersionForRecord(Record record, String schema) {
-        Version version = repository.findByRecordAndSchemaAndCurrentIsTrue(record, schema);
+        Version version = repository.findFirstByRecordAndSchemaAndCurrentIsTrue(record, schema);
         return version;
     }
 

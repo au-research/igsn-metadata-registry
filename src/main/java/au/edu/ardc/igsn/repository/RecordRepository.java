@@ -32,4 +32,8 @@ public interface RecordRepository extends JpaRepository<Record, String>, JpaSpec
 
     Page<Record> findAllByVisibleIsTrue(Pageable pageable);
 
+    Page<Record> findById(UUID id, Pageable pageable);
+
+    Page<Record> findAllByTitleNull(Pageable pageable);
+
 }
