@@ -12,11 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/admin/process-records")
-public class RecordProcessController {
+public class ProcessRecordController {
 
     @Autowired
     @Qualifier("asyncJobLauncher")
@@ -26,13 +27,20 @@ public class RecordProcessController {
     Job ProcessRecordJob;
 
     @GetMapping("")
-    public String handle()
+    public String handle(
+            @RequestParam(required = false, name="method") String methodParam
+    )
             throws JobParametersInvalidException
             , JobExecutionAlreadyRunningException
             , JobRestartException
             , JobInstanceAlreadyCompleteException {
+        String method = "findAll";
+        if (methodParam != null) {
+            method = methodParam;
+        }
+
         JobParameters jobParameters = new JobParametersBuilder()
-                .addString("method", "findAllByTitleNull")
+                .addString("method", method)
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
 

@@ -12,9 +12,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
+
     private final VersionService versionService;
     private final RecordService recordService;
     Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
+
+    protected final String defaultSchema="igsn-csiro-v3-descriptive";
 
     public RecordTitleProcessor(VersionService versionService, RecordService recordService) {
         this.versionService = versionService;
@@ -23,12 +26,12 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 
     @Override
     public Record process(Record record) {
-        logger.debug("Processing record: " + record.getId());
+        logger.debug("Processing title for record {} ", record.getId());
 
         // obtain the version
-        Version version = versionService.findVersionForRecord(record, "igsn-csiro-v3-descriptive");
+        Version version = versionService.findVersionForRecord(record, defaultSchema);
         if (version == null) {
-            logger.error(String.format("No valid version found for record %s", record.getId()));
+            logger.error("No valid version found for record {}", record.getId());
             return null;
         }
 
@@ -42,18 +45,17 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
             Node resourceTitleNode = nodeList.item(0);
             title = resourceTitleNode.getTextContent();
         } catch (Exception ex) {
-            logger.error("Failed obtaining title for record %s " + record.getId());
-            logger.error("Failed obtaining title from xml: " + xml);
+            logger.error("Failed obtaining title for record {} from XML", record.getId());
             ex.printStackTrace();
             return null;
         }
-        logger.debug(String.format("Found Title: %s for Record %s", title, record.getId()));
+        logger.debug("Found title {} for record {}", title, record.getId());
 
         // save the title on the record
         record.setTitle(title);
         record = recordService.save(record);
 
-        logger.debug("Processed title successful for record: " + record.getId());
+        logger.debug("Processed title successful for record {} ",record.getId());
         return record;
     }
 }

@@ -9,6 +9,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Configuration
 public class RequestLoggingFilter implements Filter {
@@ -16,19 +17,28 @@ public class RequestLoggingFilter implements Filter {
     @Autowired
     APILoggingService loggingService;
 
+    private final String[] excluded = {
+            "actuator"
+    };
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
+
         MultiReadHttpServletRequest wrappedRequest =
                 new MultiReadHttpServletRequest((HttpServletRequest) servletRequest);
+        String path = wrappedRequest.getRequestURI();
+
+        // exclude any path that matches the exclusion list
+        boolean doLog = Arrays.stream(excluded).noneMatch(path::contains);
 
         // log the request with the wrappedRequest
-        loggingService.logRequest(wrappedRequest);
+        if (doLog) loggingService.logRequest(wrappedRequest);
 
         // do the next chain
         filterChain.doFilter(wrappedRequest, servletResponse);
 
         // log the response
-        loggingService.logResponse((HttpServletResponse) servletResponse);
+        if (doLog) loggingService.logResponse((HttpServletResponse) servletResponse);
     }
 }
