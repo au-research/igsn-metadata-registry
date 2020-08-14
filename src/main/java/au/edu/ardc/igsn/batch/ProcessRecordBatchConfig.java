@@ -49,7 +49,7 @@ public class ProcessRecordBatchConfig {
                 .reader(new RecordReader(recordRepository))
                 .processor(new RecordTitleProcessor(versionService, recordService))
                 .writer(new NoOpItemWriter<>())
-                .taskExecutor(concurrentTaskExecutor())
+                //.taskExecutor(concurrentTaskExecutor())
                 .build();
     }
 
