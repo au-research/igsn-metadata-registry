@@ -6,12 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "versions")
+@Table(name = "versions", indexes = {
+        @Index(name = "idx_schema_current", columnList = "schema_id,current")
+})
 public class Version {
 
     @Id
@@ -44,7 +45,7 @@ public class Version {
 
     @JsonIgnore
     @Lob
-    @Column(columnDefinition="BLOB")
+    @Column(columnDefinition = "BLOB")
     private byte[] content;
 
     private String hash;
@@ -52,7 +53,7 @@ public class Version {
     /**
      * Empty constructor
      */
-    public Version (){
+    public Version() {
 
     }
 

@@ -8,7 +8,11 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "identifiers")
+@Table(name = "identifiers", indexes = {
+        @Index(name = "idx_status", columnList = "status"),
+        @Index(name = "idx_type_value", columnList = "type,value"),
+        @Index(name = "idx_type_status", columnList = "type,status")
+})
 public class Identifier {
 
     @Id

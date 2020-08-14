@@ -5,12 +5,15 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "records")
+@Table(name = "records", indexes = {
+        @Index(name = "idx_owner", columnList = "ownerType,ownerId"),
+        @Index(name = "idx_visible", columnList = "visible"),
+        @Index(name = "idx_id_visible", columnList = "id,visible")
+})
 public class Record {
 
     @Id
@@ -106,7 +109,7 @@ public class Record {
 
     /**
      * Sets the creation date for the record
-     * 
+     *
      * @param createdAt the Date of creation
      */
     public void setCreatedAt(Date createdAt) {
