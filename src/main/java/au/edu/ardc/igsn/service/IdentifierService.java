@@ -75,6 +75,10 @@ public class IdentifierService {
         return repository.findByValueAndType(value, type);
     }
 
+    public Identifier findIGSNByRecord(Record record) {
+        return repository.findFirstByRecordAndType(record, Identifier.Type.IGSN);
+    }
+
     /**
      * Tell if an identifier exists by id
      *

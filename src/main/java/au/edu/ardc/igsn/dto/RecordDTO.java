@@ -12,6 +12,8 @@ public class RecordDTO {
 
     private boolean visible = true;
 
+    private String title;
+
     @NotNull
     private Date createdAt;
 
@@ -114,4 +116,13 @@ public class RecordDTO {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
 }

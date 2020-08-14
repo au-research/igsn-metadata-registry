@@ -5,8 +5,11 @@ import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
+import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
+import au.edu.ardc.igsn.repository.specs.IdentifierSpecification;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
 import au.edu.ardc.igsn.service.IdentifierService;
 import au.edu.ardc.igsn.service.KeycloakService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +21,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/resources/identifiers", produces = MediaType.APPLICATION_JSON_VALUE)

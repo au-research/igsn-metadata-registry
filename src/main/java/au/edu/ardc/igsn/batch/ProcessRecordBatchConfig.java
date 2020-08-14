@@ -1,6 +1,5 @@
 package au.edu.ardc.igsn.batch;
 
-import au.edu.ardc.igsn.batch.listener.JobCompletionListener;
 import au.edu.ardc.igsn.batch.processor.RecordTitleProcessor;
 import au.edu.ardc.igsn.batch.reader.RecordReader;
 import au.edu.ardc.igsn.batch.writer.NoOpItemWriter;
@@ -12,17 +11,11 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.listener.JobParameterExecutionContextCopyListener;
-import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Sort;
-
-import java.util.HashMap;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 
 @Configuration
 public class ProcessRecordBatchConfig {
@@ -52,10 +45,18 @@ public class ProcessRecordBatchConfig {
     @Bean
     public Step processTitles() {
         return stepBuilderFactory.get("Process Titles")
-                .<Record, Record> chunk(10)
+                .<Record, Record>chunk(10)
                 .reader(new RecordReader(recordRepository))
                 .processor(new RecordTitleProcessor(versionService, recordService))
                 .writer(new NoOpItemWriter<>())
+                .taskExecutor(concurrentTaskExecutor())
                 .build();
+    }
+
+    @Bean
+    public TaskExecutor concurrentTaskExecutor() {
+        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("igsnRegistryParallelThreads");
+        asyncTaskExecutor.setConcurrencyLimit(5);
+        return asyncTaskExecutor;
     }
 }

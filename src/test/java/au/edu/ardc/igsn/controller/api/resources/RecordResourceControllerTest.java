@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
+import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.model.User;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +29,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;
@@ -52,36 +57,6 @@ public class RecordResourceControllerTest {
 
     @MockBean
     KeycloakService kcService;
-
-    @Test
-    public void it_should_return_all_records_when_get() throws Exception {
-        // todo refactor this test
-        // given a creator with 2 records
-        UUID creatorID = UUID.randomUUID();
-
-        ArrayList<Record> expected = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
-            Record record = TestHelper.mockRecord();
-            record.setCreatorID(creatorID);
-            expected.add(record);
-        }
-        when(service.findOwned(any())).thenReturn(expected);
-
-        // probably not need this here, because we already mock out the service response
-        when(kcService.getUserUUID(any(HttpServletRequest.class))).thenReturn(creatorID);
-
-        // when GET /
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get("/api/resources/records/")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        // returns 2 records
-        mockMvc.perform(request)
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].id").exists());
-    }
 
     @Test
     public void show_recordDoesNotExist_404() throws Exception {
