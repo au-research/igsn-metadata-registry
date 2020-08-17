@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.controller.api;
 
 import au.edu.ardc.igsn.service.SchemaService;
+import au.edu.ardc.igsn.util.Helpers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.io.IOException;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,10 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class SchemaControllerTest {
 
+    private final String baseUrl = "/api/resources/schemas/";
     @Autowired
     private MockMvc mockMvc;
-
-    private final String baseUrl = "/api/resources/schemas/";
 
     @Test
     public void index_getAllSupportedSchemas() throws Exception {
@@ -65,4 +67,43 @@ public class SchemaControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    public void validate_validCSIROv3_200() throws Exception {
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+
+        String schemaID = SchemaService.CSIROv3;
+        MockHttpServletRequestBuilder validRequest =
+                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
+                        .content(validXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+
+
+        mockMvc.perform(validRequest).andExpect(status().isOk());
+    }
+
+    @Test
+    public void validate_invalidCSIROv3_400() throws Exception {
+        String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
+        String schemaID = SchemaService.CSIROv3;
+        MockHttpServletRequestBuilder invalidRequest =
+                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
+                        .content(invalidXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+        mockMvc.perform(invalidRequest).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void validate_validARDCv1_200() throws Exception {
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+
+        MockHttpServletRequestBuilder validRequest =
+                MockMvcRequestBuilders.post(baseUrl + SchemaService.ARDCv1 + "/validate")
+                        .content(validXML)
+                        .contentType(MediaType.APPLICATION_XML)
+                        .accept(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(validRequest).andExpect(status().isOk());
+    }
 }

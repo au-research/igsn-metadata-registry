@@ -1,12 +1,13 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.model.Schema;
+import au.edu.ardc.igsn.model.schema.SchemaValidator;
+import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
 import au.edu.ardc.igsn.util.Helpers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -31,6 +32,12 @@ public class SchemaService {
     Logger logger = LoggerFactory.getLogger(SchemaService.class);
     private List<Schema> schemas;
 
+    /**
+     * Loads all schemas into locally accessible schema
+     * Go through the schemaConfigLocation file and loads map all available schema
+     *
+     * @throws Exception read file exception
+     */
     public void loadSchemas() throws Exception {
         logger.debug("Loading schema configuration from {}", schemaConfigLocation);
         String data = Helpers.readFile(schemaConfigLocation);
@@ -76,12 +83,35 @@ public class SchemaService {
         return schemas;
     }
 
+    /**
+     * Sets the current schemas in memory
+     *
+     * @param schemas a List of Schema
+     */
     public void setSchemas(List<Schema> schemas) {
         this.schemas = schemas;
     }
 
-    public boolean validate(Schema schema, String payload) {
-        // todo validate(Schema, payload)
-        return true;
+    /**
+     * Validate a payload given a schema
+     * Will autodetect the schema type and spool up a SchemaValidator accordingly
+     * Supports XMLValidator current
+     * todo support JSONValidator
+     *
+     * @param schema The Schema to validate against
+     * @param payload the String payload to validate
+     * @return true if validation success
+     * @throws Exception throws exception for validator creation and validation
+     */
+    public boolean validate(Schema schema, String payload) throws Exception {
+        // detect type of schema
+        // todo refactor ValidatorFactory.getValidator(schema.getClass())
+
+        SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
+        if (validator == null) {
+            throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));
+        }
+
+        return validator.validate(schema, payload);
     }
 }

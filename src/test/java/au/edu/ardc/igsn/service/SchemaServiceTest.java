@@ -1,11 +1,16 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.model.Schema;
+import au.edu.ardc.igsn.model.schema.JSONSchema;
+import au.edu.ardc.igsn.model.schema.XMLSchema;
+import au.edu.ardc.igsn.util.Helpers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +30,7 @@ class SchemaServiceTest {
     @Test
     void getSchemas() {
         // schemas are loaded @PostConstruct so all should be available
-        assertThat(service.getSchemas()).extracting("class").contains(Schema.class);
+        assertThat(service.getSchemas()).extracting("class").contains(JSONSchema.class, XMLSchema.class);
     }
 
     @Test
@@ -45,4 +50,17 @@ class SchemaServiceTest {
         assertThat(service.supportsSchema("non-exist")).isFalse();
     }
 
+    @Test
+    void validate_validARDCv1_true() throws Exception {
+        Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+        assertThat(service.validate(schema, validXML)).isTrue();
+    }
+
+    @Test
+    void validate_validCSIROv3_true() throws Exception {
+        Schema schema = service.getSchemaByID(SchemaService.CSIROv3);
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+        assertThat(service.validate(schema, validXML)).isTrue();
+    }
 }

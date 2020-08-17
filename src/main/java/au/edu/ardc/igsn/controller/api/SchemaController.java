@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.exception.XMLValidationException;
 import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.service.SchemaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,5 +35,23 @@ public class SchemaController {
 
         Schema schema = service.getSchemaByID(id);
         return ResponseEntity.ok().body(schema);
+    }
+
+    @PostMapping(value = "/{id}/validate")
+    public ResponseEntity<?> validateSchema(@PathVariable String id, @RequestBody String payload) throws Exception {
+
+        // TODO handle malformed XML here?
+        if (!service.supportsSchema(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
+        }
+
+        Schema schema = service.getSchemaByID(id);
+
+        try {
+            service.validate(schema, payload);
+            return ResponseEntity.ok().body(null);
+        } catch (XMLValidationException e) {
+            return ResponseEntity.badRequest().body("Validation Failed: " + e.getMessage());
+        }
     }
 }
