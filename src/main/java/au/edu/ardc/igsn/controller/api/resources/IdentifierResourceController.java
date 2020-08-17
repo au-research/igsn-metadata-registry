@@ -10,6 +10,7 @@ import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.specs.IdentifierSpecification;
 import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
 import au.edu.ardc.igsn.service.IdentifierService;
 import au.edu.ardc.igsn.service.KeycloakService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -51,17 +53,27 @@ public class IdentifierResourceController {
     @GetMapping("")
     @Operation(
             summary = "Get all identifiers",
-            description = "Retrieves all identifier resources that the current user has access to")
+            description = "Retrieves all identifier resources")
     @ApiResponse(
             responseCode = "200",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = Identifier.class)))
     )
-    public ResponseEntity<?> index() {
-        // todo obtain user from the kcService and find owned from said user
-        // todo pagination
-        List<Identifier> identifiers = service.findOwned();
+    public ResponseEntity<Page<IdentifierDTO>> index(
+            @PageableDefault @Parameter(hidden=true) Pageable pageable,
+            @RequestParam(required=false) String value,
+            @RequestParam(required=false) String type
+    ) {
+        IdentifierSpecification specs = new IdentifierSpecification();
+        if (value != null) {
+            specs.add(new SearchCriteria("value", value, SearchOperation.MATCH));
+        }
+        if (type != null) {
+            specs.add(new SearchCriteria("type", Identifier.Type.valueOf(type), SearchOperation.EQUAL));
+        }
 
-        return ResponseEntity.ok(identifiers);
+        Page<IdentifierDTO> result = service.search(specs, pageable);
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}")

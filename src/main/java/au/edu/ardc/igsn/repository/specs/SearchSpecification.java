@@ -1,9 +1,9 @@
 package au.edu.ardc.igsn.repository.specs;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import au.edu.ardc.igsn.entity.Identifier;
+import au.edu.ardc.igsn.entity.Record;
+
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +57,9 @@ public class SearchSpecification {
             } else if (criteria.getOperation().equals(SearchOperation.RECORD_EQUAL)) {
                 // special join to the record table
                 predicates.add(builder.equal(root.join("record").get(criteria.getKey()), criteria.getValue()));
+            } else if (criteria.getOperation().equals(SearchOperation.RECORD_IN)) {
+                // special join to the record table
+                predicates.add(builder.in(root.join("record").get(criteria.getKey())).value(criteria.getValue()));
             }
         }
 

@@ -2,8 +2,9 @@ package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.config.ApplicationProperties;
 import au.edu.ardc.igsn.dto.IGSNRecordDTO;
-import au.edu.ardc.igsn.dto.converter.IGSNRecordDTOConverter;
 import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.dto.converter.IGSNRecordDTOConverter;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.model.Allocation;
@@ -11,9 +12,11 @@ import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.specs.RecordSpecification;
 import au.edu.ardc.igsn.repository.specs.SearchCriteria;
 import au.edu.ardc.igsn.repository.specs.SearchOperation;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import au.edu.ardc.igsn.service.IdentifierService;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.service.VersionService;
 import com.google.common.base.Converter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,6 +57,9 @@ public class RecordResourceController {
     private IdentifierService identifierService;
 
     @Autowired
+    private VersionService versionService;
+
+    @Autowired
     ApplicationProperties applicationProperties;
 
     @GetMapping("")
@@ -62,34 +68,27 @@ public class RecordResourceController {
             description = "Retrieves all record resources that the current user has access to")
     @ApiResponse(
             responseCode = "200",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = Record.class)))
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecordDTO.class)))
     )
     public ResponseEntity<Page<?>> index(
             HttpServletRequest request,
             @PageableDefault @Parameter(hidden = true) Pageable pageable,
-            @RequestParam(required=false) String include,
             @RequestParam(required=false) String title
     ) {
+        // obtain a list of ownerIDs include the current user ownerID
         User user = kcService.getLoggedInUser(request);
-
         List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
         ownerIDs.add(user.getId());
 
+        // building a search specification, by default ownerID in the provided list
         RecordSpecification specs = new RecordSpecification();
         specs.add(new SearchCriteria("ownerID", ownerIDs, SearchOperation.IN));
-
         if (title != null) {
             specs.add(new SearchCriteria("title", title, SearchOperation.MATCH));
         }
 
+        // perform the search
         Page<RecordDTO> result = recordService.search(specs, pageable);
-
-        // process include=igsn
-        if (include != null && include.equals("igsn")) {
-            Converter converter = new IGSNRecordDTOConverter(identifierService, applicationProperties);
-            Page<IGSNRecordDTO> convertedResult = result.map(converter);
-            return ResponseEntity.ok().body(convertedResult);
-        }
 
         return ResponseEntity.ok().body(result);
     }
@@ -107,9 +106,9 @@ public class RecordResourceController {
     @ApiResponse(
             responseCode = "200",
             description = "Record is found",
-            content = @Content(schema = @Schema(implementation = Record.class))
+            content = @Content(schema = @Schema(implementation = RecordDTO.class))
     )
-    public ResponseEntity<?> show(
+    public ResponseEntity<RecordDTO> show(
             @Parameter(
                     required = true,
                     description = "the id of the record (uuid)",
@@ -187,6 +186,22 @@ public class RecordResourceController {
         User user = kcService.getLoggedInUser(request);
         recordService.delete(id, user);
         return ResponseEntity.accepted().body(null);
+    }
+
+    @GetMapping(value = "/{id}/versions")
+    public ResponseEntity<?> showVersions(
+            Pageable pageable,
+            @PathVariable String id,
+            @RequestParam(required = false) String schema
+    ) {
+        Record record = recordService.findById(id);
+        VersionSpecification specs = new VersionSpecification();
+        specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+        if (schema != null) {
+            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+        }
+        Page<VersionDTO> result = versionService.search(specs, pageable);
+        return ResponseEntity.ok().body(result);
     }
 
 }

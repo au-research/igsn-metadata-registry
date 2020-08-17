@@ -1,10 +1,16 @@
 package au.edu.ardc.igsn.dto.mapper;
 
+import au.edu.ardc.igsn.dto.IdentifierDTO;
 import au.edu.ardc.igsn.dto.RecordDTO;
+import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RecordMapper {
@@ -17,7 +23,19 @@ public class RecordMapper {
     }
 
     public RecordDTO convertToDTO(Record record) {
-        return modelMapper.map(record, RecordDTO.class);
+        RecordDTO dto = modelMapper.map(record, RecordDTO.class);
+        List<IdentifierDTO> identifiers = record.getIdentifiers().stream()
+                .map(identifier -> modelMapper.map(identifier, IdentifierDTO.class))
+                .collect(Collectors.toList());
+        dto.setIdentifiers(identifiers);
+
+        List<VersionDTO> currentVersions = record.getCurrentVersions().stream()
+                .map(version -> modelMapper.map(version, VersionDTO.class))
+                .peek(versionDTO -> versionDTO.setContent(null))
+                .peek(versionDTO -> versionDTO.setRecord(null))
+                .collect(Collectors.toList());
+        dto.setCurrentVersions(currentVersions);
+        return dto;
     }
 
 }

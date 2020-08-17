@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.dto;
 
 import au.edu.ardc.igsn.entity.Identifier;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Date;
 import java.util.UUID;
@@ -12,6 +13,8 @@ public class IdentifierDTO {
     private String value;
     private Date createdAt;
     private Date updatedAt;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID record;
 
     public IdentifierDTO() {

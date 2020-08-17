@@ -12,5 +12,6 @@ public enum SearchOperation {
     MATCH_END,
     IN,
     NOT_IN,
-    RECORD_EQUAL
+    RECORD_EQUAL,
+    RECORD_IN
 }

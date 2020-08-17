@@ -6,8 +6,8 @@
     "type": "igsn-description",
     "@type": "XMLSchema",
     "xml": {
-      "namespace": "https://identifiers.ardc.edu.au/igsn-schemas/description/1.0",
-      "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schemas/description/1.0/resource.xsd",
+      "namespace": "https://identifiers.ardc.edu.au/igsn-schema/description/1.0",
+      "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd",
       "localSchemaLocation": "schemas/ardc-igsn-description-1.0/resource.xsd"
     }
   },

@@ -1,10 +1,13 @@
 package au.edu.ardc.igsn.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,6 +59,13 @@ public class Record {
     @JsonIgnore
     @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
     private Set<Version> versions;
+
+    @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
+    private List<Identifier> identifiers;
+
+    @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
+    @Where(clause = "current = 1")
+    private List<Version> currentVersions;
 
     /**
      * Empty constructor
@@ -178,6 +188,22 @@ public class Record {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public List<Identifier> getIdentifiers() {
+        return identifiers;
+    }
+
+    public void setIdentifiers(List<Identifier> identifiers) {
+        this.identifiers = identifiers;
+    }
+
+    public List<Version> getCurrentVersions() {
+        return currentVersions;
+    }
+
+    public void setCurrentVersions(List<Version> currentVersions) {
+        this.currentVersions = currentVersions;
     }
 
     public static enum OwnerType {

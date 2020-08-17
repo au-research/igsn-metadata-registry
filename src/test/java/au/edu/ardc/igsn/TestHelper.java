@@ -28,6 +28,9 @@ public class TestHelper {
     public static Record mockRecord() {
         Record record = new Record();
         record = populateWithOwner(record, UUID.randomUUID());
+        record.setIdentifiers(new ArrayList<>());
+        record.setVersions(new HashSet<>());
+        record.setCurrentVersions(new ArrayList<>());
         return record;
     }
 
@@ -40,6 +43,9 @@ public class TestHelper {
     public static Record mockRecord(UUID randomUUID) {
         Record record = new Record(randomUUID);
         record = populateWithOwner(record, UUID.randomUUID());
+        record.setIdentifiers(new ArrayList<>());
+        record.setVersions(new HashSet<>());
+        record.setCurrentVersions(new ArrayList<>());
         return record;
     }
 

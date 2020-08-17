@@ -1,10 +1,13 @@
 package au.edu.ardc.igsn.dto;
 
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.entity.Version;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class RecordDTO {
@@ -36,6 +39,17 @@ public class RecordDTO {
     private UUID ownerID;
 
     private UUID dataCenterID;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<VersionDTO> currentVersions;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<IdentifierDTO> identifiers;
+
+    public RecordDTO() {
+        this.currentVersions = new ArrayList<>();
+        this.identifiers = new ArrayList<>();
+    }
 
     public UUID getId() {
         return id;
@@ -125,4 +139,19 @@ public class RecordDTO {
         this.title = title;
     }
 
+    public List<VersionDTO> getCurrentVersions() {
+        return currentVersions;
+    }
+
+    public void setCurrentVersions(List<VersionDTO> currentVersions) {
+        this.currentVersions = currentVersions;
+    }
+
+    public List<IdentifierDTO> getIdentifiers() {
+        return identifiers;
+    }
+
+    public void setIdentifiers(List<IdentifierDTO> identifiers) {
+        this.identifiers = identifiers;
+    }
 }

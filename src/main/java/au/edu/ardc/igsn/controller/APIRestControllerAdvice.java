@@ -68,7 +68,6 @@ public class APIRestControllerAdvice {
      * @param request The current request
      * @return APIExceptionResponse
      */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {MethodArgumentNotValidException.class})
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
