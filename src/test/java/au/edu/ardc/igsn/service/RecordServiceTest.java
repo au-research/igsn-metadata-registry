@@ -3,7 +3,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.dto.RecordMapper;
+import au.edu.ardc.igsn.dto.mapper.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;

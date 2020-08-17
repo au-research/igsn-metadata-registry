@@ -1,11 +1,9 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.dto.IdentifierDTO;
-import au.edu.ardc.igsn.dto.IdentifierMapper;
-import au.edu.ardc.igsn.dto.VersionDTO;
+import au.edu.ardc.igsn.dto.mapper.IdentifierMapper;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
-import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.model.Allocation;
@@ -13,7 +11,6 @@ import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
 import au.edu.ardc.igsn.repository.specs.IdentifierSpecification;
-import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import com.google.common.base.Converter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

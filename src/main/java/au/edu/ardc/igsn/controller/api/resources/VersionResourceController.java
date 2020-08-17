@@ -1,7 +1,7 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.dto.VersionDTO;
-import au.edu.ardc.igsn.dto.VersionMapper;
+import au.edu.ardc.igsn.dto.mapper.VersionMapper;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.VersionNotFoundException;

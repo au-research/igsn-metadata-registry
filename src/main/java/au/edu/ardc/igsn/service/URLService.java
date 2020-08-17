@@ -1,7 +1,7 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.dto.URLDTO;
-import au.edu.ardc.igsn.dto.URLMapper;
+import au.edu.ardc.igsn.dto.mapper.URLMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
@@ -10,7 +10,6 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.URLRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,5 +1,6 @@
-package au.edu.ardc.igsn.dto;
+package au.edu.ardc.igsn.dto.mapper;
 
+import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

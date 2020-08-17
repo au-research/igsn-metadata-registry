@@ -5,7 +5,7 @@ import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.dto.RecordMapper;
+import au.edu.ardc.igsn.dto.mapper.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import org.junit.Test;

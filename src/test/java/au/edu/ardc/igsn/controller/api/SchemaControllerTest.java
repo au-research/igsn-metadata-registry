@@ -78,7 +78,6 @@ public class SchemaControllerTest {
                         .contentType(MediaType.APPLICATION_XML)
                         .accept(MediaType.APPLICATION_JSON);
 
-
         mockMvc.perform(validRequest).andExpect(status().isOk());
     }
 

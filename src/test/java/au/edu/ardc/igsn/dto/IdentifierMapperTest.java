@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.dto;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.dto.mapper.IdentifierMapper;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.service.RecordService;
@@ -12,12 +13,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.ws.rs.core.Context;
-
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)

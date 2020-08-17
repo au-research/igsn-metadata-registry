@@ -2,8 +2,8 @@ package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.config.ApplicationProperties;
 import au.edu.ardc.igsn.dto.IGSNRecordDTO;
+import au.edu.ardc.igsn.dto.converter.IGSNRecordDTOConverter;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.model.Allocation;
@@ -11,7 +11,6 @@ import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.repository.specs.RecordSpecification;
 import au.edu.ardc.igsn.repository.specs.SearchCriteria;
 import au.edu.ardc.igsn.repository.specs.SearchOperation;
-import au.edu.ardc.igsn.repository.specs.SearchSpecification;
 import au.edu.ardc.igsn.service.IdentifierService;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
@@ -24,8 +23,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.maven.model.Model;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,9 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -50,7 +45,7 @@ import java.util.stream.Collectors;
 public class RecordResourceController {
 
     @Autowired
-    private RecordService service;
+    private RecordService recordService;
 
     @Autowired
     private KeycloakService kcService;
@@ -87,42 +82,12 @@ public class RecordResourceController {
             specs.add(new SearchCriteria("title", title, SearchOperation.MATCH));
         }
 
-        Page<RecordDTO> result = service.search(specs, pageable);
+        Page<RecordDTO> result = recordService.search(specs, pageable);
 
         // process include=igsn
         if (include != null && include.equals("igsn")) {
-            Page<IGSNRecordDTO> convertedResult = result.map(new Converter<RecordDTO, IGSNRecordDTO>() {
-                @Override
-                protected IGSNRecordDTO doForward(RecordDTO recordDTO) {
-                    ModelMapper mapper = new ModelMapper();
-                    IGSNRecordDTO dto = mapper.map(recordDTO, IGSNRecordDTO.class);
-                    Identifier igsn = identifierService.findIGSNByRecord(new Record(dto.getId()));
-
-                    // there's no igsn for this record
-                    if (igsn == null) {
-                        return dto;
-                    }
-
-                    // there's igsn, set the value and the url
-                    dto.setIgsn(igsn.getValue());
-                    try {
-                        String portalBaseUrl = applicationProperties.getPortalUrl();
-                        String inputUrl = String.format("%s/view/%s", portalBaseUrl, dto.getIgsn());
-                        String normalizedUrl = new URI(inputUrl).normalize().toString();
-                        dto.setPortalUrl(normalizedUrl);
-                    } catch (Exception e) {
-                        // todo log URI creation exception
-                        return dto;
-                    }
-
-                    return dto;
-                }
-
-                @Override
-                protected RecordDTO doBackward(IGSNRecordDTO igsnRecordDTO) {
-                    return (new ModelMapper()).map(igsnRecordDTO, RecordDTO.class);
-                }
-            });
+            Converter converter = new IGSNRecordDTOConverter(identifierService, applicationProperties);
+            Page<IGSNRecordDTO> convertedResult = result.map(converter);
             return ResponseEntity.ok().body(convertedResult);
         }
 
@@ -154,7 +119,7 @@ public class RecordResourceController {
             HttpServletRequest request
     ) {
         User user = kcService.getLoggedInUser(request);
-        RecordDTO record = service.findById(id, user);
+        RecordDTO record = recordService.findById(id, user);
         return ResponseEntity.ok().body(record);
     }
 
@@ -177,7 +142,7 @@ public class RecordResourceController {
             @RequestBody RecordDTO recordDTO,
             HttpServletRequest request) {
         User user = kcService.getLoggedInUser(request);
-        RecordDTO resultDTO = service.create(recordDTO, user);
+        RecordDTO resultDTO = recordService.create(recordDTO, user);
         return ResponseEntity.created(URI.create("/api/resources/records/" + resultDTO.getId())).body(resultDTO);
     }
 
@@ -203,7 +168,7 @@ public class RecordResourceController {
     ) {
         recordDTO.setId(UUID.fromString(id));
         User user = kcService.getLoggedInUser(request);
-        RecordDTO resultDTO = service.update(recordDTO, user);
+        RecordDTO resultDTO = recordService.update(recordDTO, user);
         return ResponseEntity.accepted().body(resultDTO);
     }
 
@@ -220,7 +185,7 @@ public class RecordResourceController {
             HttpServletRequest request
     ) {
         User user = kcService.getLoggedInUser(request);
-        service.delete(id, user);
+        recordService.delete(id, user);
         return ResponseEntity.accepted().body(null);
     }
 

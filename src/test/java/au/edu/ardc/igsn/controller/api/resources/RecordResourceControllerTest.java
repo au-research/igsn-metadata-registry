@@ -1,17 +1,14 @@
 package au.edu.ardc.igsn.controller.api.resources;
 
-import au.edu.ardc.igsn.entity.Identifier;
-import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.dto.RecordMapper;
+import au.edu.ardc.igsn.dto.mapper.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.RecordService;
-import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -19,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,9 +23,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static au.edu.ardc.igsn.TestHelper.asJsonString;

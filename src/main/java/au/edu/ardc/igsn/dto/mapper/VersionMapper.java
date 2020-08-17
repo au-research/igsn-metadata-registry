@@ -1,5 +1,6 @@
-package au.edu.ardc.igsn.dto;
+package au.edu.ardc.igsn.dto.mapper;
 
+import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.service.RecordService;
 import org.modelmapper.ModelMapper;

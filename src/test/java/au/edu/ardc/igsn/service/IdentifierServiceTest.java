@@ -2,7 +2,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.IdentifierDTO;
-import au.edu.ardc.igsn.dto.IdentifierMapper;
+import au.edu.ardc.igsn.dto.mapper.IdentifierMapper;
 import au.edu.ardc.igsn.entity.Identifier;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;

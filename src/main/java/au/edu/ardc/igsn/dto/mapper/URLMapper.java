@@ -1,5 +1,6 @@
-package au.edu.ardc.igsn.dto;
+package au.edu.ardc.igsn.dto.mapper;
 
+import au.edu.ardc.igsn.dto.URLDTO;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.service.RecordService;
 import org.modelmapper.ModelMapper;

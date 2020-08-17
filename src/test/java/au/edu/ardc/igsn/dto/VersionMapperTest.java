@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.dto;
 
 import au.edu.ardc.igsn.TestHelper;
+import au.edu.ardc.igsn.dto.mapper.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.service.RecordService;

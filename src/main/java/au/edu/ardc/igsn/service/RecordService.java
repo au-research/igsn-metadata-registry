@@ -4,7 +4,7 @@ import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.dto.RecordDTO;
-import au.edu.ardc.igsn.dto.RecordMapper;
+import au.edu.ardc.igsn.dto.mapper.RecordMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class RecordService {

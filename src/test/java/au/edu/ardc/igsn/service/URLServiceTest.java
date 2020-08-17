@@ -2,7 +2,7 @@ package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.URLDTO;
-import au.edu.ardc.igsn.dto.URLMapper;
+import au.edu.ardc.igsn.dto.mapper.URLMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.URL;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
@@ -13,7 +13,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;

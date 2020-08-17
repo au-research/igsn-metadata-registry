@@ -2,9 +2,8 @@ package au.edu.ardc.igsn.controller.api.resources;
 
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.config.RequestLoggingFilter;
-import au.edu.ardc.igsn.controller.api.resources.VersionResourceController;
 import au.edu.ardc.igsn.dto.VersionDTO;
-import au.edu.ardc.igsn.dto.VersionMapper;
+import au.edu.ardc.igsn.dto.mapper.VersionMapper;
 import au.edu.ardc.igsn.exception.ForbiddenOperationException;
 import au.edu.ardc.igsn.exception.RecordNotFoundException;
 import au.edu.ardc.igsn.model.User;
