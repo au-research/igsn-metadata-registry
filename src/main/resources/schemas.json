@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ardc-igsn-desc-1.0",
+    "name": "ARDC IGSN Descriptive v1.0",
+    "description": "XML Schema v1.0 for registering resources with the ARDC IGSN service",
+    "type": "igsn-description",
+    "class": "xml",
+    "xml": {
+      "namespace": "https://identifiers.ardc.edu.au/igsn-schemas/description/1.0",
+      "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schemas/description/1.0/resource.xsd",
+      "localSchemaLocation": "schemas/ardc-igsn-description-1.0/resource.xsd"
+    }
+  },
+  {
+    "id": "ardc-igsn-desc-1.0-jsonld",
+    "name": "ARDC IGSN Descriptive v1.0 JSON-LD",
+    "description": "JSON Schema v1.0 for registering resources with the ARDC IGSN service",
+    "type": "igsn-description",
+    "class": "json"
+  },
+  {
+    "id": "csiro-igsn-desc-3.0",
+    "name": "CSIRO IGSN Descriptive v3.0",
+    "description": "XML Schema v3.0 for registering resources with the CSIRO IGSN service.",
+    "type": "igsn-description",
+    "class": "xml",
+    "xml": {
+      "namespace": "https://igsn.csiro.au/schemas/3.0",
+      "schemaLocation": "https://igsn.csiro.au/schemas/3.0/igsn-csiro-v3.0.xsd",
+      "localSchemaLocation": "schemas/csiro-igsn-desc-3.0/resource.xsd"
+    }
+  },
+  {
+    "id": "igsn-desc-1.0",
+    "name": "IGSN Descriptive v1.0",
+    "description": "IGSN Description Metadata is intended to describe the core elements of a specimen. The set of attributes is seen as the \"birth certificate\" of a specimens and should not contain stateful attributes, where possible. The base document for the development are the notes from the IGSN Metadata Kernel Workshop held in Los Angeles in September 2015.",
+    "type": "igsn-description",
+    "class": "xml",
+    "xml": {
+      "namespace": "http://schema.igsn.org/description/1.0",
+      "schemaLocation": "http://schema.igsn.org/description/1.0 http://schema.igsn.org/description/1.0/resource.xsd",
+      "localSchemaLocation": "schemas/igsn-description-1.0/resource.xsd"
+    }
+  },
+  {
+    "id": "igsn-reg-1.0",
+    "name": "IGSN Registration v1.0",
+    "description": "IGSN Registration Metadata version 1.0",
+    "type": "igsn-description",
+    "class": "xml",
+    "xml": {
+      "namespace": "http://schema.igsn.org/registration/1.0",
+      "schemaLocation": "http://schema.igsn.org/registration/1.0 http://schema.igsn.org/registration/1.0/igsn.xsd",
+      "localSchemaLocation": "schemas/igsn-registration-1.0/resource.xsd"
+    }
+  }
+]

@@ -4,6 +4,7 @@ import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.service.VersionService;
 import au.edu.ardc.igsn.util.Helpers;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class RecordTitleProcessorTest {
         Version version = TestHelper.mockVersion(record);
         String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
         version.setContent(validXML.getBytes());
-        version.setSchema("csiro-v3");
+        version.setSchema(SchemaService.CSIROv3);
 
         // record with title that will be returned
         Record expected = TestHelper.mockRecord(record.getId());

@@ -20,14 +20,14 @@ public class SchemaController {
     SchemaService service;
 
     @GetMapping("")
-    public ResponseEntity<?> getSupportedSchemas() {
-        List<Schema> schemas = service.getSupportedSchemas();
+    public ResponseEntity<?> index() {
+        List<Schema> schemas = service.getSchemas();
 
         return ResponseEntity.ok().body(schemas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Schema> getSchemaByID(@PathVariable String id) {
+    public ResponseEntity<Schema> show(@PathVariable String id) {
         if (!service.supportsSchema(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
         }
@@ -35,23 +35,4 @@ public class SchemaController {
         Schema schema = service.getSchemaByID(id);
         return ResponseEntity.ok().body(schema);
     }
-
-    @PostMapping(value = "/{id}/validate")
-    public ResponseEntity<?> validateSchema(@PathVariable String id, @RequestBody String payload) {
-
-        // TODO handle malformed XML here?
-        if (!service.supportsSchema(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
-        }
-
-        Schema schema = service.getSchemaByID(id);
-
-        // TODO handle schema validation exception
-        if (service.validate(schema, payload)) {
-            return ResponseEntity.ok().body(null);
-        } else {
-            return ResponseEntity.badRequest().body("Validation Failed");
-        }
-    }
-
 }

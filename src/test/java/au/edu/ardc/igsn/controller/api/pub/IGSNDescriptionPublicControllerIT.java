@@ -8,6 +8,7 @@ import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.IdentifierRepository;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.util.Helpers;
 import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.Test;
@@ -34,8 +35,8 @@ class IGSNDescriptionPublicControllerIT extends WebIntegrationTest {
         recordRepository.saveAndFlush(record);
         Version version = TestHelper.mockVersion(record);
         version.setCurrent(true);
-        version.setSchema("igsn-csiro-v3-descriptive");
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+        version.setSchema(SchemaService.ARDCv1);
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
         version.setContent(validXML.getBytes());
         versionRepository.saveAndFlush(version);
         Identifier identifier = TestHelper.mockIdentifier(record);
@@ -100,7 +101,7 @@ class IGSNDescriptionPublicControllerIT extends WebIntegrationTest {
         // right schema, not current
         Version version2 = TestHelper.mockVersion(record);
         version2.setCurrent(false);
-        version2.setSchema("igsn-csiro-v3-descriptive");
+        version2.setSchema(SchemaService.ARDCv1);
         version2.setContent("stuff".getBytes());
         versionRepository.saveAndFlush(version2);
 

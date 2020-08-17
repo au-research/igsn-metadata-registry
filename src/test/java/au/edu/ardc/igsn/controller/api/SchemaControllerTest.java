@@ -1,6 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
-import au.edu.ardc.igsn.util.Helpers;
+import au.edu.ardc.igsn.service.SchemaService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class SchemaControllerTest {
     private final String baseUrl = "/api/resources/schemas/";
 
     @Test
-    public void it_should_get_all_supported_schemas() throws Exception {
+    public void index_getAllSupportedSchemas() throws Exception {
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get(baseUrl)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -40,8 +40,8 @@ public class SchemaControllerTest {
     }
 
     @Test
-    public void it_should_get_a_single_schema() throws Exception {
-        String schemaID = "igsn-csiro-v3-descriptive";
+    public void show_findASingleSchema_200() throws Exception {
+        String schemaID = SchemaService.ARDCv1;
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get(baseUrl + schemaID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -50,11 +50,11 @@ public class SchemaControllerTest {
         mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("igsn-csiro-v3-descriptive"));
+                .andExpect(jsonPath("$.id").value(schemaID));
     }
 
     @Test
-    public void it_should_throw_notFound_if_there_is_no_such_schemaID() throws Exception {
+    public void show_NonExistSchema_404() throws Exception {
         String schemaID = "non-exist";
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get(baseUrl + schemaID)
@@ -64,42 +64,5 @@ public class SchemaControllerTest {
         mockMvc.perform(request)
                 .andExpect(status().isNotFound());
     }
-
-    @Test
-    public void it_should_validate_schema() throws Exception {
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
-        String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
-
-        String schemaID = "igsn-csiro-v3-descriptive";
-        MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
-                        .content(validXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        MockHttpServletRequestBuilder invalidRequest =
-                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
-                        .content(invalidXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(validRequest).andExpect(status().isOk());
-        mockMvc.perform(invalidRequest).andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void it_should_throw_404_if_attempt_to_validate_nonexistent_schema() throws Exception {
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
-
-        String schemaID = "non-existence";
-        MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
-                        .content(validXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
-
-        mockMvc.perform(validRequest).andExpect(status().isNotFound());
-    }
-
 
 }

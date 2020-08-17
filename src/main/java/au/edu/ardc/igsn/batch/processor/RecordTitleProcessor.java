@@ -3,6 +3,7 @@ package au.edu.ardc.igsn.batch.processor;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.service.RecordService;
+import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.service.VersionService;
 import au.edu.ardc.igsn.util.XMLUtil;
 import org.slf4j.Logger;
@@ -13,11 +14,10 @@ import org.w3c.dom.NodeList;
 
 public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 
+    protected final String defaultSchema = SchemaService.ARDCv1;
     private final VersionService versionService;
     private final RecordService recordService;
     Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
-
-    protected final String defaultSchema="igsn-csiro-v3-descriptive";
 
     public RecordTitleProcessor(VersionService versionService, RecordService recordService) {
         this.versionService = versionService;
@@ -55,7 +55,7 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
         record.setTitle(title);
         record = recordService.save(record);
 
-        logger.debug("Processed title successful for record {} ",record.getId());
+        logger.debug("Processed title successful for record {} ", record.getId());
         return record;
     }
 }

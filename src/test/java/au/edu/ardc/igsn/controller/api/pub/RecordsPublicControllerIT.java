@@ -6,6 +6,7 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.service.SchemaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -136,13 +137,13 @@ class RecordsPublicControllerIT extends WebIntegrationTest {
         // with a version of schema igsn-descriptive-v1
         Version version = TestHelper.mockVersion(record);
         version.setCurrent(true);
-        version.setSchema("igsn-descriptive-v1");
+        version.setSchema(SchemaService.IGSNDESCv1);
         versionRepository.saveAndFlush(version);
 
         // and another version of schema igsn-csiro-v3
         Version version2 = TestHelper.mockVersion(record);
         version2.setCurrent(true);
-        version2.setSchema("igsn-csiro-v3");
+        version2.setSchema(SchemaService.CSIROv3);
         versionRepository.saveAndFlush(version2);
 
         // when filter by ?schema=igsn-descriptive-v1, only 1 returns
@@ -150,11 +151,11 @@ class RecordsPublicControllerIT extends WebIntegrationTest {
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(baseUrl + record.getId().toString() + "/versions")
-                        .queryParam("schema", "igsn-descriptive-v1")
+                        .queryParam("schema", SchemaService.IGSNDESCv1)
                         .build())
                 .exchange().expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.numberOfElements").isEqualTo(1)
-                .jsonPath("$.content[0].schema").isEqualTo("igsn-descriptive-v1");
+                .jsonPath("$.content[0].schema").isEqualTo(SchemaService.IGSNDESCv1);
     }
 }

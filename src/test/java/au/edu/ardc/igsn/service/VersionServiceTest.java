@@ -59,7 +59,7 @@ public class VersionServiceTest {
         // given a version dto
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent("blah");
 
         // setup repository mock
@@ -83,7 +83,7 @@ public class VersionServiceTest {
         User user = TestHelper.mockUser();
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent("blah");
 
         // setup repository mock
@@ -123,7 +123,7 @@ public class VersionServiceTest {
         // given a version dto
         VersionDTO dto = new VersionDTO();
         dto.setRecord(UUID.randomUUID().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent("blah");
 
         when(recordService.exists(dto.getId())).thenReturn(false);
@@ -145,7 +145,7 @@ public class VersionServiceTest {
         // given a version dto for that record
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent("blah");
 
         // setup the world

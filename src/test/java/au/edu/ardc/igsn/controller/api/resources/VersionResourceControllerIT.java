@@ -5,6 +5,7 @@ import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import au.edu.ardc.igsn.service.SchemaService;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
         // dto of a new version
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent(Base64.encodeBase64String("some-string".getBytes()));
 
         // when POST, expects 201 with a header
@@ -70,7 +71,7 @@ class VersionResourceControllerIT extends KeycloakIntegrationTest {
         // dto of a new version
         VersionDTO dto = new VersionDTO();
         dto.setRecord(record.getId().toString());
-        dto.setSchema("igsn-descriptive-v1");
+        dto.setSchema(SchemaService.IGSNDESCv1);
         dto.setContent(Base64.encodeBase64String("stuff".getBytes()));
         Date expectedDate = new SimpleDateFormat("dd/MM/yyyy").parse("02/02/1989");
         dto.setCreatedAt(expectedDate);

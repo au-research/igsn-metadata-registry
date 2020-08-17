@@ -6,6 +6,7 @@ import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.NotFoundException;
 import au.edu.ardc.igsn.service.IdentifierService;
+import au.edu.ardc.igsn.service.SchemaService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +38,7 @@ public class IGSNDescriptionPublicController {
     @PageableOperation
     public ResponseEntity<?> index(
             @RequestParam(name = "identifier") String identifierValue,
-            @RequestParam(required = false, defaultValue = "igsn-csiro-v3-descriptive") String schema) {
+            @RequestParam(required = false, defaultValue = SchemaService.ARDCv1) String schema) {
         Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
         if (identifier == null) {
             throw new NotFoundException("IGSN with value " + identifierValue + " is not found");
