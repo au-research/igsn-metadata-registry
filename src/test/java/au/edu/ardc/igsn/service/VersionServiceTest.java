@@ -246,11 +246,12 @@ public class VersionServiceTest {
     // todo findOwned
 
     @Test
-    public void it_can_end_the_life_of_a_version() {
+    public void end() {
         Version version = TestHelper.mockVersion();
+        User user = TestHelper.mockUser();
         when(repository.save(any(Version.class))).thenReturn(version);
 
-        Version endedVersion = service.end(version);
+        Version endedVersion = service.end(version, user);
 
         // ensure the repository call save
         verify(repository, times(1)).save(version);
@@ -258,6 +259,7 @@ public class VersionServiceTest {
         assertThat(endedVersion.isCurrent()).isFalse();
         assertThat(endedVersion.getEndedAt()).isNotNull();
         assertThat(endedVersion.getEndedAt()).isInstanceOf(Date.class);
+        assertThat(endedVersion.getEndedBy()).isEqualTo(user.getId());
     }
 
     @Test

@@ -29,4 +29,6 @@ public interface VersionRepository extends JpaRepository<Version, String>, JpaSp
     Version findByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
 
     Version findFirstByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
+
+    List<Version> findAllByRecordAndSchemaAndCurrentIsTrue(Record record, String schema);
 }

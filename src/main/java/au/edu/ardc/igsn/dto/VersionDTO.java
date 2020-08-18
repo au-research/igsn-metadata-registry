@@ -23,6 +23,10 @@ public class VersionDTO {
 
     private String hash;
 
+    public VersionDTO() {
+        this.current = true;
+    }
+
     public String getRecord() {
         return record;
     }

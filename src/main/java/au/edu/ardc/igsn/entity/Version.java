@@ -35,6 +35,9 @@ public class Version {
     @Column(columnDefinition = "BINARY(16)")
     private UUID creatorID;
 
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID endedBy;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "record_id", nullable = false)
@@ -135,5 +138,13 @@ public class Version {
 
     public void setHash(String hash) {
         this.hash = hash;
+    }
+
+    public UUID getEndedBy() {
+        return endedBy;
+    }
+
+    public void setEndedBy(UUID endedBy) {
+        this.endedBy = endedBy;
     }
 }

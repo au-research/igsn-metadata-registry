@@ -42,17 +42,11 @@ public class VersionService {
     @Autowired
     private ValidationService validationService;
 
-    /**
-     * End the life of a version
-     *
-     * @param version the version to end
-     * @return the ended version
-     */
-    public Version end(Version version) {
+    public Version end(Version version, User user) {
         version.setEndedAt(new Date());
         version.setCurrent(false);
+        version.setEndedBy(user.getId());
 
-        // todo endBy currently logged in user
         repository.save(version);
         return version;
     }
@@ -179,7 +173,15 @@ public class VersionService {
             version.setCurrent(dto.isCurrent());
         }
 
-        // todo if this version is the current, end all other version of the same schema
+        // if this version is the current, end all previous versions of the same schema
+        if (version.isCurrent()) {
+            List<Version> previousVersions = repository.findAllByRecordAndSchemaAndCurrentIsTrue(version.getRecord(), version.getSchema());
+            for (Version previousVersion : previousVersions) {
+                this.end(previousVersion, user);
+            }
+        }
+
+        // todo process?
 
         version = repository.save(version);
 

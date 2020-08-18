@@ -109,6 +109,7 @@ public class VersionResourceController {
     @ApiResponse(responseCode = "202", description = "Version is deleted")
     @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
     public ResponseEntity<?> destroy(
+            HttpServletRequest request,
             @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
     ) {
         // todo consider PUT /{id} with {state:ENDED} to end a version instead
@@ -116,11 +117,12 @@ public class VersionResourceController {
         if (!service.exists(id)) {
             throw new VersionNotFoundException(id);
         }
+        User user = kcService.getLoggedInUser(request);
 
         Version version = service.findById(id);
 
         // upon deleting a version, end the version instead
-        version = service.end(version);
+        version = service.end(version, user);
 
         return ResponseEntity.accepted().body(version);
     }
