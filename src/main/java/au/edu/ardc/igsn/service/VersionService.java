@@ -4,6 +4,7 @@ import au.edu.ardc.igsn.dto.VersionDTO;
 import au.edu.ardc.igsn.dto.mapper.VersionMapper;
 import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.entity.Version;
+import au.edu.ardc.igsn.event.RecordUpdatedEvent;
 import au.edu.ardc.igsn.exception.*;
 import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.Scope;
@@ -15,6 +16,7 @@ import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import com.google.common.base.Converter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,9 @@ public class VersionService {
 
     @Autowired
     private ValidationService validationService;
+
+    @Autowired
+    ApplicationEventPublisher publisher;
 
     public Version end(Version version, User user) {
         version.setEndedAt(new Date());
@@ -181,9 +186,10 @@ public class VersionService {
             }
         }
 
-        // todo process?
-
         version = repository.save(version);
+
+        // RecordUpdatedEvent
+        publisher.publishEvent(new RecordUpdatedEvent(version.getRecord(), user));
 
         return mapper.convertToDTO(version);
     }

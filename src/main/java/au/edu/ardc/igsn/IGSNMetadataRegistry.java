@@ -10,23 +10,19 @@ import io.swagger.v3.oas.annotations.security.OAuthFlow;
 import io.swagger.v3.oas.annotations.security.OAuthFlows;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.security.SecuritySchemes;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
 import org.modelmapper.ModelMapper;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableCaching
+@EnableAsync
 @SecuritySchemes({
         @SecurityScheme(
                 name = "basic",
@@ -69,6 +65,10 @@ public class IGSNMetadataRegistry {
     @Value("${app.name:Current Server}")
     String appDescription;
 
+    public static void main(String[] args) {
+        SpringApplication.run(IGSNMetadataRegistry.class, args);
+    }
+
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI().addServersItem(new Server().url(appURL).description(appDescription));
@@ -77,10 +77,6 @@ public class IGSNMetadataRegistry {
     @Bean
     public ModelMapper modelMapper() {
         return new ModelMapper();
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(IGSNMetadataRegistry.class, args);
     }
 
 }
