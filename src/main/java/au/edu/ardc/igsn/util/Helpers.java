@@ -2,6 +2,8 @@ package au.edu.ardc.igsn.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
@@ -43,5 +45,10 @@ public class Helpers {
     public static String readFile(String path) throws IOException {
         File file = new File(path);
         return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+    }
+
+    public static String readFileOnClassPath(String path) throws IOException {
+        InputStream resource = new ClassPathResource(path).getInputStream();
+        return IOUtils.toString(resource, StandardCharsets.UTF_8.name());
     }
 }

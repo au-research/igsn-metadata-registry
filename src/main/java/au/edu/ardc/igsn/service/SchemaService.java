@@ -5,12 +5,17 @@ import au.edu.ardc.igsn.model.schema.SchemaValidator;
 import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
 import au.edu.ardc.igsn.util.Helpers;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
 import javax.annotation.PostConstruct;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +32,7 @@ public class SchemaService {
     public static final String IGSNREGv1 = "igsn-desc-1.0";
     public static final String CSIROv3 = "csiro-igsn-desc-3.0";
 
-    protected final String schemaConfigLocation = "src/main/resources/schemas.json";
+    protected final String schemaConfigLocation = "schemas/schemas.json";
 
     Logger logger = LoggerFactory.getLogger(SchemaService.class);
     private List<Schema> schemas;
@@ -40,7 +45,7 @@ public class SchemaService {
      */
     public void loadSchemas() throws Exception {
         logger.debug("Loading schema configuration from {}", schemaConfigLocation);
-        String data = Helpers.readFile(schemaConfigLocation);
+        String data = Helpers.readFileOnClassPath("schemas.json");
         logger.debug("Loaded schema configuration, data length: {}", data.length());
         ObjectMapper mapper = new ObjectMapper();
         List<Schema> schemas = Arrays.asList(mapper.readValue(data, Schema[].class));
