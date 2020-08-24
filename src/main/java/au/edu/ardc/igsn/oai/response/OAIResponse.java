@@ -3,7 +3,11 @@ package au.edu.ardc.igsn.oai.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.codehaus.stax2.XMLOutputFactory2;
+import org.codehaus.stax2.XMLStreamWriter2;
 
+import javax.xml.stream.XMLStreamException;
+import java.io.StringWriter;
 import java.util.Date;
 
 @JsonRootName(value = "OAI-PMH")
@@ -24,6 +28,7 @@ public class OAIResponse {
     private String request;
 
     public OAIResponse() {
+        this.responseDate = new Date();
 //        this.xsi = "http://www.w3.org/2001/XMLSchema-instance";
     }
 
