@@ -28,7 +28,7 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
     public Record process(Record record) throws InterruptedException {
         logger.debug("Processing title for record {} ", record.getId());
 
-        Thread.sleep(2000);
+        //Thread.sleep(2000);
 
         // obtain the version
         Version version = versionService.findVersionForRecord(record, defaultSchema);
