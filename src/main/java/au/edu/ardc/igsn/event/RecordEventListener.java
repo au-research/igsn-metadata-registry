@@ -29,7 +29,7 @@ public class RecordEventListener {
 
     @Async
     @EventListener
-    public void handleRecordUpdated(RecordUpdatedEvent event) {
+    public void handleRecordUpdated(RecordUpdatedEvent event) throws InterruptedException {
         logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(), event.getUser().getId());
         event.getRecord().setModifiedAt(new Date());
         event.getRecord().setModifierID(event.getUser().getId());

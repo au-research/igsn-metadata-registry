@@ -24,11 +24,15 @@ public class ProcessRecordController {
     JobLauncher asyncJobLauncher;
 
     @Autowired
+    @Qualifier("queueJobLauncher")
+    JobLauncher queue;
+
+    @Autowired
     Job ProcessRecordJob;
 
     @GetMapping("")
     public String handle(
-            @RequestParam(required = false, name="method") String methodParam
+            @RequestParam(required = false, name = "method") String methodParam
     )
             throws JobParametersInvalidException
             , JobExecutionAlreadyRunningException
@@ -39,12 +43,15 @@ public class ProcessRecordController {
             method = methodParam;
         }
 
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addString("method", method)
-                .addLong("time", System.currentTimeMillis())
-                .toJobParameters();
+//        for (int i = 0; i < 100; i++) {
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addString("method", method)
+                    .addLong("time", System.currentTimeMillis())
+                    .toJobParameters();
+            queue.run(ProcessRecordJob, jobParameters);
+//        }
 
-        asyncJobLauncher.run(ProcessRecordJob, jobParameters);
+//        asyncJobLauncher.run(ProcessRecordJob, jobParameters);
 
         return "batch Job is invoked!";
     }

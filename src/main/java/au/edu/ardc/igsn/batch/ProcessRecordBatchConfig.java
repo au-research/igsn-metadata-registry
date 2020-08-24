@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 @Configuration
 public class ProcessRecordBatchConfig {
 
@@ -35,7 +37,7 @@ public class ProcessRecordBatchConfig {
     @Autowired
     RecordService recordService;
 
-    @Bean
+    @Bean(name="ProcessRecordJob")
     public Job ProcessRecordJob() {
         return jobBuilderFactory.get("ProcessRecordJob")
                 .flow(processTitles())
