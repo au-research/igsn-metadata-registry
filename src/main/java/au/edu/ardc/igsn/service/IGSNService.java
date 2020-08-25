@@ -13,9 +13,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 
 @Service
 public class IGSNService {
@@ -28,9 +30,62 @@ public class IGSNService {
     @Autowired
     private IGSNServiceRequestRepository repository;
 
+    private Map<String, java.util.logging.Logger> loggers = new HashMap<>();
+
     public IGSNServiceRequest findById(String id) {
         Optional<IGSNServiceRequest> opt = repository.findById(UUID.fromString(id));
         return opt.orElse(null);
+    }
+
+    public IGSNServiceRequest save(IGSNServiceRequest request) {
+        return repository.saveAndFlush(request);
+    }
+
+    public java.util.logging.Logger getLoggerFor(IGSNServiceRequest request) {
+        String loggerID = "IGSNServiceRequest."+request.getId();
+
+        if (loggers.containsKey(loggerID)) {
+            return loggers.get(loggerID);
+        }
+
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(loggerID);
+
+        logger.setUseParentHandlers(false);
+        try {
+            FileHandler fileHandler = new FileHandler(request.getDataPath() + "/logs");
+            logger.addHandler(fileHandler);
+            fileHandler.setFormatter(new SimpleFormatter() {
+                private static final String format = "[%1$tF %1$tT] [%2$-7s] %3$s %n";
+
+                @Override
+                public synchronized String format(LogRecord lr) {
+                    return String.format(format,
+                            new Date(lr.getMillis()),
+                            lr.getLevel().getLocalizedName(),
+                            lr.getMessage()
+                    );
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        loggers.put(loggerID, logger);
+        return logger;
+    }
+
+    public void closeLoggerFor(IGSNServiceRequest request) {
+        String loggerID = "IGSNServiceRequest."+request.getId();
+
+        if (!loggers.containsKey(loggerID)) {
+            return;
+        }
+
+        java.util.logging.Logger logger = loggers.get(loggerID);
+        for (Handler handle : logger.getHandlers()) {
+            handle.close();
+        }
+        loggers.remove(loggerID);
     }
 
     public IGSNServiceRequest createRequest(User user) {

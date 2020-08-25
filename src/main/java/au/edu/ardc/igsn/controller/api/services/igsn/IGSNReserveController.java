@@ -2,6 +2,7 @@ package au.edu.ardc.igsn.controller.api.services.igsn;
 
 import au.edu.ardc.igsn.config.IGSNProperties;
 import au.edu.ardc.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.IGSNService;
 import au.edu.ardc.igsn.service.KeycloakService;
@@ -52,15 +53,19 @@ public class IGSNReserveController {
     @PostMapping("")
     public ResponseEntity<IGSNServiceRequest> handle(
             HttpServletRequest request,
-//            @RequestParam UUID allocationID,
+            @RequestParam UUID allocationID,
             @RequestParam(required = false, defaultValue = "User") String ownerType,
             @RequestParam(required = false) String ownerID,
             @RequestBody String IGSNList
     ) throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
-        // todo validate request body contains IGSN 1 by 1, limit 500?
-        // todo validateOwnerID if ownerType=DataCenter
+        // todo validate request body contains 1 IGSN per line
         User user = kcService.getLoggedInUser(request);
-        // todo validate user & allocationID & IGSNList
+        // todo validate ownership & allocationID & IGSNList
+
+        if (ownerType.equals(Record.OwnerType.User.toString())) {
+            ownerID = user.getId().toString();
+        }
+        // todo validateOwnerID if ownerType=DataCenter
 
         IGSNServiceRequest IGSNRequest = service.createRequest(user);
         String dataPath = IGSNRequest.getDataPath();
@@ -82,6 +87,11 @@ public class IGSNReserveController {
         }
 
         JobParameters jobParameters = new JobParametersBuilder()
+                .addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
+                .addString("creatorID", user.getId().toString())
+                .addString("allocationID", allocationID.toString())
+                .addString("ownerID", ownerID)
+                .addString("ownerType", ownerType)
                 .addString("filePath", filePath)
                 .addString("targetPath", dataPath + "/output.txt")
                 .toJobParameters();
