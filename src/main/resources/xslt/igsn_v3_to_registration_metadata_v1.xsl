@@ -25,12 +25,12 @@
 				<xsl:element name="registrantName">
 					<xsl:value-of select="$registrantName"/>
 				</xsl:element>
-
-				<xsl:element name="nameIdentifier">
-					<xsl:attribute name="nameIdentifierScheme" select="$nameIdentifierScheme"/>
-					<xsl:value-of select="$nameIdentifier"/>
-				</xsl:element>
-
+				<xsl:if test="$nameIdentifier != 'nameIdentifier' and $nameIdentifierScheme != 'nameIdentifierScheme'">	 
+					<xsl:element name="nameIdentifier">
+						<xsl:attribute name="nameIdentifierScheme" select="$nameIdentifierScheme"/>
+						<xsl:value-of select="$nameIdentifier"/>
+					</xsl:element>
+				</xsl:if>
 			</xsl:element>
 
 			<xsl:apply-templates select="igsn:relatedResources"/>
