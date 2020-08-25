@@ -8,7 +8,7 @@
 	<xsl:param name="eventType" select="'eventType'"/>
 	<xsl:param name="timeStamp" select="'timeStamp'"/>
 	<!--
-    XSLT transformation to create jregistration metadata v1.1 from an IGSN CSIRO v3.0 record
+    XSLT transformation to create registration metadata v1.1 from an IGSN CSIRO v3.0 record
     -->
 
 	<xsl:template match="/">
