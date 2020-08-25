@@ -7,19 +7,16 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.SpringVersion;
-import org.springframework.core.env.Environment;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import au.edu.ardc.igsn.KeycloakIntegrationTest;
 import clover.org.apache.commons.lang.RandomStringUtils;
 
-@TestPropertySource(locations="classpath:application.properties")
 @ExtendWith(SpringExtension.class)
-public class MDSClientTest {
+@AutoConfigureWebTestClient
+public class MDSClientIT extends KeycloakIntegrationTest{
 	
 	
 	@Value("${mds.username}")

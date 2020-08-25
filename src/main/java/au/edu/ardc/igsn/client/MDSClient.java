@@ -37,18 +37,6 @@ public class MDSClient {
         this.mds_url = url;
 
 	}
-	/*
-	 * WebClient without Authentication 
-	 * 
-	 */
-	public MDSClient(String url) 
-	{
-	    this.web_client = WebClient.builder()
-	            .baseUrl(url)
-	            .build();
-        this.mds_url = url;
-
-	}
 
 	public String getUrl()
 	{
