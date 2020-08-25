@@ -8,7 +8,9 @@ import au.edu.ardc.igsn.repository.RecordRepository;
 import au.edu.ardc.igsn.service.IGSNService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
 
 import java.util.Date;
@@ -25,6 +27,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
     private String ownerID;
     private String ownerType;
     private IGSNServiceRequest request;
+    private ExecutionContext executionContext;
 
     public ReserveIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository, IGSNService igsnService) {
         this.recordRepository = recordRepository;
@@ -35,13 +38,20 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
     @BeforeStep
     public void beforeStep(final StepExecution stepExecution) {
         JobParameters jobParameters = stepExecution.getJobParameters();
+        this.executionContext = stepExecution.getExecutionContext();
         this.ownerID = jobParameters.getString("ownerID");
         this.ownerType = jobParameters.getString("ownerType");
         this.creatorID = jobParameters.getString("creatorID");
         this.allocationID = jobParameters.getString("allocationID");
         this.IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
-
         this.request = igsnService.findById(this.IGSNServiceRequestID);
+    }
+
+    @AfterStep
+    public void afterStep(StepExecution stepExecution) {
+        // todo store as metadata in IGSNServiceRequest
+        igsnService.getLoggerFor(request).info(String.format("Processed: %s", stepExecution.getExecutionContext().getInt("importedRecords", 0)));
+        igsnService.getLoggerFor(request).info(String.format("Existed: %s", stepExecution.getExecutionContext().getInt("existedRecords", 0)));
     }
 
     @Override
@@ -49,6 +59,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 
         if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
             igsnService.getLoggerFor(request).warning(String.format("Identifier %s of type %s already exists", identifierValue, Identifier.Type.IGSN));
+            this.executionContext.putInt( "existedRecords", this.executionContext.getInt( "existedRecords", 0 ) + 1 );
             return null;
         }
 
@@ -74,6 +85,8 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 
         identifier = identifierRepository.saveAndFlush(identifier);
         igsnService.getLoggerFor(request).info(String.format("Reserved identifier %s with type %s and value %s", identifier.getId(), identifier.getType(), identifier.getValue()));
+
+        this.executionContext.putInt( "importedRecords", this.executionContext.getInt( "importedRecords", 0 ) + 1 );
 
         return identifier.getId().toString();
     }

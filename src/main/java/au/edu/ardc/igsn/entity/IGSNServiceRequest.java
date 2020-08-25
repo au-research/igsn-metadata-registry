@@ -91,7 +91,7 @@ public class IGSNServiceRequest {
     }
 
     public enum Status {
-        ACCEPTED, QUEUED, RUNNING, COMPLETED
+        ACCEPTED, QUEUED, RUNNING, COMPLETED, FAILED
     }
 
 }

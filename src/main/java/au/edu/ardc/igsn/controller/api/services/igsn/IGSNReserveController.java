@@ -98,12 +98,6 @@ public class IGSNReserveController {
 
         jobLauncher.run(reserveIGSNJob, jobParameters);
 
-//        IGSNRequest.setProperty("dataPath", IGSNProperties.getDataPath());
-
-        // persist and get the id
-        // store the IGSNList in a .txt file
-
-        // dispatch reserveigsnjob with the IGSNServiceRequest id
         return ResponseEntity.ok().body(IGSNRequest);
     }
 

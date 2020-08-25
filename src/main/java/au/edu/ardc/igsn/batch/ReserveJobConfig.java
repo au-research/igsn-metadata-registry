@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 
 import java.io.File;
 
@@ -42,6 +44,9 @@ public class ReserveJobConfig {
     @Autowired
     IGSNService igsnService;
 
+    @Autowired
+    TaskExecutor asyncTaskExecutor;
+
     @Bean(name = "ReserveIGSNJob")
     public Job ReserveIGSNJob() {
         return jobBuilderFactory.get("ReserveIGSNJob")
@@ -57,6 +62,9 @@ public class ReserveJobConfig {
                 .reader(IGSNItemReader(null))
                 .processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService))
                 .writer(IGSNItemWriter(null))
+                .faultTolerant()
+                .retryLimit(3)
+                .retry(DeadlockLoserDataAccessException.class)
                 .build();
     }
 
