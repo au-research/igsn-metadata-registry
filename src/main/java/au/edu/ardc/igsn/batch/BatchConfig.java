@@ -41,6 +41,14 @@ public class BatchConfig {
     @Autowired
     public JobRepository jobRepository;
 
+    @Bean(name="standardJobLauncher")
+    public JobLauncher standardJobLauncher() throws Exception {
+        SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.afterPropertiesSet();
+        return jobLauncher;
+    }
+
     @Bean(name = "asyncJobLauncher")
     public JobLauncher asyncJobLauncher() throws Exception {
         SimpleJobLauncher jobLauncher = new SimpleJobLauncher();

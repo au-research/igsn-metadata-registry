@@ -1,6 +1,8 @@
 package au.edu.ardc.igsn.batch;
 
 import au.edu.ardc.igsn.batch.processor.ReserveIGSNProcessor;
+import au.edu.ardc.igsn.repository.IdentifierRepository;
+import au.edu.ardc.igsn.repository.RecordRepository;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -29,6 +31,12 @@ public class ReserveJobConfig {
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
 
+    @Autowired
+    RecordRepository recordRepository;
+
+    @Autowired
+    IdentifierRepository identifierRepository;
+
     @Bean(name = "ReserveIGSNJob")
     public Job ReserveIGSNJob() {
         return jobBuilderFactory.get("ReserveIGSNJob")
@@ -41,7 +49,7 @@ public class ReserveJobConfig {
         return stepBuilderFactory.get("Reserve IGSN")
                 .<String, String>chunk(1)
                 .reader(IGSNItemReader(null))
-                .processor(new ReserveIGSNProcessor())
+                .processor(new ReserveIGSNProcessor(recordRepository, identifierRepository))
                 .writer(IGSNItemWriter(null))
                 .build();
     }
