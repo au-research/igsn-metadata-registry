@@ -77,9 +77,9 @@ public class SchemaService {
 
     
     /**
-     * Get a Schema by ID
+     * Get a Schema by NameSpace
      *
-     * @param schemaID the ID of the supported Schema
+     * @param nameSpace the nameSpace of the supported Schema
      * @return Schema
      */
     @Cacheable("schema")
