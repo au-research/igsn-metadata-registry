@@ -1,6 +1,9 @@
 package au.edu.ardc.igsn.util;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -33,4 +36,33 @@ public class XMLUtil {
 
         return nodeList;
     }
+    
+    
+    public static String getNamespaceURI(String xml) throws Exception {
+    	
+	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    factory.setNamespaceAware(true);
+	    DocumentBuilder builder = factory.newDocumentBuilder();
+	    Document doc = builder.parse(xml);
+	    Element root = doc.getDocumentElement();
+        String name = "";
+        String nameSpace = "";
+	    NamedNodeMap attributes = root.getAttributes();
+	    if (attributes != null)
+	    {
+	        for (int i = 0; i < attributes.getLength(); i++)
+	        {
+	            Node node = attributes.item(i);
+	            if (node.getNodeType() == Node.ATTRIBUTE_NODE)
+	            {
+	                name = node.getNodeName();
+	                nameSpace = node.getNamespaceURI();
+	                System.out.println(name + " " + node.getNamespaceURI());
+	            }
+	        }
+	    }
+	    return nameSpace;
+    }
+    
+    
 }

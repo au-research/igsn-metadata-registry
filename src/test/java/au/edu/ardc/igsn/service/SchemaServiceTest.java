@@ -63,4 +63,10 @@ class SchemaServiceTest {
         String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
         assertThat(service.validate(schema, validXML)).isTrue();
     }
+    
+    @Test
+    void getSchemaByNameSpace() {
+    	XMLSchema xs = service.getSchemaByNameSpace("https://identifiers.ardc.edu.au/igsn-schema/description/1.0");
+    	assertThat(xs.getId().equals(SchemaService.ARDCv1));
+    }
 }

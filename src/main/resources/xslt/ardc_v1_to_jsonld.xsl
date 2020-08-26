@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:igsn="https://igsn.csiro.au/schemas/3.0" version="2.0" exclude-result-prefixes="igsn">
+    xmlns:igsn="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc" version="2.0" exclude-result-prefixes="igsn">
     <xsl:output indent="no" method="text"/>
 
     <!--

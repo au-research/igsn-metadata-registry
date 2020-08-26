@@ -3,6 +3,7 @@ package au.edu.ardc.igsn.service;
 import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.model.schema.SchemaValidator;
 import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
+import au.edu.ardc.igsn.model.schema.XMLSchema;
 import au.edu.ardc.igsn.util.Helpers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
@@ -17,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,6 +75,29 @@ public class SchemaService {
         return found.orElse(null);
     }
 
+    
+    /**
+     * Get a Schema by ID
+     *
+     * @param schemaID the ID of the supported Schema
+     * @return Schema
+     */
+    @Cacheable("schema")
+    public XMLSchema getSchemaByNameSpace(String nameSpace) {
+        logger.debug("Load schema by nameSpace {}", nameSpace);
+        Iterator<Schema> found = this.getSchemas().stream()
+                .filter(schema -> schema.getClass().equals(XMLSchema.class)).iterator();
+        
+        while(found.hasNext())
+        {
+        	XMLSchema xs = (XMLSchema) found.next();
+        	if(xs.getNamespace().equals(nameSpace)) {
+        		return xs;
+        	}
+        }
+
+        return null;
+    }
     /**
      * Tells if a schema by ID is currently supported by the system
      *
