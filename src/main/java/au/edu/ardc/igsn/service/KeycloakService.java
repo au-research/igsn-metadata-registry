@@ -1,9 +1,9 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.DataCenter;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
-import au.edu.ardc.igsn.model.DataCenter;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
