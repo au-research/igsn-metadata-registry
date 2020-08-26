@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.controller.api;
 
+import au.edu.ardc.igsn.config.ApplicationProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class InfoController {
 
     @Autowired
-    BuildProperties buildProperties;
+    ApplicationProperties properties;
 
     @GetMapping(value = {"/api/info"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -28,8 +29,9 @@ public class InfoController {
     @ApiResponse(responseCode = "200")
     public ResponseEntity<?> index() {
         Map<String, String> build = new HashMap<>();
-        build.put("version", buildProperties.getVersion());
-        build.put("time", buildProperties.getTime().toString());
+        build.put("name", properties.getName());
+        build.put("description", properties.getDescription());
+        build.put("version", properties.getVersion());
         return ResponseEntity.ok(build);
     }
 }
