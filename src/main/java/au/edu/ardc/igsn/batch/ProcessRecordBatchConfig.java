@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -51,6 +52,7 @@ public class ProcessRecordBatchConfig {
                 .reader(new RecordReader(recordRepository))
                 .processor(new RecordTitleProcessor(versionService, recordService))
                 .writer(new NoOpItemWriter<>())
+                .faultTolerant().retryLimit(3).retry(DeadlockLoserDataAccessException.class)
                 //.taskExecutor(concurrentTaskExecutor())
                 .build();
     }
