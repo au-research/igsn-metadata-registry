@@ -19,4 +19,6 @@ public interface IdentifierRepository extends JpaRepository<Identifier, String>,
     Identifier findByValueAndType(String value, Identifier.Type type);
 
     Identifier findFirstByRecordAndType(Record record, Identifier.Type type);
+
+    boolean existsByTypeAndValue(Identifier.Type type, String value);
 }

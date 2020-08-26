@@ -2,10 +2,20 @@ package au.edu.ardc.igsn.controller.api.services.igsn;
 
 import au.edu.ardc.igsn.config.IGSNProperties;
 import au.edu.ardc.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.igsn.entity.Record;
 import au.edu.ardc.igsn.model.User;
 import au.edu.ardc.igsn.service.IGSNService;
 import au.edu.ardc.igsn.service.KeycloakService;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.JobParametersInvalidException;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.UUID;
 
 @Controller
@@ -29,6 +42,14 @@ public class IGSNReserveController {
     @Autowired
     IGSNService service;
 
+    @Autowired
+    @Qualifier("standardJobLauncher")
+    JobLauncher jobLauncher;
+
+    @Autowired
+    @Qualifier("ReserveIGSNJob")
+    Job reserveIGSNJob;
+
     @PostMapping("")
     public ResponseEntity<IGSNServiceRequest> handle(
             HttpServletRequest request,
@@ -36,19 +57,47 @@ public class IGSNReserveController {
             @RequestParam(required = false, defaultValue = "User") String ownerType,
             @RequestParam(required = false) String ownerID,
             @RequestBody String IGSNList
-    ) {
-        // todo validate request body contains IGSN 1 by 1, limit 500?
-        // todo validateOwnerID if ownerType=DataCenter
+    ) throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+        // todo validate request body contains 1 IGSN per line
         User user = kcService.getLoggedInUser(request);
-        // todo validate user & allocationID & IGSNList
+        // todo validate ownership & allocationID & IGSNList
+
+        if (ownerType.equals(Record.OwnerType.User.toString())) {
+            ownerID = user.getId().toString();
+        }
+        // todo validateOwnerID if ownerType=DataCenter
 
         IGSNServiceRequest IGSNRequest = service.createRequest(user);
-//        IGSNRequest.setProperty("dataPath", IGSNProperties.getDataPath());
+        String dataPath = IGSNRequest.getDataPath();
 
-        // persist and get the id
-        // store the IGSNList in a .txt file
+        // write IGSNList to input.txt
+        String filePath = dataPath + "/input.txt";
+        try {
+            File inputIGSNFile = new File(filePath);
+            if (inputIGSNFile.createNewFile()) {
+                System.out.println("File created: " + inputIGSNFile.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+            FileWriter writer = new FileWriter(filePath);
+            writer.write(IGSNList);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // dispatch reserveigsnjob with the IGSNServiceRequest id
+        JobParameters jobParameters = new JobParametersBuilder()
+                .addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
+                .addString("creatorID", user.getId().toString())
+                .addString("allocationID", allocationID.toString())
+                .addString("ownerID", ownerID)
+                .addString("ownerType", ownerType)
+                .addString("filePath", filePath)
+                .addString("targetPath", dataPath + "/output.txt")
+                .toJobParameters();
+
+        jobLauncher.run(reserveIGSNJob, jobParameters);
+
         return ResponseEntity.ok().body(IGSNRequest);
     }
 
