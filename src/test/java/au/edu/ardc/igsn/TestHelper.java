@@ -52,7 +52,6 @@ public class TestHelper {
     public static Record populateWithOwner(Record record, UUID creatorID) {
         record.setCreatorID(creatorID);
         record.setAllocationID(UUID.randomUUID());
-        record.setDataCenterID(UUID.randomUUID());
         record.setOwnerID(creatorID);
         record.setOwnerType(Record.OwnerType.User);
         record.setModifiedAt(new Date());

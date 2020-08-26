@@ -289,7 +289,6 @@ public class RecordServiceTest {
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerType(Record.OwnerType.DataCenter);
         record.setOwnerID(dataCenter.getId());
-        record.setDataCenterID(dataCenter.getId());
 
         // given a dto
         RecordDTO dto = new RecordDTO();

@@ -52,7 +52,6 @@ class ValidationServiceTest {
         user.setDataCenters(Arrays.asList(dataCenter));
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerID(dataCenter.getId());
-        record.setDataCenterID(dataCenter.getId());
         record.setOwnerType(Record.OwnerType.DataCenter);
 
         assertThat(service.validateRecordOwnership(record, user)).isTrue();
@@ -66,7 +65,6 @@ class ValidationServiceTest {
         user.setDataCenters(Arrays.asList(dataCenter));
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setOwnerID(UUID.randomUUID());
-        record.setDataCenterID(record.getOwnerID());
         record.setOwnerType(Record.OwnerType.DataCenter);
 
         assertThat(service.validateRecordOwnership(record, user)).isFalse();

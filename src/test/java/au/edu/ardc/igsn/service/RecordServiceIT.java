@@ -122,7 +122,6 @@ public class RecordServiceIT {
         dto.setCreatedAt(updatedCreatedAt);
         dto.setCreatorID(updatedCreatorID);
         dto.setOwnerID(updatedOwnerID);
-        dto.setDataCenterID(updatedDataCenterID);
 
         // when create
         RecordDTO result = service.create(dto, user);
@@ -136,7 +135,6 @@ public class RecordServiceIT {
         assertThat(actualRecord.getModifiedAt()).isEqualTo(updatedModifiedAt);
         assertThat(actualRecord.getCreatorID()).isEqualTo(updatedCreatorID);
         assertThat(actualRecord.getOwnerID()).isEqualTo(updatedOwnerID);
-        assertThat(actualRecord.getDataCenterID()).isEqualTo(updatedDataCenterID);
     }
 
     @Test

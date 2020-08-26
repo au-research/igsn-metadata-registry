@@ -47,9 +47,6 @@ public class Record {
     @Column(columnDefinition = "BINARY(16)")
     private UUID allocationID;
 
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID dataCenterID;
-
     @Enumerated(EnumType.STRING)
     private OwnerType ownerType;
 
@@ -148,14 +145,6 @@ public class Record {
 
     public void setModifierID(UUID modifiedBy) {
         this.modifierID = modifiedBy;
-    }
-
-    public UUID getDataCenterID() {
-        return dataCenterID;
-    }
-
-    public void setDataCenterID(UUID dataCenterID) {
-        this.dataCenterID = dataCenterID;
     }
 
     public OwnerType getOwnerType() {

@@ -173,7 +173,6 @@ public class RecordService {
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
             record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
             record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
-            record.setDataCenterID(recordDTO.getDataCenterID() != null ? recordDTO.getDataCenterID() : record.getDataCenterID());
         }
 
         record = repository.save(record);
@@ -248,7 +247,6 @@ public class RecordService {
             record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
             record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
             record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
-            record.setDataCenterID(recordDTO.getDataCenterID() != null ? recordDTO.getDataCenterID() : record.getDataCenterID());
             record.setModifierID(recordDTO.getModifierID() != null ? recordDTO.getModifierID() : record.getModifierID());
         }
 
