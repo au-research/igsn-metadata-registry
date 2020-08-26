@@ -1,6 +1,10 @@
 package au.edu.ardc.igsn.batch;
 
+import au.edu.ardc.igsn.batch.listener.IGSNJobListener;
 import au.edu.ardc.igsn.batch.processor.ReserveIGSNProcessor;
+import au.edu.ardc.igsn.repository.IdentifierRepository;
+import au.edu.ardc.igsn.repository.RecordRepository;
+import au.edu.ardc.igsn.service.IGSNService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -17,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.dao.DeadlockLoserDataAccessException;
 
 import java.io.File;
 
@@ -29,9 +35,22 @@ public class ReserveJobConfig {
     @Autowired
     public StepBuilderFactory stepBuilderFactory;
 
+    @Autowired
+    RecordRepository recordRepository;
+
+    @Autowired
+    IdentifierRepository identifierRepository;
+
+    @Autowired
+    IGSNService igsnService;
+
+    @Autowired
+    TaskExecutor asyncTaskExecutor;
+
     @Bean(name = "ReserveIGSNJob")
     public Job ReserveIGSNJob() {
         return jobBuilderFactory.get("ReserveIGSNJob")
+                .listener(new IGSNJobListener(igsnService))
                 .flow(reserveIGSN())
                 .end().build();
     }
@@ -41,8 +60,11 @@ public class ReserveJobConfig {
         return stepBuilderFactory.get("Reserve IGSN")
                 .<String, String>chunk(1)
                 .reader(IGSNItemReader(null))
-                .processor(new ReserveIGSNProcessor())
+                .processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService))
                 .writer(IGSNItemWriter(null))
+                .faultTolerant()
+                .retryLimit(3)
+                .retry(DeadlockLoserDataAccessException.class)
                 .build();
     }
 
