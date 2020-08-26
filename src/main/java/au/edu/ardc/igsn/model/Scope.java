@@ -1,6 +1,8 @@
 package au.edu.ardc.igsn.model;
 
-public enum Scope {
+import java.io.Serializable;
+
+public enum Scope implements Serializable {
     UPDATE("igsn:update"),
     CREATE("igsn:create"),
     IMPORT("igsn:import");

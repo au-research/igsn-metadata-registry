@@ -64,7 +64,6 @@ public class SchemaService {
      * @param schemaID the ID of the supported Schema
      * @return Schema
      */
-    @Cacheable("schema")
     public Schema getSchemaByID(String schemaID) {
         logger.debug("Load schema by ID {}", schemaID);
         Optional<Schema> found = this.getSchemas().stream()
@@ -83,7 +82,6 @@ public class SchemaService {
         return getSchemaByID(schemaID) != null;
     }
 
-    @Cacheable("schemas")
     public List<Schema> getSchemas() {
         return schemas;
     }

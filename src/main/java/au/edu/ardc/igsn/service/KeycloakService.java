@@ -178,6 +178,8 @@ public class KeycloakService {
             logger.debug("Building Allocation for permission: "+ permission.getResourceId());
             try {
                 Allocation allocation = self.getAllocationByResourceID(permission.getResourceId());
+
+                // add scopes after (cached) allocations since they're from Permissions instead of ResourceID
                 List<Scope> scopes = permission.getScopes().stream()
                         .map(Scope::fromString)
                         .collect(Collectors.toList());

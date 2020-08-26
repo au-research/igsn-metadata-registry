@@ -1,11 +1,10 @@
 package au.edu.ardc.igsn.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
-public class Allocation {
+public class Allocation implements Serializable {
     private final UUID id;
     private String name;
     private List<Scope> scopes;

@@ -31,7 +31,7 @@ import java.util.UUID;
 
 @Controller
 @RequestMapping("/api/services/igsn/reserve")
-public class IGSNReserveController {
+public class IGSNServiceReserveController {
 
     @Autowired
     KeycloakService kcService;
