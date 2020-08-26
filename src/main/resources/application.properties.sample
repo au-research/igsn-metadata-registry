@@ -17,6 +17,11 @@ app.portal-url=http://localhost:8085/igsn-portal/
 
 app.igsn.data-path=/tmp/igsn-registry/
 
+# cache
+spring.cache.type=redis
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
+
 # Database Setup
 spring.datasource.url=jdbc:h2:mem:proddb
 spring.datasource.username=sa

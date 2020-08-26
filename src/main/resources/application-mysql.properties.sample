@@ -13,6 +13,11 @@ app.contact.name=admin
 app.contact.email=admin@localhost
 app.contact.url=https://ardc.edu.au
 
+# cache
+spring.cache.type=redis
+spring.redis.host=127.0.0.1
+spring.redis.port=6379
+
 # Database Setup
 # Make sure to create the database, login credentials and permissions beforehand
 spring.datasource.url= jdbc:mysql://localhost:3306/dbs_igsn?useLegacyDatetimeCode=false&serverTimezone=UTC
