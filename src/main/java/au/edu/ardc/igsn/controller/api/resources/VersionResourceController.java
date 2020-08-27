@@ -5,7 +5,11 @@ import au.edu.ardc.igsn.dto.mapper.VersionMapper;
 import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.APIExceptionResponse;
 import au.edu.ardc.igsn.exception.VersionNotFoundException;
+import au.edu.ardc.igsn.model.Allocation;
 import au.edu.ardc.igsn.model.User;
+import au.edu.ardc.igsn.repository.specs.SearchCriteria;
+import au.edu.ardc.igsn.repository.specs.SearchOperation;
+import au.edu.ardc.igsn.repository.specs.VersionSpecification;
 import au.edu.ardc.igsn.service.KeycloakService;
 import au.edu.ardc.igsn.service.VersionService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +21,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +33,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/resources/versions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,12 +57,24 @@ public class VersionResourceController {
             responseCode = "200",
             content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class)))
     )
-    public ResponseEntity<?> index() {
-        // todo obtain user from the kcService and find owned from said user
-        // todo pagination
-        List<Version> versions = service.findOwned();
+    public ResponseEntity<?> index(
+            HttpServletRequest request,
+            @PageableDefault @Parameter(hidden = true) Pageable pageable,
+            @RequestParam(required = false) String schema
+    ) {
+        // obtain a list of ownerIDs include the current user ownerID
+        User user = kcService.getLoggedInUser(request);
+        List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
+        ownerIDs.add(user.getId());
 
-        return ResponseEntity.ok(versions);
+        VersionSpecification specs = new VersionSpecification();
+        specs.add(new SearchCriteria("ownerID", ownerIDs, SearchOperation.RECORD_IN));
+        if (schema != null) {
+            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+        }
+
+        Page<VersionDTO> result = service.search(specs, pageable);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/{id}")
@@ -94,7 +114,7 @@ public class VersionResourceController {
             description = "Version is created",
             content = @Content(schema = @Schema(implementation = Version.class))
     )
-    public ResponseEntity<?> store(
+    public ResponseEntity<VersionDTO> store(
             @Valid @RequestBody VersionDTO versionDTO,
             HttpServletRequest request) {
         User user = kcService.getLoggedInUser(request);
@@ -123,7 +143,6 @@ public class VersionResourceController {
 
         // upon deleting a version, end the version instead
         version = service.end(version, user);
-
         return ResponseEntity.accepted().body(version);
     }
 
