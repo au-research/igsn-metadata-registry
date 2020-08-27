@@ -12,7 +12,7 @@ import javax.xml.bind.DatatypeConverter;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
+@AutoConfigureWebTestClient(timeout = "10000")
 @ActiveProfiles("integration")
 public abstract class WebIntegrationTest {
 
