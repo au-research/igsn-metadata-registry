@@ -128,7 +128,7 @@ public class MDSClient {
 		}
 		return registrationMetadata;
 	}
-	
+
 	public String getIGSNLandingPage(String identifier) throws Exception {
 
 		String service_url = "igsn/" + identifier;

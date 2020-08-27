@@ -90,6 +90,7 @@ public class SchemaService {
         while(found.hasNext())
         {
         	XMLSchema xs = (XMLSchema) found.next();
+            logger.debug("nameSpaces {}", xs.getNamespace());
         	if(xs.getNamespace().equals(nameSpace)) {
         		return xs;
         	}
@@ -134,7 +135,7 @@ public class SchemaService {
     public boolean validate(Schema schema, String payload) throws Exception {
         // detect type of schema
         // todo refactor ValidatorFactory.getValidator(schema.getClass())
-
+        //logger.debug("schema {}, payload {}", schema, payload);
         SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
         if (validator == null) {
             throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));

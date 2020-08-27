@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<resources xmlns="https://identifiers.ardc.edu.au/schemas/Desc_IGSN_1.0"
+<resources xmlns="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="https://identifiers.ardc.edu.au/schemas/Desc_IGSN_1.0 file:/Users/jbenn/Documents/Desc_IGSN_V1_Includes_Embedded.xsd">
     <resource registeredObjectType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/PhysicalSample">

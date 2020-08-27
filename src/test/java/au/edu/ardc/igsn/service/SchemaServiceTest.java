@@ -65,8 +65,14 @@ class SchemaServiceTest {
     }
     
     @Test
-    void getSchemaByNameSpace() {
+    void getSchemaByNameSpace_ARDC() {
     	XMLSchema xs = service.getSchemaByNameSpace("https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc");
+    	assertThat(xs.getId().equals(SchemaService.ARDCv1));
+    }
+    
+    @Test
+    void getSchemaByNameSpace_CS() {
+    	XMLSchema xs = service.getSchemaByNameSpace("https://igsn.csiro.au/schemas/3.0");
     	assertThat(xs.getId().equals(SchemaService.ARDCv1));
     }
 }

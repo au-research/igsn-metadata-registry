@@ -43,9 +43,14 @@ public class XMLUtil {
 	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	    factory.setNamespaceAware(true);
 	    DocumentBuilder builder = factory.newDocumentBuilder();
-	    Document doc = builder.parse(xml);
+	    InputStream xmlStream = new ByteArrayInputStream(xml.getBytes());
+	    Document doc = builder.parse(xmlStream);
 	    Element root = doc.getDocumentElement();
-        String name = "";
+	    String rootPrefix = root.getPrefix();
+	    //the default namespace (no prefix)
+	    if(rootPrefix == null)
+	    	rootPrefix = "xmlns";
+	    
         String nameSpace = "";
 	    NamedNodeMap attributes = root.getAttributes();
 	    if (attributes != null)
@@ -53,12 +58,9 @@ public class XMLUtil {
 	        for (int i = 0; i < attributes.getLength(); i++)
 	        {
 	            Node node = attributes.item(i);
-	            if (node.getNodeType() == Node.ATTRIBUTE_NODE)
-	            {
-	                name = node.getNodeName();
-	                nameSpace = node.getNamespaceURI();
-	                System.out.println(name + " " + node.getNamespaceURI());
-	            }
+	            if (node.getNamespaceURI() == "http://www.w3.org/2000/xmlns/" 
+	            		&& node.getLocalName().equals(rootPrefix))
+	                return node.getNodeValue();
 	        }
 	    }
 	    return nameSpace;
