@@ -1,9 +1,9 @@
 package au.edu.ardc.igsn.service;
 
 import au.edu.ardc.igsn.model.Allocation;
+import au.edu.ardc.igsn.model.DataCenter;
 import au.edu.ardc.igsn.model.Scope;
 import au.edu.ardc.igsn.model.User;
-import au.edu.ardc.igsn.model.DataCenter;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
@@ -178,6 +178,8 @@ public class KeycloakService {
             logger.debug("Building Allocation for permission: "+ permission.getResourceId());
             try {
                 Allocation allocation = self.getAllocationByResourceID(permission.getResourceId());
+
+                // add scopes after (cached) allocations since they're from Permissions instead of ResourceID
                 List<Scope> scopes = permission.getScopes().stream()
                         .map(Scope::fromString)
                         .collect(Collectors.toList());

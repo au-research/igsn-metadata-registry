@@ -21,7 +21,6 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
     RecordRepository recordRepository;
     IdentifierRepository identifierRepository;
     IGSNService igsnService;
-    private String IGSNServiceRequestID;
     private String allocationID;
     private String creatorID;
     private String ownerID;
@@ -43,8 +42,8 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
         this.ownerType = jobParameters.getString("ownerType");
         this.creatorID = jobParameters.getString("creatorID");
         this.allocationID = jobParameters.getString("allocationID");
-        this.IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
-        this.request = igsnService.findById(this.IGSNServiceRequestID);
+        String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+        this.request = igsnService.findById(IGSNServiceRequestID);
     }
 
     @AfterStep
@@ -89,21 +88,5 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
         this.executionContext.putInt( "importedRecords", this.executionContext.getInt( "importedRecords", 0 ) + 1 );
 
         return identifier.getId().toString();
-    }
-
-    public void setAllocationID(String allocationID) {
-        this.allocationID = allocationID;
-    }
-
-    public void setCreatorID(String creatorID) {
-        this.creatorID = creatorID;
-    }
-
-    public void setOwnerID(String ownerID) {
-        this.ownerID = ownerID;
-    }
-
-    public void setOwnerType(String ownerType) {
-        this.ownerType = ownerType;
     }
 }

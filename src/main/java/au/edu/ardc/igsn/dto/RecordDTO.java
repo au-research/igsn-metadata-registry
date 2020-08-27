@@ -38,7 +38,6 @@ public class RecordDTO {
     @NotNull
     private UUID ownerID;
 
-    private UUID dataCenterID;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<VersionDTO> currentVersions;
@@ -113,14 +112,6 @@ public class RecordDTO {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public UUID getDataCenterID() {
-        return dataCenterID;
-    }
-
-    public void setDataCenterID(UUID dataCenterID) {
-        this.dataCenterID = dataCenterID;
     }
 
     public boolean isVisible() {

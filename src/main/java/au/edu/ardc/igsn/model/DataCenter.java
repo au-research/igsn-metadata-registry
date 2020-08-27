@@ -1,8 +1,9 @@
 package au.edu.ardc.igsn.model;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class DataCenter {
+public class DataCenter implements Serializable{
     private final UUID id;
     private String name;
 

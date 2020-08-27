@@ -1,15 +1,10 @@
 package au.edu.ardc.igsn.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 @Entity
 @Table(name = "igsn_service_requests")

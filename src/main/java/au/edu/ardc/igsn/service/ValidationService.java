@@ -41,7 +41,7 @@ public class ValidationService {
         }
 
         // OwnerType=DataCenter
-        if (record.getOwnerType().equals(Record.OwnerType.DataCenter) && user.belongsToDataCenter(record.getDataCenterID())) {
+        if (record.getOwnerType().equals(Record.OwnerType.DataCenter) && user.belongsToDataCenter(record.getOwnerID())) {
             logger.debug(String.format("ValidateOwnerType=DataCenter success record OwnerID: %s", record.getOwnerID()));
             return true;
         }
