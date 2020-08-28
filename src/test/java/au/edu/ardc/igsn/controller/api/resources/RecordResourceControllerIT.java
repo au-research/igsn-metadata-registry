@@ -5,7 +5,10 @@ import au.edu.ardc.igsn.KeycloakIntegrationTest;
 import au.edu.ardc.igsn.TestHelper;
 import au.edu.ardc.igsn.dto.RecordDTO;
 import au.edu.ardc.igsn.entity.Record;
+import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.repository.RecordRepository;
+import au.edu.ardc.igsn.repository.VersionRepository;
+import au.edu.ardc.igsn.service.SchemaService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +23,13 @@ import static org.exparity.hamcrest.date.DateMatchers.sameDay;
 
 class RecordResourceControllerIT extends KeycloakIntegrationTest {
 
+    String baseUrl = "/api/resources/records";
+
     @Autowired
     RecordRepository recordRepository;
+
+    @Autowired
+    VersionRepository versionRepository;
 
     @Test
     void index_NotLoggedIn_401() {
@@ -29,6 +37,58 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
                 .get().uri("/api/resources/records/")
                 .exchange()
                 .expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void index_hasRecords_showRecords() {
+        // given an owned record
+        Record record = TestHelper.mockRecord();
+        record.setOwnerID(UUID.fromString(userID));
+        record.setOwnerType(Record.OwnerType.User);
+        recordRepository.saveAndFlush(record);
+
+        // and a not owned record
+        Record notOwned = TestHelper.mockRecord();
+        recordRepository.saveAndFlush(notOwned);
+
+        // when get, there should be 1 records shown
+        this.webTestClient
+                .get().uri(baseUrl)
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(1);
+    }
+
+    @Test
+    void index_hasTitle_filterByTitle() {
+        // given a target record
+        Record record = TestHelper.mockRecord();
+        record.setOwnerID(UUID.fromString(userID));
+        record.setOwnerType(Record.OwnerType.User);
+        record.setTitle("Search me");
+        recordRepository.saveAndFlush(record);
+
+        // and a falsy record
+        Record other = TestHelper.mockRecord();
+        record.setOwnerID(UUID.fromString(userID));
+        record.setOwnerType(Record.OwnerType.User);
+        record.setTitle("not me");
+        recordRepository.saveAndFlush(other);
+
+        // when get, there should be 1 records shown
+        this.webTestClient
+                .get().uri(
+                uriBuilder -> uriBuilder
+                        .path(baseUrl)
+                        .queryParam("title", "Search me")
+                        .build())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(1);
     }
 
     // todo index_hasRecords_showRecords()
@@ -268,5 +328,53 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
                 .header("Authorization", getBasicAuthenticationHeader(username, password))
                 .exchange()
                 .expectStatus().isAccepted();
+    }
+
+    @Test
+    void showVersions() {
+        // given a record owned by the user
+        Record record = TestHelper.mockRecord();
+        record.setOwnerType(Record.OwnerType.User);
+        record.setOwnerID(UUID.fromString(userID));
+        recordRepository.saveAndFlush(record);
+
+        // and 2 version
+        Version version1 = TestHelper.mockVersion();
+        version1.setRecord(record);
+        version1.setCurrent(true);
+        version1.setSchema(SchemaService.ARDCv1);
+        versionRepository.saveAndFlush(version1);
+
+        Version version2 = TestHelper.mockVersion();
+        version2.setRecord(record);
+        version2.setCurrent(false);
+        version2.setSchema(SchemaService.CSIROv3);
+        versionRepository.saveAndFlush(version2);
+
+        // 2 versions when shown
+        this.webTestClient
+                .get().uri(baseUrl + "/" + record.getId().toString() + "/versions")
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isOk().expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(2);
+
+        // 1 version when filter by schema
+        this.webTestClient
+                .get().uri(
+                uriBuilder -> uriBuilder
+                        .path(baseUrl + "/" + record.getId().toString() + "/versions")
+                        .queryParam("schema", SchemaService.ARDCv1)
+                        .build())
+                .header("Authorization", getBasicAuthenticationHeader(username, password))
+                .exchange()
+                .expectStatus().isOk().expectBody()
+                .jsonPath("$.numberOfElements").isEqualTo(1);
+    }
+
+    @AfterEach
+    void afterEach() {
+        versionRepository.deleteAll();
+        recordRepository.deleteAll();
     }
 }
