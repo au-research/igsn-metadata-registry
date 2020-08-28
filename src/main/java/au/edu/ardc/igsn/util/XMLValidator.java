@@ -2,6 +2,9 @@ package au.edu.ardc.igsn.util;
 
 import org.xml.sax.SAXException;
 
+import au.edu.ardc.igsn.model.schema.SchemaValidator;
+import au.edu.ardc.igsn.model.schema.XMLSchema;
+
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -11,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 
-public class XMLValidator {
+public class XMLValidator implements SchemaValidator{
 
     public static boolean validateXMLStringWithXSDPath(String xmlString, String xsdPath) {
         try {
@@ -32,5 +35,11 @@ public class XMLValidator {
 
         return true;
     }
+
+	@Override
+	public boolean validate(au.edu.ardc.igsn.model.Schema schema, String payload) {
+		XMLSchema xs = (XMLSchema) schema;
+		return this.validateXMLStringWithXSDPath(payload, xs.getSchemaLocation());
+	}
 
 }

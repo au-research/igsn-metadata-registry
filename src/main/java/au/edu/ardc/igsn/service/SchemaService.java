@@ -1,26 +1,28 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.model.Schema;
-import au.edu.ardc.igsn.model.schema.SchemaValidator;
-import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
-import au.edu.ardc.igsn.model.schema.XMLSchema;
-import au.edu.ardc.igsn.util.Helpers;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
-
-import javax.annotation.PostConstruct;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import au.edu.ardc.igsn.model.Schema;
+import au.edu.ardc.igsn.model.schema.SchemaValidator;
+import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
+import au.edu.ardc.igsn.model.schema.XMLSchema;
+import au.edu.ardc.igsn.model.schema.XMLValidator;
+import au.edu.ardc.igsn.util.Helpers;
+import au.edu.ardc.igsn.util.JSONValidator;
+import au.edu.ardc.igsn.util.XMLUtil;
 
 /**
  * A Service that deals with supported Schema
@@ -82,7 +84,7 @@ public class SchemaService {
      * @return Schema
      */
     @Cacheable("schema")
-    public XMLSchema getSchemaByNameSpace(String nameSpace) {
+    public XMLSchema getXMLSchemaByNameSpace(String nameSpace) {
         logger.debug("Load schema by nameSpace {}", nameSpace);
         Iterator<Schema> found = this.getSchemas().stream()
                 .filter(schema -> schema.getClass().equals(XMLSchema.class)).iterator();
@@ -142,5 +144,32 @@ public class SchemaService {
         }
 
         return validator.validate(schema, payload);
+    }
+    
+    public boolean validate(String payload) throws Exception{
+        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+        if(validator.getClass().equals(XMLValidator.class)){
+        	String nameSpace = XMLUtil.getNamespaceURI(payload);
+        	XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
+        	return validator.validate(schema, payload);
+        }
+        else if(validator.getClass().equals(JSONValidator.class)){
+        	//TODO get json validation working
+        	return false;
+        }
+        return false;
+    }
+    
+    public Schema getSchemaForContent(String payload) throws Exception {
+        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+        if(validator.getClass().equals(XMLValidator.class)){
+        	String nameSpace = XMLUtil.getNamespaceURI(payload);
+        	return this.getXMLSchemaByNameSpace(nameSpace);
+        }
+        else if(validator.getClass().equals(JSONValidator.class)){
+        	//TODO get json validation working
+        	return null;
+        }
+        return null;
     }
 }

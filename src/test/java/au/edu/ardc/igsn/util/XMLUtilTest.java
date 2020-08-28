@@ -14,7 +14,7 @@ public class XMLUtilTest{
     public void findDefaultXMLNamespace() throws Exception {
         String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
     	String nameSpace = XMLUtil.getNamespaceURI(xml);
-    	assertThat(nameSpace.equals("https://igsn.csiro.au/schemas/3.0"));
+    	assertTrue(nameSpace.equals("https://igsn.csiro.au/schemas/3.0"));
     }
 
     
@@ -22,6 +22,6 @@ public class XMLUtilTest{
     public void findprefixXMLNamespace() throws Exception {
         String xml = Helpers.readFile("src/test/resources/xml/sample_xml_prefix_cs_igsn.xml");
     	String nameSpace = XMLUtil.getNamespaceURI(xml);
-    	assertThat(nameSpace.equals("https://igsn.csiro.au/schemas/3.0"));
+    	assertTrue(nameSpace.equals("https://igsn.csiro.au/schemas/3.0"));
     }
 }

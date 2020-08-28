@@ -26,12 +26,13 @@ public class ValidatePayloadProcessor implements ItemProcessor<String, String> {
     	
 
     	try {
-	    	String contentType = this.getContentType(content);
-	    	if(contentType.equals("application/xml")){
-	    		boolean isValid = this.validate(content); 
-    				
-        // todo validate a payload, schema, User Ownership, igsn uniqueness,etc...
-    	}
+    		// validate a payload, schema, 
+	    	boolean isValid = service.validate(content);  
+	    	
+	    	//User Ownership, 
+	    	boolean isOwner = false;
+	    	//igsn uniqueness,etc...
+    	
     	}
     	catch( Exception e) {
     		logger.error(e.getMessage());
@@ -39,25 +40,7 @@ public class ValidatePayloadProcessor implements ItemProcessor<String, String> {
         return null;
     }
     
-    public boolean validate(String content) throws Exception {
-		String nameSpace = this.getDefaultXMLnameSpace(content);
-		Schema schema = this.service.getSchemaByNameSpace(nameSpace);
-		return service.validate(schema, content);
-    }
-    
-    public String getContentType(String content) throws Exception{
-    	return Helpers.probeContentType(content);
-    }
-    
-    public String getContentType(File file) throws Exception{
-    	return Helpers.probeContentType(file);
-    }
-    
-    public String getDefaultXMLnameSpace(String content) throws Exception {
-    	String xmlns = XMLUtil.getNamespaceURI(content);
-		logger.debug("DefaultXMLnameSpace:" + xmlns);
-    	return xmlns;
-    }
+
     	
 
 }
