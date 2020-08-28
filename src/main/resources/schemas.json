@@ -19,6 +19,18 @@
     "class": "json"
   },
   {
+  	"id":"agn-igsn-desc-1.0",
+  	"name":"AGN IGSN Descriptive Schema v1.0",
+  	"description":"Descriptive metadata schema for AusGeochem IGSNs",
+  	"@type":"JSONSchema",
+  	"class":"json",
+  	"json":{
+  	  "namespace":"https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/ngsa.json",
+      "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/ngsa.json",
+      "localSchemaLocation": "schemas/agn-igsn-desc-1.0/agn.json"
+  	}
+ },
+ {
     "id": "csiro-igsn-desc-3.0",
     "name": "CSIRO IGSN Descriptive v3.0",
     "description": "XML Schema v3.0 for registering resources with the CSIRO IGSN service.",

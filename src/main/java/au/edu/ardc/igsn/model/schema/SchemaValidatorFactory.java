@@ -4,13 +4,15 @@ import java.io.IOException;
 
 import au.edu.ardc.igsn.model.Schema;
 import au.edu.ardc.igsn.util.Helpers;
+
 public class SchemaValidatorFactory {
     public static SchemaValidator getValidator(Schema schema) {
         if (schema.getClass().equals(XMLSchema.class)) {
             return new XMLValidator();
         }
-
-        // todo JSONValidator
+    	else if(schema.getClass().equals(JSONSchema.class)){
+    		return new JSONValidator();
+    	}
 
         return null;
     }
@@ -21,9 +23,7 @@ public class SchemaValidatorFactory {
     		return new XMLValidator();
     	}
     	else if(Helpers.probeContentType(content) == "application/json"){
-    		//return new JSONValidator();
-    		
-    		return null;
+    		return new JSONValidator();
     	}
     	return null;
     }

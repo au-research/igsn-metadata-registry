@@ -97,6 +97,24 @@ class SchemaServiceTest {
 		assertTrue(isValid);
 		
 	}
+// TODO find a better json validator that actually works
+//    @Test
+//    void validate_validAGNv1_true(){
+//		String msg = "";
+//		boolean isValid = false;
+//		try {
+//	        Schema schema = service.getSchemaByID(SchemaService.AGNv1);
+//	        String validJSON = Helpers.readFile("src/test/resources/json/agn-igsn.json");
+//	        isValid = service.validate(schema, validJSON);
+//		}catch (XMLValidationException e) {
+//			msg = e.getMessage();
+//		} catch (Exception e) {
+//			msg = e.getMessage();
+//		}
+//		assertTrue(isValid);
+//		System.out.println(msg);
+//    }
+	
 	
 	@Test void faileToValidateDocument_3() throws Exception
 	{

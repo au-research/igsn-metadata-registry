@@ -20,8 +20,9 @@ import au.edu.ardc.igsn.model.schema.SchemaValidator;
 import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
 import au.edu.ardc.igsn.model.schema.XMLSchema;
 import au.edu.ardc.igsn.model.schema.XMLValidator;
+import au.edu.ardc.igsn.model.schema.JSONValidator;
 import au.edu.ardc.igsn.util.Helpers;
-import au.edu.ardc.igsn.util.JSONValidator;
+
 import au.edu.ardc.igsn.util.XMLUtil;
 
 /**
@@ -35,6 +36,7 @@ public class SchemaService {
     public static final String IGSNDESCv1 = "igsn-desc-1.0";
     public static final String IGSNREGv1 = "igsn-desc-1.0";
     public static final String CSIROv3 = "csiro-igsn-desc-3.0";
+    public static final String AGNv1 = "agn-igsn-desc-1.0";
 
     protected final String schemaConfigLocation = "schemas/schemas.json";
 
