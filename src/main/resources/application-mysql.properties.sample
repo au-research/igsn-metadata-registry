@@ -14,9 +14,7 @@ app.contact.email=admin@localhost
 app.contact.url=https://ardc.edu.au
 
 # cache
-spring.cache.type=redis
-spring.redis.host=127.0.0.1
-spring.redis.port=6379
+spring.cache.type=simple
 
 # Database Setup
 # Make sure to create the database, login credentials and permissions beforehand
