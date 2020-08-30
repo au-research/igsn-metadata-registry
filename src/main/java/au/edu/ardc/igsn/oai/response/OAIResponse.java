@@ -1,5 +1,6 @@
 package au.edu.ardc.igsn.oai.response;
 
+import au.edu.ardc.igsn.oai.model.RequestFragment;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -25,10 +26,11 @@ public class OAIResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private Date responseDate;
 
-    private String request;
+    private RequestFragment request;
 
     public OAIResponse() {
         this.responseDate = new Date();
+        this.request = new RequestFragment();
 //        this.xsi = "http://www.w3.org/2001/XMLSchema-instance";
     }
 
@@ -40,11 +42,11 @@ public class OAIResponse {
         this.responseDate = responseDate;
     }
 
-    public String getRequest() {
+    public RequestFragment getRequest() {
         return request;
     }
 
-    public void setRequest(String request) {
+    public void setRequest(RequestFragment request) {
         this.request = request;
     }
 }

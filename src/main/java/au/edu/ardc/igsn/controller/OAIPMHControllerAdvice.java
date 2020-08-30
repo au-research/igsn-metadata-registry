@@ -1,6 +1,7 @@
 package au.edu.ardc.igsn.controller;
 
 import au.edu.ardc.igsn.exception.oai.BadVerbException;
+import au.edu.ardc.igsn.oai.model.RequestFragment;
 import au.edu.ardc.igsn.oai.response.OAIExceptionResponse;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
@@ -21,7 +22,9 @@ public class OAIPMHControllerAdvice {
     @ExceptionHandler(value = {BadVerbException.class})
     public ResponseEntity<Object> handleBadVerb(RuntimeException ex, HttpServletRequest request) throws XMLStreamException, IOException {
         OAIExceptionResponse response = new OAIExceptionResponse();
-        response.setRequest(request.getRequestURL().toString());
+        RequestFragment requestFragment = new RequestFragment();
+        requestFragment.setValue(request.getRequestURL().toString());
+        response.setRequest(requestFragment);
         response.setResponseDate(new Date());
         response.setError(ex.getMessage());
 

@@ -5,6 +5,7 @@ import au.edu.ardc.igsn.entity.Version;
 import au.edu.ardc.igsn.exception.oai.BadVerbException;
 import au.edu.ardc.igsn.oai.model.IdentifyFragment;
 import au.edu.ardc.igsn.oai.model.RecordFragment;
+import au.edu.ardc.igsn.oai.model.RequestFragment;
 import au.edu.ardc.igsn.oai.response.GetRecordResponse;
 import au.edu.ardc.igsn.oai.response.OAIIdentifyResponse;
 import au.edu.ardc.igsn.oai.response.OAIResponse;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLStreamException;
 
 @Controller
@@ -33,24 +35,42 @@ public class OAIPMHService {
 
     @GetMapping(value="", produces = MediaType.APPLICATION_XML_VALUE)
     public ResponseEntity<OAIResponse> handle(
-            @RequestParam String verb,
+            HttpServletRequest request,
+            @RequestParam(required=false) String verb,
             @RequestParam(required=false) String identifier,
             @RequestParam(required=false) String metadataPrefix
     ) {
-        if (verb.equals("Identify")) {
-            return identify();
-        } else if (verb.equals("GetRecord")) {
-            return getRecord(identifier, metadataPrefix);
+
+        if (verb == null || verb.equals("")){
+            throw new BadVerbException();
         }
 
-        // todo handle missing verb
-        throw new BadVerbException();
+        RequestFragment requestFragment = new RequestFragment();
+        requestFragment.setValue(request.getRequestURL().toString());
+        requestFragment.setVerb(verb);
+
+        if (verb.equals("Identify")) {
+            return identify(request, requestFragment);
+        } else if (verb.equals("GetRecord")) {
+            requestFragment.setIdentifier(identifier);
+            requestFragment.setMetadataPrefix(metadataPrefix);
+            return getRecord(identifier, metadataPrefix);
+        } else if (verb.equals("ListRecords")) {
+            requestFragment.setMetadataPrefix(metadataPrefix);
+            throw new BadVerbException();
+            //return getRecords(metadataPrefix);
+        } else {
+            throw new BadVerbException();
+        }
+
     }
 
-    private ResponseEntity<OAIResponse> identify() {
+    private ResponseEntity<OAIResponse> identify(HttpServletRequest request, RequestFragment requestFragment) {
         IdentifyFragment identify = new IdentifyFragment();
         identify.setRepositoryName("ARDC IGSN Repository");
+
         OAIResponse response = new OAIIdentifyResponse(identify);
+        response.setRequest(requestFragment);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_XML)
