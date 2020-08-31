@@ -147,6 +147,15 @@ public class SchemaService {
         return validator.validate(schema, payload);
     }
     
+    /**
+     * Validate by payload without Schema provided
+     * gets the schema with the targetNamespace of document's namespaceURI
+     * validate using the validate(schema, payload) method 
+     * 
+     * @param payload the content either XML or JSON String
+     * @return true is content validates
+     * @throws Exception
+     */
     public boolean validate(String payload) throws Exception{
         SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
         if(validator.getClass().equals(XMLValidator.class)){
@@ -161,6 +170,13 @@ public class SchemaService {
         return false;
     }
     
+    /**
+     * Get the Schema the given payload content is defined by
+     * gets the schema with the targetNamespace of document's namespaceURI
+     * @param payload the content either XML or JSON String
+     * @return Schema or null if schema not found or supported
+     * @throws Exception
+     */
     public Schema getSchemaForContent(String payload) throws Exception {
         SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
         if(validator.getClass().equals(XMLValidator.class)){
