@@ -149,7 +149,7 @@ public class SchemaService {
     
     /**
      * Validate by payload without Schema provided
-     * gets schema where targetNamespace is the document's namespaceURI
+     * gets the schema with the targetNamespace of document's namespaceURI
      * validate using the validate(schema, payload) method 
      * 
      * @param payload the content either XML or JSON String
@@ -172,9 +172,9 @@ public class SchemaService {
     
     /**
      * Get the Schema the given payload content is defined by
-     * gets schema for where targetNamespace is the document's namespaceURI 
+     * gets the schema with the targetNamespace of document's namespaceURI
      * @param payload the content either XML or JSON String
-     * @return Schema or null if schema not found or suppoerted
+     * @return Schema or null if schema not found or supported
      * @throws Exception
      */
     public Schema getSchemaForContent(String payload) throws Exception {
