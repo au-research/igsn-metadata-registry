@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>au.edu.ardc.igsn</groupId>
-	<artifactId>igsn-metadata-registry</artifactId>
+	<groupId>au.edu.ardc.registry</groupId>
+	<artifactId>metadata-registry</artifactId>
 	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>IGSN Metadata Registry</name>
@@ -94,6 +94,10 @@
 				<exclusion>
 					<groupId>junit</groupId>
 					<artifactId>junit</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -189,11 +193,11 @@
 			<version>4.4.1</version>
 			<type>maven-plugin</type>
 		</dependency>
-		
+
 		<dependency>
-		   <groupId>org.apache.tika</groupId>
-		   <artifactId>tika-core</artifactId>
-		   <version>1.24</version>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>1.24</version>
 		</dependency>
 		
 		<dependency>
@@ -209,6 +213,8 @@
 		</dependency>
 
 	</dependencies>
+
+
 
 	<dependencyManagement>
 		<dependencies>
