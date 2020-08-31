@@ -1,19 +1,19 @@
 package au.edu.ardc.registry.common.service;
 
-import au.edu.ardc.registry.common.model.Allocation;
-import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.Scope;
+import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RecordRepository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Transactional
 public class RecordServiceIT {
@@ -58,7 +58,7 @@ public class RecordServiceIT {
     @Test
     public void findPublic_2Public1Private_2Returns() {
         // given 2 public records
-        for (int i = 0; i < 2 ; i ++) {
+        for (int i = 0; i < 2; i++) {
             Record record = TestHelper.mockRecord();
             record.setVisible(true);
             repository.saveAndFlush(record);

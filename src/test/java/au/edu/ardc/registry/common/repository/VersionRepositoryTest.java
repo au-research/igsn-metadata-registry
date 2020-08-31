@@ -7,22 +7,22 @@ import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
 public class VersionRepositoryTest {
 
@@ -141,7 +141,7 @@ public class VersionRepositoryTest {
         entityManager.persistAndFlush(version);
 
         // and 5 superseded version of schema igsn-descriptive-v1
-        for (int i=0;i < 5;i++) {
+        for (int i = 0; i < 5; i++) {
             Version superseded = TestHelper.mockVersion(record);
             superseded.setCurrent(false);
             entityManager.persist(superseded);

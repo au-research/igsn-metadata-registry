@@ -2,7 +2,7 @@ package au.edu.ardc.registry.common.util;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HelpersTest{
 @Test

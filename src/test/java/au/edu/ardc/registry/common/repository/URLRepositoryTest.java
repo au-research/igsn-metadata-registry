@@ -1,22 +1,22 @@
 package au.edu.ardc.registry.common.repository;
 
 import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.common.entity.URL;
 import au.edu.ardc.registry.common.entity.Record;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import au.edu.ardc.registry.common.entity.URL;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
 public class URLRepositoryTest {
 

@@ -2,7 +2,7 @@ package au.edu.ardc.registry.igsn.provider;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import au.edu.ardc.registry.common.model.Schema;
