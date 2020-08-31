@@ -16,6 +16,11 @@ import java.util.UUID;
         @Index(name = "idx_visible", columnList = "visible"),
         @Index(name = "idx_id_visible", columnList = "id,visible")
 })
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        discriminatorType = DiscriminatorType.STRING,
+        name = "type"
+)
 public class Record {
 
     @Id
@@ -30,6 +35,9 @@ public class Record {
     private boolean visible = true;
 
     private String title;
+
+    @Column(name = "type", insertable = false, updatable = false)
+    private String type;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -192,6 +200,10 @@ public class Record {
 
     public void setCurrentVersions(List<Version> currentVersions) {
         this.currentVersions = currentVersions;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public static enum OwnerType {
