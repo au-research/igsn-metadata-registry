@@ -2,6 +2,10 @@ package au.edu.ardc.registry.job.processor;
 
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.TitleProvider;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -17,15 +21,17 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
     protected final String defaultSchema = SchemaService.ARDCv1;
     private final VersionService versionService;
     private final RecordService recordService;
+    private final SchemaService schemaService;
     Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
 
-    public RecordTitleProcessor(VersionService versionService, RecordService recordService) {
+    public RecordTitleProcessor(VersionService versionService, RecordService recordService, SchemaService schemaService) {
         this.versionService = versionService;
         this.recordService = recordService;
+        this.schemaService = schemaService;
     }
 
     @Override
-    public Record process(Record record) throws InterruptedException {
+    public Record process(Record record) {
         logger.debug("Processing title for record {} ", record.getId());
 
         //Thread.sleep(2000);
@@ -43,9 +49,9 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
         // obtain the title from the xml
         String title;
         try {
-            NodeList nodeList = XMLUtil.getXPath(xml, "//resourceTitle");
-            Node resourceTitleNode = nodeList.item(0);
-            title = resourceTitleNode.getTextContent();
+            Schema schema = schemaService.getSchemaByID(version.getSchema());
+            TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
+            title = provider.get(schema, xml);
         } catch (Exception ex) {
             logger.error("Failed obtaining title for record {} from XML", record.getId());
             ex.printStackTrace();

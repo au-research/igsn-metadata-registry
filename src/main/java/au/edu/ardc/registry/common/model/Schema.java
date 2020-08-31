@@ -2,9 +2,12 @@ package au.edu.ardc.registry.common.model;
 
 import au.edu.ardc.registry.common.model.schema.JSONSchema;
 import au.edu.ardc.registry.common.model.schema.XMLSchema;
+import au.edu.ardc.registry.common.provider.Metadata;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
@@ -18,6 +21,7 @@ public class Schema {
     private String name;
     private String description;
     private String type;
+    private Map<Metadata, String> providers;
 
     public Schema() {
     }
@@ -56,5 +60,13 @@ public class Schema {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Map<Metadata, String> getProviders() {
+        return providers;
+    }
+
+    public void setProviders(Map<Metadata, String> providers) {
+        this.providers = providers;
     }
 }

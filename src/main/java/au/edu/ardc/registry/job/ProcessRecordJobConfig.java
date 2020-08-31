@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.job;
 
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
 import au.edu.ardc.registry.job.reader.RecordReader;
 import au.edu.ardc.registry.job.writer.NoOpItemWriter;
@@ -36,6 +37,9 @@ public class ProcessRecordJobConfig {
     @Autowired
     RecordService recordService;
 
+    @Autowired
+    SchemaService schemaService;
+
     @Bean(name="ProcessRecordJob")
     public Job ProcessRecordJob() {
         return jobBuilderFactory.get("ProcessRecordJob")
@@ -48,7 +52,7 @@ public class ProcessRecordJobConfig {
         return stepBuilderFactory.get("Process Titles")
                 .<Record, Record>chunk(10)
                 .reader(new RecordReader(recordRepository))
-                .processor(new RecordTitleProcessor(versionService, recordService))
+                .processor(new RecordTitleProcessor(versionService, recordService, schemaService))
                 .writer(new NoOpItemWriter<>())
                 .faultTolerant().retryLimit(3).retry(DeadlockLoserDataAccessException.class)
                 //.taskExecutor(concurrentTaskExecutor())

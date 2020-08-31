@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.event;
 
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -27,6 +28,9 @@ public class RecordEventListener {
     @Autowired
     RecordService recordService;
 
+    @Autowired
+    SchemaService schemaService;
+
     @Async
     @EventListener
     public void handleRecordUpdated(RecordUpdatedEvent event) throws InterruptedException {
@@ -35,7 +39,7 @@ public class RecordEventListener {
         event.getRecord().setModifierID(event.getUser().getId());
 
         // todo ProcessRecordJob (for single record)
-        RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService);
+        RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService, schemaService);
         processor.process(event.getRecord());
     }
 

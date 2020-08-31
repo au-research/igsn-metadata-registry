@@ -9,7 +9,9 @@ import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.UUID;
@@ -20,6 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SchemaService.class})
 class RecordTitleProcessorTest {
 
     @MockBean
@@ -28,15 +31,18 @@ class RecordTitleProcessorTest {
     @MockBean
     RecordService recordService;
 
+    @Autowired
+    SchemaService schemaService;
+
     @Test
     void process_updatesTitles() throws Exception {
         // record without title and a version with the title
         Record record = TestHelper.mockRecord(UUID.randomUUID());
         record.setTitle(null);
         Version version = TestHelper.mockVersion(record);
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+        String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
         version.setContent(validXML.getBytes());
-        version.setSchema(SchemaService.CSIROv3);
+        version.setSchema(SchemaService.ARDCv1);
 
         // record with title that will be returned
         Record expected = TestHelper.mockRecord(record.getId());
@@ -47,7 +53,7 @@ class RecordTitleProcessorTest {
         when(recordService.save(any(Record.class))).thenReturn(expected);
 
         // when process title
-        RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService);
+        RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService, schemaService);
         Record actual = processor.process(record);
 
         // actual has title
