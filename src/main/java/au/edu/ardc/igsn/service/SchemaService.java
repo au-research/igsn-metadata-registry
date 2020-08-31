@@ -1,24 +1,29 @@
 package au.edu.ardc.igsn.service;
 
-import au.edu.ardc.igsn.model.Schema;
-import au.edu.ardc.igsn.model.schema.SchemaValidator;
-import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
-import au.edu.ardc.igsn.util.Helpers;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
-import javax.annotation.PostConstruct;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import au.edu.ardc.igsn.model.Schema;
+import au.edu.ardc.igsn.model.schema.SchemaValidator;
+import au.edu.ardc.igsn.model.schema.SchemaValidatorFactory;
+import au.edu.ardc.igsn.model.schema.XMLSchema;
+import au.edu.ardc.igsn.model.schema.XMLValidator;
+import au.edu.ardc.igsn.model.schema.JSONValidator;
+import au.edu.ardc.igsn.util.Helpers;
+
+import au.edu.ardc.igsn.util.XMLUtil;
 
 /**
  * A Service that deals with supported Schema
@@ -31,6 +36,7 @@ public class SchemaService {
     public static final String IGSNDESCv1 = "igsn-desc-1.0";
     public static final String IGSNREGv1 = "igsn-desc-1.0";
     public static final String CSIROv3 = "csiro-igsn-desc-3.0";
+    public static final String AGNv1 = "agn-igsn-desc-1.0";
 
     protected final String schemaConfigLocation = "schemas/schemas.json";
 
@@ -72,6 +78,30 @@ public class SchemaService {
         return found.orElse(null);
     }
 
+    
+    /**
+     * Get a Schema by NameSpace
+     *
+     * @param nameSpace the nameSpace of the supported Schema
+     * @return Schema
+     */
+    @Cacheable("schema")
+    public XMLSchema getXMLSchemaByNameSpace(String nameSpace) {
+        logger.debug("Load schema by nameSpace {}", nameSpace);
+        Iterator<Schema> found = this.getSchemas().stream()
+                .filter(schema -> schema.getClass().equals(XMLSchema.class)).iterator();
+        
+        while(found.hasNext())
+        {
+        	XMLSchema xs = (XMLSchema) found.next();
+            logger.debug("nameSpaces {}", xs.getNamespace());
+        	if(xs.getNamespace().equals(nameSpace)) {
+        		return xs;
+        	}
+        }
+
+        return null;
+    }
     /**
      * Tells if a schema by ID is currently supported by the system
      *
@@ -109,12 +139,39 @@ public class SchemaService {
     public boolean validate(Schema schema, String payload) throws Exception {
         // detect type of schema
         // todo refactor ValidatorFactory.getValidator(schema.getClass())
-
+        //logger.debug("schema {}, payload {}", schema, payload);
         SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
         if (validator == null) {
             throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));
         }
 
         return validator.validate(schema, payload);
+    }
+    
+    public boolean validate(String payload) throws Exception{
+        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+        if(validator.getClass().equals(XMLValidator.class)){
+        	String nameSpace = XMLUtil.getNamespaceURI(payload);
+        	XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
+        	return validator.validate(schema, payload);
+        }
+        else if(validator.getClass().equals(JSONValidator.class)){
+        	//TODO get json validation working
+        	return false;
+        }
+        return false;
+    }
+    
+    public Schema getSchemaForContent(String payload) throws Exception {
+        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+        if(validator.getClass().equals(XMLValidator.class)){
+        	String nameSpace = XMLUtil.getNamespaceURI(payload);
+        	return this.getXMLSchemaByNameSpace(nameSpace);
+        }
+        else if(validator.getClass().equals(JSONValidator.class)){
+        	//TODO get json validation working
+        	return null;
+        }
+        return null;
     }
 }

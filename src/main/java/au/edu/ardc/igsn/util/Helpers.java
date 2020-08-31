@@ -1,14 +1,17 @@
 package au.edu.ardc.igsn.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.core.io.ClassPathResource;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.tika.Tika;
+import org.springframework.core.io.ClassPathResource;
 
 public class Helpers {
 
@@ -50,5 +53,17 @@ public class Helpers {
     public static String readFileOnClassPath(String path) throws IOException {
         InputStream resource = new ClassPathResource(path).getInputStream();
         return IOUtils.toString(resource, StandardCharsets.UTF_8.name());
+    }
+    
+    public static String probeContentType(String content) throws IOException{
+    	Charset charset = Charset.forName("ASCII");
+        byte[] byteArrray = content.getBytes(charset);
+    	String type = new Tika().detect(byteArrray);
+    	return type;
+    }
+    
+    public static String probeContentType(File file) throws IOException{
+    	String type = new Tika().detect(file);
+    	return type;
     }
 }
