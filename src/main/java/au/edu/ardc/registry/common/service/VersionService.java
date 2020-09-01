@@ -47,6 +47,15 @@ public class VersionService {
     @Autowired
     ApplicationEventPublisher publisher;
 
+    /**
+     * End the life of a {@link Version}
+     * The registry supports soft deleting of a {@link Version} so it's recommended to use this method
+     * to end the effective use of that {@link Version}
+     *
+     * @param version the {@link Version} to end
+     * @param user the {@link User} to end it with
+     * @return the ended {@link Version}
+     */
     public Version end(Version version, User user) {
         version.setEndedAt(new Date());
         version.setCurrent(false);
@@ -57,10 +66,10 @@ public class VersionService {
     }
 
     /**
-     * Find a version by id
+     * Find a {@link Version} by id
      *
-     * @param id the uuid of the Version
-     * @return the version if it exists, null if not
+     * @param id the String uuid of the {@link Version}
+     * @return the {@link VersionDTO} if it exists, {@code null} if not
      */
     public Version findById(String id) {
         Optional<Version> opt = repository.findById(UUID.fromString(id));
@@ -68,6 +77,13 @@ public class VersionService {
         return opt.orElse(null);
     }
 
+    /**
+     * Find a Public {@link Version} by id
+     * Public {@link Version} are Versions that belongs to a {@link Record} that is visible
+     *
+     * @param id the String uuid of the {@link Version}
+     * @return {@link VersionDTO}
+     */
     public VersionDTO findPublicById(String id) {
         Version version = findById(id);
         if (version == null || !version.getRecord().isVisible()) {
@@ -80,22 +96,49 @@ public class VersionService {
         return mapper;
     }
 
+    /**
+     * Search for {@link Version} with {@link VersionSpecification}
+     *
+     * @param specs {@link VersionSpecification} that includes {@link SearchCriteria}
+     * @param pageable {@link Pageable}
+     * @return page {@link VersionDTO}
+     */
     public Page<VersionDTO> search(VersionSpecification specs, Pageable pageable) {
         Page<Version> versions = repository.findAll(specs, pageable);
         return versions.map(getDTOConverter());
     }
 
+    /**
+     * Search for all {@link Version} that belongs to a particular {@link Record}
+     * uses the internal {@link #search} method to provide the formatting of the result
+     *
+     * @param record {@link Record}
+     * @param pageable {@link Pageable}
+     * @return a @{@link Page} of {@link VersionDTO}
+     */
     public Page<VersionDTO> findAllVersionsForRecord(Record record, Pageable pageable) {
         VersionSpecification specs = new VersionSpecification();
         specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
         return search(specs, pageable);
     }
 
+    /**
+     * Return a single {@link Version} for a {@link Record} given the Schema string
+     *
+     * @param record {@link Record}
+     * @param schema Schema id of a {@link au.edu.ardc.registry.common.model.Schema}
+     * @return Version {@link Version}
+     */
     public Version findVersionForRecord(Record record, String schema) {
-        Version version = repository.findFirstByRecordAndSchemaAndCurrentIsTrue(record, schema);
-        return version;
+        return repository.findFirstByRecordAndSchemaAndCurrentIsTrue(record, schema);
     }
 
+    /**
+     * Useful {@link Converter} for use with converting between {@link Version} and {@link VersionDTO}
+     * Uses for {@link #search} method to help provide results in DTO versions
+     *
+     * @return Converter {@link Converter}
+     */
     public Converter<Version, VersionDTO> getDTOConverter() {
         return new Converter<Version, VersionDTO>() {
             @Override

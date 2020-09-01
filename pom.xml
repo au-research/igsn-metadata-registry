@@ -13,8 +13,8 @@
 	<artifactId>metadata-registry</artifactId>
 	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>IGSN Metadata Registry</name>
-	<description>IGSN Metadata Registry</description>
+	<name>Metadata Registry</name>
+	<description>Metadata Registry</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -119,6 +119,13 @@
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
 			<version>2.3.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path-assert</artifactId>
+			<version>2.4.0</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!--OKHttpWebClient-->
@@ -241,6 +248,11 @@
 				<groupId>org.openclover</groupId>
 				<artifactId>clover-maven-plugin</artifactId>
 				<version>4.4.1</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 
 			<plugin>

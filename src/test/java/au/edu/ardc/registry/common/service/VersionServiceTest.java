@@ -12,11 +12,13 @@ import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +52,7 @@ public class VersionServiceTest {
     ValidationService validationService;
 
     @Test
+    @DisplayName("when creating with a valid request, a DTO is returned properly")
     public void create_ValidRequest_returnsDTO() {
         // given a record & user
         Record record = TestHelper.mockRecord(UUID.randomUUID());

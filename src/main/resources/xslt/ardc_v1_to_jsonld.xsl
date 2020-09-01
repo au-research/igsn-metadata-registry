@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:igsn="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc" version="2.0" exclude-result-prefixes="igsn">
-    <xsl:output indent="no" method="text"/>
+                xmlns:igsn="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc" version="2.0"
+                exclude-result-prefixes="igsn">
+    <xsl:output indent="yes" method="text"/>
 
     <!--
     XSLT transformation to create json-ld from an IGSN CSIRO v3.0 record
@@ -12,13 +13,13 @@
     </xsl:template>
 
 
-
-    <xsl:template  match="igsn:resource" mode="json-ld">
+    <xsl:template match="igsn:resource" mode="json-ld">
 <xsl:text>{"@context": ["http://schema.org/",
                 "https://raw.githubusercontent.com/IGSN/igsn-json/master/schema.igsn.org/json/registration/v0.1/context.jsonld"],
 </xsl:text>
-            <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn-id"/>
-            <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn"/><xsl:text>
+        <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn-id"/>
+        <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn"/>
+        <xsl:text>
     "registrant": {"@type":"registrant", "name": "ARDC",
      "identifiers": [
       {
@@ -28,8 +29,8 @@
     ]},
     "igsnvoc:log": [
 </xsl:text>
-            <xsl:apply-templates select="igsn:logDate" mode="json-ld"/>
-            <xsl:text>
+        <xsl:apply-templates select="igsn:logDate" mode="json-ld"/>
+        <xsl:text>
     ],
     "description" :{
     "@context": [{"objectType": "http://pid.geoscience.gov.au/def/voc/igsn-codelists/"},
@@ -40,17 +41,17 @@
     "@type":"igsn",
     "objectType"  : "Sample",
 </xsl:text>
-            <xsl:apply-templates select="igsn:landingPage" mode="URL"/>
-            <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn-id"/>
-            <xsl:apply-templates select="igsn:landingPage" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:resourceTitle" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:curationDetails/igsn:curation/igsn:curator/igsn:curatorName" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:contributors/igsn:contributor/igsn:contributorName" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:classifications" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:resourceTypes" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:materialTypes" mode="json-ld"/>
-            <xsl:apply-templates select="igsn:location" mode="json-ld"/>
-            <xsl:text>
+        <xsl:apply-templates select="igsn:landingPage" mode="URL"/>
+        <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn-id"/>
+        <xsl:apply-templates select="igsn:landingPage" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:resourceTitle" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:curationDetails/igsn:curation/igsn:curator/igsn:curatorName" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:contributors/igsn:contributor[0]/igsn:contributorName" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:classifications" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:resourceTypes" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:materialTypes" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:location" mode="json-ld"/>
+        <xsl:text>
     }}
 </xsl:text>
     </xsl:template>
@@ -83,23 +84,31 @@
     </xsl:template>
 
     <xsl:template match="igsn:resourceTypes" mode="json-ld">
-        <xsl:text>    "sampleType" : [</xsl:text><xsl:apply-templates select="igsn:resourceType" mode="json-ld"/><xsl:text>],
+        <xsl:text>    "sampleType" : [</xsl:text>
+        <xsl:apply-templates select="igsn:resourceType" mode="json-ld"/>
+        <xsl:text>],
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:materialTypes" mode="json-ld">
-        <xsl:text>    "materialType" : [</xsl:text><xsl:apply-templates select="igsn:materialType" mode="json-ld"/><xsl:text>],
+        <xsl:text>    "materialType" : [</xsl:text>
+        <xsl:apply-templates select="igsn:materialType" mode="json-ld"/>
+        <xsl:text>],
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:classifications" mode="json-ld">
-        <xsl:text>    "classifications" : [</xsl:text><xsl:apply-templates select="igsn:classification" mode="json-ld"/><xsl:text>],
+        <xsl:text>    "classifications" : [</xsl:text>
+        <xsl:apply-templates select="igsn:classification" mode="json-ld"/>
+        <xsl:text>],
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:classification" mode="json-ld">
         <xsl:text>"</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
-        <xsl:if test="following-sibling::igsn:classification"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="following-sibling::igsn:classification">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="igsn:logDate" mode="json-ld">
@@ -107,7 +116,9 @@
         "igsnvoc:@type": "</xsl:text><xsl:value-of select="@eventType"/><xsl:text>",
         "igsnvoc:timestamp": "</xsl:text><xsl:value-of select="."/><xsl:text>"
         }</xsl:text>
-        <xsl:if test="following-sibling::igsn:logDate"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="following-sibling::igsn:logDate">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="igsn:location" mode="json-ld">
@@ -123,22 +134,34 @@
 <xsl:text>
     "geo" : {
     "@type": "GeoShape",
-    "polygon": "</xsl:text><xsl:value-of select="."/><xsl:text>"
+    "polygon": "</xsl:text><xsl:value-of select="normalize-space(.)"/><xsl:text>"
     }</xsl:text>
-        <xsl:if test="following-sibling::igsn:locality"><xsl:text>,</xsl:text></xsl:if>
-        <xsl:if test="following-sibling::igsn:geometry"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="following-sibling::igsn:locality">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:if test="following-sibling::igsn:geometry">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="igsn:resourceType | igsn:materialType" mode="json-ld">
         <xsl:text>"</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
-        <xsl:if test="following-sibling::igsn:resourceType"><xsl:text>,</xsl:text></xsl:if>
-        <xsl:if test="following-sibling::igsn:materialType"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="following-sibling::igsn:resourceType">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:if test="following-sibling::igsn:materialType">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="igsn:locality" mode="json-ld">
         <xsl:text>"address": "</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
-        <xsl:if test="following-sibling::igsn:locality"><xsl:text>,</xsl:text></xsl:if>
-        <xsl:if test="following-sibling::igsn:geometry"><xsl:text>,</xsl:text></xsl:if>
+        <xsl:if test="following-sibling::igsn:locality">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:if test="following-sibling::igsn:geometry">
+            <xsl:text>,</xsl:text>
+        </xsl:if>
     </xsl:template>
 
     <xsl:template match="igsn:curatorName" mode="json-ld">

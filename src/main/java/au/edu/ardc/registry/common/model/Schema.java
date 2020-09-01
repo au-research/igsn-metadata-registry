@@ -22,6 +22,7 @@ public class Schema {
     private String description;
     private String type;
     private Map<Metadata, String> providers;
+    private Map<String, String> transforms;
 
     public Schema() {
     }
@@ -68,5 +69,13 @@ public class Schema {
 
     public void setProviders(Map<Metadata, String> providers) {
         this.providers = providers;
+    }
+
+    public Map<String, String> getTransforms() {
+        return transforms;
+    }
+
+    public void setTransforms(Map<String, String> transforms) {
+        this.transforms = transforms;
     }
 }

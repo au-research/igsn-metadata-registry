@@ -9,6 +9,9 @@
       "Identifier": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1IdentifierProvider",
       "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider"
     },
+    "transforms": {
+      "ardc-igsn-desc-1.0-jsonld": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToJSONLDTransformer"
+    },
     "xml": {
       "namespace": "https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc",
       "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd",

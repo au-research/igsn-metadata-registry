@@ -32,6 +32,7 @@ public class SchemaService {
 
     // useful helper constants
     public static final String ARDCv1 = "ardc-igsn-desc-1.0";
+    public static final String ARDCv1JSONLD = "ardc-igsn-desc-1.0-jsonld";
     public static final String IGSNDESCv1 = "igsn-desc-1.0";
     public static final String IGSNREGv1 = "igsn-desc-1.0";
     public static final String CSIROv3 = "csiro-igsn-desc-3.0";
@@ -154,7 +155,7 @@ public class SchemaService {
      * 
      * @param payload the content either XML or JSON String
      * @return true is content validates
-     * @throws Exception
+     * @throws Exception validation exception
      */
     public boolean validate(String payload) throws Exception{
         SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
@@ -175,7 +176,7 @@ public class SchemaService {
      * gets the schema with the targetNamespace of document's namespaceURI
      * @param payload the content either XML or JSON String
      * @return Schema or null if schema not found or supported
-     * @throws Exception
+     * @throws Exception validation exception
      */
     public Schema getSchemaForContent(String payload) throws Exception {
         SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
