@@ -6,11 +6,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.service.SchemaService;
+import java.util.*;
+
 import au.edu.ardc.registry.common.util.XMLUtil;
 
 public class ARDCv1IdentifierProvider implements IdentifierProvider {
@@ -36,8 +37,23 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 
 		return identifierValue;
 	}
-	
-	
-	
+
+	@Override
+	public List<String> getAll(String content) {
+		List<String> identifiers = new ArrayList<String>();
+		String xpath = "/resources/resource/resourceIdentifier";
+		try {
+			NodeList l  = XMLUtil.getXPath(content, xpath);
+			for(int i = 0 ; i < l.getLength(); i++ )
+			{
+				identifiers.add(l.item(i).getFirstChild().getNodeValue());
+			}
+		} catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return identifiers;
+	}
+
 
 }

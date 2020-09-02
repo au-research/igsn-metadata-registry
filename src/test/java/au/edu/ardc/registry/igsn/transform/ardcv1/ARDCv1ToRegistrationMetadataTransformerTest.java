@@ -4,12 +4,8 @@ import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.Helpers;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,10 +16,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.IOException;
 import java.util.Map;
 
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.isJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+
 
 
 @ExtendWith(SpringExtension.class)

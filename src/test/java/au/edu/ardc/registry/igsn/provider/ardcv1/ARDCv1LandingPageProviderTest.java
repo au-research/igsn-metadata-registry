@@ -1,7 +1,6 @@
 package au.edu.ardc.registry.igsn.provider.ardcv1;
 
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
