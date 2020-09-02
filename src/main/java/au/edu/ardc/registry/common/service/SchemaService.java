@@ -34,7 +34,7 @@ public class SchemaService {
     public static final String ARDCv1 = "ardc-igsn-desc-1.0";
     public static final String ARDCv1JSONLD = "ardc-igsn-desc-1.0-jsonld";
     public static final String IGSNDESCv1 = "igsn-desc-1.0";
-    public static final String IGSNREGv1 = "igsn-desc-1.0";
+    public static final String IGSNREGv1 = "igsn-reg-1.0";
     public static final String CSIROv3 = "csiro-igsn-desc-3.0";
     public static final String AGNv1 = "agn-igsn-desc-1.0";
 
