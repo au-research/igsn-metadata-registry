@@ -32,7 +32,7 @@ public class ARDCv1IdentifierProviderTest {
 		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		String identifierValue = provider.get(schema, xml);
+		String identifierValue = provider.get(xml);
 		assertEquals(identifierValue, "10273/XX0TUIAYLV");
 	}
 }

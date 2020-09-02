@@ -15,8 +15,12 @@ import au.edu.ardc.registry.common.util.XMLUtil;
 
 public class ARDCv1IdentifierProvider implements IdentifierProvider {
 
+	/** Finds the resourceIdentifier of an IGSN record with ARDC v1 schema
+	 * @param content The xml content of the ARDC v1 version
+	 * @return The resourceIdentifier as String
+	 */
 	@Override
-	public String get(Schema schema, String content){
+	public String get(String content){
 		String identifierValue = "";
 
 		String xpath = "/resources/resource/resourceIdentifier";

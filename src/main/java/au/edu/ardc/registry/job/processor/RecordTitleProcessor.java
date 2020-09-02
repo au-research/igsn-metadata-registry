@@ -51,7 +51,7 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
         try {
             Schema schema = schemaService.getSchemaByID(version.getSchema());
             TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
-            title = provider.get(schema, xml);
+            title = provider.get(xml);
         } catch (Exception ex) {
             logger.error("Failed obtaining title for record {} from XML", record.getId());
             ex.printStackTrace();

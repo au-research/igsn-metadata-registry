@@ -7,7 +7,8 @@
     "@type": "XMLSchema",
     "providers": {
       "Identifier": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1IdentifierProvider",
-      "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider"
+      "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider",
+      "LandingPage": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1LandingPageProvider"
     },
     "transforms": {
       "ardc-igsn-desc-1.0-jsonld": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToJSONLDTransformer",

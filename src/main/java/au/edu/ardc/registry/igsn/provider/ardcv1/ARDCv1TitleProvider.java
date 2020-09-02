@@ -8,8 +8,13 @@ import org.w3c.dom.NodeList;
 
 public class ARDCv1TitleProvider implements TitleProvider {
 
+    /**
+     * retrieve the resourceTitle of an IGSN record in ARDC v1 schema
+     * @param content The xml content of the ARDC v1 version
+     * @return The resourceTitle as String
+     */
     @Override
-    public String get(Schema Schema, String content) {
+    public String get(String content) {
         String title = null;
         try {
             NodeList nodeList = XMLUtil.getXPath(content, "//resourceTitle");
