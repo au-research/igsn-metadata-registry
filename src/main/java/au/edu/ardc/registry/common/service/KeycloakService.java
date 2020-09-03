@@ -223,6 +223,7 @@ public class KeycloakService {
         allocation.setType(resource.getType());
         Map<String, List<String>> attributes = resource.getAttributes();
         allocation.setStatus(attributes.containsKey("status") ? String.valueOf(attributes.get("status")): null);
+        allocation.setAttributes(attributes);
         return allocation;
     }
 

@@ -9,14 +9,27 @@ import au.edu.ardc.registry.common.util.Helpers;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 
 public class UserAccessValidator {
 
     @Autowired
     ValidationService vService;
 
+    /**
+     * @param Identifier
+     * @param user
+     * @return
+     */
     public boolean canCreateIdentifier(String Identifier, User user){
         //TODO get allocation from identifier and check if user has create access
+        List<Allocation> allocations = user.getAllocations();
+        for(Allocation allocation : allocations){
+           Map<String, List<String>> attributes = allocation.getAttributes();
+           List<String> prefixes = attributes.get("allocation");
+        }
+
         //Allocation a = new Allocation();
         return true;
     }

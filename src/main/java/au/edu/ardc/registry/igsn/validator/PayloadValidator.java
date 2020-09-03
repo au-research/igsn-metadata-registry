@@ -9,6 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
+/**
+ * Payload Validator is the top level validator when records sent to the registry
+ * it performs several validations
+ * Content validation to check if xml or json or csv is well formed and valid
+ * User access validation checks if user has the desired access for the allocations needed to complete the tasks
+ * Version Content checks is Record has a version with the given schema and it is different from the current one
+ */
 public class PayloadValidator {
 
     @Autowired
@@ -16,8 +23,6 @@ public class PayloadValidator {
 
     @Autowired
     UserAccessValidator uaValidator;
-
-    private List<String> identifiers;
 
     public boolean isvalidPayload(String content) throws Exception {
         boolean isValid = true;
@@ -30,10 +35,10 @@ public class PayloadValidator {
 
         Schema schema = cValidator.service.getSchemaForContent(content);
         IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-        this.identifiers = provider.getAll(content);
-        for(int i = 0 ; i < this.identifiers.size(); i++)
-        {
-            if(!uaValidator.canCreateIdentifier(this.identifiers.get(i), user)){
+        assert provider != null;
+        List<String> identifiers = provider.getAll(content);
+        for (String identifier : identifiers) {
+            if (!uaValidator.canCreateIdentifier(identifier, user)) {
                 return false;
             }
         }

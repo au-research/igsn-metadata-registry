@@ -2,6 +2,7 @@ package au.edu.ardc.registry.common.model;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Allocation implements Serializable {
@@ -10,6 +11,7 @@ public class Allocation implements Serializable {
     private List<Scope> scopes;
     private String type;
     private String status;
+    private Map<String, List<String>> attributes;
 
     public Allocation(UUID id) {
         this.id = id;
@@ -33,6 +35,14 @@ public class Allocation implements Serializable {
 
     public void setScopes(List<Scope> scopes) {
         this.scopes = scopes;
+    }
+
+    public Map<String, List<String>> getAttributes() {
+        return this.attributes;
+    }
+
+    public void setAttributes(Map<String, List<String>> attributes) {
+        this.attributes = attributes;
     }
 
     public String getType() {
