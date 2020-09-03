@@ -29,6 +29,7 @@ public class ValidationService {
 
         // elevated permission the user has ImportScope
         Allocation allocation = new Allocation(record.getAllocationID());
+
         if (validateAllocationScope(allocation, user, Scope.IMPORT)) {
             logger.debug(String.format("ValidateImportScope success: User %s has elevated IMPORT permission for allocation %s", user.getId(), allocation.getId()));
             return true;
