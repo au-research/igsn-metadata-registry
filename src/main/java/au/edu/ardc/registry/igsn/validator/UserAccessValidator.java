@@ -14,35 +14,36 @@ import java.util.Map;
 
 public class UserAccessValidator {
 
-    @Autowired
-    ValidationService vService;
+	@Autowired
+	ValidationService vService;
 
-    /**
-     * @param Identifier
-     * @param user
-     * @return
-     */
-    public boolean canCreateIdentifier(String Identifier, User user){
-        //TODO get allocation from identifier and check if user has create access
-        List<Allocation> allocations = user.getAllocations();
-        for(Allocation allocation : allocations){
-           Map<String, List<String>> attributes = allocation.getAttributes();
-           List<String> prefixes = attributes.get("allocation");
-        }
+	/**
+	 * @param Identifier
+	 * @param user
+	 * @return
+	 */
+	public boolean canCreateIdentifier(String Identifier, User user) {
+		// TODO get allocation from identifier and check if user has create access
+		List<Allocation> allocations = user.getAllocations();
+		for (Allocation allocation : allocations) {
+			Map<String, List<String>> attributes = allocation.getAttributes();
+			List<String> prefixes = attributes.get("allocation");
+		}
 
-        //Allocation a = new Allocation();
-        return true;
-    }
+		// Allocation a = new Allocation();
+		return true;
+	}
 
-    public boolean hasAccess(Record record, User user) throws Exception {
-        return vService.validateRecordOwnership(record, user);
-    }
+	public boolean hasAccess(Record record, User user) throws Exception {
+		return vService.validateRecordOwnership(record, user);
+	}
 
-    public boolean canCreate(Allocation a, User user) throws Exception {
-        return vService.validateAllocationScope(a, user, Scope.CREATE);
-    }
+	public boolean canCreate(Allocation a, User user) throws Exception {
+		return vService.validateAllocationScope(a, user, Scope.CREATE);
+	}
 
-    public boolean canUpdate(Allocation a, User user) throws Exception {
-        return vService.validateAllocationScope(a, user, Scope.UPDATE);
-    }
+	public boolean canUpdate(Allocation a, User user) throws Exception {
+		return vService.validateAllocationScope(a, user, Scope.UPDATE);
+	}
+
 }

@@ -10,9 +10,12 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 public class IdentifierSpecification extends SearchSpecification implements Specification<Identifier> {
-    @Override
-    public Predicate toPredicate(Root<Identifier> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-        List<Predicate> predicates = super.getBasicPredicate(root, criteriaQuery, criteriaBuilder);
-        return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-    }
+
+	@Override
+	public Predicate toPredicate(Root<Identifier> root, CriteriaQuery<?> criteriaQuery,
+			CriteriaBuilder criteriaBuilder) {
+		List<Predicate> predicates = super.getBasicPredicate(root, criteriaQuery, criteriaBuilder);
+		return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+	}
+
 }

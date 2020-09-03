@@ -24,44 +24,36 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-
 @RestController
 @RequestMapping(value = "/api/resources/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Version Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class MintIGSNResourceController {
-	
-    @Autowired
-    private KeycloakService kcService;
-	
-    @PostMapping("/mint")
-    @Operation(
-            summary = "Creates new IGSN record(s)",
-            description = "Add new IGSN record(s) to the registry"
-    )
-    @ApiResponse(
-            responseCode = "202",
-            description = "IGSN Record(s) accepted",
-            content = @Content(schema = @Schema(implementation = Record.class))
-    )
-    @ApiResponse(
-            responseCode = "403",
-            description = "Operation is forbidden",
-            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
-    )
-    public ResponseEntity<String> mint(HttpServletRequest request) {
-        User user = kcService.getLoggedInUser(request);
-        String payload = "";
+
+	@Autowired
+	private KeycloakService kcService;
+
+	@PostMapping("/mint")
+	@Operation(summary = "Creates new IGSN record(s)", description = "Add new IGSN record(s) to the registry")
+	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
+			content = @Content(schema = @Schema(implementation = Record.class)))
+	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	public ResponseEntity<String> mint(HttpServletRequest request) {
+		User user = kcService.getLoggedInUser(request);
+		String payload = "";
 		try {
 			payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-			//TODO test for "Mintability" return with result, if 'mintable" then store the payload and start the mint pipeline 
-		} catch (IOException e) {
+			// TODO test for "Mintability" return with result, if 'mintable" then store
+			// the payload and start the mint pipeline
+		}
+		catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// for now just send them back what we've received
-        return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(payload);
-    }
+		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(payload);
+	}
 
 }

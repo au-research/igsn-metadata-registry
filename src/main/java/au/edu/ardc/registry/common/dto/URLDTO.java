@@ -4,71 +4,79 @@ import java.util.Date;
 import java.util.UUID;
 
 public class URLDTO {
-    private UUID id;
-    private String url;
-    private boolean resolvable;
-    private Date createdAt;
-    private Date updatedAt;
-    private Date checkedAt;
-    private UUID record;
 
-    public URLDTO() {
+	private UUID id;
 
-    }
+	private String url;
 
-    public UUID getId() {
-        return id;
-    }
+	private boolean resolvable;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	private Date createdAt;
 
-    public String getUrl() {
-        return url;
-    }
+	private Date updatedAt;
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	private Date checkedAt;
 
-    public boolean isResolvable() {
-        return resolvable;
-    }
+	private UUID record;
 
-    public void setResolvable(boolean resolvable) {
-        this.resolvable = resolvable;
-    }
+	public URLDTO() {
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+	}
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public Date getCheckedAt() {
-        return checkedAt;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    public void setCheckedAt(Date checkedAt) {
-        this.checkedAt = checkedAt;
-    }
+	public boolean isResolvable() {
+		return resolvable;
+	}
 
-    public UUID getRecord() {
-        return record;
-    }
+	public void setResolvable(boolean resolvable) {
+		this.resolvable = resolvable;
+	}
 
-    public void setRecord(UUID record) {
-        this.record = record;
-    }
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public Date getCheckedAt() {
+		return checkedAt;
+	}
+
+	public void setCheckedAt(Date checkedAt) {
+		this.checkedAt = checkedAt;
+	}
+
+	public UUID getRecord() {
+		return record;
+	}
+
+	public void setRecord(UUID record) {
+		this.record = record;
+	}
+
 }

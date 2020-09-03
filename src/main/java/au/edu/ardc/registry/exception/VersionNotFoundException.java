@@ -1,7 +1,9 @@
 package au.edu.ardc.registry.exception;
 
-public class VersionNotFoundException extends RuntimeException{
-    public VersionNotFoundException(String uuid) {
-        super(String.format("Version with uuid:%s is not found within the registry", uuid));
-    }
+public class VersionNotFoundException extends RuntimeException {
+
+	public VersionNotFoundException(String uuid) {
+		super(String.format("Version with uuid:%s is not found within the registry", uuid));
+	}
+
 }

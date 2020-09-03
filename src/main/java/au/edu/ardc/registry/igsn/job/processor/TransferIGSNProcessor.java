@@ -15,45 +15,52 @@ import java.util.UUID;
 
 public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
-    IGSNService igsnService;
-    RecordRepository recordRepository;
-    IdentifierRepository identifierRepository;
+	IGSNService igsnService;
 
-    private String ownerID;
-    private String ownerType;
-    private IGSNServiceRequest request;
+	RecordRepository recordRepository;
 
-    public TransferIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository, IGSNService igsnService) {
-        this.recordRepository = recordRepository;
-        this.identifierRepository = identifierRepository;
-        this.igsnService = igsnService;
-    }
+	IdentifierRepository identifierRepository;
 
-    @BeforeStep
-    public void beforeStep(final StepExecution stepExecution) {
-        JobParameters jobParameters = stepExecution.getJobParameters();
-        this.ownerID = jobParameters.getString("ownerID");
-        this.ownerType = jobParameters.getString("ownerType");
-        String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
-        this.request = igsnService.findById(IGSNServiceRequestID);
-    }
+	private String ownerID;
 
-    @Override
-    public String process(String identifierValue) {
-        System.out.println("Dealing with" + identifierValue);
-        if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
-            igsnService.getLoggerFor(request).severe(String.format("Identifier %s of type %s does not exists", identifierValue, Identifier.Type.IGSN));
-        }
+	private String ownerType;
 
-        Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-        Record record = identifier.getRecord();
+	private IGSNServiceRequest request;
 
-        record.setOwnerType(Record.OwnerType.valueOf(ownerType));
-        record.setOwnerID(UUID.fromString(ownerID));
-        recordRepository.save(record);
-        igsnService.getLoggerFor(request).info(String.format("Updated record %s ownerType to %s and ownerID to %s", record.getId(), ownerType, ownerID));
+	public TransferIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository,
+			IGSNService igsnService) {
+		this.recordRepository = recordRepository;
+		this.identifierRepository = identifierRepository;
+		this.igsnService = igsnService;
+	}
 
-        return identifierValue;
-    }
+	@BeforeStep
+	public void beforeStep(final StepExecution stepExecution) {
+		JobParameters jobParameters = stepExecution.getJobParameters();
+		this.ownerID = jobParameters.getString("ownerID");
+		this.ownerType = jobParameters.getString("ownerType");
+		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		this.request = igsnService.findById(IGSNServiceRequestID);
+	}
+
+	@Override
+	public String process(String identifierValue) {
+		System.out.println("Dealing with" + identifierValue);
+		if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
+			igsnService.getLoggerFor(request).severe(
+					String.format("Identifier %s of type %s does not exists", identifierValue, Identifier.Type.IGSN));
+		}
+
+		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Record record = identifier.getRecord();
+
+		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
+		record.setOwnerID(UUID.fromString(ownerID));
+		recordRepository.save(record);
+		igsnService.getLoggerFor(request).info(String.format("Updated record %s ownerType to %s and ownerID to %s",
+				record.getId(), ownerType, ownerID));
+
+		return identifierValue;
+	}
 
 }

@@ -32,61 +32,58 @@ import java.util.UUID;
 @RequestMapping("/api/services/igsn/transfer")
 public class IGSNServiceTransferController {
 
-    @Autowired
-    KeycloakService kcService;
+	@Autowired
+	KeycloakService kcService;
 
-    @Autowired
-    IGSNProperties IGSNProperties;
+	@Autowired
+	IGSNProperties IGSNProperties;
 
-    @Autowired
-    IGSNService service;
+	@Autowired
+	IGSNService service;
 
-    @Autowired
-    @Qualifier("standardJobLauncher")
-    JobLauncher jobLauncher;
+	@Autowired
+	@Qualifier("standardJobLauncher")
+	JobLauncher jobLauncher;
 
-    @Autowired
-    @Qualifier("TransferIGSNJob")
-    Job transferIGSNJob;
+	@Autowired
+	@Qualifier("TransferIGSNJob")
+	Job transferIGSNJob;
 
-    @PostMapping("")
-    public ResponseEntity<IGSNServiceRequest> handle(
-            HttpServletRequest request,
-            @RequestParam UUID ownerID,
-            @RequestParam String ownerType,
-            @RequestBody String IGSNList
-    ) throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
-        User user = kcService.getLoggedInUser(request);
+	@PostMapping("")
+	public ResponseEntity<IGSNServiceRequest> handle(HttpServletRequest request, @RequestParam UUID ownerID,
+			@RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
+			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+		User user = kcService.getLoggedInUser(request);
 
-        IGSNServiceRequest IGSNRequest = service.createRequest(user);
-        String dataPath = IGSNRequest.getDataPath();
+		IGSNServiceRequest IGSNRequest = service.createRequest(user);
+		String dataPath = IGSNRequest.getDataPath();
 
-        // write IGSNList to input.txt
-        String filePath = dataPath + "/requested-identifiers.txt";
-        try {
-            File inputIGSNFile = new File(filePath);
-            if (inputIGSNFile.createNewFile()) {
-                System.out.println("File created: " + inputIGSNFile.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-            FileWriter writer = new FileWriter(filePath);
-            writer.write(IGSNList);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		// write IGSNList to input.txt
+		String filePath = dataPath + "/requested-identifiers.txt";
+		try {
+			File inputIGSNFile = new File(filePath);
+			if (inputIGSNFile.createNewFile()) {
+				System.out.println("File created: " + inputIGSNFile.getName());
+			}
+			else {
+				System.out.println("File already exists.");
+			}
+			FileWriter writer = new FileWriter(filePath);
+			writer.write(IGSNList);
+			writer.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 
-        JobParameters jobParameters = new JobParametersBuilder()
-                .addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-                .addString("ownerID", ownerID.toString())
-                .addString("ownerType", ownerType)
-                .addString("filePath", filePath)
-                .addString("targetPath", dataPath + "/updated-identifiers.txt")
-                .toJobParameters();
+		JobParameters jobParameters = new JobParametersBuilder()
+				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
+				.addString("ownerID", ownerID.toString()).addString("ownerType", ownerType)
+				.addString("filePath", filePath).addString("targetPath", dataPath + "/updated-identifiers.txt")
+				.toJobParameters();
 
-        jobLauncher.run(transferIGSNJob, jobParameters);
-        return ResponseEntity.ok().body(IGSNRequest);
-    }
+		jobLauncher.run(transferIGSNJob, jobParameters);
+		return ResponseEntity.ok().body(IGSNRequest);
+	}
 
 }

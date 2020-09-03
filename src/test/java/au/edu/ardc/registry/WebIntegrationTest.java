@@ -18,33 +18,33 @@ import javax.xml.bind.DatatypeConverter;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient(timeout = "10000")
-public abstract class WebIntegrationTest extends IntegrationTest{
+public abstract class WebIntegrationTest extends IntegrationTest {
 
-    @Autowired
-    public WebTestClient webTestClient;
+	@Autowired
+	public WebTestClient webTestClient;
 
-    @Autowired
-    private IdentifierRepository identifierRepository;
+	@Autowired
+	private IdentifierRepository identifierRepository;
 
-    @Autowired
-    private RecordRepository recordRepository;
+	@Autowired
+	private RecordRepository recordRepository;
 
-    @Autowired
-    private VersionRepository versionRepository;
+	@Autowired
+	private VersionRepository versionRepository;
 
-    @Autowired
-    private URLRepository urlRepository;
+	@Autowired
+	private URLRepository urlRepository;
 
-    public String getBasicAuthenticationHeader(String username, String password) {
-        return "Basic " + DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
-    }
+	public String getBasicAuthenticationHeader(String username, String password) {
+		return "Basic " + DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
+	}
 
-    @AfterEach
-    void cleanUp() {
-        urlRepository.deleteAll();
-        versionRepository.deleteAll();
-        identifierRepository.deleteAll();
-        recordRepository.deleteAll();
-    }
+	@AfterEach
+	void cleanUp() {
+		urlRepository.deleteAll();
+		versionRepository.deleteAll();
+		identifierRepository.deleteAll();
+		recordRepository.deleteAll();
+	}
 
 }

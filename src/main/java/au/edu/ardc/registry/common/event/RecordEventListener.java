@@ -17,30 +17,31 @@ import java.util.Date;
 @Component
 public class RecordEventListener {
 
-    Logger logger = LoggerFactory.getLogger(RecordEventListener.class);
+	Logger logger = LoggerFactory.getLogger(RecordEventListener.class);
 
-    @Autowired
-    JobLauncher jobLauncher;
+	@Autowired
+	JobLauncher jobLauncher;
 
-    @Autowired
-    VersionService versionService;
+	@Autowired
+	VersionService versionService;
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @Async
-    @EventListener
-    public void handleRecordUpdated(RecordUpdatedEvent event) throws InterruptedException {
-        logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(), event.getUser().getId());
-        event.getRecord().setModifiedAt(new Date());
-        event.getRecord().setModifierID(event.getUser().getId());
+	@Async
+	@EventListener
+	public void handleRecordUpdated(RecordUpdatedEvent event) throws InterruptedException {
+		logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(),
+				event.getUser().getId());
+		event.getRecord().setModifiedAt(new Date());
+		event.getRecord().setModifierID(event.getUser().getId());
 
-        // todo ProcessRecordJob (for single record)
-        RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService, schemaService);
-        processor.process(event.getRecord());
-    }
+		// todo ProcessRecordJob (for single record)
+		RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService, schemaService);
+		processor.process(event.getRecord());
+	}
 
 }

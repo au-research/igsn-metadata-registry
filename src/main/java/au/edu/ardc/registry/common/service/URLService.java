@@ -21,107 +21,102 @@ import java.util.UUID;
 @Service
 public class URLService {
 
-    @Autowired
-    private URLRepository repository;
+	@Autowired
+	private URLRepository repository;
 
-    @Autowired
-    private URLMapper mapper;
+	@Autowired
+	private URLMapper mapper;
 
-    @Autowired
-    ValidationService validationService;
+	@Autowired
+	ValidationService validationService;
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    /**
-     * Find a url by id
-     *
-     * @param id the uuid of the URL
-     * @return the URL if it exists, null if not
-     */
-    public URL findById(String id) {
-        Optional<URL> opt = repository.findById(UUID.fromString(id));
+	/**
+	 * Find a url by id
+	 * @param id the uuid of the URL
+	 * @return the URL if it exists, null if not
+	 */
+	public URL findById(String id) {
+		Optional<URL> opt = repository.findById(UUID.fromString(id));
 
-        return opt.orElse(null);
-    }
+		return opt.orElse(null);
+	}
 
-    /**
-     * Tell if a URL exists by id
-     *
-     * @param id the uuid of the URL
-     * @return if the uuid correlate to an existing url
-     */
-    public boolean exists(String id) {
-        return repository.existsById(UUID.fromString(id));
-    }
+	/**
+	 * Tell if a URL exists by id
+	 * @param id the uuid of the URL
+	 * @return if the uuid correlate to an existing url
+	 */
+	public boolean exists(String id) {
+		return repository.existsById(UUID.fromString(id));
+	}
 
-    /**
-     * Retrieve all owned URLs
-     * Owned URLs are the URLs that which records the user have access to
-     *
-     * todo accept User UUID as a parameter
-     * todo update findOwned at the repository level
-     * @return a list of URLs that is owned by the user
-     */
-    public List<URL> findOwned() {
-        return repository.findAll();
-    }
+	/**
+	 * Retrieve all owned URLs Owned URLs are the URLs that which records the user have
+	 * access to
+	 *
+	 * todo accept User UUID as a parameter todo update findOwned at the repository level
+	 * @return a list of URLs that is owned by the user
+	 */
+	public List<URL> findOwned() {
+		return repository.findAll();
+	}
 
-    // create
-    public URL create(URL newUrl) {
-        return repository.save(newUrl);
-    }
+	// create
+	public URL create(URL newUrl) {
+		return repository.save(newUrl);
+	}
 
-    public URLDTO create(URLDTO dto, User user) {
-        URL url = mapper.convertToEntity(dto);
+	public URLDTO create(URLDTO dto, User user) {
+		URL url = mapper.convertToEntity(dto);
 
-        // validate record existence
-        if (!recordService.exists(dto.getRecord().toString())) {
-            throw new RecordNotFoundException(dto.getRecord().toString());
-        }
+		// validate record existence
+		if (!recordService.exists(dto.getRecord().toString())) {
+			throw new RecordNotFoundException(dto.getRecord().toString());
+		}
 
-        // validate record ownership
-        Record record = recordService.findById(dto.getRecord().toString());
-        if (!validationService.validateRecordOwnership(record, user)) {
-            throw new ForbiddenOperationException("User does not have access to create URL for this record");
-        }
+		// validate record ownership
+		Record record = recordService.findById(dto.getRecord().toString());
+		if (!validationService.validateRecordOwnership(record, user)) {
+			throw new ForbiddenOperationException("User does not have access to create URL for this record");
+		}
 
-        //defaults
-        url.setRecord(record);
-        url.setCreatedAt(new Date());
-        url.setResolvable(false);
+		// defaults
+		url.setRecord(record);
+		url.setCreatedAt(new Date());
+		url.setResolvable(false);
 
-        // import scope to overwrite certain fields
-        Allocation allocation = new Allocation(record.getAllocationID());
-        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
-            url.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : url.getCreatedAt());
-            url.setResolvable(dto.isResolvable() ? dto.isResolvable() : url.isResolvable());
-        }
+		// import scope to overwrite certain fields
+		Allocation allocation = new Allocation(record.getAllocationID());
+		if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+			url.setCreatedAt(dto.getCreatedAt() != null ? dto.getCreatedAt() : url.getCreatedAt());
+			url.setResolvable(dto.isResolvable() ? dto.isResolvable() : url.isResolvable());
+		}
 
-        url = repository.save(url);
-        return mapper.convertToDTO(url);
-    }
+		url = repository.save(url);
+		return mapper.convertToDTO(url);
+	}
 
-    /**
-     * Update a URL
-     *
-     * @param url to be updated
-     * @return The url that has updated
-     */
+	/**
+	 * Update a URL
+	 * @param url to be updated
+	 * @return The url that has updated
+	 */
 
-    public URL update(URL url) {
-        url.setUpdatedAt(new Date());
-        repository.save(url);
-        return url;
-    }
+	public URL update(URL url) {
+		url.setUpdatedAt(new Date());
+		repository.save(url);
+		return url;
+	}
 
-    /**
-     * Permanently delete the url
-     *
-     * @param id the uuid of the URL
-     */
-    public void delete(String id) {
-        repository.deleteById(id);
-    }
+	/**
+	 * Permanently delete the url
+	 * @param id the uuid of the URL
+	 */
+	public void delete(String id) {
+		repository.deleteById(id);
+	}
 
 }

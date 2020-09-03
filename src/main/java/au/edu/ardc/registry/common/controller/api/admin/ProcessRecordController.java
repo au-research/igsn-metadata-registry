@@ -19,41 +19,35 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/process-records")
 public class ProcessRecordController {
 
-    @Autowired
-    @Qualifier("asyncJobLauncher")
-    JobLauncher asyncJobLauncher;
+	@Autowired
+	@Qualifier("asyncJobLauncher")
+	JobLauncher asyncJobLauncher;
 
-    @Autowired
-    @Qualifier("queueJobLauncher")
-    JobLauncher queue;
+	@Autowired
+	@Qualifier("queueJobLauncher")
+	JobLauncher queue;
 
-    @Autowired
-    Job ProcessRecordJob;
+	@Autowired
+	Job ProcessRecordJob;
 
-    @GetMapping("")
-    public String handle(
-            @RequestParam(required = false, name = "method") String methodParam
-    )
-            throws JobParametersInvalidException
-            , JobExecutionAlreadyRunningException
-            , JobRestartException
-            , JobInstanceAlreadyCompleteException {
-        String method = "findAll";
-        if (methodParam != null) {
-            method = methodParam;
-        }
+	@GetMapping("")
+	public String handle(@RequestParam(required = false, name = "method") String methodParam)
+			throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
+			JobInstanceAlreadyCompleteException {
+		String method = "findAll";
+		if (methodParam != null) {
+			method = methodParam;
+		}
 
-//        for (int i = 0; i < 100; i++) {
-            JobParameters jobParameters = new JobParametersBuilder()
-                    .addString("method", method)
-                    .addLong("time", System.currentTimeMillis())
-                    .toJobParameters();
-            queue.run(ProcessRecordJob, jobParameters);
-//        }
+		// for (int i = 0; i < 100; i++) {
+		JobParameters jobParameters = new JobParametersBuilder().addString("method", method)
+				.addLong("time", System.currentTimeMillis()).toJobParameters();
+		queue.run(ProcessRecordJob, jobParameters);
+		// }
 
-//        asyncJobLauncher.run(ProcessRecordJob, jobParameters);
+		// asyncJobLauncher.run(ProcessRecordJob, jobParameters);
 
-        return "batch Job is invoked!";
-    }
+		return "batch Job is invoked!";
+	}
 
 }

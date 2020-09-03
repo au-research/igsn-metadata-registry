@@ -11,71 +11,75 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = XMLSchema.class, name = "XMLSchema"),
-        @JsonSubTypes.Type(value = JSONSchema.class, name = "JSONSchema")
-})
+@JsonSubTypes({ @JsonSubTypes.Type(value = XMLSchema.class, name = "XMLSchema"),
+		@JsonSubTypes.Type(value = JSONSchema.class, name = "JSONSchema") })
 public class Schema {
 
-    private String id;
-    private String name;
-    private String description;
-    private String type;
-    private Map<Metadata, String> providers;
-    private Map<String, String> transforms;
+	private String id;
 
-    public Schema() {
-    }
+	private String name;
 
-    public Schema(String id) {
-        this.id = id;
-    }
+	private String description;
 
-    public String getName() {
-        return name;
-    }
+	private String type;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private Map<Metadata, String> providers;
 
-    public String getId() {
-        return id;
-    }
+	private Map<String, String> transforms;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public Schema() {
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public Schema(String id) {
+		this.id = id;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getType() {
-        return type;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public Map<Metadata, String> getProviders() {
-        return providers;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public void setProviders(Map<Metadata, String> providers) {
-        this.providers = providers;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public Map<String, String> getTransforms() {
-        return transforms;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public void setTransforms(Map<String, String> transforms) {
-        this.transforms = transforms;
-    }
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Map<Metadata, String> getProviders() {
+		return providers;
+	}
+
+	public void setProviders(Map<Metadata, String> providers) {
+		this.providers = providers;
+	}
+
+	public Map<String, String> getTransforms() {
+		return transforms;
+	}
+
+	public void setTransforms(Map<String, String> transforms) {
+		this.transforms = transforms;
+	}
+
 }

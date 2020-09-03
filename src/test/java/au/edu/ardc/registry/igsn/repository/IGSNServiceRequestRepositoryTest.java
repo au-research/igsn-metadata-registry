@@ -18,35 +18,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 class IGSNServiceRequestRepositoryTest {
 
-    @Autowired
-    TestEntityManager entityManager;
+	@Autowired
+	TestEntityManager entityManager;
 
-    @Autowired
-    IGSNServiceRequestRepository repository;
+	@Autowired
+	IGSNServiceRequestRepository repository;
 
-    @Test
-    void findById() {
-        IGSNServiceRequest request = new IGSNServiceRequest();
-        repository.save(request);
+	@Test
+	void findById() {
+		IGSNServiceRequest request = new IGSNServiceRequest();
+		repository.save(request);
 
-        UUID id = request.getId();
+		UUID id = request.getId();
 
-        Optional<IGSNServiceRequest> dbFound = repository.findById(id);
+		Optional<IGSNServiceRequest> dbFound = repository.findById(id);
 
-        assertThat(dbFound.isPresent()).isTrue();
-        IGSNServiceRequest found = dbFound.get();
-        assertThat(found).isInstanceOf(IGSNServiceRequest.class);
-        assertThat(found.getId()).isEqualTo(request.getId());
-    }
+		assertThat(dbFound.isPresent()).isTrue();
+		IGSNServiceRequest found = dbFound.get();
+		assertThat(found).isInstanceOf(IGSNServiceRequest.class);
+		assertThat(found.getId()).isEqualTo(request.getId());
+	}
 
-    @Test
-    void existsById() {
-        assertThat(repository.existsById(UUID.randomUUID())).isFalse();
+	@Test
+	void existsById() {
+		assertThat(repository.existsById(UUID.randomUUID())).isFalse();
 
-        IGSNServiceRequest request = new IGSNServiceRequest();
-        repository.save(request);
-        UUID id = request.getId();
+		IGSNServiceRequest request = new IGSNServiceRequest();
+		repository.save(request);
+		UUID id = request.getId();
 
-        assertThat(repository.existsById(id)).isTrue();
-    }
+		assertThat(repository.existsById(id)).isTrue();
+	}
+
 }

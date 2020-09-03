@@ -9,22 +9,25 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class URLMapper {
-    @Autowired
-    ModelMapper modelMapper;
-    @Autowired
-    RecordService recordService;
 
-    public URL convertToEntity(URLDTO urlDTO) {
-        URL url = modelMapper.map(urlDTO, URL.class);
-        if (urlDTO.getRecord() != null) {
-            url.setRecord(recordService.findById(urlDTO.getRecord().toString()));
-        }
-        return url;
-    }
+	@Autowired
+	ModelMapper modelMapper;
 
-    public URLDTO convertToDTO(URL url) {
-        URLDTO urlDTO = modelMapper.map(url, URLDTO.class);
-        urlDTO.setRecord(url.getRecord().getId());
-        return urlDTO;
-    }
+	@Autowired
+	RecordService recordService;
+
+	public URL convertToEntity(URLDTO urlDTO) {
+		URL url = modelMapper.map(urlDTO, URL.class);
+		if (urlDTO.getRecord() != null) {
+			url.setRecord(recordService.findById(urlDTO.getRecord().toString()));
+		}
+		return url;
+	}
+
+	public URLDTO convertToDTO(URL url) {
+		URLDTO urlDTO = modelMapper.map(url, URLDTO.class);
+		urlDTO.setRecord(url.getRecord().getId());
+		return urlDTO;
+	}
+
 }

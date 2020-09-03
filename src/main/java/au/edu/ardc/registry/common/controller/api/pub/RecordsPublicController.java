@@ -31,86 +31,56 @@ import java.util.UUID;
 @Tag(name = "Record Public API")
 public class RecordsPublicController {
 
-    @Autowired
-    RecordService service;
+	@Autowired
+	RecordService service;
 
-    @Autowired
-    VersionService versionService;
+	@Autowired
+	VersionService versionService;
 
-    @GetMapping("")
-    @Operation(
-            summary = "Get all publicly available records",
-            description = "Retrieves all publicly available records")
-    @PageableOperation
-    public ResponseEntity<Page<RecordDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable) {
-        Page<RecordDTO> result = service.findAllPublic(pageable);
-        return ResponseEntity.ok().body(result);
-    }
+	@GetMapping("")
+	@Operation(summary = "Get all publicly available records", description = "Retrieves all publicly available records")
+	@PageableOperation
+	public ResponseEntity<Page<RecordDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable) {
+		Page<RecordDTO> result = service.findAllPublic(pageable);
+		return ResponseEntity.ok().body(result);
+	}
 
-    @GetMapping(value = "/{id}")
-    @Operation(
-            summary = "Get a single record by id",
-            description = "Retrieve the metadata for a single record by id"
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Record is not found",
-            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Record is found",
-            content = @Content(schema = @Schema(implementation = RecordDTO.class))
-    )
-    public ResponseEntity<RecordDTO> show(
-            @Parameter(
-                    required = true,
-                    description = "the id of the record (uuid)",
-                    schema = @Schema(implementation = UUID.class)
-            )
-            @PathVariable String id
-    ) {
-        RecordDTO dto = service.findPublicById(id);
-        return ResponseEntity.ok().body(dto);
-    }
+	@GetMapping(value = "/{id}")
+	@Operation(summary = "Get a single record by id", description = "Retrieve the metadata for a single record by id")
+	@ApiResponse(responseCode = "404", description = "Record is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "200", description = "Record is found",
+			content = @Content(schema = @Schema(implementation = RecordDTO.class)))
+	public ResponseEntity<RecordDTO> show(@Parameter(required = true, description = "the id of the record (uuid)",
+			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		RecordDTO dto = service.findPublicById(id);
+		return ResponseEntity.ok().body(dto);
+	}
 
-    @GetMapping(value = "/{id}/versions")
-    @Operation(
-            summary = "Get all versions for a record",
-            description = "Retrieve the versions for a single record by id"
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Record is not found",
-            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Versions are found",
-            content = @Content(schema = @Schema(implementation = Page.class))
-    )
-    public ResponseEntity<?> showVersions(
-            @Parameter(
-                    required = true,
-                    description = "the id of the record (uuid)",
-                    schema = @Schema(implementation = UUID.class)
-            )
-            @PathVariable String id,
-            @RequestParam(required = false) String schema,
-            Pageable pageable
-    ) {
-        // try to reuse the business logic of finding public record
-        RecordDTO dto = service.findPublicById(id);
-        Record record = service.getMapper().convertToEntity(dto);
+	@GetMapping(value = "/{id}/versions")
+	@Operation(summary = "Get all versions for a record",
+			description = "Retrieve the versions for a single record by id")
+	@ApiResponse(responseCode = "404", description = "Record is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "200", description = "Versions are found",
+			content = @Content(schema = @Schema(implementation = Page.class)))
+	public ResponseEntity<?> showVersions(
+			@Parameter(required = true, description = "the id of the record (uuid)",
+					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
+			@RequestParam(required = false) String schema, Pageable pageable) {
+		// try to reuse the business logic of finding public record
+		RecordDTO dto = service.findPublicById(id);
+		Record record = service.getMapper().convertToEntity(dto);
 
-        VersionSpecification specs = new VersionSpecification();
-        specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
+		VersionSpecification specs = new VersionSpecification();
+		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
 
-        if (schema != null) {
-            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
-        }
+		if (schema != null) {
+			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+		}
 
-        Page<VersionDTO> result = versionService.search(specs, pageable);
-        return ResponseEntity.ok().body(result);
-    }
+		Page<VersionDTO> result = versionService.search(specs, pageable);
+		return ResponseEntity.ok().body(result);
+	}
+
 }

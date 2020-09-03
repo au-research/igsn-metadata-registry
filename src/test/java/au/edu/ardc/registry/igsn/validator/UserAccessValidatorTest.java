@@ -12,26 +12,25 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserAccessValidatorIT extends KeycloakIntegrationTest{
+class UserAccessValidatorIT extends KeycloakIntegrationTest {
 
+	@Autowired
+	private KeycloakService kcService;
 
-        @Autowired
-    private KeycloakService kcService;
+	@Test
+	public void canUserEditPrefix() throws Exception {
+		String identifier = "20.500.11812/XXAASSSSIIIIUUUU";
+		String allocationId = "72dcf894-a6c2-4a31-904a-23148255b57f";
+		Allocation a = kcService.getAllocationByResourceID(allocationId);
+		Map<String, List<String>> attributes;
+		attributes = a.getAttributes();
+		if (attributes != null && !attributes.isEmpty()) {
+			for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
+				if (entry.getKey().equals("allocation"))
+					assertThat(entry.getValue().contains("20.500.11812/XXAA")).isTrue();
+			}
+		}
 
-    @Test
-    public void canUserEditPrefix() throws Exception {
-        String identifier = "20.500.11812/XXAASSSSIIIIUUUU";
-        String allocationId = "72dcf894-a6c2-4a31-904a-23148255b57f";
-        Allocation a = kcService.getAllocationByResourceID(allocationId);
-        Map<String, List<String>> attributes;
-        attributes = a.getAttributes();
-        if(attributes != null && !attributes.isEmpty()){
-            for(Map.Entry<String,List<String>> entry : attributes.entrySet()){
-                if(entry.getKey().equals("allocation"))
-                    assertThat(entry.getValue().contains("20.500.11812/XXAA")).isTrue();
-            }
-        }
-
-    }
+	}
 
 }

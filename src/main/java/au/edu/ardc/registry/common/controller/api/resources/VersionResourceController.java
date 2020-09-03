@@ -42,125 +42,103 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "oauth2")
 public class VersionResourceController {
 
-    @Autowired
-    VersionMapper versionMapper;
-    @Autowired
-    private VersionService service;
-    @Autowired
-    private KeycloakService kcService;
+	@Autowired
+	VersionMapper versionMapper;
 
-    @GetMapping("")
-    @Operation(
-            summary = "Get all versions",
-            description = "Retrieves all versions resources that the current user has access to")
-    @ApiResponse(
-            responseCode = "200",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class)))
-    )
-    public ResponseEntity<?> index(
-            HttpServletRequest request,
-            @PageableDefault @Parameter(hidden = true) Pageable pageable,
-            @RequestParam(required = false) String schema
-    ) {
-        // obtain a list of ownerIDs include the current user ownerID
-        User user = kcService.getLoggedInUser(request);
-        List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
-        ownerIDs.add(user.getId());
+	@Autowired
+	private VersionService service;
 
-        VersionSpecification specs = new VersionSpecification();
-        specs.add(new SearchCriteria("ownerID", ownerIDs, SearchOperation.RECORD_IN));
-        if (schema != null) {
-            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
-        }
+	@Autowired
+	private KeycloakService kcService;
 
-        Page<VersionDTO> result = service.search(specs, pageable);
-        return ResponseEntity.ok(result);
-    }
+	@GetMapping("")
+	@Operation(summary = "Get all versions",
+			description = "Retrieves all versions resources that the current user has access to")
+	@ApiResponse(responseCode = "200",
+			content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class))))
+	public ResponseEntity<?> index(HttpServletRequest request,
+			@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String schema) {
+		// obtain a list of ownerIDs include the current user ownerID
+		User user = kcService.getLoggedInUser(request);
+		List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
+		ownerIDs.add(user.getId());
 
-    @GetMapping(value = "/{id}")
-    @Operation(
-            summary = "Get a single version by id",
-            description = "Retrieve the metadata for a single version by id"
-    )
-    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-    @ApiResponse(
-            responseCode = "200",
-            description = "Version is found",
-            content = @Content(schema = @Schema(implementation = Version.class))
-    )
-    public ResponseEntity<VersionDTO> show(
-            @Parameter(
-                    required = true,
-                    description = "the id of the version (uuid)",
-                    schema = @Schema(implementation = UUID.class)
-            )
-            @PathVariable String id
-    ) {
-        Version version = service.findById(id);
-        if (version == null) {
-            throw new VersionNotFoundException(id);
-        }
-        VersionDTO versionDTO = versionMapper.convertToDTO(version);
-        return ResponseEntity.ok().body(versionDTO);
-    }
+		VersionSpecification specs = new VersionSpecification();
+		specs.add(new SearchCriteria("ownerID", ownerIDs, SearchOperation.RECORD_IN));
+		if (schema != null) {
+			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+		}
 
-    @PostMapping("/")
-    @Operation(
-            summary = "Creates a new version",
-            description = "Add a new version to the registry"
-    )
-    @ApiResponse(
-            responseCode = "201",
-            description = "Version is created",
-            content = @Content(schema = @Schema(implementation = Version.class))
-    )
-    public ResponseEntity<VersionDTO> store(
-            @Valid @RequestBody VersionDTO versionDTO,
-            HttpServletRequest request) {
-        User user = kcService.getLoggedInUser(request);
-        VersionDTO resultDTO = service.create(versionDTO, user);
+		Page<VersionDTO> result = service.search(specs, pageable);
+		return ResponseEntity.ok(result);
+	}
 
-        URI location = URI.create("/api/resources/versions/" + resultDTO.getId());
-        return ResponseEntity.created(location).body(resultDTO);
-    }
+	@GetMapping(value = "/{id}")
+	@Operation(summary = "Get a single version by id", description = "Retrieve the metadata for a single version by id")
+	@ApiResponse(responseCode = "404", description = "Version is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "200", description = "Version is found",
+			content = @Content(schema = @Schema(implementation = Version.class)))
+	public ResponseEntity<VersionDTO> show(@Parameter(required = true, description = "the id of the version (uuid)",
+			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		Version version = service.findById(id);
+		if (version == null) {
+			throw new VersionNotFoundException(id);
+		}
+		VersionDTO versionDTO = versionMapper.convertToDTO(version);
+		return ResponseEntity.ok().body(versionDTO);
+	}
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a version by ID", description = "Delete a version from the registry")
-    @ApiResponse(responseCode = "202", description = "Version is deleted")
-    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-    public ResponseEntity<?> destroy(
-            HttpServletRequest request,
-            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
-    ) {
-        // todo consider PUT /{id} with {state:ENDED} to end a version instead
-        // todo DELETE a resource should always delete it
-        if (!service.exists(id)) {
-            throw new VersionNotFoundException(id);
-        }
-        User user = kcService.getLoggedInUser(request);
+	@PostMapping("/")
+	@Operation(summary = "Creates a new version", description = "Add a new version to the registry")
+	@ApiResponse(responseCode = "201", description = "Version is created",
+			content = @Content(schema = @Schema(implementation = Version.class)))
+	public ResponseEntity<VersionDTO> store(@Valid @RequestBody VersionDTO versionDTO, HttpServletRequest request) {
+		User user = kcService.getLoggedInUser(request);
+		VersionDTO resultDTO = service.create(versionDTO, user);
 
-        Version version = service.findById(id);
+		URI location = URI.create("/api/resources/versions/" + resultDTO.getId());
+		return ResponseEntity.created(location).body(resultDTO);
+	}
 
-        // upon deleting a version, end the version instead
-        version = service.end(version, user);
-        return ResponseEntity.accepted().body(version);
-    }
+	@DeleteMapping("/{id}")
+	@Operation(summary = "Delete a version by ID", description = "Delete a version from the registry")
+	@ApiResponse(responseCode = "202", description = "Version is deleted")
+	@ApiResponse(responseCode = "404", description = "Version is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	public ResponseEntity<?> destroy(HttpServletRequest request,
+			@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		// todo consider PUT /{id} with {state:ENDED} to end a version instead
+		// todo DELETE a resource should always delete it
+		if (!service.exists(id)) {
+			throw new VersionNotFoundException(id);
+		}
+		User user = kcService.getLoggedInUser(request);
 
-    @GetMapping(value = "/{id}/content", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    @Operation(summary = "Get a version content", description = "Get a version content by ID")
-    @ApiResponse(responseCode = "200", description = "Version content is found and delivered")
-    @ApiResponse(responseCode = "404", description = "Version is not found", content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-    public ResponseEntity<?> content(
-            @Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id
-    ) {
-        if (!service.exists(id)) {
-            throw new VersionNotFoundException(id);
-        }
-        Version version = service.findById(id);
+		Version version = service.findById(id);
 
-        String content = new String(version.getContent());
+		// upon deleting a version, end the version instead
+		version = service.end(version, user);
+		return ResponseEntity.accepted().body(version);
+	}
 
-        return ResponseEntity.ok(content);
-    }
+	@GetMapping(value = "/{id}/content",
+			produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	@Operation(summary = "Get a version content", description = "Get a version content by ID")
+	@ApiResponse(responseCode = "200", description = "Version content is found and delivered")
+	@ApiResponse(responseCode = "404", description = "Version is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	public ResponseEntity<?> content(
+			@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		if (!service.exists(id)) {
+			throw new VersionNotFoundException(id);
+		}
+		Version version = service.findById(id);
+
+		String content = new String(version.getContent());
+
+		return ResponseEntity.ok(content);
+	}
 
 }

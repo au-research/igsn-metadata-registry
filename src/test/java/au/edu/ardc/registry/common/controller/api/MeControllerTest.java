@@ -28,34 +28,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class MeControllerTest {
 
-    private final String baseUrl = "/api/me/";
+	private final String baseUrl = "/api/me/";
 
-    @Autowired
-    MockMvc mockMvc;
+	@Autowired
+	MockMvc mockMvc;
 
-    @MockBean
-    KeycloakService kcServiceMock;
+	@MockBean
+	KeycloakService kcServiceMock;
 
-    @Test
-    public void it_should_return_me() throws Exception {
+	@Test
+	public void it_should_return_me() throws Exception {
 
-        // mock a user access
-        UUID userUUID = UUID.randomUUID();
-        User user = new User(userUUID);
-        user.setRoles(Arrays.asList("IGSN_USER", "IGSN_ADMIN"));
-        user.setName("Minh Duc Nguyen");
-        user.setEmail("minh.nguyen@ardc.edu.au");
+		// mock a user access
+		UUID userUUID = UUID.randomUUID();
+		User user = new User(userUUID);
+		user.setRoles(Arrays.asList("IGSN_USER", "IGSN_ADMIN"));
+		user.setName("Minh Duc Nguyen");
+		user.setEmail("minh.nguyen@ardc.edu.au");
 
-        when(kcServiceMock.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+		when(kcServiceMock.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(baseUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(baseUrl)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-        // it should be ok and the data be updated
-        mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(userUUID.toString()));
-    }
+		// it should be ok and the data be updated
+		mockMvc.perform(request).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(userUUID.toString()));
+	}
+
 }

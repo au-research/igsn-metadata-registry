@@ -15,31 +15,33 @@ import java.util.HashMap;
 @Component
 @StepScope
 public class RecordReader extends RepositoryItemReader<Record> {
-    private final RecordRepository recordRepository;
 
-    public RecordReader(RecordRepository recordRepository) {
-        super();
-        this.recordRepository = recordRepository;
-        this.init();
-    }
+	private final RecordRepository recordRepository;
 
-    @BeforeStep
-    public void beforeStep(StepExecution stepExecution) {
-        JobParameters jobParameters = stepExecution.getJobParameters();
+	public RecordReader(RecordRepository recordRepository) {
+		super();
+		this.recordRepository = recordRepository;
+		this.init();
+	}
 
-        String method = jobParameters.getString("method");
-        this.setMethodName(method);
-    }
+	@BeforeStep
+	public void beforeStep(StepExecution stepExecution) {
+		JobParameters jobParameters = stepExecution.getJobParameters();
 
-    public void init() {
-        this.setRepository(recordRepository);
-//        this.setMethodName("findAll");
-//        List<Object> list = new ArrayList<>();
-//        list.add(UUID.fromString("f7441613-c0db-4243-aeb5-4f0319577248"));
-//        this.setArguments(list);
-//        this.setPageSize(10);
-        HashMap<String, Sort.Direction> sorts = new HashMap<>();
-        sorts.put("id", Sort.Direction.DESC);
-        this.setSort(sorts);
-    }
+		String method = jobParameters.getString("method");
+		this.setMethodName(method);
+	}
+
+	public void init() {
+		this.setRepository(recordRepository);
+		// this.setMethodName("findAll");
+		// List<Object> list = new ArrayList<>();
+		// list.add(UUID.fromString("f7441613-c0db-4243-aeb5-4f0319577248"));
+		// this.setArguments(list);
+		// this.setPageSize(10);
+		HashMap<String, Sort.Direction> sorts = new HashMap<>();
+		sorts.put("id", Sort.Direction.DESC);
+		this.setSort(sorts);
+	}
+
 }

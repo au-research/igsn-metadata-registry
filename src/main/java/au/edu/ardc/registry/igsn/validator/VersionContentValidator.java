@@ -5,7 +5,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class VersionContentValidator {
 
-    public boolean isNewContent(String content, Version version){
-        return !DigestUtils.sha1Hex(content).equals(version.getHash());
-    }
+	public boolean isNewContent(String content, Version version) {
+		return !DigestUtils.sha1Hex(content).equals(version.getHash());
+	}
+
 }

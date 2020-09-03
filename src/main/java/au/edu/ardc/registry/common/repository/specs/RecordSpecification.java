@@ -11,9 +11,10 @@ import java.util.List;
 
 public class RecordSpecification extends SearchSpecification implements Specification<Record> {
 
-    @Override
-    public Predicate toPredicate(Root<Record> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
-        List<Predicate> predicates = super.getBasicPredicate(root, criteriaQuery, builder);
-        return builder.and(predicates.toArray(new Predicate[0]));
-    }
+	@Override
+	public Predicate toPredicate(Root<Record> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+		List<Predicate> predicates = super.getBasicPredicate(root, criteriaQuery, builder);
+		return builder.and(predicates.toArray(new Predicate[0]));
+	}
+
 }

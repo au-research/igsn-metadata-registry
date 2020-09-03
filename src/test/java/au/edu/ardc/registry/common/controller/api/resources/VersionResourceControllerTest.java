@@ -32,124 +32,106 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(
-        controllers = VersionResourceController.class,
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class
-        )
-)
+@WebMvcTest(controllers = VersionResourceController.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class))
 public class VersionResourceControllerTest {
 
-    @Autowired
-    MockMvc mockMvc;
+	@Autowired
+	MockMvc mockMvc;
 
-    @MockBean
-    VersionService service;
+	@MockBean
+	VersionService service;
 
-    @MockBean
-    KeycloakService kcService;
+	@MockBean
+	KeycloakService kcService;
 
-    @MockBean
-    VersionMapper versionMapper;
+	@MockBean
+	VersionMapper versionMapper;
 
-    // todo index
-    // todo index_pagination
-    // todo show_404
-    // todo show
-    // todo delete_403
-    // todo delete_404
-    // todo delete
+	// todo index
+	// todo index_pagination
+	// todo show_404
+	// todo show
+	// todo delete_403
+	// todo delete_404
+	// todo delete
 
-    @Test
-    public void store_UnknownRecord_404() throws Exception {
-        // given a dto request
-        VersionDTO versionDTO = new VersionDTO();
-        versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
-        versionDTO.setRecord(UUID.randomUUID().toString());
-        versionDTO.setSchema("igsn-descriptive-v1");
+	@Test
+	public void store_UnknownRecord_404() throws Exception {
+		// given a dto request
+		VersionDTO versionDTO = new VersionDTO();
+		versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
+		versionDTO.setRecord(UUID.randomUUID().toString());
+		versionDTO.setSchema("igsn-descriptive-v1");
 
-        // setup mocks
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class)))
-                .thenReturn(TestHelper.mockUser());
-        when(service.create(any(VersionDTO.class), any(User.class)))
-                .thenThrow(new RecordNotFoundException("some-id"));
+		// setup mocks
+		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
+		when(service.create(any(VersionDTO.class), any(User.class))).thenThrow(new RecordNotFoundException("some-id"));
 
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .content(TestHelper.asJsonString(versionDTO))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
+				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
-        mockMvc.perform(request).andExpect(status().isNotFound());
-    }
+		mockMvc.perform(request).andExpect(status().isNotFound());
+	}
 
-    @Test
-    public void store_forbidden_403() throws Exception {
-        // given a dto request
-        VersionDTO versionDTO = new VersionDTO();
-        versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
-        versionDTO.setRecord(UUID.randomUUID().toString());
-        versionDTO.setSchema("igsn-descriptive-v1");
+	@Test
+	public void store_forbidden_403() throws Exception {
+		// given a dto request
+		VersionDTO versionDTO = new VersionDTO();
+		versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
+		versionDTO.setRecord(UUID.randomUUID().toString());
+		versionDTO.setSchema("igsn-descriptive-v1");
 
-        // setup mocks
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class)))
-                .thenReturn(TestHelper.mockUser());
-        when(service.create(any(VersionDTO.class), any(User.class)))
-                .thenThrow(new ForbiddenOperationException("some-id"));
+		// setup mocks
+		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
+		when(service.create(any(VersionDTO.class), any(User.class)))
+				.thenThrow(new ForbiddenOperationException("some-id"));
 
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .content(TestHelper.asJsonString(versionDTO))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
+				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
-        mockMvc.perform(request).andExpect(status().isForbidden());
-    }
+		mockMvc.perform(request).andExpect(status().isForbidden());
+	}
 
-    @Test
-    public void store_ValidRequest_returns201WithLocation() throws Exception {
-        // given a dto request
-        VersionDTO versionDTO = new VersionDTO();
-        versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
-        versionDTO.setRecord(UUID.randomUUID().toString());
-        versionDTO.setSchema("igsn-descriptive-v1");
+	@Test
+	public void store_ValidRequest_returns201WithLocation() throws Exception {
+		// given a dto request
+		VersionDTO versionDTO = new VersionDTO();
+		versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
+		versionDTO.setRecord(UUID.randomUUID().toString());
+		versionDTO.setSchema("igsn-descriptive-v1");
 
-        // and a dto response
-        VersionDTO resultDTO = new VersionDTO();
-        resultDTO.setId(UUID.randomUUID().toString());
+		// and a dto response
+		VersionDTO resultDTO = new VersionDTO();
+		resultDTO.setId(UUID.randomUUID().toString());
 
-        // setup mocks
-        when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
-        when(service.create(any(VersionDTO.class), any(User.class))).thenReturn(versionDTO);
+		// setup mocks
+		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
+		when(service.create(any(VersionDTO.class), any(User.class))).thenReturn(versionDTO);
 
-        // when POST
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .content(TestHelper.asJsonString(versionDTO))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		// when POST
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
+				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
-        // expects 201 and Location header
-        mockMvc.perform(request)
-                .andExpect(status().isCreated())
-                .andExpect(header().exists("Location"));
-    }
+		// expects 201 and Location header
+		mockMvc.perform(request).andExpect(status().isCreated()).andExpect(header().exists("Location"));
+	}
 
-    @Test
-    public void store_iInvalidRequest_returns400() throws Exception {
-        // given an invalid dto request
-        VersionDTO versionDTO = new VersionDTO();
+	@Test
+	public void store_iInvalidRequest_returns400() throws Exception {
+		// given an invalid dto request
+		VersionDTO versionDTO = new VersionDTO();
 
-        // when POST
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.post("/api/resources/versions/")
-                        .content(TestHelper.asJsonString(versionDTO))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		// when POST
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
+				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
-        // expects 400
-        mockMvc.perform(request)
-                .andExpect(status().isBadRequest());
-    }
+		// expects 400
+		mockMvc.perform(request).andExpect(status().isBadRequest());
+	}
 
 }

@@ -12,26 +12,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Repository
 public interface RecordRepository extends JpaRepository<Record, String>, JpaSpecificationExecutor<Record> {
 
-    List<Record> findByCreatorID(UUID creatorID);
+	List<Record> findByCreatorID(UUID creatorID);
 
-    Optional<Record> findById(UUID id);
+	Optional<Record> findById(UUID id);
 
-    boolean existsById(UUID id);
+	boolean existsById(UUID id);
 
-    @Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1")
-    List<Record> findOwned(UUID owner);
+	@Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1")
+	List<Record> findOwned(UUID owner);
 
-    @Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1 OR r.allocationID IN ?2")
-    List<Record> findOwned(UUID owner, List<UUID> allocationIDs, Pageable pageable);
+	@Query(value = "SELECT r FROM Record r WHERE r.creatorID = ?1 OR r.ownerID = ?1 OR r.allocationID IN ?2")
+	List<Record> findOwned(UUID owner, List<UUID> allocationIDs, Pageable pageable);
 
-    Page<Record> findAllByVisibleIsTrue(Pageable pageable);
+	Page<Record> findAllByVisibleIsTrue(Pageable pageable);
 
-    Page<Record> findById(UUID id, Pageable pageable);
+	Page<Record> findById(UUID id, Pageable pageable);
 
-    Page<Record> findAllByTitleNull(Pageable pageable);
+	Page<Record> findAllByTitleNull(Pageable pageable);
 
 }

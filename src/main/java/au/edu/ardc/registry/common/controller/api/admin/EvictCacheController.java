@@ -13,22 +13,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/api/admin/caches")
 public class EvictCacheController {
 
-    @Autowired
-    CacheManager cacheManager;
+	@Autowired
+	CacheManager cacheManager;
 
-    @GetMapping("")
-    public ResponseEntity<?> index() {
-        return ResponseEntity.ok().body(cacheManager.getCacheNames());
-    }
+	@GetMapping("")
+	public ResponseEntity<?> index() {
+		return ResponseEntity.ok().body(cacheManager.getCacheNames());
+	}
 
-    @DeleteMapping("")
-    public ResponseEntity<?> destroy() {
-        for (String cacheName : cacheManager.getCacheNames()) {
-            Cache cache = cacheManager.getCache(cacheName);
-            if (cache != null) {
-                cache.clear();
-            }
-        }
-        return ResponseEntity.accepted().body("Caches have been evicted");
-    }
+	@DeleteMapping("")
+	public ResponseEntity<?> destroy() {
+		for (String cacheName : cacheManager.getCacheNames()) {
+			Cache cache = cacheManager.getCache(cacheName);
+			if (cache != null) {
+				cache.clear();
+			}
+		}
+		return ResponseEntity.accepted().body("Caches have been evicted");
+	}
+
 }

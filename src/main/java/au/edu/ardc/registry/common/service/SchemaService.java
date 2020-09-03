@@ -30,164 +30,162 @@ import au.edu.ardc.registry.common.util.XMLUtil;
 @Service
 public class SchemaService {
 
-    // useful helper constants
-    public static final String ARDCv1 = "ardc-igsn-desc-1.0";
-    public static final String ARDCv1JSONLD = "ardc-igsn-desc-1.0-jsonld";
-    public static final String IGSNDESCv1 = "igsn-desc-1.0";
-    public static final String IGSNREGv1 = "igsn-reg-1.0";
-    public static final String CSIROv3 = "csiro-igsn-desc-3.0";
-    public static final String AGNv1 = "agn-igsn-desc-1.0";
+	// useful helper constants
+	public static final String ARDCv1 = "ardc-igsn-desc-1.0";
 
-    protected final String schemaConfigLocation = "schemas/schemas.json";
+	public static final String ARDCv1JSONLD = "ardc-igsn-desc-1.0-jsonld";
 
-    Logger logger = LoggerFactory.getLogger(SchemaService.class);
-    private List<Schema> schemas;
+	public static final String IGSNDESCv1 = "igsn-desc-1.0";
 
-    /**
-     * Loads all schemas into locally accessible schema
-     * Go through the schemaConfigLocation file and loads map all available schema
-     *
-     * @throws Exception read file exception
-     */
-    public void loadSchemas() throws Exception {
-        logger.debug("Loading schema configuration from {}", schemaConfigLocation);
-        String data = Helpers.readFileOnClassPath("schemas.json");
-        logger.debug("Loaded schema configuration, data length: {}", data.length());
-        ObjectMapper mapper = new ObjectMapper();
-        List<Schema> schemas = Arrays.asList(mapper.readValue(data, Schema[].class));
-        logger.debug("Found & registered {} schemas", schemas.size());
-        this.setSchemas(schemas);
-    }
+	public static final String IGSNREGv1 = "igsn-reg-1.0";
 
-    @PostConstruct
-    public void init() throws Exception {
-        loadSchemas();
-    }
+	public static final String CSIROv3 = "csiro-igsn-desc-3.0";
 
-    /**
-     * Get a Schema by ID
-     *
-     * @param schemaID the ID of the supported Schema
-     * @return Schema
-     */
-    public Schema getSchemaByID(String schemaID) {
-        logger.debug("Load schema by ID {}", schemaID);
-        Optional<Schema> found = this.getSchemas().stream()
-                .filter(schema -> schema.getId().equals(schemaID)).findFirst();
+	public static final String AGNv1 = "agn-igsn-desc-1.0";
 
-        return found.orElse(null);
-    }
+	protected final String schemaConfigLocation = "schemas/schemas.json";
 
-    
-    /**
-     * Get a Schema by NameSpace
-     *
-     * @param nameSpace the nameSpace of the supported Schema
-     * @return Schema
-     */
-    @Cacheable("schema")
-    public XMLSchema getXMLSchemaByNameSpace(String nameSpace) {
-        logger.debug("Load schema by nameSpace {}", nameSpace);
-        Iterator<Schema> found = this.getSchemas().stream()
-                .filter(schema -> schema.getClass().equals(XMLSchema.class)).iterator();
-        
-        while(found.hasNext())
-        {
-        	XMLSchema xs = (XMLSchema) found.next();
-            logger.debug("nameSpaces {}", xs.getNamespace());
-        	if(xs.getNamespace().equals(nameSpace)) {
-        		return xs;
-        	}
-        }
+	Logger logger = LoggerFactory.getLogger(SchemaService.class);
 
-        return null;
-    }
-    /**
-     * Tells if a schema by ID is currently supported by the system
-     *
-     * @param schemaID String schemaID
-     * @return boolean
-     */
-    public boolean supportsSchema(String schemaID) {
-        return getSchemaByID(schemaID) != null;
-    }
+	private List<Schema> schemas;
 
-    public List<Schema> getSchemas() {
-        return schemas;
-    }
+	/**
+	 * Loads all schemas into locally accessible schema Go through the
+	 * schemaConfigLocation file and loads map all available schema
+	 * @throws Exception read file exception
+	 */
+	public void loadSchemas() throws Exception {
+		logger.debug("Loading schema configuration from {}", schemaConfigLocation);
+		String data = Helpers.readFileOnClassPath("schemas.json");
+		logger.debug("Loaded schema configuration, data length: {}", data.length());
+		ObjectMapper mapper = new ObjectMapper();
+		List<Schema> schemas = Arrays.asList(mapper.readValue(data, Schema[].class));
+		logger.debug("Found & registered {} schemas", schemas.size());
+		this.setSchemas(schemas);
+	}
 
-    /**
-     * Sets the current schemas in memory
-     *
-     * @param schemas a List of Schema
-     */
-    public void setSchemas(List<Schema> schemas) {
-        this.schemas = schemas;
-    }
+	@PostConstruct
+	public void init() throws Exception {
+		loadSchemas();
+	}
 
-    /**
-     * Validate a payload given a schema
-     * Will autodetect the schema type and spool up a SchemaValidator accordingly
-     * Supports XMLValidator current
-     * todo support JSONValidator
-     *
-     * @param schema The Schema to validate against
-     * @param payload the String payload to validate
-     * @return true if validation success
-     * @throws Exception throws exception for validator creation and validation
-     */
-    public boolean validate(Schema schema, String payload) throws Exception {
-        // detect type of schema
-        // todo refactor ValidatorFactory.getValidator(schema.getClass())
-        //logger.debug("schema {}, payload {}", schema, payload);
-        SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
-        if (validator == null) {
-            throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));
-        }
+	/**
+	 * Get a Schema by ID
+	 * @param schemaID the ID of the supported Schema
+	 * @return Schema
+	 */
+	public Schema getSchemaByID(String schemaID) {
+		logger.debug("Load schema by ID {}", schemaID);
+		Optional<Schema> found = this.getSchemas().stream().filter(schema -> schema.getId().equals(schemaID))
+				.findFirst();
 
-        return validator.validate(schema, payload);
-    }
-    
-    /**
-     * Validate by payload without Schema provided
-     * gets the schema with the targetNamespace of document's namespaceURI
-     * validate using the validate(schema, payload) method 
-     * 
-     * @param payload the content either XML or JSON String
-     * @return true is content validates
-     * @throws Exception validation exception
-     */
-    public boolean validate(String payload) throws Exception{
-        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
-        if(validator.getClass().equals(XMLValidator.class)){
-        	String nameSpace = XMLUtil.getNamespaceURI(payload);
-        	XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
-        	return validator.validate(schema, payload);
-        }
-        else if(validator.getClass().equals(JSONValidator.class)){
-        	//TODO get json validation working
-        	return false;
-        }
-        return false;
-    }
-    
-    /**
-     * Get the Schema the given payload content is defined by
-     * gets the schema with the targetNamespace of document's namespaceURI
-     * @param payload the content either XML or JSON String
-     * @return Schema or null if schema not found or supported
-     * @throws Exception validation exception
-     */
-    public Schema getSchemaForContent(String payload) throws Exception {
-        SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
-        if(validator.getClass().equals(XMLValidator.class)){
-        	String nameSpace = XMLUtil.getNamespaceURI(payload);
-        	return this.getXMLSchemaByNameSpace(nameSpace);
-        }
-        else if(validator.getClass().equals(JSONValidator.class)){
-        	//TODO get json validation working
-        	return null;
-        }
-        return null;
-    }
+		return found.orElse(null);
+	}
+
+	/**
+	 * Get a Schema by NameSpace
+	 * @param nameSpace the nameSpace of the supported Schema
+	 * @return Schema
+	 */
+	@Cacheable("schema")
+	public XMLSchema getXMLSchemaByNameSpace(String nameSpace) {
+		logger.debug("Load schema by nameSpace {}", nameSpace);
+		Iterator<Schema> found = this.getSchemas().stream().filter(schema -> schema.getClass().equals(XMLSchema.class))
+				.iterator();
+
+		while (found.hasNext()) {
+			XMLSchema xs = (XMLSchema) found.next();
+			logger.debug("nameSpaces {}", xs.getNamespace());
+			if (xs.getNamespace().equals(nameSpace)) {
+				return xs;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Tells if a schema by ID is currently supported by the system
+	 * @param schemaID String schemaID
+	 * @return boolean
+	 */
+	public boolean supportsSchema(String schemaID) {
+		return getSchemaByID(schemaID) != null;
+	}
+
+	public List<Schema> getSchemas() {
+		return schemas;
+	}
+
+	/**
+	 * Sets the current schemas in memory
+	 * @param schemas a List of Schema
+	 */
+	public void setSchemas(List<Schema> schemas) {
+		this.schemas = schemas;
+	}
+
+	/**
+	 * Validate a payload given a schema Will autodetect the schema type and spool up a
+	 * SchemaValidator accordingly Supports XMLValidator current todo support
+	 * JSONValidator
+	 * @param schema The Schema to validate against
+	 * @param payload the String payload to validate
+	 * @return true if validation success
+	 * @throws Exception throws exception for validator creation and validation
+	 */
+	public boolean validate(Schema schema, String payload) throws Exception {
+		// detect type of schema
+		// todo refactor ValidatorFactory.getValidator(schema.getClass())
+		// logger.debug("schema {}, payload {}", schema, payload);
+		SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
+		if (validator == null) {
+			throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));
+		}
+
+		return validator.validate(schema, payload);
+	}
+
+	/**
+	 * Validate by payload without Schema provided gets the schema with the
+	 * targetNamespace of document's namespaceURI validate using the validate(schema,
+	 * payload) method
+	 * @param payload the content either XML or JSON String
+	 * @return true is content validates
+	 * @throws Exception validation exception
+	 */
+	public boolean validate(String payload) throws Exception {
+		SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+		if (validator.getClass().equals(XMLValidator.class)) {
+			String nameSpace = XMLUtil.getNamespaceURI(payload);
+			XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
+			return validator.validate(schema, payload);
+		}
+		else if (validator.getClass().equals(JSONValidator.class)) {
+			// TODO get json validation working
+			return false;
+		}
+		return false;
+	}
+
+	/**
+	 * Get the Schema the given payload content is defined by gets the schema with the
+	 * targetNamespace of document's namespaceURI
+	 * @param payload the content either XML or JSON String
+	 * @return Schema or null if schema not found or supported
+	 * @throws Exception validation exception
+	 */
+	public Schema getSchemaForContent(String payload) throws Exception {
+		SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+		if (validator.getClass().equals(XMLValidator.class)) {
+			String nameSpace = XMLUtil.getNamespaceURI(payload);
+			return this.getXMLSchemaByNameSpace(nameSpace);
+		}
+		else if (validator.getClass().equals(JSONValidator.class)) {
+			// TODO get json validation working
+			return null;
+		}
+		return null;
+	}
+
 }

@@ -20,43 +20,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 public class URLRepositoryTest {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private TestEntityManager entityManager;
+	@Autowired
+	private TestEntityManager entityManager;
 
-    @Autowired
-    private URLRepository urlRepository;
+	@Autowired
+	private URLRepository urlRepository;
 
-    @Autowired
-    private RecordRepository recordRepository;
+	@Autowired
+	private RecordRepository recordRepository;
 
-    @Test
-    public void injectedComponentsAreNotNull() {
-        assertThat(jdbcTemplate).isNotNull();
-        assertThat(entityManager).isNotNull();
-        assertThat(urlRepository).isNotNull();
-    }
+	@Test
+	public void injectedComponentsAreNotNull() {
+		assertThat(jdbcTemplate).isNotNull();
+		assertThat(entityManager).isNotNull();
+		assertThat(urlRepository).isNotNull();
+	}
 
-    @Test
-    public void repository_can_find_by_id() {
-        // given a url
-        Record record = TestHelper.mockRecord();
-        recordRepository.save(record);
-        URL url = TestHelper.mockUrl(record);
-        urlRepository.save(url);
+	@Test
+	public void repository_can_find_by_id() {
+		// given a url
+		Record record = TestHelper.mockRecord();
+		recordRepository.save(record);
+		URL url = TestHelper.mockUrl(record);
+		urlRepository.save(url);
 
-        UUID id = url.getId();
+		UUID id = url.getId();
 
-        // when findById
-        Optional<URL> dbFound = urlRepository.findById(id);
+		// when findById
+		Optional<URL> dbFound = urlRepository.findById(id);
 
-        // finds that url
-        assertThat(dbFound.isPresent()).isTrue();
+		// finds that url
+		assertThat(dbFound.isPresent()).isTrue();
 
-        URL found = dbFound.get();
-        assertThat(found).isInstanceOf(URL.class);
-        assertThat(found.getId()).isEqualTo(url.getId());
-    }
+		URL found = dbFound.get();
+		assertThat(found).isInstanceOf(URL.class);
+		assertThat(found.getId()).isEqualTo(url.getId());
+	}
+
 }

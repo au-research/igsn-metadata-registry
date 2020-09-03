@@ -4,49 +4,54 @@ import java.util.Date;
 
 public class APIExceptionResponse {
 
-    private final String message;
-    private Date timestamp;
-    private int status;
-    private String error;
-    private String path;
+	private final String message;
 
-    public APIExceptionResponse(String message) {
-        this.message = message;
-    }
+	private Date timestamp;
 
-    public String getMessage() {
-        return message;
-    }
+	private int status;
 
-    public Date getTimestamp() {
-        return timestamp;
-    }
+	private String error;
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+	private String path;
 
-    public String getPath() {
-        return path;
-    }
+	public APIExceptionResponse(String message) {
+		this.message = message;
+	}
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+	public String getMessage() {
+		return message;
+	}
 
-    public int getStatus() {
-        return status;
-    }
+	public Date getTimestamp() {
+		return timestamp;
+	}
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    public String getError() {
-        return error;
-    }
+	public String getPath() {
+		return path;
+	}
 
-    public void setError(String error) {
-        this.error = error;
-    }
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
 }

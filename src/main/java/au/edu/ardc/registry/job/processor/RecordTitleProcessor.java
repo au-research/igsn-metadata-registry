@@ -18,52 +18,59 @@ import org.w3c.dom.NodeList;
 
 public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 
-    protected final String defaultSchema = SchemaService.ARDCv1;
-    private final VersionService versionService;
-    private final RecordService recordService;
-    private final SchemaService schemaService;
-    Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
+	protected final String defaultSchema = SchemaService.ARDCv1;
 
-    public RecordTitleProcessor(VersionService versionService, RecordService recordService, SchemaService schemaService) {
-        this.versionService = versionService;
-        this.recordService = recordService;
-        this.schemaService = schemaService;
-    }
+	private final VersionService versionService;
 
-    @Override
-    public Record process(Record record) {
-        logger.debug("Processing title for record {} ", record.getId());
+	private final RecordService recordService;
 
-        //Thread.sleep(2000);
+	private final SchemaService schemaService;
 
-        // obtain the version
-        Version version = versionService.findVersionForRecord(record, defaultSchema);
-        if (version == null) {
-            logger.error("No valid version found for record {}", record.getId());
-            return null;
-        }
+	Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
 
-        // obtain the xml from the version
-        String xml = new String(version.getContent());
+	public RecordTitleProcessor(VersionService versionService, RecordService recordService,
+			SchemaService schemaService) {
+		this.versionService = versionService;
+		this.recordService = recordService;
+		this.schemaService = schemaService;
+	}
 
-        // obtain the title from the xml
-        String title;
-        try {
-            Schema schema = schemaService.getSchemaByID(version.getSchema());
-            TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
-            title = provider.get(xml);
-        } catch (Exception ex) {
-            logger.error("Failed obtaining title for record {} from XML", record.getId());
-            ex.printStackTrace();
-            return null;
-        }
-        logger.debug("Found title {} for record {}", title, record.getId());
+	@Override
+	public Record process(Record record) {
+		logger.debug("Processing title for record {} ", record.getId());
 
-        // save the title on the record
-        record.setTitle(title);
-        record = recordService.save(record);
+		// Thread.sleep(2000);
 
-        logger.debug("Processed title successful for record {} ", record.getId());
-        return record;
-    }
+		// obtain the version
+		Version version = versionService.findVersionForRecord(record, defaultSchema);
+		if (version == null) {
+			logger.error("No valid version found for record {}", record.getId());
+			return null;
+		}
+
+		// obtain the xml from the version
+		String xml = new String(version.getContent());
+
+		// obtain the title from the xml
+		String title;
+		try {
+			Schema schema = schemaService.getSchemaByID(version.getSchema());
+			TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
+			title = provider.get(xml);
+		}
+		catch (Exception ex) {
+			logger.error("Failed obtaining title for record {} from XML", record.getId());
+			ex.printStackTrace();
+			return null;
+		}
+		logger.debug("Found title {} for record {}", title, record.getId());
+
+		// save the title on the record
+		record.setTitle(title);
+		record = recordService.save(record);
+
+		logger.debug("Processed title successful for record {} ", record.getId());
+		return record;
+	}
+
 }

@@ -8,15 +8,16 @@ import java.nio.file.Path;
 
 public class ContentValidator {
 
-    @Autowired
-    SchemaService service;
+	@Autowired
+	SchemaService service;
 
-    public boolean validate(String content) throws Exception {
-        return service.validate(content);
-    }
+	public boolean validate(String content) throws Exception {
+		return service.validate(content);
+	}
 
-    public boolean validate(Path path) throws Exception {
-        String content = Helpers.readFile(path.toString());
-        return service.validate(content);
-    }
+	public boolean validate(Path path) throws Exception {
+		String content = Helpers.readFile(path.toString());
+		return service.validate(content);
+	}
+
 }

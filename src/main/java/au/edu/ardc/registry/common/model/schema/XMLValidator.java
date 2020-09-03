@@ -14,21 +14,25 @@ import java.io.IOException;
 import java.io.StringReader;
 
 public class XMLValidator implements SchemaValidator {
-    Logger logger = LoggerFactory.getLogger(XMLValidator.class);
 
-    public boolean validate(Schema schema, String xmlString) {
-        XMLSchema xmlSchema = (XMLSchema) schema;
-        String XSDPath = xmlSchema.getLocalSchemaLocation();
-        logger.debug("Validating XML String with schema {} schemaLocation: {}", schema.getId(), XSDPath);
-        try {
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            javax.xml.validation.Schema validationSchema = factory.newSchema(getClass().getClassLoader().getResource(XSDPath));
-            Validator validator = validationSchema.newValidator();
-            StringReader reader = new StringReader(xmlString);
-            validator.validate(new StreamSource(reader));
-            return true;
-        } catch (IOException | SAXException e) {
-            throw new XMLValidationException(e.getMessage());
-        }
-    }
+	Logger logger = LoggerFactory.getLogger(XMLValidator.class);
+
+	public boolean validate(Schema schema, String xmlString) {
+		XMLSchema xmlSchema = (XMLSchema) schema;
+		String XSDPath = xmlSchema.getLocalSchemaLocation();
+		logger.debug("Validating XML String with schema {} schemaLocation: {}", schema.getId(), XSDPath);
+		try {
+			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			javax.xml.validation.Schema validationSchema = factory
+					.newSchema(getClass().getClassLoader().getResource(XSDPath));
+			Validator validator = validationSchema.newValidator();
+			StringReader reader = new StringReader(xmlString);
+			validator.validate(new StreamSource(reader));
+			return true;
+		}
+		catch (IOException | SAXException e) {
+			throw new XMLValidationException(e.getMessage());
+		}
+	}
+
 }

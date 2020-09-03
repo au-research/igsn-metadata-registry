@@ -18,19 +18,21 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {SchemaService.class})
+@ContextConfiguration(classes = { SchemaService.class })
 class ARDCv1TitleProviderTest {
-    @Autowired
-    SchemaService service;
 
-    @Test
-    @DisplayName("Get title of a ARDCV1 record")
-    void extractTitleFromARDCV1() throws IOException {
-        Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-        String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+	@Autowired
+	SchemaService service;
 
-        TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
-        String titleValue = provider.get(xml);
-        assertEquals(titleValue, "This Tiltle also left blank on purpose");
-    }
+	@Test
+	@DisplayName("Get title of a ARDCV1 record")
+	void extractTitleFromARDCV1() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+
+		TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
+		String titleValue = provider.get(xml);
+		assertEquals(titleValue, "This Tiltle also left blank on purpose");
+	}
+
 }

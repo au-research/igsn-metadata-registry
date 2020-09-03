@@ -17,20 +17,19 @@ import java.util.Map;
 @Tag(name = "Information", description = "Display information about the Registry")
 public class InfoController {
 
-    @Autowired
-    ApplicationProperties properties;
+	@Autowired
+	ApplicationProperties properties;
 
-    @GetMapping(value = {"/api/info"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Describes the current Registry",
-            description = "Display information about the API of the Registry"
-    )
-    @ApiResponse(responseCode = "200")
-    public ResponseEntity<?> index() {
-        Map<String, String> build = new HashMap<>();
-        build.put("name", properties.getName());
-        build.put("description", properties.getDescription());
-        build.put("version", properties.getVersion());
-        return ResponseEntity.ok(build);
-    }
+	@GetMapping(value = { "/api/info" }, produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Describes the current Registry",
+			description = "Display information about the API of the Registry")
+	@ApiResponse(responseCode = "200")
+	public ResponseEntity<?> index() {
+		Map<String, String> build = new HashMap<>();
+		build.put("name", properties.getName());
+		build.put("description", properties.getDescription());
+		build.put("version", properties.getVersion());
+		return ResponseEntity.ok(build);
+	}
+
 }

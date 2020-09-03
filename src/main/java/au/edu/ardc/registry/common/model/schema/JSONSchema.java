@@ -7,42 +7,45 @@ import java.util.Map;
 
 public class JSONSchema extends Schema {
 
-    private String namespace;
-    private String schemaLocation;
-    private String localSchemaLocation;
+	private String namespace;
 
-    public JSONSchema() {
+	private String schemaLocation;
 
-    }
+	private String localSchemaLocation;
 
-    @JsonProperty("json")
-    private void unpackXMLProperties(Map<String, String> json) {
-        this.namespace = json.get("namespace");
-        this.schemaLocation = json.get("schemaLocation");
-        this.localSchemaLocation = json.get("localSchemaLocation");
-    }
+	public JSONSchema() {
 
-    public String getNamespace() {
-        return namespace;
-    }
+	}
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
+	@JsonProperty("json")
+	private void unpackXMLProperties(Map<String, String> json) {
+		this.namespace = json.get("namespace");
+		this.schemaLocation = json.get("schemaLocation");
+		this.localSchemaLocation = json.get("localSchemaLocation");
+	}
 
-    public String getSchemaLocation() {
-        return schemaLocation;
-    }
+	public String getNamespace() {
+		return namespace;
+	}
 
-    public void setSchemaLocation(String schemaLocation) {
-        this.schemaLocation = schemaLocation;
-    }
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
 
-    public String getLocalSchemaLocation() {
-        return localSchemaLocation;
-    }
+	public String getSchemaLocation() {
+		return schemaLocation;
+	}
 
-    public void setLocalSchemaLocation(String localSchemaLocation) {
-        this.localSchemaLocation = localSchemaLocation;
-    }
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
+	}
+
+	public String getLocalSchemaLocation() {
+		return localSchemaLocation;
+	}
+
+	public void setLocalSchemaLocation(String localSchemaLocation) {
+		this.localSchemaLocation = localSchemaLocation;
+	}
+
 }

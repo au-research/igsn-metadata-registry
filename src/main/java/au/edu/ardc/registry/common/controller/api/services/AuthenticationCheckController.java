@@ -20,36 +20,35 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/api/services/auth-check")
 public class AuthenticationCheckController {
 
-    IdentifierService identifierService;
-    ValidationService validationService;
-    KeycloakService kcService;
+	IdentifierService identifierService;
 
-    public AuthenticationCheckController(
-            IdentifierService identifierService,
-            ValidationService validationService,
-            KeycloakService kcService) {
-        this.identifierService = identifierService;
-        this.validationService = validationService;
-        this.kcService = kcService;
-    }
+	ValidationService validationService;
 
-    @GetMapping("")
-    public ResponseEntity<?> validateOwnership(
-            @RequestParam(name = "identifier") String identifierValue,
-            HttpServletRequest request
-    ) {
-        User user = kcService.getLoggedInUser(request);
-        Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-        if (identifier == null) {
-            throw new NotFoundException("IGSN with value " + identifierValue + " is not found");
-        }
-        Record record = identifier.getRecord();
-        boolean result = validationService.validateRecordOwnership(record, user);
-        if (!result) {
-            throw new ForbiddenOperationException(String.format("User %s does not own record %s", user.getId(), record.getId()));
-        }
+	KeycloakService kcService;
 
-        return ResponseEntity.ok().body(true);
-    }
+	public AuthenticationCheckController(IdentifierService identifierService, ValidationService validationService,
+			KeycloakService kcService) {
+		this.identifierService = identifierService;
+		this.validationService = validationService;
+		this.kcService = kcService;
+	}
+
+	@GetMapping("")
+	public ResponseEntity<?> validateOwnership(@RequestParam(name = "identifier") String identifierValue,
+			HttpServletRequest request) {
+		User user = kcService.getLoggedInUser(request);
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (identifier == null) {
+			throw new NotFoundException("IGSN with value " + identifierValue + " is not found");
+		}
+		Record record = identifier.getRecord();
+		boolean result = validationService.validateRecordOwnership(record, user);
+		if (!result) {
+			throw new ForbiddenOperationException(
+					String.format("User %s does not own record %s", user.getId(), record.getId()));
+		}
+
+		return ResponseEntity.ok().body(true);
+	}
 
 }

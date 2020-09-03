@@ -26,31 +26,28 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Identifier Public API")
 public class IdentifiersPublicController {
 
-    @Autowired
-    IdentifierService identifierService;
+	@Autowired
+	IdentifierService identifierService;
 
-    @GetMapping("")
-    @Operation(
-            summary = "Get all publicly available records",
-            description = "Retrieves all publicly available records")
-    @PageableOperation
-    public ResponseEntity<Page<IdentifierDTO>> index(
-            @PageableDefault @Parameter(hidden = true) Pageable pageable,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) String value) {
-        IdentifierSpecification specs = new IdentifierSpecification();
-        specs.add(new SearchCriteria("status", Identifier.Status.ACCESSIBLE, SearchOperation.EQUAL));
+	@GetMapping("")
+	@Operation(summary = "Get all publicly available records", description = "Retrieves all publicly available records")
+	@PageableOperation
+	public ResponseEntity<Page<IdentifierDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String type, @RequestParam(required = false) String value) {
+		IdentifierSpecification specs = new IdentifierSpecification();
+		specs.add(new SearchCriteria("status", Identifier.Status.ACCESSIBLE, SearchOperation.EQUAL));
 
-        // todo sanitize type
-        if (type != null) {
-            specs.add(new SearchCriteria("type", Identifier.Type.valueOf(type), SearchOperation.EQUAL));
-        }
+		// todo sanitize type
+		if (type != null) {
+			specs.add(new SearchCriteria("type", Identifier.Type.valueOf(type), SearchOperation.EQUAL));
+		}
 
-        if (value != null) {
-            specs.add(new SearchCriteria("value", value, SearchOperation.EQUAL));
-        }
+		if (value != null) {
+			specs.add(new SearchCriteria("value", value, SearchOperation.EQUAL));
+		}
 
-        Page<IdentifierDTO> result = identifierService.search(specs, pageable);
-        return ResponseEntity.ok().body(result);
-    }
+		Page<IdentifierDTO> result = identifierService.search(specs, pageable);
+		return ResponseEntity.ok().body(result);
+	}
+
 }

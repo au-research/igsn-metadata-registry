@@ -12,16 +12,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 class IGSNRecordTest {
-    @Autowired
-    TestEntityManager entityManager;
 
-    @Test
-    void IGSNRecordHasIGSNType() {
-        IGSNRecord record = new IGSNRecord();
-        entityManager.persistAndFlush(record);
-        entityManager.refresh(record);
+	@Autowired
+	TestEntityManager entityManager;
 
-        // type is IGSN
-        assertThat(record.getType()).isEqualTo("IGSN");
-    }
+	@Test
+	void IGSNRecordHasIGSNType() {
+		IGSNRecord record = new IGSNRecord();
+		entityManager.persistAndFlush(record);
+		entityManager.refresh(record);
+
+		// type is IGSN
+		assertThat(record.getType()).isEqualTo("IGSN");
+	}
+
 }

@@ -6,58 +6,65 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Allocation implements Serializable {
-    private final UUID id;
-    private String name;
-    private List<Scope> scopes;
-    private String type;
-    private String status;
-    private Map<String, List<String>> attributes;
 
-    public Allocation(UUID id) {
-        this.id = id;
-    }
+	private final UUID id;
 
-    public UUID getId() {
-        return id;
-    }
+	private String name;
 
-    public String getName() {
-        return name;
-    }
+	private List<Scope> scopes;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private String type;
 
-    public List<Scope> getScopes() {
-        return scopes;
-    }
+	private String status;
 
-    public void setScopes(List<Scope> scopes) {
-        this.scopes = scopes;
-    }
+	private Map<String, List<String>> attributes;
 
-    public Map<String, List<String>> getAttributes() {
-        return this.attributes;
-    }
+	public Allocation(UUID id) {
+		this.id = id;
+	}
 
-    public void setAttributes(Map<String, List<String>> attributes) {
-        this.attributes = attributes;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public String getType() {
-        return type;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	public List<Scope> getScopes() {
+		return scopes;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public void setScopes(List<Scope> scopes) {
+		this.scopes = scopes;
+	}
+
+	public Map<String, List<String>> getAttributes() {
+		return this.attributes;
+	}
+
+	public void setAttributes(Map<String, List<String>> attributes) {
+		this.attributes = attributes;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 }

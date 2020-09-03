@@ -17,41 +17,43 @@ import java.util.List;
 @RequestMapping("/api/resources/schemas")
 public class SchemaController {
 
-    @Autowired
-    SchemaService service;
+	@Autowired
+	SchemaService service;
 
-    @GetMapping("")
-    public ResponseEntity<?> index() {
-        List<Schema> schemas = service.getSchemas();
+	@GetMapping("")
+	public ResponseEntity<?> index() {
+		List<Schema> schemas = service.getSchemas();
 
-        return ResponseEntity.ok().body(schemas);
-    }
+		return ResponseEntity.ok().body(schemas);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Schema> show(@PathVariable String id) {
-        if (!service.supportsSchema(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
-        }
+	@GetMapping("/{id}")
+	public ResponseEntity<Schema> show(@PathVariable String id) {
+		if (!service.supportsSchema(id)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
+		}
 
-        Schema schema = service.getSchemaByID(id);
-        return ResponseEntity.ok().body(schema);
-    }
+		Schema schema = service.getSchemaByID(id);
+		return ResponseEntity.ok().body(schema);
+	}
 
-    @PostMapping(value = "/{id}/validate")
-    public ResponseEntity<?> validateSchema(@PathVariable String id, @RequestBody String payload) throws Exception {
+	@PostMapping(value = "/{id}/validate")
+	public ResponseEntity<?> validateSchema(@PathVariable String id, @RequestBody String payload) throws Exception {
 
-        // TODO handle malformed XML here?
-        if (!service.supportsSchema(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
-        }
+		// TODO handle malformed XML here?
+		if (!service.supportsSchema(id)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Schema " + id + " not found or not supported");
+		}
 
-        Schema schema = service.getSchemaByID(id);
+		Schema schema = service.getSchemaByID(id);
 
-        try {
-            service.validate(schema, payload);
-            return ResponseEntity.ok().body(null);
-        } catch (XMLValidationException e) {
-            return ResponseEntity.badRequest().body("Validation Failed: " + e.getMessage());
-        }
-    }
+		try {
+			service.validate(schema, payload);
+			return ResponseEntity.ok().body(null);
+		}
+		catch (XMLValidationException e) {
+			return ResponseEntity.badRequest().body("Validation Failed: " + e.getMessage());
+		}
+	}
+
 }

@@ -19,36 +19,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {URLMapper.class, ModelMapper.class})
+@ContextConfiguration(classes = { URLMapper.class, ModelMapper.class })
 class URLMapperTest {
 
-    @Autowired
-    URLMapper mapper;
+	@Autowired
+	URLMapper mapper;
 
-    @MockBean
-    RecordService recordService;
+	@MockBean
+	RecordService recordService;
 
-    @Test
-    void convertToEntity() {
-        URLDTO dto = new URLDTO();
-        dto.setResolvable(true);
-        dto.setUrl("https://researchdata.edu.au");
+	@Test
+	void convertToEntity() {
+		URLDTO dto = new URLDTO();
+		dto.setResolvable(true);
+		dto.setUrl("https://researchdata.edu.au");
 
-        URL entity = mapper.convertToEntity(dto);
-        assertThat(entity.isResolvable()).isTrue();
-        assertThat(entity.getUrl()).isEqualTo(dto.getUrl());
-    }
+		URL entity = mapper.convertToEntity(dto);
+		assertThat(entity.isResolvable()).isTrue();
+		assertThat(entity.getUrl()).isEqualTo(dto.getUrl());
+	}
 
-    @Test
-    void convertToDTO() {
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        URL entity = TestHelper.mockUrl(record);
-        when(recordService.findById(entity.getRecord().getId().toString()))
-                .thenReturn(entity.getRecord());
+	@Test
+	void convertToDTO() {
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		URL entity = TestHelper.mockUrl(record);
+		when(recordService.findById(entity.getRecord().getId().toString())).thenReturn(entity.getRecord());
 
-        URLDTO dto = mapper.convertToDTO(entity);
-        assertThat(dto.getId()).isEqualTo(entity.getId());
-        assertThat(dto.isResolvable()).isEqualTo(entity.isResolvable());
-        assertThat(dto.getRecord()).isEqualTo(entity.getRecord().getId());
-    }
+		URLDTO dto = mapper.convertToDTO(entity);
+		assertThat(dto.getId()).isEqualTo(entity.getId());
+		assertThat(dto.isResolvable()).isEqualTo(entity.isResolvable());
+		assertThat(dto.getRecord()).isEqualTo(entity.getRecord().getId());
+	}
+
 }

@@ -13,19 +13,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {SchemaService.class})
+@ContextConfiguration(classes = { SchemaService.class })
 class MetadataProviderFactoryTest {
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @Test
-    void create_Schema_ReturnsInstanceOfIdentifierProvider() {
+	@Test
+	void create_Schema_ReturnsInstanceOfIdentifierProvider() {
 
-        IdentifierProvider actual = (IdentifierProvider) MetadataProviderFactory
-                .create(schemaService.getSchemaByID(SchemaService.ARDCv1), Metadata.Identifier);
+		IdentifierProvider actual = (IdentifierProvider) MetadataProviderFactory
+				.create(schemaService.getSchemaByID(SchemaService.ARDCv1), Metadata.Identifier);
 
-        assertThat(actual).isInstanceOf(IdentifierProvider.class);
-        assertThat(actual).isInstanceOf(ARDCv1IdentifierProvider.class);
-    }
+		assertThat(actual).isInstanceOf(IdentifierProvider.class);
+		assertThat(actual).isInstanceOf(ARDCv1IdentifierProvider.class);
+	}
+
 }

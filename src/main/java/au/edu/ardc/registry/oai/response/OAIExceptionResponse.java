@@ -9,18 +9,19 @@ import java.util.Date;
 
 public class OAIExceptionResponse extends OAIResponse {
 
-    @JsonProperty("error")
-    private ErrorFragment error;
+	@JsonProperty("error")
+	private ErrorFragment error;
 
-    public OAIExceptionResponse() {
-        this.error = error;
-    }
+	public OAIExceptionResponse() {
+		this.error = error;
+	}
 
-    public ErrorFragment getError() {
-        return error;
-    }
+	public ErrorFragment getError() {
+		return error;
+	}
 
-    public void setError(ErrorFragment error) {
-        this.error = error;
-    }
+	public void setError(ErrorFragment error) {
+		this.error = error;
+	}
+
 }

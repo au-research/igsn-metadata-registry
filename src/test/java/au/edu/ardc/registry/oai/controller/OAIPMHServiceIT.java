@@ -8,22 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class OAIPMHServiceIT extends WebIntegrationTest {
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    @Autowired
-    VersionService versionService;
+	@Autowired
+	VersionService versionService;
 
-    final String baseUrl = "/api/services/oai-pmh";
+	final String baseUrl = "/api/services/oai-pmh";
 
-    @Test
-    void invalid_verb_return_error() throws Exception {
-        System.out.print("in test");
+	@Test
+	void invalid_verb_return_error() throws Exception {
+		System.out.print("in test");
 
-    }
+	}
 
-    @Test
-    void valid_Identify_verb_return_identify() {
-        this.webTestClient.get().uri(baseUrl + "?verb=Identify").exchange().expectStatus().isOk();
-    }
+	@Test
+	void valid_Identify_verb_return_identify() {
+		this.webTestClient.get().uri(baseUrl + "?verb=Identify").exchange().expectStatus().isOk();
+	}
+
 }

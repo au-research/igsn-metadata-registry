@@ -4,22 +4,24 @@ import au.edu.ardc.registry.common.dto.RecordDTO;
 
 public class IGSNRecordDTO extends RecordDTO {
 
-    private String igsn;
-    private String portalUrl;
+	private String igsn;
 
-    public String getIgsn() {
-        return igsn;
-    }
+	private String portalUrl;
 
-    public void setIgsn(String igsn) {
-        this.igsn = igsn;
-    }
+	public String getIgsn() {
+		return igsn;
+	}
 
-    public String getPortalUrl() {
-        return portalUrl;
-    }
+	public void setIgsn(String igsn) {
+		this.igsn = igsn;
+	}
 
-    public void setPortalUrl(String portalUrl) {
-        this.portalUrl = portalUrl;
-    }
+	public String getPortalUrl() {
+		return portalUrl;
+	}
+
+	public void setPortalUrl(String portalUrl) {
+		this.portalUrl = portalUrl;
+	}
+
 }

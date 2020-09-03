@@ -1,25 +1,29 @@
 package au.edu.ardc.registry.common.repository.specs;
 
 public class SearchCriteria {
-    private final String key;
-    private final Object value;
-    private final SearchOperation operation;
 
-    public SearchCriteria(String key, Object value, SearchOperation operation) {
-        this.key = key;
-        this.value = value;
-        this.operation = operation;
-    }
+	private final String key;
 
-    public String getKey() {
-        return key;
-    }
+	private final Object value;
 
-    public Object getValue() {
-        return value;
-    }
+	private final SearchOperation operation;
 
-    public SearchOperation getOperation() {
-        return operation;
-    }
+	public SearchCriteria(String key, Object value, SearchOperation operation) {
+		this.key = key;
+		this.value = value;
+		this.operation = operation;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public Object getValue() {
+		return value;
+	}
+
+	public SearchOperation getOperation() {
+		return operation;
+	}
+
 }

@@ -7,87 +7,92 @@ import java.util.Date;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VersionDTO {
-    private String id;
 
-    @NotNull
-    private String schema;
-    private boolean current;
-    private Date createdAt;
-    private String creatorID;
+	private String id;
 
-    @NotNull
-    private String record;
+	@NotNull
+	private String schema;
 
-    @NotNull
-    private String content;
+	private boolean current;
 
-    private String hash;
+	private Date createdAt;
 
-    public VersionDTO() {
-        this.current = true;
-    }
+	private String creatorID;
 
-    public String getRecord() {
-        return record;
-    }
+	@NotNull
+	private String record;
 
-    public void setRecord(String record) {
-        this.record = record;
-    }
+	@NotNull
+	private String content;
 
-    public String getSchema() {
-        return schema;
-    }
+	private String hash;
 
-    public void setSchema(String schema) {
-        this.schema = schema;
-    }
+	public VersionDTO() {
+		this.current = true;
+	}
 
-    public String getContent() {
-        return this.content;
-    }
+	public String getRecord() {
+		return record;
+	}
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+	public void setRecord(String record) {
+		this.record = record;
+	}
 
-    public String getId() {
-        return id;
-    }
+	public String getSchema() {
+		return schema;
+	}
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	public void setSchema(String schema) {
+		this.schema = schema;
+	}
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+	public String getContent() {
+		return this.content;
+	}
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-    public String getCreatorID() {
-        return creatorID;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setCreatorID(String creatorID) {
-        this.creatorID = creatorID;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public boolean isCurrent() {
-        return current;
-    }
+	public Date getCreatedAt() {
+		return createdAt;
+	}
 
-    public void setCurrent(boolean current) {
-        this.current = current;
-    }
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
 
-    public String getHash() {
-        return hash;
-    }
+	public String getCreatorID() {
+		return creatorID;
+	}
 
-    public void setHash(String hash) {
-        this.hash = hash;
-    }
+	public void setCreatorID(String creatorID) {
+		this.creatorID = creatorID;
+	}
+
+	public boolean isCurrent() {
+		return current;
+	}
+
+	public void setCurrent(boolean current) {
+		this.current = current;
+	}
+
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
 }

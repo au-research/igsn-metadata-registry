@@ -16,21 +16,23 @@ import au.edu.ardc.registry.common.util.XMLUtil;
 
 public class ARDCv1IdentifierProvider implements IdentifierProvider {
 
-	/** Finds the resourceIdentifier of an IGSN record with ARDC v1 schema
+	/**
+	 * Finds the resourceIdentifier of an IGSN record with ARDC v1 schema
 	 * @param content The xml content of the ARDC v1 version
 	 * @return The resourceIdentifier as String
 	 */
 	@Override
-	public String get(String content){
+	public String get(String content) {
 		String identifierValue = "";
 
 		String xpath = "/resources/resource/resourceIdentifier";
 		try {
-			NodeList l  = XMLUtil.getXPath(content, xpath);
+			NodeList l = XMLUtil.getXPath(content, xpath);
 			if (l.getLength() > 0) {
 				identifierValue = l.item(0).getFirstChild().getNodeValue();
 			}
-		} catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
+		}
+		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -43,17 +45,16 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		List<String> identifiers = new ArrayList<String>();
 		String xpath = "/resources/resource/resourceIdentifier";
 		try {
-			NodeList l  = XMLUtil.getXPath(content, xpath);
-			for(int i = 0 ; i < l.getLength(); i++ )
-			{
+			NodeList l = XMLUtil.getXPath(content, xpath);
+			for (int i = 0; i < l.getLength(); i++) {
 				identifiers.add(l.item(i).getFirstChild().getNodeValue());
 			}
-		} catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
+		}
+		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return identifiers;
 	}
-
 
 }

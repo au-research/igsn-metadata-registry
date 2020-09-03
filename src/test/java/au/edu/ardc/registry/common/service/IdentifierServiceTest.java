@@ -32,142 +32,144 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {IdentifierService.class, IdentifierMapper.class, ModelMapper.class})
+@ContextConfiguration(classes = { IdentifierService.class, IdentifierMapper.class, ModelMapper.class })
 class IdentifierServiceTest {
 
-    @MockBean
-    ValidationService validationService;
+	@MockBean
+	ValidationService validationService;
 
-    @Autowired
-    private IdentifierService service;
+	@Autowired
+	private IdentifierService service;
 
-    @MockBean
-    private RecordService recordService;
+	@MockBean
+	private RecordService recordService;
 
-    @MockBean
-    private IdentifierRepository repository;
+	@MockBean
+	private IdentifierRepository repository;
 
-    @Test
-    void findById_IdentifierFound_returnsIdentifier() {
-        UUID id = UUID.randomUUID();
-        Identifier identifier = TestHelper.mockIdentifier(id);
-        when(repository.findById(id)).thenReturn(Optional.of(identifier));
+	@Test
+	void findById_IdentifierFound_returnsIdentifier() {
+		UUID id = UUID.randomUUID();
+		Identifier identifier = TestHelper.mockIdentifier(id);
+		when(repository.findById(id)).thenReturn(Optional.of(identifier));
 
-        Identifier actual = service.findById(id.toString());
+		Identifier actual = service.findById(id.toString());
 
-        // ensure repository call findById
-        verify(repository, times(1)).findById(any(UUID.class));
-        assertThat(actual).isNotNull();
-        assertThat(actual).isInstanceOf(Identifier.class);
-    }
+		// ensure repository call findById
+		verify(repository, times(1)).findById(any(UUID.class));
+		assertThat(actual).isNotNull();
+		assertThat(actual).isInstanceOf(Identifier.class);
+	}
 
-    @Test
-    void findById_IdentifierNotFound_returnsNull() {
-        Identifier actual = service.findById(UUID.randomUUID().toString());
+	@Test
+	void findById_IdentifierNotFound_returnsNull() {
+		Identifier actual = service.findById(UUID.randomUUID().toString());
 
-        // ensure repository call findById
-        verify(repository, times(1)).findById(any(UUID.class));
-        assertThat(actual).isNull();
-    }
+		// ensure repository call findById
+		verify(repository, times(1)).findById(any(UUID.class));
+		assertThat(actual).isNull();
+	}
 
-    @Test
-    void exists_callsExistsByID_returnsTrue() {
-        UUID id = UUID.randomUUID();
-        when(repository.existsById(id)).thenReturn(true);
+	@Test
+	void exists_callsExistsByID_returnsTrue() {
+		UUID id = UUID.randomUUID();
+		when(repository.existsById(id)).thenReturn(true);
 
-        assertThat(service.exists(id.toString())).isTrue();
+		assertThat(service.exists(id.toString())).isTrue();
 
-        // ensure repository call existsById
-        verify(repository, times(1)).existsById(any(UUID.class));
+		// ensure repository call existsById
+		verify(repository, times(1)).existsById(any(UUID.class));
 
-        // false case
-        assertThat(service.exists(UUID.randomUUID().toString())).isFalse();
-    }
+		// false case
+		assertThat(service.exists(UUID.randomUUID().toString())).isFalse();
+	}
 
-    @Test
-    void create_RecordNotFound_throwsException() {
-        // given a version dto
-        IdentifierDTO dto = new IdentifierDTO();
-        dto.setRecord(UUID.randomUUID());
+	@Test
+	void create_RecordNotFound_throwsException() {
+		// given a version dto
+		IdentifierDTO dto = new IdentifierDTO();
+		dto.setRecord(UUID.randomUUID());
 
-        when(recordService.exists(dto.getRecord().toString())).thenReturn(false);
+		when(recordService.exists(dto.getRecord().toString())).thenReturn(false);
 
-        // when the service creates the version, expects exception
-        Assert.assertThrows(RecordNotFoundException.class, () -> {
-            service.create(dto, TestHelper.mockUser());
-        });
-    }
+		// when the service creates the version, expects exception
+		Assert.assertThrows(RecordNotFoundException.class, () -> {
+			service.create(dto, TestHelper.mockUser());
+		});
+	}
 
-    @Test
-    void create_failValidateRecordOwnership_throwsException() {
-        // given a user & record that doesn't belong to that user
-        User user = TestHelper.mockUser();
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        record.setOwnerType(Record.OwnerType.User);
-        record.setOwnerID(UUID.randomUUID());
+	@Test
+	void create_failValidateRecordOwnership_throwsException() {
+		// given a user & record that doesn't belong to that user
+		User user = TestHelper.mockUser();
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setOwnerType(Record.OwnerType.User);
+		record.setOwnerID(UUID.randomUUID());
 
-        // given a version dto for that record
-        IdentifierDTO dto = new IdentifierDTO();
-        dto.setRecord(record.getId());
+		// given a version dto for that record
+		IdentifierDTO dto = new IdentifierDTO();
+		dto.setRecord(record.getId());
 
-        // setup the world
-        when(recordService.exists(record.getId().toString())).thenReturn(true);
-        when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(false);
+		// setup the world
+		when(recordService.exists(record.getId().toString())).thenReturn(true);
+		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(false);
 
-        Assert.assertThrows(ForbiddenOperationException.class, () -> {
-            service.create(dto, user);
-        });
-    }
+		Assert.assertThrows(ForbiddenOperationException.class, () -> {
+			service.create(dto, user);
+		});
+	}
 
-    @Test
-    void create_ValidRequest_returnsDTO() {
-        // given a record & user
-        Record record = TestHelper.mockRecord(UUID.randomUUID());
-        User user = TestHelper.mockUser();
+	@Test
+	void create_ValidRequest_returnsDTO() {
+		// given a record & user
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		User user = TestHelper.mockUser();
 
-        // given a version dto
-        IdentifierDTO dto = new IdentifierDTO();
-        dto.setRecord(record.getId());
-        dto.setType(Identifier.Type.IGSN);
-        dto.setValue("IGSNVALUE");
+		// given a version dto
+		IdentifierDTO dto = new IdentifierDTO();
+		dto.setRecord(record.getId());
+		dto.setType(Identifier.Type.IGSN);
+		dto.setValue("IGSNVALUE");
 
-        // setup repository mock
-        Identifier expected = TestHelper.mockIdentifier(record);
-        when(recordService.exists(anyString())).thenReturn(true);
-        when(recordService.findById(anyString())).thenReturn(record);
-        when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
-        when(repository.save(any(Identifier.class))).thenReturn(expected);
+		// setup repository mock
+		Identifier expected = TestHelper.mockIdentifier(record);
+		when(recordService.exists(anyString())).thenReturn(true);
+		when(recordService.findById(anyString())).thenReturn(record);
+		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
+		when(repository.save(any(Identifier.class))).thenReturn(expected);
 
-        // when the service creates the version, verify the save method is called
-        IdentifierDTO resultDTO = service.create(dto, user);
-        assertThat(resultDTO).isNotNull();
-        assertThat(resultDTO).isInstanceOf(IdentifierDTO.class);
-        verify(repository, times(1)).save(any(Identifier.class));
-    }
+		// when the service creates the version, verify the save method is called
+		IdentifierDTO resultDTO = service.create(dto, user);
+		assertThat(resultDTO).isNotNull();
+		assertThat(resultDTO).isInstanceOf(IdentifierDTO.class);
+		verify(repository, times(1)).save(any(Identifier.class));
+	}
 
-    @Test
-    void delete_call_repository() {
-        UUID id = UUID.randomUUID();
+	@Test
+	void delete_call_repository() {
+		UUID id = UUID.randomUUID();
 
-        service.delete(id.toString());
-        // ensure repository call deleteById
-        verify(repository, times(1)).deleteById(any(String.class));
-    }
+		service.delete(id.toString());
+		// ensure repository call deleteById
+		verify(repository, times(1)).deleteById(any(String.class));
+	}
 
-    @Test
-    void search_validSearchSpec_returnsPageOfDTO() {
-        // given a page of 2 Identifier (as result)
-        // and repository.findAll(spec, page) returns a page of 2 Identifier
-        Page<Identifier> mockPage = new PageImpl(Arrays.asList(TestHelper.mockIdentifier(), TestHelper.mockIdentifier()));
-        when(repository.findAll(any(IdentifierSpecification.class), any(Pageable.class))).thenReturn(mockPage);
+	@Test
+	void search_validSearchSpec_returnsPageOfDTO() {
+		// given a page of 2 Identifier (as result)
+		// and repository.findAll(spec, page) returns a page of 2 Identifier
+		Page<Identifier> mockPage = new PageImpl(
+				Arrays.asList(TestHelper.mockIdentifier(), TestHelper.mockIdentifier()));
+		when(repository.findAll(any(IdentifierSpecification.class), any(Pageable.class))).thenReturn(mockPage);
 
-        // when service.search
-        Page<IdentifierDTO> result = service.search(new IdentifierSpecification(), PageRequest.of(0, 2));
+		// when service.search
+		Page<IdentifierDTO> result = service.search(new IdentifierSpecification(), PageRequest.of(0, 2));
 
-        // the result is a Page of IdentifierDTO
-        assertThat(result).isNotNull();
-        assertThat(result).hasSize(2);
-        assertThat(result.getContent()).extracting("class").containsOnly(IdentifierDTO.class);
-        verify(repository, times(1)).findAll(any(IdentifierSpecification.class), any(Pageable.class));
-    }
+		// the result is a Page of IdentifierDTO
+		assertThat(result).isNotNull();
+		assertThat(result).hasSize(2);
+		assertThat(result.getContent()).extracting("class").containsOnly(IdentifierDTO.class);
+		verify(repository, times(1)).findAll(any(IdentifierSpecification.class), any(Pageable.class));
+	}
+
 }

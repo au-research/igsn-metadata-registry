@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OAIListMetadataFormatsResponse extends OAIResponse {
 
-    @JsonProperty("ListMetadataFormats")
+	@JsonProperty("ListMetadataFormats")
 
-    private MetadataFormatFragment metadataFormatFragment;
+	private MetadataFormatFragment metadataFormatFragment;
 
-    public MetadataFormatFragment getFormat() {
-        return metadataFormatFragment;
-    }
+	public MetadataFormatFragment getFormat() {
+		return metadataFormatFragment;
+	}
 
-    public void setFormat(MetadataFormatFragment value) {
-        this.metadataFormatFragment = value;
-    }
+	public void setFormat(MetadataFormatFragment value) {
+		this.metadataFormatFragment = value;
+	}
 
 }

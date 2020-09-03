@@ -22,47 +22,45 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 @Configuration
 public class ProcessRecordJobConfig {
 
-    @Autowired
-    public JobBuilderFactory jobBuilderFactory;
+	@Autowired
+	public JobBuilderFactory jobBuilderFactory;
 
-    @Autowired
-    public StepBuilderFactory stepBuilderFactory;
+	@Autowired
+	public StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    public RecordRepository recordRepository;
+	@Autowired
+	public RecordRepository recordRepository;
 
-    @Autowired
-    VersionService versionService;
+	@Autowired
+	VersionService versionService;
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @Bean(name="ProcessRecordJob")
-    public Job ProcessRecordJob() {
-        return jobBuilderFactory.get("ProcessRecordJob")
-                .flow(processTitles())
-                .end().build();
-    }
+	@Bean(name = "ProcessRecordJob")
+	public Job ProcessRecordJob() {
+		return jobBuilderFactory.get("ProcessRecordJob").flow(processTitles()).end().build();
+	}
 
-    @Bean
-    public Step processTitles() {
-        return stepBuilderFactory.get("Process Titles")
-                .<Record, Record>chunk(10)
-                .reader(new RecordReader(recordRepository))
-                .processor(new RecordTitleProcessor(versionService, recordService, schemaService))
-                .writer(new NoOpItemWriter<>())
-                .faultTolerant().retryLimit(3).retry(DeadlockLoserDataAccessException.class)
-                //.taskExecutor(concurrentTaskExecutor())
-                .build();
-    }
+	@Bean
+	public Step processTitles() {
+		return stepBuilderFactory.get("Process Titles").<Record, Record>chunk(10)
+				.reader(new RecordReader(recordRepository))
+				.processor(new RecordTitleProcessor(versionService, recordService, schemaService))
+				.writer(new NoOpItemWriter<>()).faultTolerant().retryLimit(3)
+				.retry(DeadlockLoserDataAccessException.class)
+				// .taskExecutor(concurrentTaskExecutor())
+				.build();
+	}
 
-    @Bean
-    public TaskExecutor concurrentTaskExecutor() {
-        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("igsnRegistryParallelThreads");
-        asyncTaskExecutor.setConcurrencyLimit(5);
-        return asyncTaskExecutor;
-    }
+	@Bean
+	public TaskExecutor concurrentTaskExecutor() {
+		SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("igsnRegistryParallelThreads");
+		asyncTaskExecutor.setConcurrencyLimit(5);
+		return asyncTaskExecutor;
+	}
+
 }

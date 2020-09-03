@@ -323,6 +323,12 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>io.spring.javaformat</groupId>
+				<artifactId>spring-javaformat-maven-plugin</artifactId>
+				<version>0.0.25</version>
+			</plugin>
+
 		</plugins>
 
 	</build>

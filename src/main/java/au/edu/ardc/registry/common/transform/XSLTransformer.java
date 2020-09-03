@@ -21,52 +21,53 @@ import java.util.Map;
 
 public class XSLTransformer {
 
-    /**
-     * Using XSLT to transform a String into another String with the provided parameter map
-     *
-     * @param schemaPath path to the schema
-     * @param xml XML String
-     * @param parameters a Map of xslt parameters
-     * @return String result of the transformation
-     */
-    public static String transform(String schemaPath, String xml, Map<String, String> parameters) {
-        try {
-            // setup document source from the provided xml
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            DocumentBuilder builder;
-            builder = documentBuilderFactory.newDocumentBuilder();
-            Document document = builder.parse(new ByteArrayInputStream(xml.getBytes()));
-            DOMSource DOMSource = new DOMSource(document);
+	/**
+	 * Using XSLT to transform a String into another String with the provided parameter
+	 * map
+	 * @param schemaPath path to the schema
+	 * @param xml XML String
+	 * @param parameters a Map of xslt parameters
+	 * @return String result of the transformation
+	 */
+	public static String transform(String schemaPath, String xml, Map<String, String> parameters) {
+		try {
+			// setup document source from the provided xml
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setNamespaceAware(true);
+			DocumentBuilder builder;
+			builder = documentBuilderFactory.newDocumentBuilder();
+			Document document = builder.parse(new ByteArrayInputStream(xml.getBytes()));
+			DOMSource DOMSource = new DOMSource(document);
 
-            // setup transformer factory with the xslt file at the provided path
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer;
+			// setup transformer factory with the xslt file at the provided path
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer;
 
-            Source xslt = new StreamSource(new File(schemaPath));
-            transformer = factory.newTransformer(xslt);
+			Source xslt = new StreamSource(new File(schemaPath));
+			transformer = factory.newTransformer(xslt);
 
-            // set parameters if any
-            if (parameters != null) {
-                for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                    transformer.setParameter(entry.getKey(), entry.getValue());
-                }
-            }
+			// set parameters if any
+			if (parameters != null) {
+				for (Map.Entry<String, String> entry : parameters.entrySet()) {
+					transformer.setParameter(entry.getKey(), entry.getValue());
+				}
+			}
 
-            // setup input stream for the transformer
-            StringWriter stringWriter = new StringWriter();
-            StreamResult resultStream = new StreamResult(stringWriter);
+			// setup input stream for the transformer
+			StringWriter stringWriter = new StringWriter();
+			StreamResult resultStream = new StreamResult(stringWriter);
 
-            // do the transform
-            transformer.transform(DOMSource, resultStream);
+			// do the transform
+			transformer.transform(DOMSource, resultStream);
 
-            // the result is available via the StringWriter
-            return stringWriter.toString();
+			// the result is available via the StringWriter
+			return stringWriter.toString();
 
-        } catch (SAXException | ParserConfigurationException | IOException | TransformerException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+		}
+		catch (SAXException | ParserConfigurationException | IOException | TransformerException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 }

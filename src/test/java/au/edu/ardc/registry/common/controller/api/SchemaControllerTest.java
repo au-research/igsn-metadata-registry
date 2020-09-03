@@ -22,85 +22,68 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class SchemaControllerTest {
 
-    private final String baseUrl = "/api/resources/schemas/";
-    @Autowired
-    private MockMvc mockMvc;
+	private final String baseUrl = "/api/resources/schemas/";
 
-    @Test
-    public void index_getAllSupportedSchemas() throws Exception {
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(baseUrl)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+	@Autowired
+	private MockMvc mockMvc;
 
-        mockMvc.perform(request)
-                // .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*].id").exists());
-    }
+	@Test
+	public void index_getAllSupportedSchemas() throws Exception {
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(baseUrl)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-    @Test
-    public void show_findASingleSchema_200() throws Exception {
-        String schemaID = SchemaService.ARDCv1;
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(baseUrl + schemaID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		mockMvc.perform(request)
+				// .andDo(print())
+				.andExpect(status().isOk()).andExpect(jsonPath("$[*].id").exists());
+	}
 
-        mockMvc.perform(request)
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(schemaID));
-    }
+	@Test
+	public void show_findASingleSchema_200() throws Exception {
+		String schemaID = SchemaService.ARDCv1;
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(baseUrl + schemaID)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-    @Test
-    public void show_NonExistSchema_404() throws Exception {
-        String schemaID = "non-exist";
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(baseUrl + schemaID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON);
+		mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(schemaID));
+	}
 
-        mockMvc.perform(request)
-                .andExpect(status().isNotFound());
-    }
+	@Test
+	public void show_NonExistSchema_404() throws Exception {
+		String schemaID = "non-exist";
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(baseUrl + schemaID)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
-    @Test
-    public void validate_validCSIROv3_200() throws Exception {
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
+		mockMvc.perform(request).andExpect(status().isNotFound());
+	}
 
-        String schemaID = SchemaService.CSIROv3;
-        MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
-                        .content(validXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
+	@Test
+	public void validate_validCSIROv3_200() throws Exception {
+		String validXML = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
 
-        mockMvc.perform(validRequest).andExpect(status().isOk());
-    }
+		String schemaID = SchemaService.CSIROv3;
+		MockHttpServletRequestBuilder validRequest = MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
+				.content(validXML).contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_JSON);
 
-    @Test
-    public void validate_invalidCSIROv3_400() throws Exception {
-        String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
-        String schemaID = SchemaService.CSIROv3;
-        MockHttpServletRequestBuilder invalidRequest =
-                MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
-                        .content(invalidXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
-        mockMvc.perform(invalidRequest).andExpect(status().isBadRequest());
-    }
+		mockMvc.perform(validRequest).andExpect(status().isOk());
+	}
 
-    @Test
-    public void validate_validARDCv1_200() throws Exception {
-        String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+	@Test
+	public void validate_invalidCSIROv3_400() throws Exception {
+		String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
+		String schemaID = SchemaService.CSIROv3;
+		MockHttpServletRequestBuilder invalidRequest = MockMvcRequestBuilders.post(baseUrl + schemaID + "/validate")
+				.content(invalidXML).contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_JSON);
+		mockMvc.perform(invalidRequest).andExpect(status().isBadRequest());
+	}
 
-        MockHttpServletRequestBuilder validRequest =
-                MockMvcRequestBuilders.post(baseUrl + SchemaService.ARDCv1 + "/validate")
-                        .content(validXML)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_JSON);
+	@Test
+	public void validate_validARDCv1_200() throws Exception {
+		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 
-        mockMvc.perform(validRequest).andExpect(status().isOk());
-    }
+		MockHttpServletRequestBuilder validRequest = MockMvcRequestBuilders
+				.post(baseUrl + SchemaService.ARDCv1 + "/validate").content(validXML)
+				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(validRequest).andExpect(status().isOk());
+	}
+
 }

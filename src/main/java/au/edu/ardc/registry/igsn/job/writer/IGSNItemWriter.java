@@ -11,18 +11,19 @@ import java.io.File;
 
 public class IGSNItemWriter extends FlatFileItemWriter<String> {
 
-    private String targetPath;
+	private String targetPath;
 
-    @BeforeStep
-    public void beforeStep(StepExecution stepExecution) {
-        JobParameters jobParameters = stepExecution.getJobParameters();
-        this.targetPath = jobParameters.getString("targetPath");
-        init();
-    }
+	@BeforeStep
+	public void beforeStep(StepExecution stepExecution) {
+		JobParameters jobParameters = stepExecution.getJobParameters();
+		this.targetPath = jobParameters.getString("targetPath");
+		init();
+	}
 
-    void init() {
-        this.setName("IGSNItemWriter");
-        this.setResource(new FileSystemResource(new File(targetPath)));
-        this.setLineAggregator(new PassThroughLineAggregator<>());
-    }
+	void init() {
+		this.setName("IGSNItemWriter");
+		this.setResource(new FileSystemResource(new File(targetPath)));
+		this.setLineAggregator(new PassThroughLineAggregator<>());
+	}
+
 }

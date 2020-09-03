@@ -1,6 +1,5 @@
 package au.edu.ardc.registry.common.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -14,29 +13,26 @@ public class URL {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
-	@GenericGenerator(
-			name = "UUID",
-			strategy = "org.hibernate.id.UUIDGenerator"
-	)
+	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
 	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
 	private UUID id;
 
-    private String url;
+	private String url;
 
 	private boolean resolvable;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date createdAt;
 
 	@Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+	private Date updatedAt;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date checkedAt;
 
 	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "record_id", nullable = false)
+	@JoinColumn(name = "record_id", nullable = false)
 	private Record record;
 
 	public boolean isResolvable() {
@@ -62,14 +58,13 @@ public class URL {
 		return id;
 	}
 
-    public String getUrl() {
+	public String getUrl() {
 		return url;
 	}
 
 	public void setUrl(String url) {
 		this.url = url;
 	}
-
 
 	public Date getCreatedAt() {
 		return createdAt;

@@ -5,25 +5,26 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 
 public class ErrorFragment {
 
-    @JacksonXmlProperty(isAttribute = true)
-    private String code;
+	@JacksonXmlProperty(isAttribute = true)
+	private String code;
 
-    @JacksonXmlText
-    private String value;
+	@JacksonXmlText
+	private String value;
 
-    public String getCode() {
-        return code;
-    }
+	public String getCode() {
+		return code;
+	}
 
-    public void setCode(String code) {
-        this.code = code;
-    }
+	public void setCode(String code) {
+		this.code = code;
+	}
 
-    public String getValue() {
-        return value;
-    }
+	public String getValue() {
+		return value;
+	}
 
-    public void setValue(String value) {
-        this.value = value;
-    }
+	public void setValue(String value) {
+		this.value = value;
+	}
+
 }

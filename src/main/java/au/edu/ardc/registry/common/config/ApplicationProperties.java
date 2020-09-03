@@ -7,40 +7,44 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "app")
 public class ApplicationProperties {
 
-    private String portalUrl;
-    private String name;
-    private String description;
-    private String version;
+	private String portalUrl;
 
-    public String getPortalUrl() {
-        return portalUrl;
-    }
+	private String name;
 
-    public void setPortalUrl(String portalUrl) {
-        this.portalUrl = portalUrl;
-    }
+	private String description;
 
-    public String getName() {
-        return name;
-    }
+	private String version;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getPortalUrl() {
+		return portalUrl;
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public void setPortalUrl(String portalUrl) {
+		this.portalUrl = portalUrl;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getVersion() {
-        return version;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
 }

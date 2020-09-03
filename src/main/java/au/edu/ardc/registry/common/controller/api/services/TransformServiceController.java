@@ -18,39 +18,37 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/services/transform")
 public class TransformServiceController {
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @PostMapping("")
-    public ResponseEntity<?> transform(
-            @RequestParam String fromSchemaID,
-            @RequestParam String toSchemaID,
-            @RequestBody String payload
-    ) {
-        // validate fromSchema and toSchema
-        Schema fromSchema = schemaService.getSchemaByID(fromSchemaID);
-        if (fromSchema == null) {
-            throw new SchemaNotSupportedException(fromSchemaID);
-        }
-        Schema toSchema = schemaService.getSchemaByID(toSchemaID);
-        if (toSchema == null) {
-            throw new SchemaNotSupportedException(toSchemaID);
-        }
+	@PostMapping("")
+	public ResponseEntity<?> transform(@RequestParam String fromSchemaID, @RequestParam String toSchemaID,
+			@RequestBody String payload) {
+		// validate fromSchema and toSchema
+		Schema fromSchema = schemaService.getSchemaByID(fromSchemaID);
+		if (fromSchema == null) {
+			throw new SchemaNotSupportedException(fromSchemaID);
+		}
+		Schema toSchema = schemaService.getSchemaByID(toSchemaID);
+		if (toSchema == null) {
+			throw new SchemaNotSupportedException(toSchemaID);
+		}
 
-        // attempt to create the transformer
-        Transformer transformer = (Transformer) TransformerFactory.create(fromSchema, toSchema);
-        if (transformer == null) {
-            throw new RuntimeException("Transformer not found");
-        }
+		// attempt to create the transformer
+		Transformer transformer = (Transformer) TransformerFactory.create(fromSchema, toSchema);
+		if (transformer == null) {
+			throw new RuntimeException("Transformer not found");
+		}
 
-        // wrap the payload into a Version
-        Version inputVersion = new Version();
-        inputVersion.setSchema(fromSchema.getId());
-        inputVersion.setContent(payload.getBytes());
+		// wrap the payload into a Version
+		Version inputVersion = new Version();
+		inputVersion.setSchema(fromSchema.getId());
+		inputVersion.setContent(payload.getBytes());
 
-        // interrogate the outputVersion
-        Version outputVersion = transformer.transform(inputVersion);
+		// interrogate the outputVersion
+		Version outputVersion = transformer.transform(inputVersion);
 
-        return ResponseEntity.ok(outputVersion.getContent());
-    }
+		return ResponseEntity.ok(outputVersion.getContent());
+	}
+
 }

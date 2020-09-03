@@ -24,59 +24,34 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableCaching
 @EnableAsync
 @SecuritySchemes({
-        @SecurityScheme(
-                name = "basic",
-                description = "Basic Authentication",
-                type = SecuritySchemeType.HTTP,
-                scheme = "basic"
-        ),
-        @SecurityScheme(
-                name = "oauth2",
-                type = SecuritySchemeType.OAUTH2,
-                in = SecuritySchemeIn.HEADER,
-                flows = @OAuthFlows(
-                        password = @OAuthFlow(
-                                tokenUrl = "${keycloak-token-url}"
-                        )
-                )
-        )
-})
+		@SecurityScheme(name = "basic", description = "Basic Authentication", type = SecuritySchemeType.HTTP,
+				scheme = "basic"),
+		@SecurityScheme(name = "oauth2", type = SecuritySchemeType.OAUTH2, in = SecuritySchemeIn.HEADER,
+				flows = @OAuthFlows(password = @OAuthFlow(tokenUrl = "${keycloak-token-url}"))) })
 
-@OpenAPIDefinition(
-        info = @Info(
-                title = "${app.name}",
-                description = "${app.description}",
-                contact = @Contact(
-                        name = "${app.contact.name}",
-                        email = "${app.contact.email}",
-                        url = "${app.contact.url}"
-                ),
-                license = @License(
-                        name = "Apache 2.0",
-                        url = "https://www.apache.org/licenses/LICENSE-2.0.html"
-                )
-        )
-)
+@OpenAPIDefinition(info = @Info(title = "${app.name}", description = "${app.description}",
+		contact = @Contact(name = "${app.contact.name}", email = "${app.contact.email}", url = "${app.contact.url}"),
+		license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html")))
 public class MetadataRegistry {
 
-    @Value("${app.url:/}")
-    String appURL;
+	@Value("${app.url:/}")
+	String appURL;
 
-    @Value("${app.name:Current Server}")
-    String appDescription;
+	@Value("${app.name:Current Server}")
+	String appDescription;
 
-    public static void main(String[] args) {
-        SpringApplication.run(MetadataRegistry.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(MetadataRegistry.class, args);
+	}
 
-    @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI().addServersItem(new Server().url(appURL).description(appDescription));
-    }
+	@Bean
+	public OpenAPI openAPI() {
+		return new OpenAPI().addServersItem(new Server().url(appURL).description(appDescription));
+	}
 
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
+	}
 
 }

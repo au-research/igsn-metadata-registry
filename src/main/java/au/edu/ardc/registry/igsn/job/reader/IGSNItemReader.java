@@ -15,23 +15,23 @@ import java.io.File;
 @StepScope
 public class IGSNItemReader extends FlatFileItemReader<String> {
 
-    private String filePath;
+	private String filePath;
 
-    public IGSNItemReader() {
-        super();
-    }
+	public IGSNItemReader() {
+		super();
+	}
 
-    @BeforeStep
-    public void beforeStep(StepExecution stepExecution) {
-        JobParameters jobParameters = stepExecution.getJobParameters();
-        this.filePath = jobParameters.getString("filePath");
-        init();
-    }
+	@BeforeStep
+	public void beforeStep(StepExecution stepExecution) {
+		JobParameters jobParameters = stepExecution.getJobParameters();
+		this.filePath = jobParameters.getString("filePath");
+		init();
+	}
 
-    void init() {
-        this.setName("IGSNItemReader");
-        this.setResource(new FileSystemResource(new File(filePath)));
-        this.setLineMapper(new PassThroughLineMapper());
-    }
+	void init() {
+		this.setName("IGSNItemReader");
+		this.setResource(new FileSystemResource(new File(filePath)));
+		this.setLineMapper(new PassThroughLineMapper());
+	}
 
 }

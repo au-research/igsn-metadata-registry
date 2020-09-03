@@ -12,13 +12,14 @@ import java.util.UUID;
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, String>, JpaSpecificationExecutor<Identifier> {
 
-    Optional<Identifier> findById(UUID id);
+	Optional<Identifier> findById(UUID id);
 
-    boolean existsById(UUID id);
+	boolean existsById(UUID id);
 
-    Identifier findByValueAndType(String value, Identifier.Type type);
+	Identifier findByValueAndType(String value, Identifier.Type type);
 
-    Identifier findFirstByRecordAndType(Record record, Identifier.Type type);
+	Identifier findFirstByRecordAndType(Record record, Identifier.Type type);
 
-    boolean existsByTypeAndValue(Identifier.Type type, String value);
+	boolean existsByTypeAndValue(Identifier.Type type, String value);
+
 }

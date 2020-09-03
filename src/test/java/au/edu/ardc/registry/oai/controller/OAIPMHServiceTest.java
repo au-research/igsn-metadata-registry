@@ -22,67 +22,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(
-        controllers = OAIPMHService.class,
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class
-        )
-)
+@WebMvcTest(controllers = OAIPMHService.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class))
 @AutoConfigureMockMvc
 class OAIPMHServiceTest {
 
-    final String base_url = "/api/services/oai-pmh";
+	final String base_url = "/api/services/oai-pmh";
 
-    @Autowired
-    MockMvc mockMvc;
+	@Autowired
+	MockMvc mockMvc;
 
-    @MockBean
-    RecordService recordService;
+	@MockBean
+	RecordService recordService;
 
-    @MockBean
-    VersionService versionService;
+	@MockBean
+	VersionService versionService;
 
-    @Test
-    @DisplayName("Throws an exception and returns the error element with badverb code attribute")
-    void handle_noVerbParam_throwsException() throws Exception {
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(base_url)
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_XML);
+	@Test
+	@DisplayName("Throws an exception and returns the error element with badverb code attribute")
+	void handle_noVerbParam_throwsException() throws Exception {
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url)
+				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-        mockMvc.perform(request)
-                .andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("No OAI verb supplied"))
-                .andExpect(status().isOk());
-    }
+		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
+				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("No OAI verb supplied"))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void handle_noVerb_throwsException() throws Exception {
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(base_url + "/?verb=nonsense")
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_XML);
+	@Test
+	void handle_noVerb_throwsException() throws Exception {
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url + "/?verb=nonsense")
+				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-        mockMvc.perform(request)
-                .andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(xpath("/OAI-PMH/error[@verb='nonsense']").string("Illegal OAI verb"))
-                .andExpect(status().isOk());
-    }
+		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
+				.andExpect(xpath("/OAI-PMH/error[@verb='nonsense']").string("Illegal OAI verb"))
+				.andExpect(status().isOk());
+	}
 
-    @Test
-    void handle_verb_Identify_returns() throws Exception {
-        MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(base_url + "/?verb=Identify")
-                        .contentType(MediaType.APPLICATION_XML)
-                        .accept(MediaType.APPLICATION_XML);
+	@Test
+	void handle_verb_Identify_returns() throws Exception {
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url + "/?verb=Identify")
+				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-        mockMvc.perform(request)
-                .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
-                .andExpect(status().isOk());
-    }
-
+		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
+				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
+				.andExpect(status().isOk());
+	}
 
 }

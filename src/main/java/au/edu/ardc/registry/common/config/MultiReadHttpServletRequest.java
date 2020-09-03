@@ -11,61 +11,69 @@ import java.io.*;
 /**
  * A wrapper for HttpServletRequest in an attempt to read the request body more than once
  *
- * @see <a href="https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/">Reading a Servlet/Spring Request Body Multiple Times</a>
+ * @see <a href=
+ * "https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/">Reading a
+ * Servlet/Spring Request Body Multiple Times</a>
  */
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
-    private ByteArrayOutputStream cachedBytes;
 
-    public MultiReadHttpServletRequest(HttpServletRequest request) {
-        super(request);
-    }
+	private ByteArrayOutputStream cachedBytes;
 
-    @Override
-    public ServletInputStream getInputStream() throws IOException {
-        if (cachedBytes == null) cacheInputStream();
+	public MultiReadHttpServletRequest(HttpServletRequest request) {
+		super(request);
+	}
 
-        return new CachedServletInputStream(cachedBytes.toByteArray());
-    }
+	@Override
+	public ServletInputStream getInputStream() throws IOException {
+		if (cachedBytes == null)
+			cacheInputStream();
 
-    @Override
-    public BufferedReader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(getInputStream()));
-    }
+		return new CachedServletInputStream(cachedBytes.toByteArray());
+	}
 
-    private void cacheInputStream() throws IOException {
-        /* Cache the inputstream in order to read it multiple times. For
-         * convenience, I use apache.commons IOUtils
-         */
-        cachedBytes = new ByteArrayOutputStream();
-        IOUtils.copy(super.getInputStream(), cachedBytes);
-    }
+	@Override
+	public BufferedReader getReader() throws IOException {
+		return new BufferedReader(new InputStreamReader(getInputStream()));
+	}
 
-    /* An inputstream which reads the cached request body */
-    public static class CachedServletInputStream extends ServletInputStream {
-        private final ByteArrayInputStream buffer;
+	private void cacheInputStream() throws IOException {
+		/*
+		 * Cache the inputstream in order to read it multiple times. For convenience, I
+		 * use apache.commons IOUtils
+		 */
+		cachedBytes = new ByteArrayOutputStream();
+		IOUtils.copy(super.getInputStream(), cachedBytes);
+	}
 
-        public CachedServletInputStream(byte[] contents) {
-            this.buffer = new ByteArrayInputStream(contents);
-        }
+	/* An inputstream which reads the cached request body */
+	public static class CachedServletInputStream extends ServletInputStream {
 
-        @Override
-        public int read() throws IOException {
-            return buffer.read();
-        }
+		private final ByteArrayInputStream buffer;
 
-        @Override
-        public boolean isFinished() {
-            return buffer.available() == 0;
-        }
+		public CachedServletInputStream(byte[] contents) {
+			this.buffer = new ByteArrayInputStream(contents);
+		}
 
-        @Override
-        public boolean isReady() {
-            return true;
-        }
+		@Override
+		public int read() throws IOException {
+			return buffer.read();
+		}
 
-        @Override
-        public void setReadListener(ReadListener listener) {
-            throw new RuntimeException("Not implemented");
-        }
-    }
+		@Override
+		public boolean isFinished() {
+			return buffer.available() == 0;
+		}
+
+		@Override
+		public boolean isReady() {
+			return true;
+		}
+
+		@Override
+		public void setReadListener(ReadListener listener) {
+			throw new RuntimeException("Not implemented");
+		}
+
+	}
+
 }

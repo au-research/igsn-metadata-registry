@@ -10,7 +10,8 @@ import java.util.UUID;
 @Repository
 public interface URLRepository extends JpaRepository<URL, String> {
 
-    Optional<URL> findById(UUID id);
+	Optional<URL> findById(UUID id);
 
-    boolean existsById(UUID id);
+	boolean existsById(UUID id);
+
 }

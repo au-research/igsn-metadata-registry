@@ -22,17 +22,15 @@ import javax.servlet.http.HttpServletRequest;
 @SecurityRequirement(name = "oauth2")
 public class MeController {
 
-    @Autowired
-    KeycloakService kcService;
+	@Autowired
+	KeycloakService kcService;
 
-    @GetMapping(value = "")
-    @Operation(
-            summary = "Describes the current logged in user",
-            description = "Retrieve the current user details"
-    )
-    @ApiResponse(responseCode = "200")
-    public ResponseEntity<User> whoami(HttpServletRequest request) {
-        User user = kcService.getLoggedInUser(request);
-        return ResponseEntity.ok(user);
-    }
+	@GetMapping(value = "")
+	@Operation(summary = "Describes the current logged in user", description = "Retrieve the current user details")
+	@ApiResponse(responseCode = "200")
+	public ResponseEntity<User> whoami(HttpServletRequest request) {
+		User user = kcService.getLoggedInUser(request);
+		return ResponseEntity.ok(user);
+	}
+
 }

@@ -31,93 +31,62 @@ import java.util.UUID;
 @Tag(name = "Versions Public API")
 public class VersionsPublicController {
 
-    @Autowired
-    VersionService service;
+	@Autowired
+	VersionService service;
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    @GetMapping("")
-    @Operation(
-            summary = "Get all publicly available versions",
-            description = "Return versions from publicly available records")
-    @PageableOperation
-    public ResponseEntity<Page<VersionDTO>> index(
-            @PageableDefault @Parameter(hidden = true) Pageable pageable,
-            @RequestParam(required = false) String schema,
-            @RequestParam(required = false) String record
-    ) {
-        VersionSpecification specs = new VersionSpecification();
-        specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
-        specs.add(new SearchCriteria("current", true, SearchOperation.EQUAL));
+	@GetMapping("")
+	@Operation(summary = "Get all publicly available versions",
+			description = "Return versions from publicly available records")
+	@PageableOperation
+	public ResponseEntity<Page<VersionDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String schema, @RequestParam(required = false) String record) {
+		VersionSpecification specs = new VersionSpecification();
+		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
+		specs.add(new SearchCriteria("current", true, SearchOperation.EQUAL));
 
-        if (schema != null) {
-            specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
-        }
+		if (schema != null) {
+			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+		}
 
-        if (record != null) {
-            Record recordEntity = recordService.findById(record);
-            specs.add(new SearchCriteria("record", recordEntity, SearchOperation.EQUAL));
-        }
+		if (record != null) {
+			Record recordEntity = recordService.findById(record);
+			specs.add(new SearchCriteria("record", recordEntity, SearchOperation.EQUAL));
+		}
 
-        Page<VersionDTO> result = service.search(specs, pageable);
-        return ResponseEntity.ok().body(result);
-    }
+		Page<VersionDTO> result = service.search(specs, pageable);
+		return ResponseEntity.ok().body(result);
+	}
 
-    @GetMapping("/{id}")
-    @Operation(
-            summary = "Get a single public version by id",
-            description = "Retrieve the metadata for a single version by id"
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Version is not found",
-            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Version is found",
-            content = @Content(schema = @Schema(implementation = VersionDTO.class))
-    )
-    public ResponseEntity<VersionDTO> show(
-            @Parameter(
-                    required = true,
-                    description = "the id of the version (uuid)",
-                    schema = @Schema(implementation = UUID.class)
-            )
-            @PathVariable String id
-    ) {
-        VersionDTO dto = service.findPublicById(id);
-        return ResponseEntity.ok().body(dto);
-    }
+	@GetMapping("/{id}")
+	@Operation(summary = "Get a single public version by id",
+			description = "Retrieve the metadata for a single version by id")
+	@ApiResponse(responseCode = "404", description = "Version is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "200", description = "Version is found",
+			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
+	public ResponseEntity<VersionDTO> show(@Parameter(required = true, description = "the id of the version (uuid)",
+			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		VersionDTO dto = service.findPublicById(id);
+		return ResponseEntity.ok().body(dto);
+	}
 
-    @GetMapping("/{id}/content")
-    @Operation(
-            summary = "Display the content of a public version",
-            description = "Return the content of the public version"
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Version is not found",
-            content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Version is found",
-            content = @Content(schema = @Schema(implementation = VersionDTO.class))
-    )
-    public ResponseEntity<?> showContent(
-            @Parameter(
-                    required = true,
-                    description = "the id of the version (uuid)",
-                    schema = @Schema(implementation = UUID.class)
-            )
-            @PathVariable String id
-    ) {
-        // reuse the logic for finding public version
-        VersionDTO dto = service.findPublicById(id);
+	@GetMapping("/{id}/content")
+	@Operation(summary = "Display the content of a public version",
+			description = "Return the content of the public version")
+	@ApiResponse(responseCode = "404", description = "Version is not found",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "200", description = "Version is found",
+			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
+	public ResponseEntity<?> showContent(@Parameter(required = true, description = "the id of the version (uuid)",
+			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+		// reuse the logic for finding public version
+		VersionDTO dto = service.findPublicById(id);
 
-        Version version = service.findById(dto.getId());
-        return ResponseEntity.ok().body(version.getContent());
-    }
+		Version version = service.findById(dto.getId());
+		return ResponseEntity.ok().body(version.getContent());
+	}
+
 }

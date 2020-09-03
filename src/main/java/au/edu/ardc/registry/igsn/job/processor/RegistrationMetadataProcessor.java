@@ -12,43 +12,48 @@ import org.springframework.batch.item.ItemProcessor;
 
 public class RegistrationMetadataProcessor implements ItemProcessor<Record, Record> {
 
-    protected final String defaultSchema = SchemaService.ARDCv1;
-    private final VersionService versionService;
-    private final RecordService recordService;
-    Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
+	protected final String defaultSchema = SchemaService.ARDCv1;
 
-    public RegistrationMetadataProcessor(VersionService versionService, RecordService recordService) {
-        this.versionService = versionService;
-        this.recordService = recordService;
-    }
+	private final VersionService versionService;
 
-    @Override
-    public Record process(Record record) {
-        logger.debug("Generating Registration Metadata for record {} ", record.getId());
+	private final RecordService recordService;
 
-        // obtain the version
-        Version version = versionService.findVersionForRecord(record, defaultSchema);
-        if (version == null) {
-            logger.error("No valid version found for record {}", record.getId());
-            return null;
-        }
+	Logger logger = LoggerFactory.getLogger(RecordTitleProcessor.class);
 
-        // obtain the xml from the version
-        String xml = new String(version.getContent());
+	public RegistrationMetadataProcessor(VersionService versionService, RecordService recordService) {
+		this.versionService = versionService;
+		this.recordService = recordService;
+	}
 
-        String registration_metadata = "";
-        try {
-        	// TODO ADD XSLT TRansform 
-        } catch (Exception ex) {
-            logger.error("Failed to Generate Registration Metadata from content: ", xml);
-            ex.printStackTrace();
-            return null;
-        }
-        logger.debug("Registration Metadata:  {} for record {}", registration_metadata, record.getId());
-        	// TODO saved the result as a registration metadata in the version
+	@Override
+	public Record process(Record record) {
+		logger.debug("Generating Registration Metadata for record {} ", record.getId());
 
-        logger.debug("Finished Generating Registration Metadata for record {} ", record.getId());
+		// obtain the version
+		Version version = versionService.findVersionForRecord(record, defaultSchema);
+		if (version == null) {
+			logger.error("No valid version found for record {}", record.getId());
+			return null;
+		}
 
-        return record;
-    }
+		// obtain the xml from the version
+		String xml = new String(version.getContent());
+
+		String registration_metadata = "";
+		try {
+			// TODO ADD XSLT TRansform
+		}
+		catch (Exception ex) {
+			logger.error("Failed to Generate Registration Metadata from content: ", xml);
+			ex.printStackTrace();
+			return null;
+		}
+		logger.debug("Registration Metadata:  {} for record {}", registration_metadata, record.getId());
+		// TODO saved the result as a registration metadata in the version
+
+		logger.debug("Finished Generating Registration Metadata for record {} ", record.getId());
+
+		return record;
+	}
+
 }

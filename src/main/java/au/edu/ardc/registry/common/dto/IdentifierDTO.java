@@ -7,77 +7,84 @@ import java.util.Date;
 import java.util.UUID;
 
 public class IdentifierDTO {
-    private UUID id;
-    private Identifier.Status status;
-    private Identifier.Type type;
-    private String value;
-    private Date createdAt;
-    private Date updatedAt;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private UUID record;
+	private UUID id;
 
-    public IdentifierDTO() {
+	private Identifier.Status status;
 
-    }
+	private Identifier.Type type;
 
-    public IdentifierDTO(UUID id) {
-        this.id = id;
-    }
+	private String value;
 
-    public UUID getId() {
-        return id;
-    }
+	private Date createdAt;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	private Date updatedAt;
 
-    public Identifier.Status getStatus() {
-        return status;
-    }
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private UUID record;
 
-    public void setStatus(Identifier.Status status) {
-        this.status = status;
-    }
+	public IdentifierDTO() {
 
-    public Identifier.Type getType() {
-        return type;
-    }
+	}
 
-    public void setType(Identifier.Type type) {
-        this.type = type;
-    }
+	public IdentifierDTO(UUID id) {
+		this.id = id;
+	}
 
-    public String getValue() {
-        return value;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public void setValue(String value) {
-        this.value = value;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+	public Identifier.Status getStatus() {
+		return status;
+	}
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+	public void setStatus(Identifier.Status status) {
+		this.status = status;
+	}
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
+	public Identifier.Type getType() {
+		return type;
+	}
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	public void setType(Identifier.Type type) {
+		this.type = type;
+	}
 
-    public UUID getRecord() {
-        return record;
-    }
+	public String getValue() {
+		return value;
+	}
 
-    public void setRecord(UUID record) {
-        this.record = record;
-    }
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public UUID getRecord() {
+		return record;
+	}
+
+	public void setRecord(UUID record) {
+		this.record = record;
+	}
+
 }

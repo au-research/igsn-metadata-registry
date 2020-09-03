@@ -10,138 +10,139 @@ import java.util.List;
 import java.util.UUID;
 
 public class RecordDTO {
-    private UUID id;
 
-    private boolean visible = true;
+	private UUID id;
 
-    private String title;
+	private boolean visible = true;
 
-    @NotNull
-    private Date createdAt;
+	private String title;
 
-    @NotNull
-    private Date modifiedAt;
+	@NotNull
+	private Date createdAt;
 
-    @NotNull
-    private UUID creatorID;
+	@NotNull
+	private Date modifiedAt;
 
-    @NotNull
-    private UUID modifierID;
+	@NotNull
+	private UUID creatorID;
 
-    @NotNull
-    private UUID allocationID;
+	@NotNull
+	private UUID modifierID;
 
-    @NotNull
-    private Record.OwnerType ownerType;
+	@NotNull
+	private UUID allocationID;
 
-    @NotNull
-    private UUID ownerID;
+	@NotNull
+	private Record.OwnerType ownerType;
 
+	@NotNull
+	private UUID ownerID;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<VersionDTO> currentVersions;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private List<VersionDTO> currentVersions;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<IdentifierDTO> identifiers;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private List<IdentifierDTO> identifiers;
 
-    public RecordDTO() {
-        this.currentVersions = new ArrayList<>();
-        this.identifiers = new ArrayList<>();
-    }
+	public RecordDTO() {
+		this.currentVersions = new ArrayList<>();
+		this.identifiers = new ArrayList<>();
+	}
 
-    public UUID getId() {
-        return id;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public Date getModifiedAt() {
-        return modifiedAt;
-    }
+	public Date getModifiedAt() {
+		return modifiedAt;
+	}
 
-    public void setModifiedAt(Date modifiedAt) {
-        this.modifiedAt = modifiedAt;
-    }
+	public void setModifiedAt(Date modifiedAt) {
+		this.modifiedAt = modifiedAt;
+	}
 
-    public UUID getCreatorID() {
-        return creatorID;
-    }
+	public UUID getCreatorID() {
+		return creatorID;
+	}
 
-    public void setCreatorID(UUID creatorID) {
-        this.creatorID = creatorID;
-    }
+	public void setCreatorID(UUID creatorID) {
+		this.creatorID = creatorID;
+	}
 
-    public UUID getModifierID() {
-        return modifierID;
-    }
+	public UUID getModifierID() {
+		return modifierID;
+	}
 
-    public void setModifierID(UUID modifierID) {
-        this.modifierID = modifierID;
-    }
+	public void setModifierID(UUID modifierID) {
+		this.modifierID = modifierID;
+	}
 
-    public UUID getAllocationID() {
-        return allocationID;
-    }
+	public UUID getAllocationID() {
+		return allocationID;
+	}
 
-    public void setAllocationID(UUID allocationID) {
-        this.allocationID = allocationID;
-    }
+	public void setAllocationID(UUID allocationID) {
+		this.allocationID = allocationID;
+	}
 
-    public Record.OwnerType getOwnerType() {
-        return ownerType;
-    }
+	public Record.OwnerType getOwnerType() {
+		return ownerType;
+	}
 
-    public void setOwnerType(Record.OwnerType ownerType) {
-        this.ownerType = ownerType;
-    }
+	public void setOwnerType(Record.OwnerType ownerType) {
+		this.ownerType = ownerType;
+	}
 
-    public UUID getOwnerID() {
-        return ownerID;
-    }
+	public UUID getOwnerID() {
+		return ownerID;
+	}
 
-    public void setOwnerID(UUID ownerID) {
-        this.ownerID = ownerID;
-    }
+	public void setOwnerID(UUID ownerID) {
+		this.ownerID = ownerID;
+	}
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+	public Date getCreatedAt() {
+		return createdAt;
+	}
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
 
-    public boolean isVisible() {
-        return visible;
-    }
+	public boolean isVisible() {
+		return visible;
+	}
 
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
 
-    public String getTitle() {
-        return title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public List<VersionDTO> getCurrentVersions() {
-        return currentVersions;
-    }
+	public List<VersionDTO> getCurrentVersions() {
+		return currentVersions;
+	}
 
-    public void setCurrentVersions(List<VersionDTO> currentVersions) {
-        this.currentVersions = currentVersions;
-    }
+	public void setCurrentVersions(List<VersionDTO> currentVersions) {
+		this.currentVersions = currentVersions;
+	}
 
-    public List<IdentifierDTO> getIdentifiers() {
-        return identifiers;
-    }
+	public List<IdentifierDTO> getIdentifiers() {
+		return identifiers;
+	}
 
-    public void setIdentifiers(List<IdentifierDTO> identifiers) {
-        this.identifiers = identifiers;
-    }
+	public void setIdentifiers(List<IdentifierDTO> identifiers) {
+		this.identifiers = identifiers;
+	}
+
 }

@@ -10,24 +10,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class IdentifierMapper {
 
-    @Autowired
-    ModelMapper modelMapper;
+	@Autowired
+	ModelMapper modelMapper;
 
-    @Autowired
-    RecordService recordService;
+	@Autowired
+	RecordService recordService;
 
-    public Identifier convertToEntity(IdentifierDTO dto) {
-        Identifier entity = modelMapper.map(dto, Identifier.class);
-        if (dto.getRecord() != null) {
-            entity.setRecord(recordService.findById(dto.getRecord().toString()));
-        }
-        return entity;
-    }
+	public Identifier convertToEntity(IdentifierDTO dto) {
+		Identifier entity = modelMapper.map(dto, Identifier.class);
+		if (dto.getRecord() != null) {
+			entity.setRecord(recordService.findById(dto.getRecord().toString()));
+		}
+		return entity;
+	}
 
-    public IdentifierDTO convertToDTO(Identifier entity) {
-        IdentifierDTO dto = modelMapper.map(entity, IdentifierDTO.class);
-        dto.setRecord(entity.getRecord().getId());
-        return dto;
-    }
+	public IdentifierDTO convertToDTO(Identifier entity) {
+		IdentifierDTO dto = modelMapper.map(entity, IdentifierDTO.class);
+		dto.setRecord(entity.getRecord().getId());
+		return dto;
+	}
 
 }

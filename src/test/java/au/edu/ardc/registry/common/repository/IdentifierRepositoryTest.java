@@ -19,44 +19,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 class IdentifierRepositoryTest {
 
-    @Autowired
-    TestEntityManager entityManager;
+	@Autowired
+	TestEntityManager entityManager;
 
-    @Autowired
-    IdentifierRepository repository;
+	@Autowired
+	IdentifierRepository repository;
 
-    @Test
-    void findById_findByUUID_returnsIdentifier() {
-        // given an identifier
-        Record record = TestHelper.mockRecord();
-        entityManager.persistAndFlush(record);
-        Identifier identifier = TestHelper.mockIdentifier(record);
-        repository.save(identifier);
+	@Test
+	void findById_findByUUID_returnsIdentifier() {
+		// given an identifier
+		Record record = TestHelper.mockRecord();
+		entityManager.persistAndFlush(record);
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		repository.save(identifier);
 
-        UUID id = identifier.getId();
+		UUID id = identifier.getId();
 
-        // when findById
-        Optional<Identifier> dbFound = repository.findById(id);
+		// when findById
+		Optional<Identifier> dbFound = repository.findById(id);
 
-        // finds that version
-        assertThat(dbFound.isPresent()).isTrue();
+		// finds that version
+		assertThat(dbFound.isPresent()).isTrue();
 
-        Identifier found = dbFound.get();
-        assertThat(found).isInstanceOf(Identifier.class);
-        assertThat(found.getId()).isEqualTo(identifier.getId());
-    }
+		Identifier found = dbFound.get();
+		assertThat(found).isInstanceOf(Identifier.class);
+		assertThat(found.getId()).isEqualTo(identifier.getId());
+	}
 
-    @Test
-    void existsById_byUUID_returnsTrue() {
-        // given an identifier
-        Record record = TestHelper.mockRecord();
-        entityManager.persistAndFlush(record);
-        Identifier identifier = TestHelper.mockIdentifier(record);
-        repository.save(identifier);
+	@Test
+	void existsById_byUUID_returnsTrue() {
+		// given an identifier
+		Record record = TestHelper.mockRecord();
+		entityManager.persistAndFlush(record);
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		repository.save(identifier);
 
-        UUID id = identifier.getId();
+		UUID id = identifier.getId();
 
-        // when existsById returns true
-        assertThat(repository.existsById(id)).isTrue();
-    }
+		// when existsById returns true
+		assertThat(repository.existsById(id)).isTrue();
+	}
+
 }

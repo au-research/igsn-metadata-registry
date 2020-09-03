@@ -15,31 +15,32 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @DataJpaTest
 class RecordTest {
 
-    @Autowired
-    TestEntityManager entityManager;
+	@Autowired
+	TestEntityManager entityManager;
 
-    @Test
-    void a_record_have_auto_generated_uuid() {
+	@Test
+	void a_record_have_auto_generated_uuid() {
 
-        // given a saved record
-        Record record = new Record();
-        entityManager.persistAndFlush(record);
+		// given a saved record
+		Record record = new Record();
+		entityManager.persistAndFlush(record);
 
-        // uuid is generated and is the correct format
-        assertThat(record.getId()).isNotNull();
-        assertThat(record.getId()).isInstanceOf(UUID.class);
-        assertThat(record.getId().toString()).matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
-    }
+		// uuid is generated and is the correct format
+		assertThat(record.getId()).isNotNull();
+		assertThat(record.getId()).isInstanceOf(UUID.class);
+		assertThat(record.getId().toString()).matches("([a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8})");
+	}
 
-    @Test
-    void a_record_has_visible() {
-        Record record = new Record();
-        record.setVisible(false);
-        entityManager.persistAndFlush(record);
-        assertThat(record.isVisible()).isFalse();
+	@Test
+	void a_record_has_visible() {
+		Record record = new Record();
+		record.setVisible(false);
+		entityManager.persistAndFlush(record);
+		assertThat(record.isVisible()).isFalse();
 
-        Record record2 = new Record();
-        entityManager.persistAndFlush(record);
-        assertThat(record2.isVisible()).isTrue();
-    }
+		Record record2 = new Record();
+		entityManager.persistAndFlush(record);
+		assertThat(record2.isVisible()).isTrue();
+	}
+
 }

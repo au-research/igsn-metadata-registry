@@ -19,39 +19,33 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 @Configuration
 public class IGSNTransferJobConfig {
 
-    @Autowired
-    public JobBuilderFactory jobBuilderFactory;
+	@Autowired
+	public JobBuilderFactory jobBuilderFactory;
 
-    @Autowired
-    public StepBuilderFactory stepBuilderFactory;
+	@Autowired
+	public StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    IdentifierRepository identifierRepository;
+	@Autowired
+	IdentifierRepository identifierRepository;
 
-    @Autowired
-    RecordRepository recordRepository;
+	@Autowired
+	RecordRepository recordRepository;
 
-    @Autowired
-    IGSNService igsnService;
+	@Autowired
+	IGSNService igsnService;
 
-    @Bean(name="TransferIGSNJob")
-    public Job TransferIGSNJob() {
-        return jobBuilderFactory.get("TransferIGSNJob")
-                .listener(new IGSNJobListener(igsnService))
-                .flow(transferIGSN())
-                .end().build();
-    }
+	@Bean(name = "TransferIGSNJob")
+	public Job TransferIGSNJob() {
+		return jobBuilderFactory.get("TransferIGSNJob").listener(new IGSNJobListener(igsnService)).flow(transferIGSN())
+				.end().build();
+	}
 
-    @Bean
-    public Step transferIGSN() {
-        return stepBuilderFactory.get("Transfer IGSN")
-                .<String, String>chunk(1)
-                .reader(new IGSNItemReader())
-                .processor(new TransferIGSNProcessor(recordRepository, identifierRepository, igsnService))
-                .writer(new IGSNItemWriter())
-                .faultTolerant().retryLimit(3)
-                .retry(DeadlockLoserDataAccessException.class)
-                .build();
-    }
+	@Bean
+	public Step transferIGSN() {
+		return stepBuilderFactory.get("Transfer IGSN").<String, String>chunk(1).reader(new IGSNItemReader())
+				.processor(new TransferIGSNProcessor(recordRepository, identifierRepository, igsnService))
+				.writer(new IGSNItemWriter()).faultTolerant().retryLimit(3)
+				.retry(DeadlockLoserDataAccessException.class).build();
+	}
 
 }

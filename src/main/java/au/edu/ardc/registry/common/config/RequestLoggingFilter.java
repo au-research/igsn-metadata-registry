@@ -13,31 +13,32 @@ import java.util.Arrays;
 @Configuration
 public class RequestLoggingFilter implements Filter {
 
-    @Autowired
-    APILoggingService loggingService;
+	@Autowired
+	APILoggingService loggingService;
 
-    private final String[] excluded = {
-            "actuator"
-    };
+	private final String[] excluded = { "actuator" };
 
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
+	@Override
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+			throws IOException, ServletException {
 
-        MultiReadHttpServletRequest wrappedRequest =
-                new MultiReadHttpServletRequest((HttpServletRequest) servletRequest);
-        String path = wrappedRequest.getRequestURI();
+		MultiReadHttpServletRequest wrappedRequest = new MultiReadHttpServletRequest(
+				(HttpServletRequest) servletRequest);
+		String path = wrappedRequest.getRequestURI();
 
-        // exclude any path that matches the exclusion list
-        boolean doLog = Arrays.stream(excluded).noneMatch(path::contains);
+		// exclude any path that matches the exclusion list
+		boolean doLog = Arrays.stream(excluded).noneMatch(path::contains);
 
-        // log the request with the wrappedRequest
-        if (doLog) loggingService.logRequest(wrappedRequest);
+		// log the request with the wrappedRequest
+		if (doLog)
+			loggingService.logRequest(wrappedRequest);
 
-        // do the next chain
-        filterChain.doFilter(wrappedRequest, servletResponse);
+		// do the next chain
+		filterChain.doFilter(wrappedRequest, servletResponse);
 
-        // log the response
-        if (doLog) loggingService.logResponse((HttpServletResponse) servletResponse);
-    }
+		// log the response
+		if (doLog)
+			loggingService.logResponse((HttpServletResponse) servletResponse);
+	}
+
 }

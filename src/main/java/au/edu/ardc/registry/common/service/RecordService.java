@@ -27,235 +27,222 @@ import java.util.UUID;
 @Service
 public class RecordService {
 
-    @Autowired
-    private RecordRepository repository;
+	@Autowired
+	private RecordRepository repository;
 
-    @Autowired
-    private RecordMapper mapper;
+	@Autowired
+	private RecordMapper mapper;
 
-    @Autowired
-    private ValidationService validationService;
+	@Autowired
+	private ValidationService validationService;
 
-    /**
-     * Returns all record that the user created
-     * Returns all record that the user owned
-     * Returns all record that the user has access to via allocation
-     * todo refactor to return a page of RecordDTO
-     * todo refactor to use Pageable
-     *
-     * @param ownerID The current loggedIn user UUID
-     * @return a list of records that the currently logged in user owned
-     */
-    public List<Record> findOwned(UUID ownerID) {
-        // todo findOwned by user ID as well as allocation IDs
+	/**
+	 * Returns all record that the user created Returns all record that the user owned
+	 * Returns all record that the user has access to via allocation todo refactor to
+	 * return a page of RecordDTO todo refactor to use Pageable
+	 * @param ownerID The current loggedIn user UUID
+	 * @return a list of records that the currently logged in user owned
+	 */
+	public List<Record> findOwned(UUID ownerID) {
+		// todo findOwned by user ID as well as allocation IDs
 
-        return repository.findOwned(ownerID);
-    }
+		return repository.findOwned(ownerID);
+	}
 
-    public Page<RecordDTO> search(Specification<Record> specs, Pageable pageable) {
-        Page<Record> result = repository.findAll(specs, pageable);
-        return result.map(getDTOConverter());
-    }
+	public Page<RecordDTO> search(Specification<Record> specs, Pageable pageable) {
+		Page<Record> result = repository.findAll(specs, pageable);
+		return result.map(getDTOConverter());
+	}
 
-    /**
-     * Return all publicly available records
-     *
-     * @param pageable Pageable
-     * @return a list of RecordDTO that fits the criteria
-     */
-    public Page<RecordDTO> findAllPublic(Pageable pageable) {
-        RecordSpecification visibleSpec = new RecordSpecification();
-        visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
-        return search(visibleSpec, pageable);
-    }
+	/**
+	 * Return all publicly available records
+	 * @param pageable Pageable
+	 * @return a list of RecordDTO that fits the criteria
+	 */
+	public Page<RecordDTO> findAllPublic(Pageable pageable) {
+		RecordSpecification visibleSpec = new RecordSpecification();
+		visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
+		return search(visibleSpec, pageable);
+	}
 
-    /**
-     * Reusable DTO converter for use within the class
-     *
-     * @return Converter between Record and RecordDTO
-     */
-    private Converter<Record, RecordDTO> getDTOConverter() {
-        return new Converter<Record, RecordDTO>() {
-            @Override
-            protected RecordDTO doForward(Record record) {
-                return mapper.convertToDTO(record);
-            }
+	/**
+	 * Reusable DTO converter for use within the class
+	 * @return Converter between Record and RecordDTO
+	 */
+	private Converter<Record, RecordDTO> getDTOConverter() {
+		return new Converter<Record, RecordDTO>() {
+			@Override
+			protected RecordDTO doForward(Record record) {
+				return mapper.convertToDTO(record);
+			}
 
-            @Override
-            protected Record doBackward(RecordDTO recordDTO) {
-                return mapper.convertToEntity(recordDTO);
-            }
-        };
-    }
+			@Override
+			protected Record doBackward(RecordDTO recordDTO) {
+				return mapper.convertToEntity(recordDTO);
+			}
+		};
+	}
 
-    /**
-     * Find and return a publicly available record
-     *
-     * @param id uuid of the record
-     * @return RecordDTO
-     */
-    public RecordDTO findPublicById(String id) {
-        Record record = findById(id);
-        if (record == null || !record.isVisible()) {
-            throw new RecordNotFoundException(id);
-        }
-        return mapper.convertToDTO(record);
-    }
+	/**
+	 * Find and return a publicly available record
+	 * @param id uuid of the record
+	 * @return RecordDTO
+	 */
+	public RecordDTO findPublicById(String id) {
+		Record record = findById(id);
+		if (record == null || !record.isVisible()) {
+			throw new RecordNotFoundException(id);
+		}
+		return mapper.convertToDTO(record);
+	}
 
-    /**
-     * Find a record by id
-     * todo unit test
-     * @param id String representation of a uuid
-     * @return the record if it exists, null if not
-     */
-    public Record findById(String id) {
-        Optional<Record> opt = repository.findById(UUID.fromString(id));
+	/**
+	 * Find a record by id todo unit test
+	 * @param id String representation of a uuid
+	 * @return the record if it exists, null if not
+	 */
+	public Record findById(String id) {
+		Optional<Record> opt = repository.findById(UUID.fromString(id));
 
-        return opt.orElse(null);
-    }
+		return opt.orElse(null);
+	}
 
-    /**
-     * todo unit test
-     *
-     * @param id uuid of the record
-     * @param user the current logged in user
-     * @return RecordDTO
-     */
-    public RecordDTO findById(String id, User user) {
-        Optional<Record> opt = repository.findById(UUID.fromString(id));
-        Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
-        return mapper.convertToDTO(record);
-    }
+	/**
+	 * todo unit test
+	 * @param id uuid of the record
+	 * @param user the current logged in user
+	 * @return RecordDTO
+	 */
+	public RecordDTO findById(String id, User user) {
+		Optional<Record> opt = repository.findById(UUID.fromString(id));
+		Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
+		return mapper.convertToDTO(record);
+	}
 
-    // todo List<RecordDTO> findOwnedBy(User)
-    // todo List<RecordDTO> findCreatedBy(User)
+	// todo List<RecordDTO> findOwnedBy(User)
+	// todo List<RecordDTO> findCreatedBy(User)
 
-    /**
-     * Tell if a record exists by id
-     * todo handle soft delete
-     *
-     * @param id String uuid
-     * @return if the uuid correlate to an existing record
-     */
-    public boolean exists(String id) {
-        return repository.existsById(UUID.fromString(id));
-    }
+	/**
+	 * Tell if a record exists by id todo handle soft delete
+	 * @param id String uuid
+	 * @return if the uuid correlate to an existing record
+	 */
+	public boolean exists(String id) {
+		return repository.existsById(UUID.fromString(id));
+	}
 
-    /**
-     * Creates the Record
-     *
-     * @param recordDTO Validated RecordDTO
-     * @param user User Model
-     * @return RecordDTO if the creation is successful
-     */
-    public RecordDTO create(RecordDTO recordDTO, User user) {
-        // recordDTO should already be @Valid
-        Record record = mapper.convertToEntity(recordDTO);
+	/**
+	 * Creates the Record
+	 * @param recordDTO Validated RecordDTO
+	 * @param user User Model
+	 * @return RecordDTO if the creation is successful
+	 */
+	public RecordDTO create(RecordDTO recordDTO, User user) {
+		// recordDTO should already be @Valid
+		Record record = mapper.convertToEntity(recordDTO);
 
-        // validate user access
-        Allocation allocation = new Allocation(record.getAllocationID());
-        if (!validationService.validateAllocationScope(allocation, user, Scope.CREATE)) {
-            throw new ForbiddenOperationException("User does not have access to create record for this allocation");
-        }
+		// validate user access
+		Allocation allocation = new Allocation(record.getAllocationID());
+		if (!validationService.validateAllocationScope(allocation, user, Scope.CREATE)) {
+			throw new ForbiddenOperationException("User does not have access to create record for this allocation");
+		}
 
-        // default record sets
-        record.setCreatedAt(new Date());
-        record.setCreatorID(user.getId());
-        record.setOwnerType(Record.OwnerType.User);
-        record.setOwnerID(user.getId());
-        record.setVisible(true);
+		// default record sets
+		record.setCreatedAt(new Date());
+		record.setCreatorID(user.getId());
+		record.setOwnerType(Record.OwnerType.User);
+		record.setOwnerID(user.getId());
+		record.setVisible(true);
 
-        // allow igsn:import scope to overwrite default data
-        if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
-            record.setVisible(recordDTO.isVisible());
-            record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
-            record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
-            record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
-            record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
-            record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
-        }
+		// allow igsn:import scope to overwrite default data
+		if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
+			record.setVisible(recordDTO.isVisible());
+			record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
+			record.setModifiedAt(recordDTO.getCreatedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
+			record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
+			record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
+			record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
+		}
 
-        record = repository.save(record);
+		record = repository.save(record);
 
-        return mapper.convertToDTO(record);
-    }
+		return mapper.convertToDTO(record);
+	}
 
-    /**
-     * Deletes a record completely from the repository
-     *
-     * @param id the id of the record to be deleted
-     * @param user The User Model
-     * @return true if the record is deleted
-     */
-    public boolean delete(String id, User user) {
-        if (!exists(id)) {
-            throw new RecordNotFoundException(id);
-        }
-        Record record = findById(id);
-        if (!validationService.validateRecordOwnership(record, user)) {
-            throw new ForbiddenOperationException("You don't have permission to update this record");
-        }
-        repository.delete(record);
-        return true;
-    }
+	/**
+	 * Deletes a record completely from the repository
+	 * @param id the id of the record to be deleted
+	 * @param user The User Model
+	 * @return true if the record is deleted
+	 */
+	public boolean delete(String id, User user) {
+		if (!exists(id)) {
+			throw new RecordNotFoundException(id);
+		}
+		Record record = findById(id);
+		if (!validationService.validateRecordOwnership(record, user)) {
+			throw new ForbiddenOperationException("You don't have permission to update this record");
+		}
+		repository.delete(record);
+		return true;
+	}
 
-    public RecordMapper getMapper() {
-        return mapper;
-    }
+	public RecordMapper getMapper() {
+		return mapper;
+	}
 
-    /**
-     * Persist a newRecord
-     * todo refactor remove
-     * @param newRecord a Valid Record
-     * @return the newly persisted record with updated uuid
-     */
-    public Record create(Record newRecord) {
-        return repository.save(newRecord);
-    }
+	/**
+	 * Persist a newRecord todo refactor remove
+	 * @param newRecord a Valid Record
+	 * @return the newly persisted record with updated uuid
+	 */
+	public Record create(Record newRecord) {
+		return repository.save(newRecord);
+	}
 
-    /**
-     * Updates a record
-     * Validates record existence
-     * Validates User ownership
-     *
-     * @param recordDTO the dto of the record
-     * @param user User model
-     * @return RecordDTO
-     */
-    public RecordDTO update(RecordDTO recordDTO, User user) {
-        if (!exists(recordDTO.getId().toString())) {
-            throw new RecordNotFoundException(recordDTO.getId().toString());
-        }
-        Record record = findById(recordDTO.getId().toString());
+	/**
+	 * Updates a record Validates record existence Validates User ownership
+	 * @param recordDTO the dto of the record
+	 * @param user User model
+	 * @return RecordDTO
+	 */
+	public RecordDTO update(RecordDTO recordDTO, User user) {
+		if (!exists(recordDTO.getId().toString())) {
+			throw new RecordNotFoundException(recordDTO.getId().toString());
+		}
+		Record record = findById(recordDTO.getId().toString());
 
-        if (!validationService.validateRecordOwnership(record, user)) {
-            throw new ForbiddenOperationException("You don't have permission to update this record");
-        }
+		if (!validationService.validateRecordOwnership(record, user)) {
+			throw new ForbiddenOperationException("You don't have permission to update this record");
+		}
 
-        // can update
-        record.setVisible(recordDTO.isVisible());
-        record.setAllocationID(recordDTO.getAllocationID() != null ? recordDTO.getAllocationID() : record.getAllocationID());
-        record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
-        record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
+		// can update
+		record.setVisible(recordDTO.isVisible());
+		record.setAllocationID(
+				recordDTO.getAllocationID() != null ? recordDTO.getAllocationID() : record.getAllocationID());
+		record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
+		record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
 
-        // modification timestamp
-        record.setModifierID(user.getId());
-        record.setModifiedAt(new Date());
+		// modification timestamp
+		record.setModifierID(user.getId());
+		record.setModifiedAt(new Date());
 
-        // allow igsn:import scope to overwrite certain fields
-        if (validationService.validateAllocationScope(new Allocation(record.getAllocationID()), user, Scope.IMPORT)) {
-            record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
-            record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
-            record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
-            record.setModifierID(recordDTO.getModifierID() != null ? recordDTO.getModifierID() : record.getModifierID());
-        }
+		// allow igsn:import scope to overwrite certain fields
+		if (validationService.validateAllocationScope(new Allocation(record.getAllocationID()), user, Scope.IMPORT)) {
+			record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
+			record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getCreatedAt());
+			record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
+			record.setModifierID(
+					recordDTO.getModifierID() != null ? recordDTO.getModifierID() : record.getModifierID());
+		}
 
-        record = repository.save(record);
+		record = repository.save(record);
 
-        return mapper.convertToDTO(record);
-    }
+		return mapper.convertToDTO(record);
+	}
 
-    public Record save(Record record) {
-        return repository.saveAndFlush(record);
-    }
+	public Record save(Record record) {
+		return repository.saveAndFlush(record);
+	}
+
 }

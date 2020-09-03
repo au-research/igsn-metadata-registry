@@ -20,42 +20,36 @@ import org.springframework.dao.DeadlockLoserDataAccessException;
 @Configuration
 public class IGSNReserveJobConfig {
 
-    @Autowired
-    public JobBuilderFactory jobBuilderFactory;
+	@Autowired
+	public JobBuilderFactory jobBuilderFactory;
 
-    @Autowired
-    public StepBuilderFactory stepBuilderFactory;
+	@Autowired
+	public StepBuilderFactory stepBuilderFactory;
 
-    @Autowired
-    RecordRepository recordRepository;
+	@Autowired
+	RecordRepository recordRepository;
 
-    @Autowired
-    IdentifierRepository identifierRepository;
+	@Autowired
+	IdentifierRepository identifierRepository;
 
-    @Autowired
-    IGSNService igsnService;
+	@Autowired
+	IGSNService igsnService;
 
-    @Autowired
-    TaskExecutor asyncTaskExecutor;
+	@Autowired
+	TaskExecutor asyncTaskExecutor;
 
-    @Bean(name = "ReserveIGSNJob")
-    public Job ReserveIGSNJob() {
-        return jobBuilderFactory.get("ReserveIGSNJob")
-                .listener(new IGSNJobListener(igsnService))
-                .flow(reserveIGSN())
-                .end().build();
-    }
+	@Bean(name = "ReserveIGSNJob")
+	public Job ReserveIGSNJob() {
+		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService)).flow(reserveIGSN())
+				.end().build();
+	}
 
-    @Bean
-    public Step reserveIGSN() {
-        return stepBuilderFactory.get("Reserve IGSN")
-                .<String, String>chunk(1)
-                .reader(new IGSNItemReader())
-                .processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService))
-                .writer(new IGSNItemWriter())
-                .faultTolerant()
-                .retryLimit(3)
-                .retry(DeadlockLoserDataAccessException.class)
-                .build();
-    }
+	@Bean
+	public Step reserveIGSN() {
+		return stepBuilderFactory.get("Reserve IGSN").<String, String>chunk(1).reader(new IGSNItemReader())
+				.processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService))
+				.writer(new IGSNItemWriter()).faultTolerant().retryLimit(3)
+				.retry(DeadlockLoserDataAccessException.class).build();
+	}
+
 }
