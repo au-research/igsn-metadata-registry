@@ -1,7 +1,17 @@
 package au.edu.ardc.registry.oai.exception;
 
+import clover.org.apache.log4j.spi.ErrorCode;
+
 public class BadVerbException extends RuntimeException{
-    public BadVerbException() {
-        super("Illegal OAI verb");
+
+    private static String code;
+
+    public BadVerbException(String message, String oaiCode) {
+        super(message);
+        code = "badVerb";
+    }
+
+    public static String getCode() {
+        return code;
     }
 }

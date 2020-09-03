@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.oai.controller;
 
 import au.edu.ardc.registry.oai.exception.BadVerbException;
+import au.edu.ardc.registry.oai.model.ErrorFragment;
 import au.edu.ardc.registry.oai.model.RequestFragment;
 import au.edu.ardc.registry.oai.response.OAIExceptionResponse;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -21,12 +22,18 @@ public class OAIPMHControllerAdvice {
 
     @ExceptionHandler(value = {BadVerbException.class})
     public ResponseEntity<Object> handleBadVerb(RuntimeException ex, HttpServletRequest request) throws XMLStreamException, IOException {
+
         OAIExceptionResponse response = new OAIExceptionResponse();
+        ErrorFragment errorFragment = new ErrorFragment();
+        errorFragment.setValue(ex.getMessage());
+        errorFragment.setCode(BadVerbException.getCode());
         RequestFragment requestFragment = new RequestFragment();
         requestFragment.setValue(request.getRequestURL().toString());
+        requestFragment.setVerb(request.getParameter("verb").toString());
+        requestFragment.setVerb(request.getParameter("verb").toString());
         response.setRequest(requestFragment);
         response.setResponseDate(new Date());
-        response.setError(ex.getMessage());
+        response.setError(errorFragment);
 
         // add xml declaration
         XmlMapper mapper = new XmlMapper();

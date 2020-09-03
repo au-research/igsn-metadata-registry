@@ -2,11 +2,14 @@ package au.edu.ardc.registry.oai.controller;
 
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.oai.exception.BadVerbException;
-import au.edu.ardc.registry.oai.model.IdentifyFragment;
-import au.edu.ardc.registry.oai.model.RequestFragment;
+import au.edu.ardc.registry.oai.model.*;
 import au.edu.ardc.registry.oai.response.GetRecordResponse;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
+import au.edu.ardc.registry.oai.response.OAIListMetadataFormatsResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -20,10 +23,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/api/services/oai-pmh", produces = MediaType.APPLICATION_XML_VALUE)
 public class OAIPMHService {
+
 
     @Autowired
     RecordService recordService;
@@ -40,7 +46,7 @@ public class OAIPMHService {
     ) {
 
         if (verb == null || verb.equals("")){
-            throw new BadVerbException();
+            throw new BadVerbException("No OAI verb supplied", "badVerb");
         }
 
         RequestFragment requestFragment = new RequestFragment();
@@ -54,11 +60,12 @@ public class OAIPMHService {
             requestFragment.setMetadataPrefix(metadataPrefix);
             return getRecord(identifier, metadataPrefix);
         } else if (verb.equals("ListRecords")) {
-            requestFragment.setMetadataPrefix(metadataPrefix);
-            throw new BadVerbException();
+            throw new BadVerbException("Illegal OAI verb", "badVerb");
             //return getRecords(metadataPrefix);
+        } else if (verb.equals("ListMetadataFormats")){
+            throw new BadVerbException("Illegal OAI verb", "badVerb");
         } else {
-            throw new BadVerbException();
+            throw new BadVerbException("Illegal OAI verb", "badVerb");
         }
 
     }
@@ -74,6 +81,7 @@ public class OAIPMHService {
                 .contentType(MediaType.APPLICATION_XML)
                 .body(response);
     }
+
 
     private ResponseEntity<OAIResponse> getRecord(String identifier, String metadataPrefix) {
         if (identifier == null) {

@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.config.RequestLoggingFilter;
 import au.edu.ardc.registry.oai.controller.OAIPMHService;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ class OAIPMHServiceTest {
     VersionService versionService;
 
     @Test
+    @DisplayName("Throws an exception and returns the error element with badverb code attribute")
     void handle_noVerbParam_throwsException() throws Exception {
         MockHttpServletRequestBuilder request =
                 MockMvcRequestBuilders.get(base_url)
@@ -51,19 +53,21 @@ class OAIPMHServiceTest {
         mockMvc.perform(request)
                 .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
+                .andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("No OAI verb supplied"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void handle_noVerb_throwsException() throws Exception {
         MockHttpServletRequestBuilder request =
-                MockMvcRequestBuilders.get(base_url + "/?verb=")
+                MockMvcRequestBuilders.get(base_url + "/?verb=nonsense")
                         .contentType(MediaType.APPLICATION_XML)
                         .accept(MediaType.APPLICATION_XML);
 
         mockMvc.perform(request)
+                .andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(xpath("/OAI-PMH/error").string("Illegal OAI verb"))
+                .andExpect(xpath("/OAI-PMH/error[@verb='nonsense']").string("Illegal OAI verb"))
                 .andExpect(status().isOk());
     }
 
@@ -79,5 +83,6 @@ class OAIPMHServiceTest {
                 .andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
                 .andExpect(status().isOk());
     }
+
 
 }
