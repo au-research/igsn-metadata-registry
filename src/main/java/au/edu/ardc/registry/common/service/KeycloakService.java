@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.DataCenter;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
@@ -229,7 +230,14 @@ public class KeycloakService {
 		AuthzClient authzClient = getAuthzClient();
 		ResourceRepresentation resource = authzClient.protection().resource().findById(id);
 		logger.debug(String.format("Obtained ResourceRepresentation id:%s %s: ", resource.getId(), resource.getId()));
-		Allocation allocation = new Allocation(UUID.fromString(resource.getId()));
+		Allocation allocation = null;
+		// TODO instantiate based on type (maybe add a factory)
+		if(resource.getType().equals("urn:ardc:igsn:allocation")){
+			allocation = new IGSNAllocation(UUID.fromString(resource.getId()));
+		}
+		else{
+			allocation = new Allocation(UUID.fromString(resource.getId()));
+		}
 		allocation.setName(resource.getName());
 		allocation.setType(resource.getType());
 		Map<String, List<String>> attributes = resource.getAttributes();

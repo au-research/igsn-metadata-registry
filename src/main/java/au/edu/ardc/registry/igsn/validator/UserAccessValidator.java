@@ -6,9 +6,11 @@ import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,31 +20,53 @@ public class UserAccessValidator {
 	ValidationService vService;
 
 	/**
-	 * @param Identifier
-	 * @param user
-	 * @return
+	 * @param Identifier an IGSN identifier
+	 * @param user and IGSN User
+	 * @return IGSNAllocation if the user has access to
 	 */
-	public boolean canCreateIdentifier(String Identifier, User user) {
-		// TODO get allocation from identifier and check if user has create access
-		List<Allocation> allocations = user.getAllocations();
+	public IGSNAllocation getIGSNAllocation(String Identifier, User user) {
+		// get allocation from identifier that user has access to
+		List<Allocation> allocations = user.getAllocationsByType("urn:ardc:igsn:allocation");
 		for (Allocation allocation : allocations) {
-			Map<String, List<String>> attributes = allocation.getAttributes();
-			List<String> prefixes = attributes.get("allocation");
+			IGSNAllocation ia = (IGSNAllocation) allocation;
+			String prefix = ia.getPrefix();
+			String namespace = ia.getNamespace();
+			if(Identifier.startsWith(prefix + "/" + namespace)){
+				return ia;
+			}
 		}
-
-		// Allocation a = new Allocation();
-		return true;
+		return null;
 	}
 
-	public boolean hasAccess(Record record, User user) throws Exception {
+
+	/**
+	 * @param identifier an IGSN identifier value
+	 * @param user and IGSN User
+	 * @return true if the user can create the Identifier
+	 */
+	public boolean canCreateIdentifier(String identifier, User user) {
+		// get allocation from identifier that user has access to
+		List<Allocation> allocations = user.getAllocationsByType("urn:ardc:igsn:allocation");
+		for (Allocation allocation : allocations) {
+			IGSNAllocation ia = (IGSNAllocation) allocation;
+			String prefix = ia.getPrefix();
+			String namespace = ia.getNamespace();
+			if(identifier.startsWith(prefix + "/" + namespace)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean hasAccessToRecord(Record record, User user) throws Exception {
 		return vService.validateRecordOwnership(record, user);
 	}
 
-	public boolean canCreate(Allocation a, User user) throws Exception {
+	public boolean canCreate(IGSNAllocation a, User user) throws Exception {
 		return vService.validateAllocationScope(a, user, Scope.CREATE);
 	}
 
-	public boolean canUpdate(Allocation a, User user) throws Exception {
+	public boolean canUpdate(IGSNAllocation a, User user) throws Exception {
 		return vService.validateAllocationScope(a, user, Scope.UPDATE);
 	}
 

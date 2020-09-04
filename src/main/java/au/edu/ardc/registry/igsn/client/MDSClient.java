@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.client;
 
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +27,18 @@ public class MDSClient {
 	 * WebClient with Basic Authentication
 	 *
 	 */
-	public MDSClient(String userName, String passWord, String url) {
-		this.web_client = WebClient.builder().filter(basicAuthentication(userName, passWord)).baseUrl(url).build();
-		this.mds_url = url;
+	public MDSClient(IGSNAllocation allocation) {
+		String mds_username = allocation.getMds_username();
+		String mds_password = allocation.getMds_password();
+		String mds_url = allocation.getMds_url();
+
+		this.web_client = WebClient.builder()
+				.filter(basicAuthentication(mds_username, mds_password))
+				.baseUrl(mds_url).build();
+		this.mds_url = mds_url;
 
 	}
+
 
 	public String getUrl() {
 		return this.mds_url;

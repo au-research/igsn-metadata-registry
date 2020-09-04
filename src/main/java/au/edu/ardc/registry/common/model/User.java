@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -123,5 +124,21 @@ public class User {
 
 		return null;
 	}
+
+	/**
+	 * Returns the Allocations by type
+	 * @param type the type of the Allocation
+	 * @return the Requested Allocation as a List
+	 */
+	public List<Allocation> getAllocationsByType(String type) {
+		List<Allocation> aList = new ArrayList<Allocation>();
+		for (Allocation allocation : allocations) {
+			if (allocation.getType().equals(type)) {
+				aList.add(allocation);
+			}
+		}
+		return aList;
+	}
+
 
 }
