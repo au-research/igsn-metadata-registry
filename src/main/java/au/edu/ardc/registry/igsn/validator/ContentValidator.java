@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.igsn.validator;
 
+import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,10 @@ public class ContentValidator {
 
 	@Autowired
 	SchemaService service;
+
+	public Schema getSchema(String content) throws Exception {
+		return service.getSchemaForContent(content);
+	}
 
 	public boolean validate(String content) throws Exception {
 		return service.validate(content);
