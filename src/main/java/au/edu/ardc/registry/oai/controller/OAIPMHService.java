@@ -3,7 +3,6 @@ package au.edu.ardc.registry.oai.controller;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.oai.exception.BadVerbException;
 import au.edu.ardc.registry.oai.model.*;
@@ -24,11 +23,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/api/services/oai-pmh", produces = MediaType.APPLICATION_XML_VALUE)
 public class OAIPMHService {
+
+	@Autowired
+	SchemaService schemaService;
 
 	@Autowired
 	RecordService recordService;
@@ -40,9 +41,7 @@ public class OAIPMHService {
 	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false) String verb,
 			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix) {
 
-		if (verb == null || verb.equals("")) {
-			throw new BadVerbException("No OAI verb supplied", "badVerb");
-		}
+		if (verb == null || verb.equals("")) throw new BadVerbException("Illegal OAI verb", "badVerb");
 
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());
@@ -61,7 +60,7 @@ public class OAIPMHService {
 			// return getRecords(metadataPrefix);
 		}
 		else if (verb.equals("ListMetadataFormats")) {
-			throw new BadVerbException("Illegal OAI verb", "badVerb");
+			return ListMetadataFormats(request, requestFragment);
 		}
 		else {
 			throw new BadVerbException("Illegal OAI verb", "badVerb");
@@ -101,4 +100,19 @@ public class OAIPMHService {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 	}
 
+	private ResponseEntity<OAIResponse> ListMetadataFormats
+			(HttpServletRequest request, RequestFragment requestFragment) {
+		OAIListMetadataFormatsResponse response = new OAIListMetadataFormatsResponse();
+
+		List<Schema> formats = schemaService.getSchemas();
+		int schema_num = formats.size();
+		response.setFormat(String.valueOf(schema_num), " ",  " ");
+		response.setRequest(requestFragment);
+
+
+		return ResponseEntity.status(HttpStatus.OK)
+				.contentType(MediaType.APPLICATION_XML)
+				.body(response);
+
+	}
 }

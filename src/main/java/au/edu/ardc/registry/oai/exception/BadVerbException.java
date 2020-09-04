@@ -8,7 +8,7 @@ public class BadVerbException extends RuntimeException {
 
 	public BadVerbException(String message, String oaiCode) {
 		super(message);
-		code = "badVerb";
+		code = oaiCode;
 	}
 
 	public static String getCode() {

@@ -30,8 +30,6 @@ public class OAIPMHControllerAdvice {
 		errorFragment.setCode(BadVerbException.getCode());
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());
-		requestFragment.setVerb(request.getParameter("verb").toString());
-		requestFragment.setVerb(request.getParameter("verb").toString());
 		response.setRequest(requestFragment);
 		response.setResponseDate(new Date());
 		response.setError(errorFragment);
