@@ -2,13 +2,14 @@ package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.config.RequestLoggingFilter;
+import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = VersionResourceController.class,
-		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class))
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+				classes = { RequestLoggingFilter.class, WebConfig.class }))
 public class VersionResourceControllerTest {
 
 	@Autowired

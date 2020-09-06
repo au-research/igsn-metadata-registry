@@ -41,7 +41,7 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 	 * @param key String {registrantName| nameIdentifier| nameIdentifierScheme | eventType
 	 * | timeStamp}
 	 * @param value String the value of the given parameter
-	 * @return
+	 * @return self for fluent API usage
 	 */
 	public ARDCv1ToRegistrationMetadataTransformer setParam(String key, String value) {
 		if (this.parameters.containsKey(key)) {

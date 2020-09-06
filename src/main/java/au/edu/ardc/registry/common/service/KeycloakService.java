@@ -19,6 +19,7 @@ import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -155,6 +156,7 @@ public class KeycloakService {
 		user.setEmail(token.getEmail());
 		user.setRoles(new ArrayList<>(token.getRealmAccess().getRoles()));
 
+		MDC.put("user.email", token.getEmail());
 		// groups belongs to otherClaims
 		logger.debug(
 				String.format("Building groups for user based on otherClaims size: %s", token.getOtherClaims().size()));

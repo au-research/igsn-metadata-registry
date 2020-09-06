@@ -2,10 +2,13 @@ package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -22,6 +25,8 @@ import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
 public class APILoggingService {
 
 	Logger logger = LoggerFactory.getLogger(APILoggingService.class);
+
+	private org.apache.logging.log4j.Logger log = LogManager.getLogger(APILoggingService.class);
 
 	/**
 	 * Log the request using the built-in logger
@@ -109,6 +114,50 @@ public class APILoggingService {
 		catch (Exception e) {
 			return "";
 		}
+	}
+
+	/**
+	 * Log the request and response
+	 * @param wrappedRequest the request
+	 * @param servletResponse the response
+	 */
+	public void log(MultiReadHttpServletRequest wrappedRequest, HttpServletResponse servletResponse) {
+
+		// due to Spring Security forward the error to the error Handler, the request URI
+		// are lost in translation
+		// can be reobtain with RequestDispatcher.FORWARD_REQUEST_URI if that exists
+		String uri = wrappedRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) == null
+				? wrappedRequest.getRequestURI()
+				: (String) wrappedRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+
+		// every log should have a message
+		String message = String.format("%s %s %s", wrappedRequest.getMethod(), uri, servletResponse.getStatus());
+
+		// build out the StringMapMessage for structured API Event logging
+		StringMapMessage msg = new StringMapMessage().with("message", message)
+				.with("client.ip", getClientIpAddress(wrappedRequest))
+				.with("client.address", getClientIpAddress(wrappedRequest))
+				.with("user_agent.name", wrappedRequest.getHeader("User-Agent"))
+				.with("user_agent.original", wrappedRequest.getHeader("User-Agent")).with("url.path", uri)
+				.with("http.version", wrappedRequest.getProtocol())
+				.with("http.request.method", wrappedRequest.getMethod())
+				.with("http.version", wrappedRequest.getProtocol())
+				.with("http.request.method", wrappedRequest.getMethod())
+				.with("http.response.status_code", String.valueOf(servletResponse.getStatus()));
+
+		// Referrer might not be always there
+		String referrer = wrappedRequest.getHeader("referrer");
+		if (referrer != null) {
+			msg = msg.with("http.request.referrer", referrer);
+		}
+
+		// authType might not be always there
+		String authType = wrappedRequest.getAuthType();
+		if (authType != null) {
+			msg = msg.with("url.auth", authType);
+		}
+
+		log.info(msg);
 	}
 
 }

@@ -20,7 +20,7 @@ public class IGSNAllocation extends Allocation {
 
     /**
      * Override the setAttributes for IGSN allocations and extract the MDS specific fields
-     * @param attributes
+     * @param attributes a {@link Map} of attributes for transformation
      */
     @Override
     public void setAttributes(Map<String, List<String>> attributes) {

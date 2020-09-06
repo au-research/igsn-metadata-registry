@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.common.config;
 
 import au.edu.ardc.registry.common.service.APILoggingService;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -10,13 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-@Configuration
 public class RequestLoggingFilter implements Filter {
+
+	private final String[] excluded = { "actuator" };
 
 	@Autowired
 	APILoggingService loggingService;
-
-	private final String[] excluded = { "actuator" };
 
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -37,8 +36,10 @@ public class RequestLoggingFilter implements Filter {
 		filterChain.doFilter(wrappedRequest, servletResponse);
 
 		// log the response
-		if (doLog)
-			loggingService.logResponse((HttpServletResponse) servletResponse);
+		loggingService.log(wrappedRequest, (HttpServletResponse) servletResponse);
+		MDC.clear();
+		// if (doLog)
+		// loggingService.logResponse((HttpServletResponse) servletResponse);
 	}
 
 }
