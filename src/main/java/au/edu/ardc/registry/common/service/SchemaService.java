@@ -157,7 +157,8 @@ public class SchemaService {
 	 * payload) method
 	 * @param payload the content either XML or JSON String
 	 * @return true is content validates
-	 * @throws Exception validation exception
+	 * @throws XMLValidationException when validation exception
+	 * @throws IOException when failing to obtain validator
 	 */
 	public boolean validate(String payload) throws XMLValidationException , ContentNotSupportedException, IOException{
 		try {
@@ -183,7 +184,7 @@ public class SchemaService {
 	 * targetNamespace of document's namespaceURI
 	 * @param payload the content either XML or JSON String
 	 * @return Schema or null if schema not found or supported
-	 * @throws Exception validation exception
+	 * @throws ContentNotSupportedException validation exception
 	 */
 	public Schema getSchemaForContent(String payload) throws ContentNotSupportedException {
 		try{

@@ -35,7 +35,8 @@ public class UserAccessValidator {
 	 * @param content the entire payload XML or JSON
 	 * @param user the user making the mint / update request
 	 * @return true if user has access to all identifiers in the given payload
-	 * @throws Exception
+	 * @throws ContentNotSupportedException when content is not supported
+	 * @throws ForbiddenOperationException when user has no access to the identifier
 	 */
 	public boolean hasUserAccess(String content, User user)
 			throws ContentNotSupportedException, ForbiddenOperationException {

@@ -33,7 +33,7 @@ public class PayloadValidator {
 	 * @param content String the payload content as String
 	 * @param user the logged in User who requested the mint / update
 	 * @return true if the content can be processed or false if errors or access is denied to user
-	 * @throws Exception
+	 * @throws IOException and other type of exceptions by contentValidator and user access validator
 	 */
 	public boolean isValidPayload(String content, User user)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException
