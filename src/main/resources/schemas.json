@@ -6,6 +6,7 @@
     "type": "igsn-description",
     "@type": "XMLSchema",
     "providers": {
+      "Fragment": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1FragmentProvider",
       "Identifier": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1IdentifierProvider",
       "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider",
       "LandingPage": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1LandingPageProvider"

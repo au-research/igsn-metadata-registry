@@ -2,8 +2,13 @@ package au.edu.ardc.registry.igsn.validator;
 
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.provider.IdentifierProvider;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
@@ -19,14 +24,40 @@ public class UserAccessValidator {
 	@Autowired
 	ValidationService vService;
 
+	@Autowired
+	SchemaService sService;
+
+	private final String IGSNallocationType = "urn:ardc:igsn:allocation";
+
+	/**
+	 * @param content the entire payload XML or JSON
+	 * @param user the user making the mint / update request
+	 * @return true if user has access to all identifiers in the given payload
+	 * @throws Exception
+	 */
+	public boolean hasUserAccess(String content, User user) throws Exception {
+
+		Schema schema = sService.getSchemaForContent(content);
+		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
+		assert provider != null;
+		List<String> identifiers = provider.getAll(content);
+		for (String identifier : identifiers) {
+			if (!this.canCreateIdentifier(identifier, user)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
 	/**
 	 * @param Identifier an IGSN identifier
 	 * @param user and IGSN User
-	 * @return IGSNAllocation if the user has access to
+	 * @return IGSNAllocation for the given identifier if the user has access to
 	 */
 	public IGSNAllocation getIGSNAllocation(String Identifier, User user) {
 		// get allocation from identifier that user has access to
-		List<Allocation> allocations = user.getAllocationsByType("urn:ardc:igsn:allocation");
+		List<Allocation> allocations = user.getAllocationsByType(this.IGSNallocationType);
 		for (Allocation allocation : allocations) {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();
@@ -39,6 +70,8 @@ public class UserAccessValidator {
 	}
 
 
+
+
 	/**
 	 * @param identifier an IGSN identifier value
 	 * @param user and IGSN User
@@ -46,7 +79,7 @@ public class UserAccessValidator {
 	 */
 	public boolean canCreateIdentifier(String identifier, User user) {
 		// get allocation from identifier that user has access to
-		List<Allocation> allocations = user.getAllocationsByType("urn:ardc:igsn:allocation");
+		List<Allocation> allocations = user.getAllocationsByType(this.IGSNallocationType);
 		for (Allocation allocation : allocations) {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();

@@ -24,25 +24,26 @@ public class PayloadValidator {
 	@Autowired
 	UserAccessValidator uaValidator;
 
-	public boolean isvalidPayload(String content) throws Exception {
-		boolean isValid = true;
-		// Validate the entire content even if it contains multiple resources
-		isValid = cValidator.validate(content);
-		return isValid;
-	}
+	@Autowired
+	VersionContentValidator vcValidator;
 
-	public boolean hasUserAccess(String content, User user) throws Exception {
-
-		Schema schema = cValidator.service.getSchemaForContent(content);
-		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		assert provider != null;
-		List<String> identifiers = provider.getAll(content);
-		for (String identifier : identifiers) {
-			if (!uaValidator.canCreateIdentifier(identifier, user)) {
-				return false;
+	/**
+	 * @param content String the payload content as String
+	 * @param user the logged in User who requested the mint / update
+	 * @return true if the content can be processed or false if errors or access is denied to user
+	 * @throws Exception
+	 */
+	public boolean validaPayload(String content, User user) throws Exception {
+		// validate the entire XML or JSON content
+		boolean isValidContent = cValidator.validate(content);
+		if(isValidContent){
+			// check if the current user has insert or update access for the records with the given identifiers
+			boolean hasUserAccess =	uaValidator.hasUserAccess(content, user);
+			if(hasUserAccess){
+				// check if the contents are new compared what stored in the registry
+				return vcValidator.isNewContent(content);
 			}
 		}
-		return true;
+		return false;
 	}
-
 }
