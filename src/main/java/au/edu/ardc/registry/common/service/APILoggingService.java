@@ -124,10 +124,12 @@ public class APILoggingService {
 					.with("igsn.updated", igsn.getUpdatedAt())
 					.with("igsn.creator", igsn.getCreatedBy());
 
+			// log IGSNRequestBody (if set)
 			String IGSNRequestBody = (String) request.getAttribute("IGSNRequestBody");
-			// body
-			msg = msg.with("http.request.body.content", IGSNRequestBody)
-					.with("http.request.body.bytes", IGSNRequestBody.getBytes().length);
+			if (IGSNRequestBody != null) {
+				msg = msg.with("http.request.body.content", IGSNRequestBody)
+						.with("http.request.body.bytes", IGSNRequestBody.getBytes().length);
+			}
 			// @formatter:on
 		}
 
