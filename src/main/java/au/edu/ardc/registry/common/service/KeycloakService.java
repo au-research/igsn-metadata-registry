@@ -146,6 +146,14 @@ public class KeycloakService {
 	}
 
 	public User getLoggedInUser(HttpServletRequest request) {
+
+		// if the user is already available in the request, take it from there
+		User existing = (User) request.getAttribute(String.valueOf(User.class));
+		if (existing != null) {
+			logger.debug("Obtained User from request attributes");
+			return existing;
+		}
+
 		logger.debug("Building currently logged in user for current HttpServletRequest request");
 		AccessToken token = getAccessToken(request);
 		logger.debug("Obtained access Token: " + token);

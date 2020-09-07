@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.common.config;
 
 import au.edu.ardc.registry.common.service.APILoggingService;
+import au.edu.ardc.registry.common.service.KeycloakService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,9 @@ public class WebConfig implements WebMvcConfigurer {
 	@Autowired
 	APILoggingService loggingService;
 
+	@Autowired
+	KeycloakService kcService;
+
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/api/**").allowedOrigins("*")
@@ -24,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new LoggerInterceptor(loggingService));
+		registry.addInterceptor(new LoggerInterceptor(loggingService, kcService));
 	}
 
 }

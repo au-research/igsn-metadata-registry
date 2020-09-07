@@ -94,6 +94,8 @@ public class IGSNServiceReserveController {
 
 		jobLauncher.run(reserveIGSNJob, jobParameters);
 
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
+
 		return ResponseEntity.ok().body(IGSNRequest);
 	}
 

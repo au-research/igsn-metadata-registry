@@ -2,10 +2,10 @@ package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.message.StringMapMessage;
-import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -136,25 +136,45 @@ public class APILoggingService {
 		String message = String.format("%s %s %s", wrappedRequest.getMethod(), uri, servletResponse.getStatus());
 
 		// build out the StringMapMessage for structured API Event logging
+		// @formatter:off
 		StringMapMessage msg = new StringMapMessage().with("message", message)
 				.with("client.ip", getClientIpAddress(wrappedRequest))
 				.with("client.address", getClientIpAddress(wrappedRequest))
 				.with("user_agent.name", wrappedRequest.getHeader("User-Agent"))
-				.with("user_agent.original", wrappedRequest.getHeader("User-Agent")).with("url.path", uri)
+				.with("user_agent.original", wrappedRequest.getHeader("User-Agent"))
+				.with("url.path", uri)
 				.with("http.version", wrappedRequest.getProtocol())
 				.with("http.request.method", wrappedRequest.getMethod())
 				.with("http.version", wrappedRequest.getProtocol())
 				.with("http.request.method", wrappedRequest.getMethod())
 				.with("http.response.status_code", String.valueOf(servletResponse.getStatus()));
-
+		// @formatter:on
 
 		// infer User from the request (if set)
 		User user = (User) wrappedRequest.getAttribute(String.valueOf(User.class));
 		if (user != null) {
+			// @formatter:off
 			msg = msg.with("user.email", user.getEmail())
 					.with("user.id", user.getId())
 					.with("user.name", user.getUsername())
 					.with("user.roles", user.getRoles());
+			// @formatter:on
+		}
+
+		// infer igsn from the request (if set)
+		// todo investigate option to extract this out into an IGSNLoggingService
+		//  so that each module can inject their own logging fragment
+		IGSNServiceRequest igsn = (IGSNServiceRequest) wrappedRequest
+				.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		if (igsn != null) {
+			// @formatter:off
+			msg = msg.with("igsn.id", igsn.getId())
+					.with("igsn.path", igsn.getDataPath())
+					.with("igsn.status", igsn.getStatus())
+					.with("igsn.created", igsn.getCreatedAt())
+					.with("igsn.updated", igsn.getUpdatedAt())
+					.with("igsn.creator", igsn.getCreatedBy());
+			// @formatter:on
 		}
 
 		// Referrer might not be always there
@@ -170,6 +190,7 @@ public class APILoggingService {
 		}
 
 		log.info(msg);
+
 	}
 
 }
