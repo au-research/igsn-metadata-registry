@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import org.slf4j.MDC;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -95,6 +96,7 @@ public class IGSNServiceReserveController {
 		jobLauncher.run(reserveIGSNJob, jobParameters);
 
 		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
+		MDC.put("event.action", "reserve");
 
 		return ResponseEntity.ok().body(IGSNRequest);
 	}

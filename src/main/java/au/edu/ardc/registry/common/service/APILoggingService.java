@@ -64,17 +64,21 @@ public class APILoggingService {
 	}
 
 	/**
-	 * Log the request and response
-	 * @param request the request
-	 * @param response the response
+	 * Log the request and response. Using ECS Speficiation and log4j2
+	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
+	 * specification</a>
+	 * @param request the current request
+	 * @param response the current response
 	 */
 	public void log(HttpServletRequest request, HttpServletResponse response) {
 
-		// due to Spring Security forward the error to the error Handler, the request URI
-		// are lost in translation
+		// due to Spring Security forward the error to the error Handler,
+		// the request URI are lost in translation
 		// can be reobtain with RequestDispatcher.FORWARD_REQUEST_URI if that exists
-		String uri = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) == null ? request.getRequestURI()
-				: (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+		String uri = request.getRequestURI();
+		if (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
+			uri = (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+		}
 
 		// every log should have a message
 		String message = String.format("%s %s %s", request.getMethod(), uri, response.getStatus());
@@ -82,10 +86,20 @@ public class APILoggingService {
 		// build out the StringMapMessage for structured API Event logging
 		// @formatter:off
 		StringMapMessage msg = new StringMapMessage().with("message", message)
-				.with("client.ip", getClientIpAddress(request))
+//				.with("client.ip", getClientIpAddress(request))
+				.with("client.ip", "130.56.60.125")
 				.with("user_agent.original", request.getHeader("User-Agent"))
-				.with("url.path", uri);
+				.with("url.path", uri)
+				.with("url.full", request.getRequestURL());
 		// @formatter:on
+
+		if (request.getQueryString() != null) {
+			msg = msg.with("url.query", request.getQueryString());
+		}
+
+		if (request.getAuthType() != null) {
+			msg = msg.with("url.auth", request.getAuthType());
+		}
 
 		// request
 		msg = msg.with("http.request.method", request.getMethod());
@@ -98,16 +112,15 @@ public class APILoggingService {
 		if (referrer != null) {
 			msg = msg.with("http.request.referrer", referrer);
 		}
-		// @formatter:on
 
 		// infer User from the request (if set)
 		User user = (User) request.getAttribute(String.valueOf(User.class));
 		if (user != null) {
 			// @formatter:off
-			msg = msg.with("user.email", user.getEmail())
-					.with("user.id", user.getId())
-					.with("user.name", user.getUsername())
-					.with("user.roles", user.getRoles());
+			msg = msg.with("client.user.email", user.getEmail())
+					.with("client.user.id", user.getId())
+					.with("client.user.name", user.getUsername())
+					.with("client.user.roles", user.getRoles());
 			// @formatter:on
 		}
 
@@ -123,6 +136,7 @@ public class APILoggingService {
 					.with("igsn.created", igsn.getCreatedAt())
 					.with("igsn.updated", igsn.getUpdatedAt())
 					.with("igsn.creator", igsn.getCreatedBy());
+			// todo: infer event.action from here instead of using MDC
 
 			// log IGSNRequestBody (if set)
 			String IGSNRequestBody = (String) request.getAttribute("IGSNRequestBody");
@@ -133,11 +147,14 @@ public class APILoggingService {
 			// @formatter:on
 		}
 
-		// authType might not be always there
-		String authType = request.getAuthType();
-		if (authType != null) {
-			msg = msg.with("url.auth", authType);
-		}
+		// service & event
+		// @formatter:off
+		msg = msg.with("service.type", "igsn")
+				.with("service.name", "igsn-registry")
+				.with("event.kind", "event")
+				.with("event.category", "web");
+		// currently obtain event.action from MDC
+		// @formatter:on
 
 		log.info(msg);
 
