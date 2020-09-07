@@ -1,7 +1,6 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.common.config.RequestLoggingFilter;
 import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
@@ -34,8 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = VersionResourceController.class,
-		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-				classes = { RequestLoggingFilter.class, WebConfig.class }))
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = { WebConfig.class }))
 public class VersionResourceControllerTest {
 
 	@Autowired

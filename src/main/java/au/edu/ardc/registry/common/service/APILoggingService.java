@@ -5,17 +5,14 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
@@ -26,60 +23,7 @@ import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
 @Service
 public class APILoggingService {
 
-	Logger logger = LoggerFactory.getLogger(APILoggingService.class);
-
-	private org.apache.logging.log4j.Logger log = LogManager.getLogger(APILoggingService.class);
-
-	/**
-	 * Log the request using the built-in logger
-	 * @param wrappedRequest MultiReadHttpServletRequest element
-	 */
-	public void logRequest(MultiReadHttpServletRequest wrappedRequest) {
-
-		LinkedHashMap<String, Object> req = new LinkedHashMap<>();
-
-		// include various single value fields
-		req.put("type", "REQUEST");
-		req.put("method", wrappedRequest.getMethod());
-		req.put("auth", String.valueOf(wrappedRequest.getAuthType()));
-		req.put("ip", getClientIpAddress(wrappedRequest));
-		req.put("user_agent", wrappedRequest.getHeader("User-Agent"));
-		req.put("url", String.valueOf(wrappedRequest.getRequestURL()));
-
-		// include Headers
-		List<String> excludedHeaders = new ArrayList<>();
-		excludedHeaders.add("authorization");
-		req.put("headers", getHeadersAsString(wrappedRequest, excludedHeaders));
-
-		/*
-		 * Include Body
-		 *
-		 * Does not work at the moment due to limitation in reading the ServletInputStream
-		 * ServletInputStream can only be read once, Spring may reject the incoming
-		 * request if the RequestBody is required Details
-		 * https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/
-		 * https://stackoverflow.com/questions/10210645/http-servlet-request-lose-params-
-		 * from-post-body-after-read-it-once https://stackoverflow.com/a/36619972/2257038
-		 * and https://stackoverflow.com/a/30748533/2257038
-		 */
-		req.put("body", getBody(wrappedRequest));
-
-		// logger.info(asJsonString(req));
-		logger.info(req.toString());
-	}
-
-	/**
-	 * Log the response using the built-in logger
-	 * @param response HttpServletResponse
-	 */
-	public void logResponse(HttpServletResponse response) {
-		LinkedHashMap<String, Object> res = new LinkedHashMap<>();
-
-		res.put("type", "RESPONSE");
-		res.put("status", response.getStatus());
-
-		logger.info(res.toString());
-	}
+	private final Logger log = LogManager.getLogger(APILoggingService.class);
 
 	/**
 	 * A helper method to display a collection of Headers provided in a request as a
@@ -114,44 +58,50 @@ public class APILoggingService {
 			return IOUtils.toString(wrappedRequest.getInputStream(), wrappedRequest.getCharacterEncoding());
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return "";
 		}
 	}
 
 	/**
 	 * Log the request and response
-	 * @param wrappedRequest the request
-	 * @param servletResponse the response
+	 * @param request the request
+	 * @param response the response
 	 */
-	public void log(MultiReadHttpServletRequest wrappedRequest, HttpServletResponse servletResponse) {
+	public void log(HttpServletRequest request, HttpServletResponse response) {
 
 		// due to Spring Security forward the error to the error Handler, the request URI
 		// are lost in translation
 		// can be reobtain with RequestDispatcher.FORWARD_REQUEST_URI if that exists
-		String uri = wrappedRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) == null
-				? wrappedRequest.getRequestURI()
-				: (String) wrappedRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+		String uri = request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) == null ? request.getRequestURI()
+				: (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
 
 		// every log should have a message
-		String message = String.format("%s %s %s", wrappedRequest.getMethod(), uri, servletResponse.getStatus());
+		String message = String.format("%s %s %s", request.getMethod(), uri, response.getStatus());
 
 		// build out the StringMapMessage for structured API Event logging
 		// @formatter:off
 		StringMapMessage msg = new StringMapMessage().with("message", message)
-				.with("client.ip", getClientIpAddress(wrappedRequest))
-				.with("client.address", getClientIpAddress(wrappedRequest))
-				.with("user_agent.name", wrappedRequest.getHeader("User-Agent"))
-				.with("user_agent.original", wrappedRequest.getHeader("User-Agent"))
-				.with("url.path", uri)
-				.with("http.version", wrappedRequest.getProtocol())
-				.with("http.request.method", wrappedRequest.getMethod())
-				.with("http.version", wrappedRequest.getProtocol())
-				.with("http.request.method", wrappedRequest.getMethod())
-				.with("http.response.status_code", String.valueOf(servletResponse.getStatus()));
+				.with("client.ip", getClientIpAddress(request))
+				.with("user_agent.original", request.getHeader("User-Agent"))
+				.with("url.path", uri);
+		// @formatter:on
+
+		// request
+		msg = msg.with("http.request.method", request.getMethod());
+
+		// response
+		msg = msg.with("http.response.status_code", String.valueOf(response.getStatus()));
+
+		// referrer
+		String referrer = request.getHeader("referrer");
+		if (referrer != null) {
+			msg = msg.with("http.request.referrer", referrer);
+		}
 		// @formatter:on
 
 		// infer User from the request (if set)
-		User user = (User) wrappedRequest.getAttribute(String.valueOf(User.class));
+		User user = (User) request.getAttribute(String.valueOf(User.class));
 		if (user != null) {
 			// @formatter:off
 			msg = msg.with("user.email", user.getEmail())
@@ -163,9 +113,8 @@ public class APILoggingService {
 
 		// infer igsn from the request (if set)
 		// todo investigate option to extract this out into an IGSNLoggingService
-		//  so that each module can inject their own logging fragment
-		IGSNServiceRequest igsn = (IGSNServiceRequest) wrappedRequest
-				.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		// so that each module can inject their own logging fragment
+		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
 		if (igsn != null) {
 			// @formatter:off
 			msg = msg.with("igsn.id", igsn.getId())
@@ -174,17 +123,16 @@ public class APILoggingService {
 					.with("igsn.created", igsn.getCreatedAt())
 					.with("igsn.updated", igsn.getUpdatedAt())
 					.with("igsn.creator", igsn.getCreatedBy());
+
+			String IGSNRequestBody = (String) request.getAttribute("IGSNRequestBody");
+			// body
+			msg = msg.with("http.request.body.content", IGSNRequestBody)
+					.with("http.request.body.bytes", IGSNRequestBody.getBytes().length);
 			// @formatter:on
 		}
 
-		// Referrer might not be always there
-		String referrer = wrappedRequest.getHeader("referrer");
-		if (referrer != null) {
-			msg = msg.with("http.request.referrer", referrer);
-		}
-
 		// authType might not be always there
-		String authType = wrappedRequest.getAuthType();
+		String authType = request.getAuthType();
 		if (authType != null) {
 			msg = msg.with("url.auth", authType);
 		}

@@ -1,6 +1,5 @@
 package au.edu.ardc.registry.oai.controller;
 
-import au.edu.ardc.registry.common.config.RequestLoggingFilter;
 import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
@@ -24,8 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = OAIPMHService.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-		classes = { RequestLoggingFilter.class, WebConfig.class }))
+@WebMvcTest(controllers = OAIPMHService.class,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = { WebConfig.class }))
 @AutoConfigureMockMvc
 class OAIPMHServiceTest {
 

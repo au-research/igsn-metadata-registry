@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 public class LoggerInterceptor extends HandlerInterceptorAdapter {
 
 	private final APILoggingService loggingService;
+
 	private final KeycloakService kcService;
 
 	public LoggerInterceptor(APILoggingService loggingService, KeycloakService kcService) {
@@ -24,11 +25,13 @@ public class LoggerInterceptor extends HandlerInterceptorAdapter {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
-		// setup the user before the handling of the request (for logging and quick retrieval)
+		// setup the user before the handling of the request
+		// for logging and quick retrieval
 		try {
 			User user = kcService.getLoggedInUser(request);
 			request.setAttribute(String.valueOf(User.class), user);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// no user is logged in
 		}
 
@@ -45,7 +48,7 @@ public class LoggerInterceptor extends HandlerInterceptorAdapter {
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
 			throws Exception {
 
-		loggingService.log(new MultiReadHttpServletRequest(request), response);
+		loggingService.log(request, response);
 		MDC.clear();
 
 		super.afterCompletion(request, response, handler, ex);
