@@ -1,9 +1,11 @@
 package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
+import au.edu.ardc.registry.common.model.User;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.message.StringMapMessage;
+import org.jboss.logging.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -144,6 +146,16 @@ public class APILoggingService {
 				.with("http.version", wrappedRequest.getProtocol())
 				.with("http.request.method", wrappedRequest.getMethod())
 				.with("http.response.status_code", String.valueOf(servletResponse.getStatus()));
+
+
+		// infer User from the request (if set)
+		User user = (User) wrappedRequest.getAttribute(String.valueOf(User.class));
+		if (user != null) {
+			msg = msg.with("user.email", user.getEmail())
+					.with("user.id", user.getId())
+					.with("user.name", user.getUsername())
+					.with("user.roles", user.getRoles());
+		}
 
 		// Referrer might not be always there
 		String referrer = wrappedRequest.getHeader("referrer");

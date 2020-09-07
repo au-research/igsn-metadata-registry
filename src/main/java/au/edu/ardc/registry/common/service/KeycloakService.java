@@ -156,7 +156,6 @@ public class KeycloakService {
 		user.setEmail(token.getEmail());
 		user.setRoles(new ArrayList<>(token.getRealmAccess().getRoles()));
 
-		MDC.put("user.email", token.getEmail());
 		// groups belongs to otherClaims
 		logger.debug(
 				String.format("Building groups for user based on otherClaims size: %s", token.getOtherClaims().size()));
@@ -203,6 +202,10 @@ public class KeycloakService {
 			}
 		}
 		user.setAllocations(userPermissions);
+
+		// passing the User along with the request, mainly for logging but can be used for anything else
+		request.setAttribute(String.valueOf(User.class), user);
+
 		// user.setAllocations(permissions);
 		return user;
 	}
