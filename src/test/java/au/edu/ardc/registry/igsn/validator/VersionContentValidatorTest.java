@@ -7,6 +7,9 @@ import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
+import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +60,12 @@ class VersionContentValidatorTest {
         String oldContent = "fish";
         v.setContent(oldContent.getBytes());
         v.setHash(vService.getHash(v));
-        boolean isNewContent = vValidator.isNewContent("fish", v);
-        assertThat(isNewContent).isFalse();
+        String schemaID = "ardc-igsn-desc-1.0";
+
+        Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
+            boolean isNewContent = vValidator.isNewContent("fish", v, schemaID);
+        });
+
 
     }
 

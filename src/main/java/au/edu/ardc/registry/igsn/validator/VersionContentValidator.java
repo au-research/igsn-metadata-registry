@@ -12,6 +12,7 @@ import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +33,7 @@ public class VersionContentValidator {
 	@Autowired
 	SchemaService sService;
 
-	public boolean isNewContent(String payload) throws Exception {
+	public boolean isNewContent(String payload) throws VersionContentAlreadyExisted {
 		Schema schema = sService.getSchemaForContent(payload);
 		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
 		IdentifierProvider iProvider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
@@ -44,16 +45,12 @@ public class VersionContentValidator {
 			assert iProvider != null;
 			String identifier = iProvider.get(content);
 			isNewContent = this.isNewContent(content, identifier, schema.getId());
-			if(!isNewContent){
-				// as soon as we find that the payload has content that has not been modified tell the client
-				return false;
-			}
 		}
 		return isNewContent;
 	}
 
 
-	public boolean isNewContent(String content, String identifier, String schemaID){
+	public boolean isNewContent(String content, String identifier, String schemaID) throws VersionContentAlreadyExisted{
 		Identifier i = iService.findByValueAndType(identifier, Identifier.Type.IGSN);
 		if(i == null)
 			return true;
@@ -62,14 +59,17 @@ public class VersionContentValidator {
 				.stream()
 				.filter(version -> version.getSchema().equals(schemaID))
 				.findFirst();
-		return cVersion.map(version -> this.isNewContent(content, version)).orElse(true);
+		return cVersion.map(version -> this.isNewContent(content, version, schemaID)).orElse(true);
 	}
 
 
-	public boolean isNewContent(String content, Version version) {
+	public boolean isNewContent(String content, Version version, String schemaID) throws VersionContentAlreadyExisted{
 		String versionHash = version.getHash();
 		String incomingHash = vService.getHash(content);
-		return !incomingHash.equals(versionHash);
+		if(incomingHash.equals(versionHash)){
+			throw new VersionContentAlreadyExisted(schemaID, versionHash);
+		}
+		return true;
 	}
 
 }

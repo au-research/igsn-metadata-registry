@@ -5,8 +5,10 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -33,17 +35,14 @@ public class PayloadValidator {
 	 * @return true if the content can be processed or false if errors or access is denied to user
 	 * @throws Exception
 	 */
-	public boolean validaPayload(String content, User user) throws Exception {
-		// validate the entire XML or JSON content
-		boolean isValidContent = cValidator.validate(content);
-		if(isValidContent){
+	public boolean isValidPayload(String content, User user)
+			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException
+	, ForbiddenOperationException, VersionContentAlreadyExisted {
+			// validate the entire XML or JSON content
+			boolean isValidContent = cValidator.validate(content);
 			// check if the current user has insert or update access for the records with the given identifiers
 			boolean hasUserAccess =	uaValidator.hasUserAccess(content, user);
-			if(hasUserAccess){
-				// check if the contents are new compared what stored in the registry
-				return vcValidator.isNewContent(content);
-			}
-		}
-		return false;
+			// check if the contents are new compared what stored in the registry
+			return vcValidator.isNewContent(content);
 	}
 }

@@ -11,6 +11,8 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,15 +37,15 @@ public class UserAccessValidator {
 	 * @return true if user has access to all identifiers in the given payload
 	 * @throws Exception
 	 */
-	public boolean hasUserAccess(String content, User user) throws Exception {
-
+	public boolean hasUserAccess(String content, User user)
+			throws ContentNotSupportedException, ForbiddenOperationException {
 		Schema schema = sService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
 		for (String identifier : identifiers) {
 			if (!this.canCreateIdentifier(identifier, user)) {
-				return false;
+				throw new ForbiddenOperationException("User has no access to the given Identifier:" + identifier);
 			}
 		}
 		return true;
