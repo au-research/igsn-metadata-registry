@@ -85,9 +85,6 @@ public class APILoggingService {
 		if (request.getQueryString() != null) {
 			url.put("query", request.getQueryString());
 		}
-		if (request.getAuthType() != null) {
-			url.put("auth", request.getAuthType());
-		}
 		ecs.set("url", url);
 
 		// http
