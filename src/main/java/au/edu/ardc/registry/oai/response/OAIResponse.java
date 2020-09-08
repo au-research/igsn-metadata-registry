@@ -24,7 +24,6 @@ public class OAIResponse {
 
 	private RequestFragment request;
 
-
 	public OAIResponse() {
 		this.responseDate = new Date();
 		this.request = new RequestFragment();

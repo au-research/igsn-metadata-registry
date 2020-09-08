@@ -12,6 +12,7 @@ import au.edu.ardc.registry.oai.response.OAIListMetadataFormatsResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -39,9 +40,11 @@ public class OAIPMHService {
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false) String verb,
-			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix) {
+			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix)
+			throws JsonProcessingException {
 
-		if (verb == null || verb.equals("")) throw new BadVerbException("Illegal OAI verb", "badVerb");
+		if (verb == null || verb.equals(""))
+			throw new BadVerbException("Illegal OAI verb", "badVerb");
 
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());
@@ -100,19 +103,22 @@ public class OAIPMHService {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 	}
 
-	private ResponseEntity<OAIResponse> ListMetadataFormats
-			(HttpServletRequest request, RequestFragment requestFragment) {
+	private ResponseEntity<OAIResponse> ListMetadataFormats(HttpServletRequest request,
+			RequestFragment requestFragment) {
+
 		OAIListMetadataFormatsResponse response = new OAIListMetadataFormatsResponse();
+		ListMetadataFormatsFragment metadataFormatsFragment = new ListMetadataFormatsFragment();
 
 		List<Schema> formats = schemaService.getSchemas();
-		int schema_num = formats.size();
-		response.setFormat(String.valueOf(schema_num), " ",  " ");
+
+		for (Schema format : formats) {
+			metadataFormatsFragment.setMetadataFormat(format.getId(), format.getName(), format.getType());
+		}
+
+		response.setListMetadataFormatsFragment(metadataFormatsFragment);
 		response.setRequest(requestFragment);
 
-
-		return ResponseEntity.status(HttpStatus.OK)
-				.contentType(MediaType.APPLICATION_XML)
-				.body(response);
-
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 	}
+
 }

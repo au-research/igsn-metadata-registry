@@ -1,7 +1,5 @@
 package au.edu.ardc.registry.oai.exception;
 
-import clover.org.apache.log4j.spi.ErrorCode;
-
 public class BadVerbException extends RuntimeException {
 
 	private static String code;

@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.oai.controller;
 
 import au.edu.ardc.registry.common.config.RequestLoggingFilter;
-import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.RecordService;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -47,9 +48,8 @@ class OAIPMHServiceTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url)
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']")
-						.string("Illegal OAI verb"))
+		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML)).andDo(print())
+				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
 				.andExpect(status().isOk());
 	}
 
@@ -59,8 +59,7 @@ class OAIPMHServiceTest {
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
 		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']")
-						.string("Illegal OAI verb"))
+				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
 				.andExpect(status().isOk());
 	}
 
@@ -69,24 +68,8 @@ class OAIPMHServiceTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url + "/?verb=Identify")
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/Identify/repositoryName")
-						.string("ARDC IGSN Repository"))
-				.andExpect(status().isOk());
-	}
-
-	@Test
-    void handle_verb_ListMetadataFormats_returns() throws Exception {
-        MockHttpServletRequestBuilder request =
-				MockMvcRequestBuilders.get(base_url + "/?verb=ListMetadataFormats")
-						.contentType(MediaType.APPLICATION_XML)
-						.accept(MediaType.APPLICATION_XML);
-
-		mockMvc.perform(request)
-				.andDo(print())
-				.andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/ListMetadataFormats")
-						.string(""))
+		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML)).andDo(print())
+				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
 				.andExpect(status().isOk());
 	}
 
