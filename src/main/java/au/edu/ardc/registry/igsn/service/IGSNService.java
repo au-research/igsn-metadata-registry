@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.IGSNServiceRequestRepository;
@@ -86,10 +87,11 @@ public class IGSNService {
 		loggers.remove(loggerID);
 	}
 
-	public IGSNServiceRequest createRequest(User user) {
+	public IGSNServiceRequest createRequest(User user, IGSNEventType type) {
 		// create IGSNServiceRequest
 		logger.debug("Creating IGSNServiceRequest for user: {}", user);
 		IGSNServiceRequest request = new IGSNServiceRequest();
+		request.setType(type);
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(user.getId());
 		request = repository.save(request);

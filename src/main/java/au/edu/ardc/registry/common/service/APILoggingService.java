@@ -1,22 +1,18 @@
 package au.edu.ardc.registry.common.service;
 
-import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
-import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Enumeration;
-import java.util.List;
 
 import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
 
@@ -29,13 +25,30 @@ public class APILoggingService {
 	private final Logger log = LogManager.getLogger(APILoggingService.class);
 
 	/**
-	 * Log the request and response. Using ECS Speficiation and log4j2
-	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
+	 * Log the request and response.
+	 *
+	 * Using ECS Specification for layout. Uses log4j2 as the Logger Implementation to log
+	 * structured data
+	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS *
 	 * specification</a>
 	 * @param request the current request
 	 * @param response the current response
 	 */
 	public void log(HttpServletRequest request, HttpServletResponse response) {
+		ObjectNode ecs = getLoggableMessage(request, response);
+		log.info(new ObjectMessage(ecs));
+	}
+
+	/**
+	 * Return a ECS structure ready for logging
+	 *
+	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
+	 * specification</a>
+	 * @param request the current request
+	 * @param response the current request
+	 * @return ObjectNode representing the ECS jackson ObjectNode
+	 */
+	public ObjectNode getLoggableMessage(HttpServletRequest request, HttpServletResponse response) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		ObjectNode ecs = mapper.createObjectNode();
@@ -96,25 +109,56 @@ public class APILoggingService {
 		userAgent.put("original", request.getHeader("User-Agent"));
 		ecs.set("user_agent", userAgent);
 
+		// service
+		ObjectNode service = mapper.createObjectNode();
+		service.put("type", "igsn");
+		service.put("name", "igsn-registry");
+		service.put("kind", "event");
+		ecs.set("service", service);
+
 		// igsn
 		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
 		if (igsn != null) {
 			ecs.set("igsn", mapper.valueToTree(igsn));
 		}
 
-		// service
-		ObjectNode service = mapper.createObjectNode();
-		service.put("type", "igsn");
-		service.put("name", "igsn-registry");
-		service.put("kind", "event");
-		service.put("event.category", "web");
-		ecs.set("service", service);
-		// todo event.action
+		// event
+		ObjectNode event = mapper.createObjectNode();
+		event.put("category", "web");
+		event.put("action", determineEventAction(request));
+		String outcome = (response.getStatus() < 200 || response.getStatus() > 299) ? "failure" : "success";
+		event.put("outcome", outcome);
+		ecs.set("event", event);
 
 		// message
 		ecs.put("message", String.format("%s %s %s", request.getMethod(), uri, response.getStatus()));
 
-		log.info(new ObjectMessage(ecs));
+		return ecs;
+	}
+
+	/**
+	 * Determine the ECS field event.action based on the current request
+	 *
+	 * By default, returns "api". If there's an {@link IGSNServiceRequest} in the request,
+	 * the action will be in the associated {@link IGSNEventType}
+	 * @see <a href=
+	 * "https://www.elastic.co/guide/en/ecs/current/ecs-event.html">ecs-event</a>
+	 * @param request the current {@link HttpServletRequest}
+	 * @return the String representation of the event.action value
+	 */
+	private String determineEventAction(HttpServletRequest request) {
+
+		// default action would be api
+		String action = "api";
+
+		// if it's an IGSN request, then the action is the type
+		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		if (igsn != null) {
+			action = igsn.getType().getAction();
+		}
+
+		return action;
+
 	}
 
 }

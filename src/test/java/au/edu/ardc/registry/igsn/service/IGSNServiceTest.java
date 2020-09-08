@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.IGSNServiceRequestRepository;
@@ -67,7 +68,7 @@ class IGSNServiceTest {
 		when(repository.save(any(IGSNServiceRequest.class))).thenReturn(request);
 		when(properties.getDataPath()).thenReturn(randomDataPath);
 
-		IGSNServiceRequest actual = service.createRequest(user);
+		IGSNServiceRequest actual = service.createRequest(user, IGSNEventType.RESERVE);
 
 		verify(repository, times(2)).save(any(IGSNServiceRequest.class));
 

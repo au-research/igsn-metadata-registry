@@ -33,11 +33,11 @@ class IGSNServiceTransferControllerTest extends KeycloakIntegrationTest {
 	void transfer_validRequest_transferedToNewOwner() {
 		String[] identifierValues = { "12073/XXAA123456", "12073/XXAB123456" };
 
-		for (int i = 0; i < 2; i++) {
+		for (String identifierValue : identifierValues) {
 			Record record = TestHelper.mockRecord();
 			recordRepository.saveAndFlush(record);
 			Identifier identifier = TestHelper.mockIdentifier();
-			identifier.setValue(identifierValues[i]);
+			identifier.setValue(identifierValue);
 			identifier.setRecord(record);
 			identifierRepository.saveAndFlush(identifier);
 		}
@@ -50,7 +50,8 @@ class IGSNServiceTransferControllerTest extends KeycloakIntegrationTest {
 				.uri(uriBuilder -> uriBuilder.path(baseUrl).queryParam("ownerID", targetOwnerID)
 						.queryParam("ownerType", targetOwnerType).build())
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
-				.body(Mono.just(requestBody), String.class).exchange().expectStatus().isOk().expectBody()
+				.body(Mono.just(requestBody), String.class)
+				.exchange().expectStatus().isOk().expectBody()
 				.jsonPath("$.id").exists().jsonPath("$.status").exists();
 
 		Identifier identifier = identifierRepository.findByValueAndType("12073/XXAA123456", Identifier.Type.IGSN);

@@ -30,6 +30,11 @@ public class IGSNServiceRequest {
 	@Column(columnDefinition = "BINARY(16)")
 	private UUID createdBy;
 
+	@Enumerated(EnumType.STRING)
+	private IGSNEventType type;
+
+	private boolean manual = false;
+
 	public IGSNServiceRequest() {
 
 	}
@@ -80,6 +85,22 @@ public class IGSNServiceRequest {
 
 	public void setDataPath(String dataPath) {
 		this.dataPath = dataPath;
+	}
+
+	public boolean isManual() {
+		return manual;
+	}
+
+	public void setManual(boolean manual) {
+		this.manual = manual;
+	}
+
+	public IGSNEventType getType() {
+		return type;
+	}
+
+	public void setType(IGSNEventType type) {
+		this.type = type;
 	}
 
 	public enum Status {

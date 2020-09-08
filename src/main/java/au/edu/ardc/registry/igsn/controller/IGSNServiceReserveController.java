@@ -1,12 +1,13 @@
 package au.edu.ardc.registry.igsn.controller;
 
+import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.common.service.KeycloakService;
-import org.slf4j.MDC;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -66,7 +67,7 @@ public class IGSNServiceReserveController {
 		}
 		// todo validateOwnerID if ownerType=DataCenter
 
-		IGSNServiceRequest IGSNRequest = service.createRequest(user);
+		IGSNServiceRequest IGSNRequest = service.createRequest(user, IGSNEventType.RESERVE);
 		String dataPath = IGSNRequest.getDataPath();
 
 		// write IGSNList to input.txt
@@ -95,6 +96,7 @@ public class IGSNServiceReserveController {
 
 		jobLauncher.run(reserveIGSNJob, jobParameters);
 
+		// set the IGSNServiceRequest in the request for later logging
 		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
 
 		return ResponseEntity.ok().body(IGSNRequest);
