@@ -83,6 +83,9 @@ public class IGSNServiceTransferController {
 				.toJobParameters();
 
 		jobLauncher.run(transferIGSNJob, jobParameters);
+
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
+
 		return ResponseEntity.ok().body(IGSNRequest);
 	}
 

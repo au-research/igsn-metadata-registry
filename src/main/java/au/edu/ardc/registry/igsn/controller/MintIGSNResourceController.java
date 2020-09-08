@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import au.edu.ardc.registry.igsn.validator.PayloadValidator;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -34,6 +35,7 @@ public class MintIGSNResourceController {
 	@Autowired
 	private KeycloakService kcService;
 
+
 	@PostMapping("/mint")
 	@Operation(summary = "Creates new IGSN record(s)", description = "Add new IGSN record(s) to the registry")
 	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
@@ -44,12 +46,13 @@ public class MintIGSNResourceController {
 		User user = kcService.getLoggedInUser(request);
 		String payload = "";
 		try {
+			PayloadValidator validator = new PayloadValidator();
 			payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+			boolean isValidPayload = validator.isValidPayload(payload, user);
 			// TODO test for "Mintability" return with result, if 'mintable" then store
 			// the payload and start the mint pipeline
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e)
+		{ // lots of different exceptions will be thrown around !! catch them and let the client know !!
 			e.printStackTrace();
 		}
 		// for now just send them back what we've received

@@ -18,7 +18,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 
 	/**
 	 * Finds the resourceIdentifier of an IGSN record with ARDC v1 schema
-	 * @param content The xml content of the ARDC v1 version
+	 * @param content XML String of one ARDCv1 Resource document
 	 * @return The resourceIdentifier as String
 	 */
 	@Override
@@ -40,6 +40,10 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		return identifierValue;
 	}
 
+	/**
+	 * @param content XML String of the ARDCv1 Resource(s) document
+	 * @return a List is identifier values in the given document
+	 */
 	@Override
 	public List<String> getAll(String content) {
 		List<String> identifiers = new ArrayList<String>();

@@ -1,6 +1,8 @@
 package au.edu.ardc.registry.igsn.client;
 
 import au.edu.ardc.registry.IntegrationTest;
+import au.edu.ardc.registry.TestHelper;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import clover.org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,14 +31,14 @@ public class MDSClientIT extends IntegrationTest {
 	@Value("${mds.url}")
 	private String mds_url;
 
-	private String test_prefix = "20.500.11812/XXAA";
-
 	@Value("${landing_page_base_url}")
 	private String base_url;
 
 	@Test
 	public void getUrlTest() {
-		MDSClient mc = new MDSClient(this.mds_user_name, this.mds_user_password, this.mds_url);
+		IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+		ia.setMds_username(this.mds_user_name).setMds_password(this.mds_user_password).setMds_url(this.mds_url);
+		MDSClient mc = new MDSClient(ia);
 		String url = mc.getUrl();
 		System.out.println("URL IS " + url);
 		assertEquals("https://doidb.wdc-terra.org/igsn/", url);
@@ -44,11 +46,13 @@ public class MDSClientIT extends IntegrationTest {
 
 	@Test
 	public void mintIGSNTest() {
-		MDSClient mc = new MDSClient(this.mds_user_name, this.mds_user_password, this.mds_url);
+		IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+		ia.setMds_username(this.mds_user_name).setMds_password(this.mds_user_password).setMds_url(this.mds_url);
+		MDSClient mc = new MDSClient(ia);
 		int response_code = 0;
 		SimpleDateFormat df = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ssXXX");
 		String sampleNumber = RandomStringUtils.randomAlphabetic(10).toUpperCase();
-		String identifier = this.test_prefix + sampleNumber;
+		String identifier = ia.getPrefix() + "/" + ia.getNamespace() + sampleNumber;
 		String metacontent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 		metacontent += "<sample xmlns=\"http://igsn.org/schema/kernel-v.1.0\" "
 				+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
@@ -70,7 +74,9 @@ public class MDSClientIT extends IntegrationTest {
 
 	@Test
 	public void getIGSNLandingPageTest() {
-		MDSClient mc = new MDSClient(this.mds_user_name, this.mds_user_password, this.mds_url);
+		IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+		ia.setMds_username(this.mds_user_name).setMds_password(this.mds_user_password).setMds_url(this.mds_url);
+		MDSClient mc = new MDSClient(ia);
 		String identifier = "20.500.11812/XXAAAURRXDFVJA";
 		String landingPage = "";
 		try {
@@ -85,7 +91,9 @@ public class MDSClientIT extends IntegrationTest {
 
 	@Test
 	public void getIGSNMetadataTest() {
-		MDSClient mc = new MDSClient(this.mds_user_name, this.mds_user_password, this.mds_url);
+		IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+		ia.setMds_username(this.mds_user_name).setMds_password(this.mds_user_password).setMds_url(this.mds_url);
+		MDSClient mc = new MDSClient(ia);
 		String identifier = "20.500.11812/XXAAAURRXDFVJA";
 		String metadata = "";
 		try {
@@ -94,7 +102,6 @@ public class MDSClientIT extends IntegrationTest {
 		catch (Exception e) {
 			System.out.print(e.getMessage());
 		}
-
 		assertTrue(metadata.contains(identifier));
 	}
 

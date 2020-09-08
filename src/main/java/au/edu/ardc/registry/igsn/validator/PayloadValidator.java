@@ -5,8 +5,10 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -24,25 +26,23 @@ public class PayloadValidator {
 	@Autowired
 	UserAccessValidator uaValidator;
 
-	public boolean isvalidPayload(String content) throws Exception {
-		boolean isValid = true;
-		// Validate the entire content even if it contains multiple resources
-		isValid = cValidator.validate(content);
-		return isValid;
+	@Autowired
+	VersionContentValidator vcValidator;
+
+	/**
+	 * @param content String the payload content as String
+	 * @param user the logged in User who requested the mint / update
+	 * @return true if the content can be processed or false if errors or access is denied to user
+	 * @throws IOException and other type of exceptions by contentValidator and user access validator
+	 */
+	public boolean isValidPayload(String content, User user)
+			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException
+	, ForbiddenOperationException, VersionContentAlreadyExisted {
+			// validate the entire XML or JSON content
+			boolean isValidContent = cValidator.validate(content);
+			// check if the current user has insert or update access for the records with the given identifiers
+			boolean hasUserAccess =	uaValidator.hasUserAccess(content, user);
+			// check if the contents are new compared what stored in the registry
+			return vcValidator.isNewContent(content);
 	}
-
-	public boolean hasUserAccess(String content, User user) throws Exception {
-
-		Schema schema = cValidator.service.getSchemaForContent(content);
-		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		assert provider != null;
-		List<String> identifiers = provider.getAll(content);
-		for (String identifier : identifiers) {
-			if (!uaValidator.canCreateIdentifier(identifier, user)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 }

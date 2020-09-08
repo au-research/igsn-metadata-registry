@@ -13,10 +13,12 @@ import au.edu.ardc.registry.common.model.Schema;
 
 import au.edu.ardc.registry.common.util.XMLUtil;
 
+@SuppressWarnings("unused")
 public class ARDCv1LandingPageProvider implements LandingPageProvider {
 
 	/**
-	 * Finds the landingPage of an IGSN record in ARDCv1 schema
+	 * Finds the landingPage of 1 IGSN record in ARDCv1 schema
+	 *
 	 * @param content The xml content of the ARDC v1 version
 	 * @return The landing page (a url) as String
 	 */

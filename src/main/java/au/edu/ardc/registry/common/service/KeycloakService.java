@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.DataCenter;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
@@ -18,6 +19,7 @@ import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -144,6 +146,14 @@ public class KeycloakService {
 	}
 
 	public User getLoggedInUser(HttpServletRequest request) {
+
+		// if the user is already available in the request, take it from there
+		User existing = (User) request.getAttribute(String.valueOf(User.class));
+		if (existing != null) {
+			logger.debug("Obtained User from request attributes");
+			return existing;
+		}
+
 		logger.debug("Building currently logged in user for current HttpServletRequest request");
 		AccessToken token = getAccessToken(request);
 		logger.debug("Obtained access Token: " + token);
@@ -200,6 +210,10 @@ public class KeycloakService {
 			}
 		}
 		user.setAllocations(userPermissions);
+
+		// passing the User along with the request, mainly for logging but can be used for anything else
+		request.setAttribute(String.valueOf(User.class), user);
+
 		// user.setAllocations(permissions);
 		return user;
 	}
@@ -229,7 +243,14 @@ public class KeycloakService {
 		AuthzClient authzClient = getAuthzClient();
 		ResourceRepresentation resource = authzClient.protection().resource().findById(id);
 		logger.debug(String.format("Obtained ResourceRepresentation id:%s %s: ", resource.getId(), resource.getId()));
-		Allocation allocation = new Allocation(UUID.fromString(resource.getId()));
+		Allocation allocation = null;
+		// TODO instantiate based on type (maybe add a factory)
+		if(resource.getType().equals("urn:ardc:igsn:allocation")){
+			allocation = new IGSNAllocation(UUID.fromString(resource.getId()));
+		}
+		else{
+			allocation = new Allocation(UUID.fromString(resource.getId()));
+		}
 		allocation.setName(resource.getName());
 		allocation.setType(resource.getType());
 		Map<String, List<String>> attributes = resource.getAttributes();

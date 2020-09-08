@@ -4,7 +4,10 @@ import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.URL;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
@@ -192,7 +195,21 @@ public class TestHelper {
 		return user;
 
 		// mock a user resources
-
 	}
+
+	public static IGSNAllocation mockIGSNAllocation(){
+		IGSNAllocation allocation = new IGSNAllocation(UUID.randomUUID());
+		allocation.setType("urn:ardc:igsn:allocation");
+		Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+		attributes.put("server_url", Collections.singletonList("https://doidb.wdc-terra.org/igsn/"));
+		attributes.put("password", Collections.singletonList("password_value"));
+		attributes.put("prefix", Collections.singletonList("20.500.11812"));
+		attributes.put("namespace", Collections.singletonList("XXAA"));
+		attributes.put("username", Collections.singletonList("username_value"));
+		attributes.put("status", Collections.singletonList("production"));
+		allocation.setAttributes(attributes);
+		return allocation;
+	}
+
 
 }

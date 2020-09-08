@@ -1,16 +1,21 @@
 package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
+import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
+import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
@@ -21,94 +26,95 @@ import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
 @Service
 public class APILoggingService {
 
-	Logger logger = LoggerFactory.getLogger(APILoggingService.class);
+	private final Logger log = LogManager.getLogger(APILoggingService.class);
 
 	/**
-	 * Log the request using the built-in logger
-	 * @param wrappedRequest MultiReadHttpServletRequest element
+	 * Log the request and response. Using ECS Speficiation and log4j2
+	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
+	 * specification</a>
+	 * @param request the current request
+	 * @param response the current response
 	 */
-	public void logRequest(MultiReadHttpServletRequest wrappedRequest) {
+	public void log(HttpServletRequest request, HttpServletResponse response) {
+		ObjectMapper mapper = new ObjectMapper();
 
-		LinkedHashMap<String, Object> req = new LinkedHashMap<>();
+		ObjectNode ecs = mapper.createObjectNode();
 
-		// include various single value fields
-		req.put("type", "REQUEST");
-		req.put("method", wrappedRequest.getMethod());
-		req.put("auth", String.valueOf(wrappedRequest.getAuthType()));
-		req.put("ip", getClientIpAddress(wrappedRequest));
-		req.put("user_agent", wrappedRequest.getHeader("User-Agent"));
-		req.put("url", String.valueOf(wrappedRequest.getRequestURL()));
+		// client
+		ObjectNode client = mapper.createObjectNode();
+		client.put("ip", getClientIpAddress(request));
 
-		// include Headers
-		List<String> excludedHeaders = new ArrayList<>();
-		excludedHeaders.add("authorization");
-		req.put("headers", getHeadersAsString(wrappedRequest, excludedHeaders));
-
-		/*
-		 * Include Body
-		 *
-		 * Does not work at the moment due to limitation in reading the ServletInputStream
-		 * ServletInputStream can only be read once, Spring may reject the incoming
-		 * request if the RequestBody is required Details
-		 * https://www.jvt.me/posts/2020/05/25/read-servlet-request-body-multiple/
-		 * https://stackoverflow.com/questions/10210645/http-servlet-request-lose-params-
-		 * from-post-body-after-read-it-once https://stackoverflow.com/a/36619972/2257038
-		 * and https://stackoverflow.com/a/30748533/2257038
-		 */
-		req.put("body", getBody(wrappedRequest));
-
-		// logger.info(asJsonString(req));
-		logger.info(req.toString());
-	}
-
-	/**
-	 * Log the response using the built-in logger
-	 * @param response HttpServletResponse
-	 */
-	public void logResponse(HttpServletResponse response) {
-		LinkedHashMap<String, Object> res = new LinkedHashMap<>();
-
-		res.put("type", "RESPONSE");
-		res.put("status", response.getStatus());
-
-		logger.info(res.toString());
-	}
-
-	/**
-	 * A helper method to display a collection of Headers provided in a request as a
-	 * string format
-	 * @param wrappedRequest MultiReadHttpServletRequest
-	 * @param excludedHeaders The headers to not log (eg, authorization)
-	 * @return headers
-	 */
-	private String getHeadersAsString(HttpServletRequest wrappedRequest, List<String> excludedHeaders) {
-		StringBuilder headers = new StringBuilder();
-		Enumeration<String> headerNames = wrappedRequest.getHeaderNames();
-		if (headerNames != null) {
-			while (headerNames.hasMoreElements()) {
-				String headerName = headerNames.nextElement();
-				String headerValue = wrappedRequest.getHeader(headerName);
-				if (headerValue != null && !excludedHeaders.contains(headerName.toLowerCase())) {
-					headers.append(headerName).append(": ").append(headerValue).append(" ");
-				}
-			}
+		// client.user
+		User user = (User) request.getAttribute(String.valueOf(User.class));
+		if (user != null) {
+			ObjectNode userNode = mapper.createObjectNode();
+			userNode.put("email", user.getEmail());
+			userNode.put("id", user.getId().toString());
+			userNode.put("name", user.getUsername());
+			userNode.set("roles", mapper.valueToTree(user.getRoles()));
+			client.set("user", userNode);
 		}
-		return headers.toString();
-	}
 
-	/**
-	 * Attempt to return the body of the request Does not work at the moment due to
-	 * request input stream can only be read once
-	 * @param wrappedRequest MultiReadHttpServletRequest
-	 * @return body
-	 */
-	private String getBody(MultiReadHttpServletRequest wrappedRequest) {
-		try {
-			return IOUtils.toString(wrappedRequest.getInputStream(), wrappedRequest.getCharacterEncoding());
+		ecs.set("client", client);
+
+		// url
+		String uri = request.getRequestURI();
+		if (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
+			uri = (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
 		}
-		catch (Exception e) {
-			return "";
+		ObjectNode url = mapper.createObjectNode();
+		url.put("path", uri);
+		url.put("full", request.getRequestURL().toString());
+		if (request.getQueryString() != null) {
+			url.put("query", request.getQueryString());
 		}
+		if (request.getAuthType() != null) {
+			url.put("auth", request.getAuthType());
+		}
+		ecs.set("url", url);
+
+		// http
+		ObjectNode http = mapper.createObjectNode();
+
+		// http.request
+		ObjectNode httpRequest = mapper.createObjectNode();
+		httpRequest.put("method", request.getMethod());
+		http.set("request", httpRequest);
+		String referrer = request.getHeader("referrer");
+		if (referrer != null) {
+			httpRequest.put("referrer", referrer);
+		}
+
+		// http.response
+		ObjectNode httpResponse = mapper.createObjectNode();
+		httpResponse.put("status_code", String.valueOf(response.getStatus()));
+
+		ecs.set("http", http);
+
+		// useragent
+		ObjectNode userAgent = mapper.createObjectNode();
+		userAgent.put("original", request.getHeader("User-Agent"));
+		ecs.set("user_agent", userAgent);
+
+		// igsn
+		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		if (igsn != null) {
+			ecs.set("igsn", mapper.valueToTree(igsn));
+		}
+
+		// service
+		ObjectNode service = mapper.createObjectNode();
+		service.put("type", "igsn");
+		service.put("name", "igsn-registry");
+		service.put("kind", "event");
+		service.put("event.category", "web");
+		ecs.set("service", service);
+		// todo event.action
+
+		// message
+		ecs.put("message", String.format("%s %s %s", request.getMethod(), uri, response.getStatus()));
+
+		log.info(new ObjectMessage(ecs));
 	}
 
 }

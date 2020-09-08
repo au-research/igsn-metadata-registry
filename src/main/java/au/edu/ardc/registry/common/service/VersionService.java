@@ -248,4 +248,7 @@ public class VersionService {
 		return DigestUtils.sha1Hex(version.getContent());
 	}
 
+	public String getHash(String content) {
+		return DigestUtils.sha1Hex(content);
+	}
 }

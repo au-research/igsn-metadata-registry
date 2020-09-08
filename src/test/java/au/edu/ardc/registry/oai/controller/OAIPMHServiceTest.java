@@ -1,6 +1,6 @@
 package au.edu.ardc.registry.oai.controller;
 
-import au.edu.ardc.registry.common.config.RequestLoggingFilter;
+import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = OAIPMHService.class,
-		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = RequestLoggingFilter.class))
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = { WebConfig.class }))
 @AutoConfigureMockMvc
 class OAIPMHServiceTest {
 
@@ -48,7 +48,7 @@ class OAIPMHServiceTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url)
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML)).andDo(print())
+		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
 				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
 				.andExpect(status().isOk());
 	}
@@ -68,7 +68,7 @@ class OAIPMHServiceTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url + "/?verb=Identify")
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML)).andDo(print())
+		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
 				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
 				.andExpect(status().isOk());
 	}

@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.service;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,10 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
+import au.edu.ardc.registry.exception.JSONValidationException;
+import au.edu.ardc.registry.exception.SchemaNotSupportedException;
+import au.edu.ardc.registry.exception.XMLValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -152,19 +157,25 @@ public class SchemaService {
 	 * payload) method
 	 * @param payload the content either XML or JSON String
 	 * @return true is content validates
-	 * @throws Exception validation exception
+	 * @throws XMLValidationException when validation exception
+	 * @throws IOException when failing to obtain validator
 	 */
-	public boolean validate(String payload) throws Exception {
-		SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
-		if (validator.getClass().equals(XMLValidator.class)) {
-			String nameSpace = XMLUtil.getNamespaceURI(payload);
-			XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
-			return validator.validate(schema, payload);
+	public boolean validate(String payload) throws XMLValidationException , ContentNotSupportedException, IOException{
+		try {
+			SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+			if (validator != null && validator.getClass().equals(XMLValidator.class)) {
+				String nameSpace = XMLUtil.getNamespaceURI(payload);
+				XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
+				return validator.validate(schema, payload);
+			}
+			else if (validator != null && validator.getClass().equals(JSONValidator.class)) {
+				// TODO get json validation working
+				throw new JSONValidationException("JSON Validation is not yetSupported");
+			}
+		} catch(XMLValidationException e){
+			throw new XMLValidationException(e.getMessage());
 		}
-		else if (validator.getClass().equals(JSONValidator.class)) {
-			// TODO get json validation working
-			return false;
-		}
+
 		return false;
 	}
 
@@ -173,17 +184,23 @@ public class SchemaService {
 	 * targetNamespace of document's namespaceURI
 	 * @param payload the content either XML or JSON String
 	 * @return Schema or null if schema not found or supported
-	 * @throws Exception validation exception
+	 * @throws ContentNotSupportedException validation exception
 	 */
-	public Schema getSchemaForContent(String payload) throws Exception {
-		SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
-		if (validator.getClass().equals(XMLValidator.class)) {
-			String nameSpace = XMLUtil.getNamespaceURI(payload);
-			return this.getXMLSchemaByNameSpace(nameSpace);
+	public Schema getSchemaForContent(String payload) throws ContentNotSupportedException {
+		try{
+			SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
+			if (validator.getClass().equals(XMLValidator.class)) {
+				String nameSpace = XMLUtil.getNamespaceURI(payload);
+				return this.getXMLSchemaByNameSpace(nameSpace);
+			}
+			else if (validator.getClass().equals(JSONValidator.class)) {
+				throw new ContentNotSupportedException("JSON content import is not yet supported");
+				//return null;
 		}
-		else if (validator.getClass().equals(JSONValidator.class)) {
-			// TODO get json validation working
-			return null;
+		} catch (IOException e) {
+			throw new ContentNotSupportedException("Unable to determine the validator for content");
+		} catch (Exception e) {
+			throw new ContentNotSupportedException(e.getMessage());
 		}
 		return null;
 	}
