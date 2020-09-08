@@ -54,8 +54,12 @@ public class APILoggingService {
 		ObjectNode ecs = mapper.createObjectNode();
 
 		// client
+		// client.address can contain comma separated list of IP
+		// client.ip should contain the FIRST IP Address in that comma separated list
 		ObjectNode client = mapper.createObjectNode();
-		client.put("ip", getClientIpAddress(request));
+		String clientAddress = getClientIpAddress(request);
+		client.put("address", clientAddress);
+		client.put("ip", clientAddress.split(",")[0].trim());
 
 		// client.user
 		User user = (User) request.getAttribute(String.valueOf(User.class));
