@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import static au.edu.ardc.registry.common.util.Helpers.getClientIpAddress;
 
@@ -76,15 +80,43 @@ public class APILoggingService {
 
 		// url
 		String uri = request.getRequestURI();
+		String fullURL = request.getRequestURL().toString();
+
+		// if this is a forwarded Error Request, we'll have to rebuild the full URL
 		if (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
 			uri = (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+			try {
+				URL rebuiltURL = new URL(request.getRequestURL().toString());
+				String host = rebuiltURL.getHost();
+				String userInfo = rebuiltURL.getUserInfo();
+				String scheme = rebuiltURL.getProtocol();
+				int port = rebuiltURL.getPort();
+				String query = (String) request.getAttribute(RequestDispatcher.FORWARD_QUERY_STRING);
+				URI rebuiltURI = new URI(scheme, userInfo, host, port, uri, query, null);
+				fullURL = rebuiltURI.toString();
+			}
+			catch (MalformedURLException | URISyntaxException ignored) {
+
+			}
 		}
 		ObjectNode url = mapper.createObjectNode();
 		url.put("path", uri);
-		url.put("full", request.getRequestURL().toString());
+		url.put("full", fullURL);
+
+		// parse the full URL to fill out the other bits
+		try {
+			URL parsedURL = new URL(fullURL);
+			url.put("scheme", parsedURL.getProtocol());
+			url.put("port", parsedURL.getPort());
+		}
+		catch (MalformedURLException ignored) {
+
+		}
+
 		if (request.getQueryString() != null) {
 			url.put("query", request.getQueryString());
 		}
+
 		ecs.set("url", url);
 
 		// http
