@@ -3,9 +3,12 @@ package au.edu.ardc.registry.common.service;
 import au.edu.ardc.registry.common.config.MultiReadHttpServletRequest;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.ObjectMessage;
 import org.apache.logging.log4j.message.StringMapMessage;
 import org.springframework.stereotype.Service;
 
@@ -26,44 +29,6 @@ public class APILoggingService {
 	private final Logger log = LogManager.getLogger(APILoggingService.class);
 
 	/**
-	 * A helper method to display a collection of Headers provided in a request as a
-	 * string format
-	 * @param wrappedRequest MultiReadHttpServletRequest
-	 * @param excludedHeaders The headers to not log (eg, authorization)
-	 * @return headers
-	 */
-	private String getHeadersAsString(HttpServletRequest wrappedRequest, List<String> excludedHeaders) {
-		StringBuilder headers = new StringBuilder();
-		Enumeration<String> headerNames = wrappedRequest.getHeaderNames();
-		if (headerNames != null) {
-			while (headerNames.hasMoreElements()) {
-				String headerName = headerNames.nextElement();
-				String headerValue = wrappedRequest.getHeader(headerName);
-				if (headerValue != null && !excludedHeaders.contains(headerName.toLowerCase())) {
-					headers.append(headerName).append(": ").append(headerValue).append(" ");
-				}
-			}
-		}
-		return headers.toString();
-	}
-
-	/**
-	 * Attempt to return the body of the request Does not work at the moment due to
-	 * request input stream can only be read once
-	 * @param wrappedRequest MultiReadHttpServletRequest
-	 * @return body
-	 */
-	private String getBody(MultiReadHttpServletRequest wrappedRequest) {
-		try {
-			return IOUtils.toString(wrappedRequest.getInputStream(), wrappedRequest.getCharacterEncoding());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return "";
-		}
-	}
-
-	/**
 	 * Log the request and response. Using ECS Speficiation and log4j2
 	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
 	 * specification</a>
@@ -71,93 +36,85 @@ public class APILoggingService {
 	 * @param response the current response
 	 */
 	public void log(HttpServletRequest request, HttpServletResponse response) {
+		ObjectMapper mapper = new ObjectMapper();
 
-		// due to Spring Security forward the error to the error Handler,
-		// the request URI are lost in translation
-		// can be reobtain with RequestDispatcher.FORWARD_REQUEST_URI if that exists
+		ObjectNode ecs = mapper.createObjectNode();
+
+		// client
+		ObjectNode client = mapper.createObjectNode();
+		client.put("ip", getClientIpAddress(request));
+
+		// client.user
+		User user = (User) request.getAttribute(String.valueOf(User.class));
+		if (user != null) {
+			ObjectNode userNode = mapper.createObjectNode();
+			userNode.put("email", user.getEmail());
+			userNode.put("id", user.getId().toString());
+			userNode.put("name", user.getUsername());
+			userNode.set("roles", mapper.valueToTree(user.getRoles()));
+			client.set("user", userNode);
+		}
+
+		ecs.set("client", client);
+
+		// url
 		String uri = request.getRequestURI();
 		if (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
 			uri = (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
 		}
-
-		// every log should have a message
-		String message = String.format("%s %s %s", request.getMethod(), uri, response.getStatus());
-
-		// build out the StringMapMessage for structured API Event logging
-		// @formatter:off
-		StringMapMessage msg = new StringMapMessage().with("message", message)
-//				.with("client.ip", getClientIpAddress(request))
-				.with("client.ip", "130.56.60.125")
-				.with("user_agent.original", request.getHeader("User-Agent"))
-				.with("url.path", uri)
-				.with("url.full", request.getRequestURL());
-		// @formatter:on
-
+		ObjectNode url = mapper.createObjectNode();
+		url.put("path", uri);
+		url.put("full", request.getRequestURL().toString());
 		if (request.getQueryString() != null) {
-			msg = msg.with("url.query", request.getQueryString());
+			url.put("query", request.getQueryString());
 		}
-
 		if (request.getAuthType() != null) {
-			msg = msg.with("url.auth", request.getAuthType());
+			url.put("auth", request.getAuthType());
 		}
+		ecs.set("url", url);
 
-		// request
-		msg = msg.with("http.request.method", request.getMethod());
+		// http
+		ObjectNode http = mapper.createObjectNode();
 
-		// response
-		msg = msg.with("http.response.status_code", String.valueOf(response.getStatus()));
-
-		// referrer
+		// http.request
+		ObjectNode httpRequest = mapper.createObjectNode();
+		httpRequest.put("method", request.getMethod());
+		http.set("request", httpRequest);
 		String referrer = request.getHeader("referrer");
 		if (referrer != null) {
-			msg = msg.with("http.request.referrer", referrer);
+			httpRequest.put("referrer", referrer);
 		}
 
-		// infer User from the request (if set)
-		User user = (User) request.getAttribute(String.valueOf(User.class));
-		if (user != null) {
-			// @formatter:off
-			msg = msg.with("client.user.email", user.getEmail())
-					.with("client.user.id", user.getId())
-					.with("client.user.name", user.getUsername())
-					.with("client.user.roles", user.getRoles());
-			// @formatter:on
-		}
+		// http.response
+		ObjectNode httpResponse = mapper.createObjectNode();
+		httpResponse.put("status_code", String.valueOf(response.getStatus()));
 
-		// infer igsn from the request (if set)
-		// todo investigate option to extract this out into an IGSNLoggingService
-		// so that each module can inject their own logging fragment
+		ecs.set("http", http);
+
+		// useragent
+		ObjectNode userAgent = mapper.createObjectNode();
+		userAgent.put("original", request.getHeader("User-Agent"));
+		ecs.set("user_agent", userAgent);
+
+		// igsn
 		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
 		if (igsn != null) {
-			// @formatter:off
-			msg = msg.with("igsn.id", igsn.getId())
-					.with("igsn.path", igsn.getDataPath())
-					.with("igsn.status", igsn.getStatus())
-					.with("igsn.created", igsn.getCreatedAt())
-					.with("igsn.updated", igsn.getUpdatedAt())
-					.with("igsn.creator", igsn.getCreatedBy());
-			// todo: infer event.action from here instead of using MDC
-
-			// log IGSNRequestBody (if set)
-			String IGSNRequestBody = (String) request.getAttribute("IGSNRequestBody");
-			if (IGSNRequestBody != null) {
-				msg = msg.with("http.request.body.content", IGSNRequestBody)
-						.with("http.request.body.bytes", IGSNRequestBody.getBytes().length);
-			}
-			// @formatter:on
+			ecs.set("igsn", mapper.valueToTree(igsn));
 		}
 
-		// service & event
-		// @formatter:off
-		msg = msg.with("service.type", "igsn")
-				.with("service.name", "igsn-registry")
-				.with("event.kind", "event")
-				.with("event.category", "web");
-		// currently obtain event.action from MDC
-		// @formatter:on
+		// service
+		ObjectNode service = mapper.createObjectNode();
+		service.put("type", "igsn");
+		service.put("name", "igsn-registry");
+		service.put("kind", "event");
+		service.put("event.category", "web");
+		ecs.set("service", service);
+		// todo event.action
 
-		log.info(msg);
+		// message
+		ecs.put("message", String.format("%s %s %s", request.getMethod(), uri, response.getStatus()));
 
+		log.info(new ObjectMessage(ecs));
 	}
 
 }

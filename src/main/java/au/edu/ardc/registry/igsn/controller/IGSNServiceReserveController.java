@@ -96,7 +96,6 @@ public class IGSNServiceReserveController {
 		jobLauncher.run(reserveIGSNJob, jobParameters);
 
 		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
-		MDC.put("event.action", "reserve");
 
 		return ResponseEntity.ok().body(IGSNRequest);
 	}
