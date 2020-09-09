@@ -7,6 +7,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -38,15 +39,28 @@ public class Helpers {
 		return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 	}
 
+	public static void writeFile(String filePath, String content) throws IOException{
+			File inputIGSNFile = new File(filePath);
+			if (inputIGSNFile.createNewFile()) {
+				System.out.println("File created: " + inputIGSNFile.getName());
+			}
+			else {
+				System.out.println("File already exists.");
+			}
+			FileWriter writer = new FileWriter(filePath);
+			writer.write(content);
+			writer.close();
+	}
+
 	public static String readFileOnClassPath(String path) throws IOException {
 		InputStream resource = new ClassPathResource(path).getInputStream();
 		return IOUtils.toString(resource, StandardCharsets.UTF_8.name());
 	}
 
-	public static String probeContentType(String content) {
+	public static String probeContentType(String content){
 		Charset charset = StandardCharsets.UTF_8;
-		byte[] byteArrray = content.getBytes(charset);
-		return new Tika().detect(byteArrray);
+		byte[] byteArray = content.getBytes(charset);
+		return new Tika().detect(byteArray);
 	}
 
 	public static String probeContentType(File file) throws IOException {

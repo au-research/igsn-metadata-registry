@@ -12,10 +12,13 @@ import java.nio.file.Path;
 
 public class ContentValidator {
 
-	@Autowired
-	SchemaService service;
+	private final SchemaService service;
 
-	public Schema getSchema(String content) throws ContentNotSupportedException{
+	public ContentValidator(SchemaService service) {
+		this.service = service;
+	}
+
+	public Schema getSchema(String content) throws ContentNotSupportedException {
 		return service.getSchemaForContent(content);
 	}
 
