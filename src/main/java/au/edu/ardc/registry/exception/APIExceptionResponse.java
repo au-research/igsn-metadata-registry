@@ -1,5 +1,9 @@
 package au.edu.ardc.registry.exception;
 
+import org.springframework.http.HttpStatus;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 public class APIExceptionResponse {
@@ -16,6 +20,14 @@ public class APIExceptionResponse {
 
 	public APIExceptionResponse(String message) {
 		this.message = message;
+	}
+
+	public APIExceptionResponse(String message, HttpStatus httpStatus, HttpServletRequest request) {
+		this.message = message;
+		this.setTimestamp(new Date());
+		this.setStatus(httpStatus.value());
+		this.setError(httpStatus.toString());
+		this.setPath(request.getServletPath());
 	}
 
 	public String getMessage() {

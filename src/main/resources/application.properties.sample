@@ -17,6 +17,12 @@ app.portal-url=http://localhost:8085/igsn-portal/
 
 app.igsn.data-path=/tmp/igsn-registry/
 
+# languages
+spring.messages.basename=messages,config.i18n.messages
+spring.messages.encoding=UTF-8
+spring.messages.fallback-to-system-locale=true
+spring.messages.use-code-as-default-message=true
+
 # cache
 spring.cache.type=simple
 
