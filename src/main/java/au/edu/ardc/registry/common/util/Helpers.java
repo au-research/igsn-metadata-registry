@@ -39,17 +39,17 @@ public class Helpers {
 		return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 	}
 
-	public static void writeFile(String filePath, String content) throws IOException{
-			File inputIGSNFile = new File(filePath);
-			if (inputIGSNFile.createNewFile()) {
-				System.out.println("File created: " + inputIGSNFile.getName());
-			}
-			else {
-				System.out.println("File already exists.");
-			}
-			FileWriter writer = new FileWriter(filePath);
-			writer.write(content);
-			writer.close();
+	public static void writeFile(String filePath, String content) throws IOException {
+		File inputIGSNFile = new File(filePath);
+		if (inputIGSNFile.createNewFile()) {
+			System.out.println("File created: " + inputIGSNFile.getName());
+		}
+		else {
+			System.out.println("File already exists.");
+		}
+		FileWriter writer = new FileWriter(filePath);
+		writer.write(content);
+		writer.close();
 	}
 
 	public static String readFileOnClassPath(String path) throws IOException {
@@ -57,7 +57,7 @@ public class Helpers {
 		return IOUtils.toString(resource, StandardCharsets.UTF_8.name());
 	}
 
-	public static String probeContentType(String content){
+	public static String probeContentType(String content) {
 		Charset charset = StandardCharsets.UTF_8;
 		byte[] byteArray = content.getBytes(charset);
 		return new Tika().detect(byteArray);

@@ -1,18 +1,17 @@
 package au.edu.ardc.registry.igsn.entity;
 
 public enum IGSNEventType {
-    MINT("igsn-mint"),
-    UPDATE("igsn-update"),
-    RESERVE("igsn-reserve"),
-    TRANSFER("igsn-owner-transfer");
 
-    private final String action;
+	MINT("igsn-mint"), UPDATE("igsn-update"), RESERVE("igsn-reserve"), TRANSFER("igsn-owner-transfer");
 
-    IGSNEventType(String action) {
-        this.action = action;
-    }
+	private final String action;
 
-    public String getAction() {
-        return action;
-    }
+	IGSNEventType(String action) {
+		this.action = action;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
 }

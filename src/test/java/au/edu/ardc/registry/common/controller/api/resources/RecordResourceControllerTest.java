@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(RecordResourceController.class)
 @Import(RecordResourceController.class)
-@ContextConfiguration(classes = {RecordMapper.class, ModelMapper.class, APIRestControllerAdvice.class})
+@ContextConfiguration(classes = { RecordMapper.class, ModelMapper.class, APIRestControllerAdvice.class })
 @AutoConfigureMockMvc
 public class RecordResourceControllerTest {
 

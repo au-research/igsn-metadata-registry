@@ -27,6 +27,10 @@ public class Schema {
 
 	private Map<String, String> transforms;
 
+	private String namespace;
+
+	private String schemaLocation;
+
 	private String oaiexport;
 
 	public Schema() {
@@ -50,6 +54,22 @@ public class Schema {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getNamespace() {
+		return this.namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getSchemaLocation() {
+		return this.schemaLocation;
+	}
+
+	public void setSchemaLocation(String schemaLocation) {
+		this.schemaLocation = schemaLocation;
 	}
 
 	public String getDescription() {
@@ -84,8 +104,12 @@ public class Schema {
 		this.transforms = transforms;
 	}
 
-	public String getOaiexport() { return oaiexport; }
+	public String getOaiexport() {
+		return oaiexport;
+	}
 
-	public void setOaiexport(String oaiexport) { this.oaiexport = oaiexport; }
+	public void setOaiexport(String oaiexport) {
+		this.oaiexport = oaiexport;
+	}
 
 }

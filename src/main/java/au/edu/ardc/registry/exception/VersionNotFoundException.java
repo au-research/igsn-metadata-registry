@@ -16,7 +16,7 @@ public class VersionNotFoundException extends APIException {
 
 	@Override
 	public String[] getArgs() {
-		return new String[]{this.id};
+		return new String[] { this.id };
 	}
 
 }

@@ -5,6 +5,9 @@ import java.util.*;
 
 import javax.annotation.PostConstruct;
 
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.OAIProvider;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.JSONValidationException;
 import au.edu.ardc.registry.exception.SchemaNotSupportedException;
@@ -44,6 +47,8 @@ public class SchemaService {
 	public static final String CSIROv3 = "csiro-igsn-desc-3.0";
 
 	public static final String AGNv1 = "agn-igsn-desc-1.0";
+
+	private static Schema schema;
 
 	protected final String schemaConfigLocation = "schemas/schemas.json";
 
@@ -205,37 +210,34 @@ public class SchemaService {
 		return null;
 	}
 
-
 	/**
-	 * Gets schemas set for oai export
-	 * @return List of schemas
-	 */
-	public List<Schema> getOaiExportableSchemas() {
-		List<Schema> schemas = new ArrayList<Schema>();
-		Iterator<Schema> found = this.getSchemas().stream().filter(schema -> schema.getClass().equals(XMLSchema.class))
-				.iterator();
-
-		while (found.hasNext()) {
-			XMLSchema xs = (XMLSchema) found.next();
-			if (xs.getOaiexport().equals("true")) {
-				schemas.add(xs);
-			}
-		}
-		return schemas;
-	}
-
-	/**
-	 * Checks if schema of provided id is oai supported
-	 * @param schemaID the ID of the supported Schema
+	 * Checks if the given schema is available for OAI export
+	 * @param schema the schema to be checked
 	 * @return Boolean
 	 */
-	public Boolean getOaiSchemaByID(String schemaID) {
-		Optional<Schema> found = this.getSchemas().stream().filter(schema -> schema.getId().equals(schemaID))
-				.findFirst();
-
-		Schema schema = found.orElse(null);
-
-		if(schema != null && schema.getOaiexport().equals("true")) { return true; } else { return false;}
-
+	public Boolean isOAIProvider(Schema schema) {
+		try {
+			schema.getProviders().containsKey(Metadata.OAI);
+			return true;
+		}
+		catch (Exception e) {
+			return false;
+		}
 	}
+
+	/**
+	 * Checks if the given schema is available for OAI export
+	 * @return List of schemas that are able to export to oai
+	 */
+	public List<Schema> getOAIProviders() {
+		List<Schema> oaiSchemas = new ArrayList<Schema>();
+		List<Schema> schemas = this.getSchemas();
+		for (Schema schema : schemas) {
+			if (this.isOAIProvider(schema)) {
+				oaiSchemas.add(schema);
+			}
+		}
+		return oaiSchemas;
+	}
+
 }

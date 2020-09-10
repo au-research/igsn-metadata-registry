@@ -28,8 +28,8 @@ public class VersionContentValidator {
 
 	private final SchemaService sService;
 
-	public VersionContentValidator(RecordService rService, VersionService vService,
-								   IdentifierService iService, SchemaService sService) {
+	public VersionContentValidator(RecordService rService, VersionService vService, IdentifierService iService,
+			SchemaService sService) {
 		this.rService = rService;
 		this.vService = vService;
 		this.iService = iService;

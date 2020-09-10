@@ -50,8 +50,7 @@ class IGSNServiceTransferControllerTest extends KeycloakIntegrationTest {
 				.uri(uriBuilder -> uriBuilder.path(baseUrl).queryParam("ownerID", targetOwnerID)
 						.queryParam("ownerType", targetOwnerType).build())
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
-				.body(Mono.just(requestBody), String.class)
-				.exchange().expectStatus().isOk().expectBody()
+				.body(Mono.just(requestBody), String.class).exchange().expectStatus().isOk().expectBody()
 				.jsonPath("$.id").exists().jsonPath("$.status").exists();
 
 		Identifier identifier = identifierRepository.findByValueAndType("12073/XXAA123456", Identifier.Type.IGSN);

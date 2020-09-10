@@ -3,6 +3,9 @@ package au.edu.ardc.registry.oai.controller;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.OAIProvider;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.oai.exception.BadVerbException;
 import au.edu.ardc.registry.oai.model.*;
@@ -21,7 +24,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -108,13 +110,13 @@ public class OAIPMHService {
 
 		OAIListMetadataFormatsResponse response = new OAIListMetadataFormatsResponse();
 		ListMetadataFormatsFragment metadataFormatsFragment = new ListMetadataFormatsFragment();
+		List<Schema> schemas = schemaService.getOAIProviders();
 
-		List<Schema> formats = schemaService.getOaiExportableSchemas();
-
-		for (Schema format : formats) {
-			metadataFormatsFragment.setMetadataFormat(format.getId(), format.getName(), format.getType());
+		for (Schema schema : schemas) {
+			OAIProvider oaiProvider = (OAIProvider) MetadataProviderFactory.create(schema, Metadata.OAI);
+			metadataFormatsFragment.setMetadataFormat(oaiProvider.getPrefix(schema),
+					oaiProvider.getFormatSchema(schema), oaiProvider.getNamespace(schema));
 		}
-
 		response.setListMetadataFormatsFragment(metadataFormatsFragment);
 		response.setRequest(requestFragment);
 

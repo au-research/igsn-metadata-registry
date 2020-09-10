@@ -1,5 +1,9 @@
 package au.edu.ardc.registry.common.service;
 
+import au.edu.ardc.registry.common.event.RecordEventListener;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.OAIProvider;
 import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.model.schema.JSONSchema;
@@ -7,11 +11,14 @@ import au.edu.ardc.registry.common.model.schema.XMLSchema;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = SchemaService.class)
 class SchemaServiceTest {
+
+	Logger logger = LoggerFactory.getLogger(RecordEventListener.class);
 
 	@Autowired
 	SchemaService service;
@@ -130,21 +139,43 @@ class SchemaServiceTest {
 	}
 
 	@Test
-	void getOaiSchemas() {
-		List<Schema> xs = service.getOaiExportableSchemas();
-		assertThat(xs).extracting("oaiexport").containsOnly("true");
+	void getNamespace() {
+		Schema schema1 = service.getSchemaByID(SchemaService.ARDCv1);
+		String thenamespace = schema1.getNamespace();
+		assertThat(thenamespace).isEqualTo("https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc");
 	}
 
 	@Test
-	void getOaiSchemaByID() {
-		String schema1 = SchemaService.ARDCv1;
-		assertThat(service.getOaiSchemaByID(schema1)).isTrue();
+	void getSchemaLocation() {
+		Schema schema1 = service.getSchemaByID(SchemaService.ARDCv1);
+		String theLocation = schema1.getSchemaLocation();
+		assertThat(theLocation).isEqualTo("https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd");
+	}
 
-		String schema2 = SchemaService.CSIROv3;
-		assertThat(service.getOaiSchemaByID(schema2)).isFalse();
+	@Test
+	void isOAIProvider() {
+		Schema schema1 = service.getSchemaByID(SchemaService.ARDCv1);
+		if (service.isOAIProvider(schema1)) {
+			String thenamespace = schema1.getNamespace();
+			assertThat(thenamespace).isEqualTo("https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc");
+		}
+	}
 
-		String schema3 = "garbage_schema";
-		assertThat(service.getOaiSchemaByID(schema3)).isFalse();
+	@Test
+	void isOAIProvider_false() {
+		Schema schema1 = service.getSchemaByID(SchemaService.CSIROv3);
+		if (!service.isOAIProvider(schema1)) {
+			String theSchemaId = schema1.getId();
+			assertThat(theSchemaId).isEqualTo(SchemaService.CSIROv3);
+		}
+	}
+
+	@Test
+	void getOAIProviders() {
+		List<Schema> oaiSchemas = service.getOAIProviders();
+		for (Schema schema : oaiSchemas) {
+			assertThat(service.isOAIProvider(schema));
+		}
 	}
 
 }

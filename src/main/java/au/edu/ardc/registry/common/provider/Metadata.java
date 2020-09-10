@@ -2,6 +2,6 @@ package au.edu.ardc.registry.common.provider;
 
 public enum Metadata {
 
-	Fragment, Identifier, Title, LandingPage
+	Fragment, Identifier, Title, LandingPage, OAI
 
 }

@@ -26,7 +26,6 @@ import java.util.Map;
 
 public class UserAccessValidator {
 
-
 	private final ValidationService vService;
 
 	private final SchemaService sService;
@@ -35,9 +34,8 @@ public class UserAccessValidator {
 
 	private final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
-	public UserAccessValidator(IdentifierRepository identifierRepository,
-							   ValidationService vService,
-							   SchemaService sService) {
+	public UserAccessValidator(IdentifierRepository identifierRepository, ValidationService vService,
+			SchemaService sService) {
 		this.identifierRepository = identifierRepository;
 		this.sService = sService;
 		this.vService = vService;

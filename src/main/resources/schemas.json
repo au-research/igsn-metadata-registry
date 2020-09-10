@@ -9,7 +9,8 @@
       "Fragment": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1FragmentProvider",
       "Identifier": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1IdentifierProvider",
       "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider",
-      "LandingPage": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1LandingPageProvider"
+      "LandingPage": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1LandingPageProvider",
+      "OAI": "au.edu.ardc.registry.common.provider.OAIProvider"
     },
     "transforms": {
       "ardc-igsn-desc-1.0-jsonld": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToJSONLDTransformer",
@@ -19,8 +20,7 @@
       "namespace": "https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc",
       "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd",
       "localSchemaLocation": "schemas/ardc-igsn-description-1.0/resource.xsd"
-    },
-    "oaiexport": "true"
+    }
   },
   {
     "id": "ardc-igsn-desc-1.0-jsonld",
@@ -39,8 +39,7 @@
   	  "namespace":"https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/ngsa.json",
       "schemaLocation": "https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/ngsa.json",
       "localSchemaLocation": "schemas/agn-igsn-desc-1.0/agn.json"
-  	},
-    "oaiexport": "false"
+  	}
  },
  {
     "id": "csiro-igsn-desc-3.0",
@@ -52,8 +51,7 @@
       "namespace": "https://igsn.csiro.au/schemas/3.0",
       "schemaLocation": "https://igsn.csiro.au/schemas/3.0/igsn-csiro-v3.0.xsd",
       "localSchemaLocation": "schemas/csiro-igsn-description-3.0/igsn-csiro-v3.0.xsd"
-    },
-   "oaiexport": "false"
+    }
   },
   {
     "id": "igsn-desc-1.0",
@@ -65,8 +63,7 @@
       "namespace": "http://schema.igsn.org/description/1.0",
       "schemaLocation": "http://schema.igsn.org/description/1.0 http://schema.igsn.org/description/1.0/resource.xsd",
       "localSchemaLocation": "schemas/igsn-description-1.0/resource.xsd"
-    },
-    "oaiexport": "false"
+    }
   },
   {
     "id": "igsn-reg-1.0",
@@ -78,7 +75,6 @@
       "namespace": "http://schema.igsn.org/registration/1.0",
       "schemaLocation": "http://schema.igsn.org/registration/1.0 http://schema.igsn.org/registration/1.0/igsn.xsd",
       "localSchemaLocation": "schemas/igsn-registration-1.0/resource.xsd"
-    },
-    "oaiexport": "false"
+    }
   }
 ]

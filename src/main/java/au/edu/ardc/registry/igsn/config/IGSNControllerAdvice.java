@@ -19,14 +19,15 @@ import java.util.Locale;
 @RestControllerAdvice
 public class IGSNControllerAdvice {
 
-    @Autowired
-    MessageSource messageSource;
+	@Autowired
+	MessageSource messageSource;
 
-    @ExceptionHandler(value = { IGSNNotFoundException.class, IGSNNoValidContentForSchema.class })
-    public ResponseEntity<Object> handleNotfound(APIException ex, HttpServletRequest request, Locale locale) {
-        String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
-        APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.NOT_FOUND, request);
+	@ExceptionHandler(value = { IGSNNotFoundException.class, IGSNNoValidContentForSchema.class })
+	public ResponseEntity<Object> handleNotfound(APIException ex, HttpServletRequest request, Locale locale) {
+		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
+		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.NOT_FOUND, request);
 
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
+		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	}
+
 }

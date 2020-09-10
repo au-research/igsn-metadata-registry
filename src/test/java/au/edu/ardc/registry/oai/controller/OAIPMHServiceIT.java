@@ -20,7 +20,6 @@ public class OAIPMHServiceIT extends WebIntegrationTest {
 	@Test
 	void invalid_verb_return_error() throws Exception {
 		System.out.print("in test");
-
 	}
 
 	@Test
@@ -28,7 +27,7 @@ public class OAIPMHServiceIT extends WebIntegrationTest {
 	void handle_verb_ListMetadataFormats_returns() throws Exception {
 		this.webTestClient.get().uri(base_url + "?verb=ListMetadataFormats").exchange().expectStatus().isOk()
 				.expectBody().xpath("/OAI-PMH/ListMetadataFormats/metadataFormat/schema")
-				.isEqualTo("ARDC IGSN Descriptive v1.0");
+				.isEqualTo("https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd");
 	}
 
 }

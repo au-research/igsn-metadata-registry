@@ -27,9 +27,8 @@ public class PayloadValidator {
 
 	private final VersionContentValidator vcValidator;
 
-	public PayloadValidator(ContentValidator cValidator,
-							VersionContentValidator vcValidator,
-							UserAccessValidator uaValidator) {
+	public PayloadValidator(ContentValidator cValidator, VersionContentValidator vcValidator,
+			UserAccessValidator uaValidator) {
 		this.vcValidator = vcValidator;
 		this.cValidator = cValidator;
 		this.uaValidator = uaValidator;
