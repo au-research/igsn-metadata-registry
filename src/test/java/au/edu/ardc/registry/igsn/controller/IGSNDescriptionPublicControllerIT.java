@@ -1,4 +1,4 @@
-package au.edu.ardc.registry.oai.controller;
+package au.edu.ardc.registry.igsn.controller;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.WebIntegrationTest;

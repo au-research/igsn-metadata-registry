@@ -8,6 +8,7 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.ValidationService;
+import au.edu.ardc.registry.igsn.exception.IGSNNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,7 @@ public class AuthenticationCheckController {
 		User user = kcService.getLoggedInUser(request);
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		if (identifier == null) {
-			throw new NotFoundException("IGSN with value " + identifierValue + " is not found");
+			throw new IGSNNotFoundException(identifierValue);
 		}
 		Record record = identifier.getRecord();
 		boolean result = validationService.validateRecordOwnership(record, user);

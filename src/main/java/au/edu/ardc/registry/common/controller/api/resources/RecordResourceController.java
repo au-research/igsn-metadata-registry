@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(value = "/api/resources/records", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/resources/records")
 @Tag(name = "Record Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
