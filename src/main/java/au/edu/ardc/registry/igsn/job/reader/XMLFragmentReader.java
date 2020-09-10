@@ -12,7 +12,8 @@ import java.io.File;
 
 @Component
 @StepScope
-public class XMLFragmentReader extends StaxEventItemReader<String> {
+//public class XMLFragmentReader extends StaxEventItemReader<String> {
+public class XMLFragmentReader {
 
     private String filePath;
     private String rootElementName;
@@ -27,13 +28,13 @@ public class XMLFragmentReader extends StaxEventItemReader<String> {
         JobParameters jobParameters = stepExecution.getJobParameters();
         this.rootElementName = jobParameters.getString("rootElement");
         this.filePath = jobParameters.getString("filePath");
-        init();
+        //init();
     }
 
-    void init() {
-        this.setName("XMLFragmentReader");
-        this.setResource(new FileSystemResource(new File(filePath)));
-        this.setFragmentRootElementName(this.rootElementName);
-    }
+//    void init() {
+//        this.setName("XMLFragmentReader");
+//        this.setResource(new FileSystemResource(new File(filePath)));
+//        this.setFragmentRootElementName(this.rootElementName);
+//    }
 
 }
