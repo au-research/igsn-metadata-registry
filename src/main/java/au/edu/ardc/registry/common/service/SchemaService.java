@@ -208,8 +208,7 @@ public class SchemaService {
 
 	/**
 	 * Gets schemas set for oai export
-	 * @param
-	 * @return List<Schema>
+	 * @return List of schemas
 	 */
 	public List<Schema> getOaiExportableSchemas() {
 		List<Schema> schemas = new ArrayList<Schema>();
@@ -239,6 +238,4 @@ public class SchemaService {
 		if(schema != null && schema.getOaiexport().equals("true")) { return true; } else { return false;}
 
 	}
-
-
 }
