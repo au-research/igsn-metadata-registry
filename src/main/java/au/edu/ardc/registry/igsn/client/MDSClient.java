@@ -32,13 +32,11 @@ public class MDSClient {
 		String mds_password = allocation.getMds_password();
 		String mds_url = allocation.getMds_url();
 
-		this.web_client = WebClient.builder()
-				.filter(basicAuthentication(mds_username, mds_password))
-				.baseUrl(mds_url).build();
+		this.web_client = WebClient.builder().filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
+				.build();
 		this.mds_url = mds_url;
 
 	}
-
 
 	public String getUrl() {
 		return this.mds_url;

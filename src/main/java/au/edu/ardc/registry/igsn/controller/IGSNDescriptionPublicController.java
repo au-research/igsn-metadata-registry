@@ -8,6 +8,8 @@ import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.igsn.exception.IGSNNoValidContentForSchema;
+import au.edu.ardc.registry.igsn.exception.IGSNNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
@@ -39,13 +41,12 @@ public class IGSNDescriptionPublicController {
 			@RequestParam(required = false, defaultValue = SchemaService.ARDCv1) String schema) {
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		if (identifier == null) {
-			throw new NotFoundException("IGSN with value " + identifierValue + " is not found");
+			throw new IGSNNotFoundException(identifierValue);
 		}
 		Record record = identifier.getRecord();
 		Version version = versionService.findVersionForRecord(record, schema);
 		if (version == null) {
-			throw new NotFoundException(String.format("Identifier %s does not have a valid content with schema %s",
-					identifierValue, schema));
+			throw new IGSNNoValidContentForSchema(identifierValue, schema);
 		}
 		return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(version.getContent());
 	}

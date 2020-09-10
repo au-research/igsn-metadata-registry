@@ -109,7 +109,7 @@ public class OAIPMHService {
 		OAIListMetadataFormatsResponse response = new OAIListMetadataFormatsResponse();
 		ListMetadataFormatsFragment metadataFormatsFragment = new ListMetadataFormatsFragment();
 
-		List<Schema> formats = schemaService.getSchemas();
+		List<Schema> formats = schemaService.getOaiExportableSchemas();
 
 		for (Schema format : formats) {
 			metadataFormatsFragment.setMetadataFormat(format.getId(), format.getName(), format.getType());

@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.provider.TitleProvider;
 import au.edu.ardc.registry.common.util.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 @SuppressWarnings("unused")
 public class ARDCv1TitleProvider implements TitleProvider {
 

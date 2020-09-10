@@ -1,10 +1,7 @@
 package au.edu.ardc.registry.common.service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 
@@ -160,7 +157,7 @@ public class SchemaService {
 	 * @throws XMLValidationException when validation exception
 	 * @throws IOException when failing to obtain validator
 	 */
-	public boolean validate(String payload) throws XMLValidationException , ContentNotSupportedException, IOException{
+	public boolean validate(String payload) throws XMLValidationException, ContentNotSupportedException, IOException {
 		try {
 			SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
 			if (validator != null && validator.getClass().equals(XMLValidator.class)) {
@@ -172,7 +169,8 @@ public class SchemaService {
 				// TODO get json validation working
 				throw new JSONValidationException("JSON Validation is not yetSupported");
 			}
-		} catch(XMLValidationException e){
+		}
+		catch (XMLValidationException e) {
 			throw new XMLValidationException(e.getMessage());
 		}
 
@@ -187,7 +185,7 @@ public class SchemaService {
 	 * @throws ContentNotSupportedException validation exception
 	 */
 	public Schema getSchemaForContent(String payload) throws ContentNotSupportedException {
-		try{
+		try {
 			SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
 			if (validator.getClass().equals(XMLValidator.class)) {
 				String nameSpace = XMLUtil.getNamespaceURI(payload);
@@ -195,14 +193,49 @@ public class SchemaService {
 			}
 			else if (validator.getClass().equals(JSONValidator.class)) {
 				throw new ContentNotSupportedException("JSON content import is not yet supported");
-				//return null;
+				// return null;
+			}
 		}
-		} catch (IOException e) {
+		catch (IOException e) {
 			throw new ContentNotSupportedException("Unable to determine the validator for content");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new ContentNotSupportedException(e.getMessage());
 		}
 		return null;
 	}
 
+
+	/**
+	 * Gets schemas set for oai export
+	 * @return List of schemas
+	 */
+	public List<Schema> getOaiExportableSchemas() {
+		List<Schema> schemas = new ArrayList<Schema>();
+		Iterator<Schema> found = this.getSchemas().stream().filter(schema -> schema.getClass().equals(XMLSchema.class))
+				.iterator();
+
+		while (found.hasNext()) {
+			XMLSchema xs = (XMLSchema) found.next();
+			if (xs.getOaiexport().equals("true")) {
+				schemas.add(xs);
+			}
+		}
+		return schemas;
+	}
+
+	/**
+	 * Checks if schema of provided id is oai supported
+	 * @param schemaID the ID of the supported Schema
+	 * @return Boolean
+	 */
+	public Boolean getOaiSchemaByID(String schemaID) {
+		Optional<Schema> found = this.getSchemas().stream().filter(schema -> schema.getId().equals(schemaID))
+				.findFirst();
+
+		Schema schema = found.orElse(null);
+
+		if(schema != null && schema.getOaiexport().equals("true")) { return true; } else { return false;}
+
+	}
 }

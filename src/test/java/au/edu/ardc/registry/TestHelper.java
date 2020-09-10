@@ -197,7 +197,7 @@ public class TestHelper {
 		// mock a user resources
 	}
 
-	public static IGSNAllocation mockIGSNAllocation(){
+	public static IGSNAllocation mockIGSNAllocation() {
 		IGSNAllocation allocation = new IGSNAllocation(UUID.randomUUID());
 		allocation.setType("urn:ardc:igsn:allocation");
 		Map<String, List<String>> attributes = new HashMap<String, List<String>>();
@@ -210,6 +210,5 @@ public class TestHelper {
 		allocation.setAttributes(attributes);
 		return allocation;
 	}
-
 
 }

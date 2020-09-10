@@ -251,4 +251,5 @@ public class VersionService {
 	public String getHash(String content) {
 		return DigestUtils.sha1Hex(content);
 	}
+
 }

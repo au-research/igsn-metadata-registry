@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -125,6 +127,24 @@ class SchemaServiceTest {
 			msg = e.getMessage();
 		}
 		assertTrue(msg.contains(expectedMassageContains));
+	}
+
+	@Test
+	void getOaiSchemas() {
+		List<Schema> xs = service.getOaiExportableSchemas();
+		assertThat(xs).extracting("oaiexport").containsOnly("true");
+	}
+
+	@Test
+	void getOaiSchemaByID() {
+		String schema1 = SchemaService.ARDCv1;
+		assertThat(service.getOaiSchemaByID(schema1)).isTrue();
+
+		String schema2 = SchemaService.CSIROv3;
+		assertThat(service.getOaiSchemaByID(schema2)).isFalse();
+
+		String schema3 = "garbage_schema";
+		assertThat(service.getOaiSchemaByID(schema3)).isFalse();
 	}
 
 }
