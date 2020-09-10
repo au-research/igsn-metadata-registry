@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,6 +43,9 @@ class OAIPMHServiceTest {
 	@MockBean
 	VersionService versionService;
 
+	@Autowired
+	private Environment env;
+
 	@Test
 	@DisplayName("Throws an exception and returns the error element with badverb code attribute")
 	void test_handle_noVerbParam_throwsException() throws Exception {
@@ -69,7 +73,7 @@ class OAIPMHServiceTest {
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
 		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("ARDC IGSN Repository"))
+				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("IGSN Registry"))
 				.andExpect(status().isOk());
 	}
 

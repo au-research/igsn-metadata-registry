@@ -17,6 +17,7 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,9 @@ public class OAIPMHService {
 
 	@Autowired
 	VersionService versionService;
+
+	@Autowired
+	private Environment env;
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false) String verb,
@@ -75,7 +79,7 @@ public class OAIPMHService {
 
 	private ResponseEntity<OAIResponse> identify(HttpServletRequest request, RequestFragment requestFragment) {
 		IdentifyFragment identify = new IdentifyFragment();
-		identify.setRepositoryName("ARDC IGSN Repository");
+		identify.setRepositoryName( env.getProperty("app.name"));
 
 		OAIResponse response = new OAIIdentifyResponse(identify);
 		response.setRequest(requestFragment);
