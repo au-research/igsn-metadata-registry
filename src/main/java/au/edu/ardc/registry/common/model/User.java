@@ -140,5 +140,4 @@ public class User {
 		return aList;
 	}
 
-
 }

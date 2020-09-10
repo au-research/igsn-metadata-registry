@@ -17,29 +17,31 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {SchemaService.class})
+@ContextConfiguration(classes = { SchemaService.class })
 class ARDCv1FragmentProviderTest {
 
-    @Autowired
-    SchemaService service;
+	@Autowired
+	SchemaService service;
 
-    @Test
-    void get() throws IOException {
-        Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-        String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_batch.xml");
-        FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
-        String first = fProvider.get(xml, 0);
-        assertTrue(first.contains("<resourceTitle>This Tiltle also left blank on purpose</resourceTitle>"));
-        String third = fProvider.get(xml, 2);
-        assertTrue(third.contains("<resourceTitle>zircon sample (Sample JS43 / IGSN XXAB0002C) from the Neal McNaughton"));
-    }
+	@Test
+	void get() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_batch.xml");
+		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		String first = fProvider.get(xml, 0);
+		assertTrue(first.contains("<resourceTitle>This Tiltle also left blank on purpose</resourceTitle>"));
+		String third = fProvider.get(xml, 2);
+		assertTrue(
+				third.contains("<resourceTitle>zircon sample (Sample JS43 / IGSN XXAB0002C) from the Neal McNaughton"));
+	}
 
-    @Test
-    void getCount() throws IOException {
-        Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-        String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_batch.xml");
-        FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
-        int fragCounter = fProvider.getCount(xml);
-        assertTrue(fragCounter == 3);
-    }
+	@Test
+	void getCount() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_batch.xml");
+		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		int fragCounter = fProvider.getCount(xml);
+		assertTrue(fragCounter == 3);
+	}
+
 }

@@ -32,17 +32,20 @@ public class PayloadValidator {
 	/**
 	 * @param content String the payload content as String
 	 * @param user the logged in User who requested the mint / update
-	 * @return true if the content can be processed or false if errors or access is denied to user
-	 * @throws IOException and other type of exceptions by contentValidator and user access validator
+	 * @return true if the content can be processed or false if errors or access is denied
+	 * to user
+	 * @throws IOException and other type of exceptions by contentValidator and user
+	 * access validator
 	 */
-	public boolean isValidPayload(String content, User user)
-			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException
-	, ForbiddenOperationException, VersionContentAlreadyExisted {
-			// validate the entire XML or JSON content
-			boolean isValidContent = cValidator.validate(content);
-			// check if the current user has insert or update access for the records with the given identifiers
-			boolean hasUserAccess =	uaValidator.hasUserAccess(content, user);
-			// check if the contents are new compared what stored in the registry
-			return vcValidator.isNewContent(content);
+	public boolean isValidPayload(String content, User user) throws IOException, ContentNotSupportedException,
+			XMLValidationException, JSONValidationException, ForbiddenOperationException, VersionContentAlreadyExisted {
+		// validate the entire XML or JSON content
+		boolean isValidContent = cValidator.validate(content);
+		// check if the current user has insert or update access for the records with the
+		// given identifiers
+		boolean hasUserAccess = uaValidator.hasUserAccess(content, user);
+		// check if the contents are new compared what stored in the registry
+		return vcValidator.isNewContent(content);
 	}
+
 }

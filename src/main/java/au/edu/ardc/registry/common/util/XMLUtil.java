@@ -45,16 +45,17 @@ public class XMLUtil {
 			if (rootPrefix == null)
 				rootPrefix = "xmlns";
 
-
 			NamedNodeMap attributes = root.getAttributes();
 			if (attributes != null) {
 				for (int i = 0; i < attributes.getLength(); i++) {
 					Node node = attributes.item(i);
-					if (node.getNamespaceURI() == "http://www.w3.org/2000/xmlns/" && node.getLocalName().equals(rootPrefix))
+					if (node.getNamespaceURI() == "http://www.w3.org/2000/xmlns/"
+							&& node.getLocalName().equals(rootPrefix))
 						return node.getNodeValue();
 				}
 			}
-		}catch(Exception e){
+		}
+		catch (Exception e) {
 			throw new ContentNotSupportedException("Unable to determine namespace for given Document");
 		}
 		return nameSpace;

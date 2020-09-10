@@ -25,12 +25,13 @@ class UserAccessValidatorIT extends KeycloakIntegrationTest {
 	public void matchidentifier_with_Allocation() throws Exception {
 		String identifier = "10273/XXAASSSSIIIIUUUU";
 		String allocationId = "6d8c4563-1b33-4cb1-9267-45b9cc574b0b";
-		//  it's an IGSN allocationID so it will return an IGSNAllocation
+		// it's an IGSN allocationID so it will return an IGSNAllocation
 		IGSNAllocation a = (IGSNAllocation) kcService.getAllocationByResourceID(allocationId);
-		if(a.getType().equals("urn:ardc:igsn:allocation")) {
+		if (a.getType().equals("urn:ardc:igsn:allocation")) {
 			String prefix = a.getPrefix();
 			String namespace = a.getNamespace();
 			assertThat(identifier.startsWith(prefix + "/" + namespace));
 		}
 	}
+
 }

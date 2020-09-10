@@ -21,63 +21,62 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {VersionService.class, VersionContentValidator.class, ValidationService.class, IdentifierService.class})
+@ContextConfiguration(classes = { VersionService.class, VersionContentValidator.class, ValidationService.class,
+		IdentifierService.class })
 class VersionContentValidatorTest {
 
-    @Autowired
-    VersionService vService;
+	@Autowired
+	VersionService vService;
 
-    @Autowired
-    VersionContentValidator vValidator;
+	@Autowired
+	VersionContentValidator vValidator;
 
-    @MockBean
-    IdentifierService iService;
+	@MockBean
+	IdentifierService iService;
 
-    @MockBean
-    VersionRepository repository;
+	@MockBean
+	VersionRepository repository;
 
-    @MockBean
-    IdentifierRepository iRepository;
+	@MockBean
+	IdentifierRepository iRepository;
 
-    @MockBean
-    IdentifierMapper iMapper;
+	@MockBean
+	IdentifierMapper iMapper;
 
-    @MockBean
-    VersionMapper mapper;
+	@MockBean
+	VersionMapper mapper;
 
-    @MockBean
-    SchemaService sService;
+	@MockBean
+	SchemaService sService;
 
-    @MockBean
-    RecordService rService;
+	@MockBean
+	RecordService rService;
 
-    @MockBean
-    ValidationService valService;
+	@MockBean
+	ValidationService valService;
 
-    @Test
-    void isNewContent() {
-        Version v = TestHelper.mockVersion();
-        String oldContent = "fish";
-        v.setContent(oldContent.getBytes());
-        v.setHash(vService.getHash(v));
-        String schemaID = "ardc-igsn-desc-1.0";
+	@Test
+	void isNewContent() {
+		Version v = TestHelper.mockVersion();
+		String oldContent = "fish";
+		v.setContent(oldContent.getBytes());
+		v.setHash(vService.getHash(v));
+		String schemaID = "ardc-igsn-desc-1.0";
 
-        Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
-            boolean isNewContent = vValidator.isNewContent("fish", v, schemaID);
-        });
+		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
+			boolean isNewContent = vValidator.isNewContent("fish", v, schemaID);
+		});
 
+	}
 
-    }
+	@Test
+	void isNewContent_DB() {
+		String identifier = "20.500.11812/XXAB001QX";
+		String schemaID = "ardc-igsn-desc-1.0";
+		String newContent = "<resources></resources>";
+		boolean isNewContent = vValidator.isNewContent(newContent, identifier, schemaID);
+		assertThat(isNewContent).isTrue();
 
-    @Test
-    void isNewContent_DB()
-    {
-        String identifier = "20.500.11812/XXAB001QX";
-        String schemaID = "ardc-igsn-desc-1.0";
-        String newContent = "<resources></resources>";
-        boolean isNewContent = vValidator.isNewContent(newContent, identifier, schemaID);
-        assertThat(isNewContent).isTrue();
-
-    }
+	}
 
 }

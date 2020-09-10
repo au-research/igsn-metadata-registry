@@ -15,7 +15,7 @@ public class ContentValidator {
 	@Autowired
 	SchemaService service;
 
-	public Schema getSchema(String content) throws ContentNotSupportedException{
+	public Schema getSchema(String content) throws ContentNotSupportedException {
 		return service.getSchemaForContent(content);
 	}
 

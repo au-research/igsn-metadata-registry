@@ -211,7 +211,8 @@ public class KeycloakService {
 		}
 		user.setAllocations(userPermissions);
 
-		// passing the User along with the request, mainly for logging but can be used for anything else
+		// passing the User along with the request, mainly for logging but can be used for
+		// anything else
 		request.setAttribute(String.valueOf(User.class), user);
 
 		// user.setAllocations(permissions);
@@ -245,10 +246,10 @@ public class KeycloakService {
 		logger.debug(String.format("Obtained ResourceRepresentation id:%s %s: ", resource.getId(), resource.getId()));
 		Allocation allocation = null;
 		// TODO instantiate based on type (maybe add a factory)
-		if(resource.getType().equals("urn:ardc:igsn:allocation")){
+		if (resource.getType().equals("urn:ardc:igsn:allocation")) {
 			allocation = new IGSNAllocation(UUID.fromString(resource.getId()));
 		}
-		else{
+		else {
 			allocation = new Allocation(UUID.fromString(resource.getId()));
 		}
 		allocation.setName(resource.getName());

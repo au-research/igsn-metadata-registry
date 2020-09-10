@@ -27,6 +27,8 @@ public class Schema {
 
 	private Map<String, String> transforms;
 
+	private String oaiexport;
+
 	public Schema() {
 	}
 
@@ -81,5 +83,9 @@ public class Schema {
 	public void setTransforms(Map<String, String> transforms) {
 		this.transforms = transforms;
 	}
+
+	public String getOaiexport() { return oaiexport; }
+
+	public void setOaiexport(String oaiexport) { this.oaiexport = oaiexport; }
 
 }

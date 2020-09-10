@@ -52,7 +52,6 @@ public class UserAccessValidator {
 		return true;
 	}
 
-
 	/**
 	 * @param Identifier an IGSN identifier
 	 * @param user and IGSN User
@@ -65,15 +64,12 @@ public class UserAccessValidator {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();
 			String namespace = ia.getNamespace();
-			if(Identifier.startsWith(prefix + "/" + namespace)){
+			if (Identifier.startsWith(prefix + "/" + namespace)) {
 				return ia;
 			}
 		}
 		return null;
 	}
-
-
-
 
 	/**
 	 * @param identifier an IGSN identifier value
@@ -87,7 +83,7 @@ public class UserAccessValidator {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();
 			String namespace = ia.getNamespace();
-			if(identifier.startsWith(prefix + "/" + namespace)){
+			if (identifier.startsWith(prefix + "/" + namespace)) {
 				return true;
 			}
 		}

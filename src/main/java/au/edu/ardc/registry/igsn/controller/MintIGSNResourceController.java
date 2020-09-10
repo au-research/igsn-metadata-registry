@@ -35,7 +35,6 @@ public class MintIGSNResourceController {
 	@Autowired
 	private KeycloakService kcService;
 
-
 	@PostMapping("/mint")
 	@Operation(summary = "Creates new IGSN record(s)", description = "Add new IGSN record(s) to the registry")
 	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
@@ -51,8 +50,9 @@ public class MintIGSNResourceController {
 			boolean isValidPayload = validator.isValidPayload(payload, user);
 			// TODO test for "Mintability" return with result, if 'mintable" then store
 			// the payload and start the mint pipeline
-		} catch (Exception e)
-		{ // lots of different exceptions will be thrown around !! catch them and let the client know !!
+		}
+		catch (Exception e) { // lots of different exceptions will be thrown around !!
+								// catch them and let the client know !!
 			e.printStackTrace();
 		}
 		// for now just send them back what we've received
