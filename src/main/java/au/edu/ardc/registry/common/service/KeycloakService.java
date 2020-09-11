@@ -9,6 +9,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.TokenIntrospectionResponse;
@@ -289,6 +290,26 @@ public class KeycloakService {
 		AuthzClient authzClient = AuthzClient.create(configuration);
 
 		return authzClient;
+	}
+
+	/**
+	 * @throws Exception normally when the environment is not properly set
+	 * @return List of DataCenter representation of a keycloak Group
+	 */
+	@Cacheable("datacenters")
+	public List<DataCenter> getDataCentres() throws Exception {
+		// todo cache
+		logger.debug("Obtaining DataCenters");
+		Keycloak keycloak = getAdminClient();
+		List<GroupRepresentation> groups = keycloak.realm(kcRealm).groups().groups();
+		List<DataCenter> dataCenters = new ArrayList<DataCenter>();
+		logger.debug(String.format("Obtained GroupRepresentation"));
+		for (GroupRepresentation group : groups) {
+			DataCenter dataCenter = new DataCenter(UUID.fromString(group.getId()));
+			dataCenter.setName(group.getName());
+			dataCenters.add(dataCenter);
+		}
+		return dataCenters;
 	}
 
 }

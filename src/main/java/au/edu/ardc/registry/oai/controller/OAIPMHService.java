@@ -79,7 +79,7 @@ public class OAIPMHService {
 
 	private ResponseEntity<OAIResponse> identify(HttpServletRequest request, RequestFragment requestFragment) {
 		IdentifyFragment identify = new IdentifyFragment();
-		identify.setRepositoryName( env.getProperty("app.name"));
+		identify.setRepositoryName(env.getProperty("app.name"));
 
 		OAIResponse response = new OAIIdentifyResponse(identify);
 		response.setRequest(requestFragment);
