@@ -84,6 +84,16 @@ public class MintIGSNResourceController {
 	@Qualifier("IGSNImportJob")
 	Job igsnImportJob;
 
+	/**
+	 * @param request the entire http request object
+	 * @return an IGSN response
+	 * @throws IOException if content an not be accessed or saved
+	 * @throws ContentNotSupportedException if content is not supported as per schema.json
+	 * @throws XMLValidationException if content is XML but it's invalid
+	 * @throws JSONValidationException if content is JSON but it's invalid
+	 * @throws ForbiddenOperationException if user has no access rights to the given
+	 * records
+	 */
 	@PostMapping("/mint")
 	@Operation(summary = "Creates new IGSN record(s)", description = "Add new IGSN record(s) to the registry")
 	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
@@ -92,12 +102,10 @@ public class MintIGSNResourceController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
-			ForbiddenOperationException, JobParametersInvalidException, JobExecutionAlreadyRunningException,
-			JobRestartException, JobInstanceAlreadyCompleteException {
+			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		IGSNServiceRequest IGSNRequest = igsnService.createRequest(user, IGSNEventType.MINT);
 		String dataPath = IGSNRequest.getDataPath();
-		String payLoadContentPath = dataPath + File.separator + "payload.txt";
 
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierRepository, validationService,
@@ -108,16 +116,26 @@ public class MintIGSNResourceController {
 		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
 				userAccessValidator);
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+		String fileExtension = Helpers.getFileExtensionForContent(payload);
+		String payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
 		boolean isValidPayload = validator.isValidMintPayload(payload, user);
 		if (isValidPayload) {
 			// If All is good, then start an IGSN import and MDS mint job
-			JobParameters jobParameters = new JobParametersBuilder()
-					.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-					.addString("creatorID", user.getId().toString()).addString("filePath", payLoadContentPath)
-					.addString("targetPath", dataPath + File.separator + "output.txt").toJobParameters();
+			// try job execution and catch any exception
 
-			jobLauncher.run(igsnImportJob, jobParameters);
+			try {
+				JobParameters jobParameters = new JobParametersBuilder()
+						.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
+						.addString("creatorID", user.getId().toString()).addString("filePath", payLoadContentPath)
+						.addString("targetPath", dataPath + File.separator + "output.txt").toJobParameters();
+
+				jobLauncher.run(igsnImportJob, jobParameters);
+			}
+			catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
+					| JobInstanceAlreadyCompleteException e) {
+				throw new APIException(e.getMessage());
+			}
 			request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
 			MDC.put("event.action", "mint-request");
 		}

@@ -1,8 +1,13 @@
 package au.edu.ardc.registry.common.util;
 
+import au.edu.ardc.registry.common.model.schema.JSONValidator;
+import au.edu.ardc.registry.common.model.schema.XMLValidator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.mime.MimeType;
+import org.apache.tika.mime.MimeTypeException;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Helpers {
 
@@ -50,6 +57,32 @@ public class Helpers {
 		FileWriter writer = new FileWriter(filePath);
 		writer.write(content);
 		writer.close();
+	}
+
+	public static void newOrEmptyDirecory(String dirPath) throws IOException {
+		File directory = new File(dirPath);
+		if (directory.exists() && directory.isDirectory()) {
+			boolean deleted = directory.delete();
+		}
+		Files.createDirectory(Paths.get(dirPath));
+
+	}
+
+	/**
+	 * @param content a String content of a file
+	 * @return the file extension for the file eg .xml or .json if can not be found a
+	 * ".bin" extension is 'assumed'
+	 */
+	public static String getFileExtensionForContent(String content) {
+		try {
+			String mediaType = Helpers.probeContentType(content);
+			TikaConfig config = TikaConfig.getDefaultConfig();
+			MimeType mimeType = config.getMimeRepository().forName(mediaType);
+			return mimeType.getExtension();
+		}
+		catch (MimeTypeException e) {
+			return ".bin";
+		}
 	}
 
 	public static String readFileOnClassPath(String path) throws IOException {
