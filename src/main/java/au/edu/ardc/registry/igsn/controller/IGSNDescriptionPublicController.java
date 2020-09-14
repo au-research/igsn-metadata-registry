@@ -4,7 +4,9 @@ import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
-import au.edu.ardc.registry.exception.NotFoundException;
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.model.schema.JSONSchema;
+import au.edu.ardc.registry.common.model.schema.XMLSchema;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -28,9 +30,12 @@ public class IGSNDescriptionPublicController {
 
 	final VersionService versionService;
 
-	public IGSNDescriptionPublicController(IdentifierService identifierService, VersionService versionService) {
+	final SchemaService schemaService;
+
+	public IGSNDescriptionPublicController(IdentifierService identifierService, VersionService versionService, SchemaService schemaService) {
 		this.identifierService = identifierService;
 		this.versionService = versionService;
+		this.schemaService = schemaService;
 	}
 
 	@GetMapping("")
@@ -48,7 +53,15 @@ public class IGSNDescriptionPublicController {
 		if (version == null) {
 			throw new IGSNNoValidContentForSchema(identifierValue, schema);
 		}
-		return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body(version.getContent());
+
+		Schema schemaObject = schemaService.getSchemaByID(schema);
+
+		MediaType mediaType = MediaType.APPLICATION_XML;
+		if (schemaObject.getClass().equals(JSONSchema.class)) {
+			mediaType = MediaType.APPLICATION_JSON;
+		}
+
+		return ResponseEntity.ok().contentType(mediaType).body(version.getContent());
 	}
 
 }

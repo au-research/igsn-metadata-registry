@@ -53,6 +53,37 @@ class IGSNDescriptionPublicControllerIT extends WebIntegrationTest {
 	}
 
 	@Test
+	void index_validRequest_returnsJSONLD() throws IOException {
+		// given a record, a version and an identifier
+		Record record = TestHelper.mockRecord();
+		recordRepository.saveAndFlush(record);
+
+		Version version = TestHelper.mockVersion(record);
+		version.setCurrent(true);
+		version.setSchema(SchemaService.ARDCv1);
+		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		version.setContent(validXML.getBytes());
+		versionRepository.saveAndFlush(version);
+
+		Version jsonld = TestHelper.mockVersion(record);
+		jsonld.setCurrent(true);
+		jsonld.setSchema(SchemaService.ARDCv1JSONLD);
+		String validJSON = Helpers.readFile("src/test/resources/json/sample_ardcv1_jsonld.json");
+		jsonld.setContent(validJSON.getBytes());
+		versionRepository.saveAndFlush(jsonld);
+
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		identifier.setType(Identifier.Type.IGSN);
+		identifier.setValue("10273/XXAA");
+		identifierRepository.saveAndFlush(identifier);
+
+		// when get igsn-description?schema=json-ld, returns the version content
+		this.webTestClient.get()
+				.uri(uriBuilder -> uriBuilder.path(baseUrl).queryParam("identifier", "10273/XXAA").queryParam("schema", SchemaService.ARDCv1JSONLD).build()).exchange()
+				.expectStatus().isOk().expectHeader().contentType(MediaType.APPLICATION_JSON).expectBody().json(validJSON);
+	}
+
+	@Test
 	void index_notFoundIdentifier_404() {
 		this.webTestClient.get().uri(
 				uriBuilder -> uriBuilder.path(baseUrl).queryParam("identifier", UUID.randomUUID().toString()).build())
