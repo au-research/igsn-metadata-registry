@@ -1,9 +1,11 @@
 package au.edu.ardc.registry.common.event;
 
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.job.processor.RecordTransformLDProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -40,8 +42,12 @@ public class RecordEventListener {
 		event.getRecord().setModifierID(event.getUser().getId());
 
 		// todo ProcessRecordJob (for single record)
-		RecordTitleProcessor processor = new RecordTitleProcessor(versionService, recordService, schemaService);
-		processor.process(event.getRecord());
+		RecordTitleProcessor titleProcessor = new RecordTitleProcessor(versionService, recordService, schemaService);
+		titleProcessor.process(event.getRecord());
+
+		RecordTransformLDProcessor transformProcessor = new RecordTransformLDProcessor(versionService, recordService,
+				schemaService);
+		transformProcessor.process(event.getRecord());
 	}
 
 }

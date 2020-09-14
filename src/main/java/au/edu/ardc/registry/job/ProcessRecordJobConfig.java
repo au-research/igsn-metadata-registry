@@ -1,13 +1,14 @@
 package au.edu.ardc.registry.job;
 
-import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
-import au.edu.ardc.registry.job.reader.RecordReader;
-import au.edu.ardc.registry.job.writer.NoOpItemWriter;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.service.RecordService;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
+import au.edu.ardc.registry.job.processor.RecordTransformLDProcessor;
+import au.edu.ardc.registry.job.reader.RecordReader;
+import au.edu.ardc.registry.job.writer.NoOpItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -42,7 +43,8 @@ public class ProcessRecordJobConfig {
 
 	@Bean(name = "ProcessRecordJob")
 	public Job ProcessRecordJob() {
-		return jobBuilderFactory.get("ProcessRecordJob").flow(processTitles()).end().build();
+		return jobBuilderFactory.get("ProcessRecordJob").flow(processTitles()).next(processLDTransforms()).end()
+				.build();
 	}
 
 	@Bean
@@ -54,6 +56,15 @@ public class ProcessRecordJobConfig {
 				.retry(DeadlockLoserDataAccessException.class)
 				// .taskExecutor(concurrentTaskExecutor())
 				.build();
+	}
+
+	@Bean
+	public Step processLDTransforms() {
+		return stepBuilderFactory.get("Process JSON-LD Transform").<Record, Record>chunk(10)
+				.reader(new RecordReader(recordRepository))
+				.processor(new RecordTransformLDProcessor(versionService, recordService, schemaService))
+				.writer(new NoOpItemWriter<>()).faultTolerant().retryLimit(3)
+				.retry(DeadlockLoserDataAccessException.class).build();
 	}
 
 	@Bean

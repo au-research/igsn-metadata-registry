@@ -172,6 +172,13 @@ public class VersionService {
 		return repository.save(newVersion);
 	}
 
+	public Version save(Version version) {
+		if (version.getCreatedAt() == null) {
+			version.setCreatedAt(new Date());
+		}
+		return repository.saveAndFlush(version);
+	}
+
 	public VersionDTO create(VersionDTO dto, User user) {
 		// versionDTO should already be @Valid from controller
 		Version version = mapper.convertToEntity(dto);

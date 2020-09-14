@@ -29,6 +29,8 @@ public class ARDCv1ToJSONLDTransformer implements Transformer {
 
 		// build resultVersion
 		Version resultVersion = new Version();
+		resultVersion.setCurrent(true);
+		resultVersion.setRecord(version.getRecord());
 		resultVersion.setSchema(targetSchemaID);
 		resultVersion.setContent(formattedJSONString.getBytes());
 
