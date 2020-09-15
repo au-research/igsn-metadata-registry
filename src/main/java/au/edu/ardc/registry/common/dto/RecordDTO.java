@@ -38,6 +38,8 @@ public class RecordDTO {
 	@NotNull
 	private UUID ownerID;
 
+	private String type;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private List<VersionDTO> currentVersions;
 
@@ -145,4 +147,11 @@ public class RecordDTO {
 		this.identifiers = identifiers;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 }
