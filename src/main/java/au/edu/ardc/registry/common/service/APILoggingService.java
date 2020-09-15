@@ -125,15 +125,16 @@ public class APILoggingService {
 		// http.request
 		ObjectNode httpRequest = mapper.createObjectNode();
 		httpRequest.put("method", request.getMethod());
-		http.set("request", httpRequest);
 		String referrer = request.getHeader("referrer");
 		if (referrer != null) {
 			httpRequest.put("referrer", referrer);
 		}
+		http.set("request", httpRequest);
 
 		// http.response
 		ObjectNode httpResponse = mapper.createObjectNode();
 		httpResponse.put("status_code", String.valueOf(response.getStatus()));
+		http.set("response", httpResponse);
 
 		ecs.set("http", http);
 
