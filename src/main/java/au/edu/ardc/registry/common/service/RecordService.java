@@ -54,6 +54,11 @@ public class RecordService {
 		return result.map(getDTOConverter());
 	}
 
+	public Page<Record> searchRecords(Specification<Record> specs, Pageable pageable) {
+		Page<Record> result = repository.findAll(specs, pageable);
+		return result;
+	}
+
 	/**
 	 * Return all publicly available records
 	 * @param pageable Pageable
@@ -63,6 +68,17 @@ public class RecordService {
 		RecordSpecification visibleSpec = new RecordSpecification();
 		visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
 		return search(visibleSpec, pageable);
+	}
+
+	/**
+	 * Return all publicly available records
+	 * @param pageable Pageable
+	 * @return a list of Recordsthat fits the criteria
+	 */
+	public Page<Record> findAllPublicRecords(Pageable pageable) {
+		RecordSpecification visibleSpec = new RecordSpecification();
+		visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
+		return searchRecords(visibleSpec, pageable);
 	}
 
 	/**
