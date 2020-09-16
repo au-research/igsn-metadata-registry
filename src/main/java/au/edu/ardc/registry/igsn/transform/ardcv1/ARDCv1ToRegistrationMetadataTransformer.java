@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.transform.ardcv1;
 
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 
 	private static final String path = "src/main/resources/xslt/ardc_v1_to_registration_metadata_v1.xsl";
 
-	private static final String targetSchemaID = "igsn-reg-1.0";
+	private static final String targetSchemaID = SchemaService.IGSNREGv1;
 
 	private Map<String, String> parameters = new HashMap<>();
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
@@ -78,20 +79,19 @@ class SchemaServiceTest {
 	@Test
 	void getSchemaByNameSpace_ARDC() {
 		XMLSchema xs = service.getXMLSchemaByNameSpace("https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc");
-		assertTrue(xs.getId().equals(SchemaService.ARDCv1));
+		assertEquals(SchemaService.ARDCv1, xs.getId());
 	}
 
 	@Test
 	void getSchemaByNameSpace_CS() {
 		XMLSchema xs = service.getXMLSchemaByNameSpace("https://igsn.csiro.au/schemas/3.0");
-		assertTrue(xs.getId().equals(SchemaService.CSIROv3));
+		assertEquals(SchemaService.CSIROv3, xs.getId());
 	}
 
 	@Test
 	void validateDocument_1() throws Exception {
 		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 		boolean isValid = service.validate(xml);
-		System.out.print("valid:" + isValid);
 		assertTrue(isValid);
 
 	}
@@ -100,7 +100,6 @@ class SchemaServiceTest {
 	void validateDocument_2() throws Exception {
 		String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
 		boolean isValid = service.validate(xml);
-		System.out.print("valid:" + isValid);
 		assertTrue(isValid);
 
 	}

@@ -32,7 +32,7 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 	}
 
 	@Override
-	public Record process(Record record)  {
+	public Record process(Record record) {
 		log.debug("Processing json-ld transformation for record {}", record.getId());
 
 		// obtain the version
@@ -58,7 +58,7 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 			Version jsonLDVersion = transformer.transform(version);
 			jsonLDVersion.setHash(versionService.getHash(jsonLDVersion));
 
-			//  check if there's existing current json-ld and if they're different
+			// check if there's existing current json-ld and if they're different
 			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.ARDCv1JSONLD);
 			if (existingVersion != null && existingVersion.getHash().equals(jsonLDVersion.getHash())) {
 				log.info("There's already a version with existing hash {} for schema {}, skipping",
@@ -72,7 +72,8 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 			// todo recordService.touch(record, user) for historical detail
 			log.info("Processed json-ld transformation for record {}", record.getId());
 			return recordService.findById(record.getId().toString());
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error transforming json-ld for record = {} reason: {}", record.getId(), e.getMessage());
 			return null;
