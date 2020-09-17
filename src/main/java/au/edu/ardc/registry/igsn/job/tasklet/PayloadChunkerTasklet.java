@@ -7,29 +7,18 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.igsn.service.IGSNService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.scope.context.StepContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,8 +28,6 @@ import java.util.Map;
  * registry
  */
 public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
-
-	Logger logger = LoggerFactory.getLogger(IGSNService.class);
 
 	private String directory;
 
@@ -52,18 +39,14 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 
 	/**
 	 * @param contribution a contribution to a {@link StepExecution},
-	 * @param chunkContext the current context for the tasklet {@link ChunkContext},
-	 * @return RepeatStatus {@link RepeatStatus},
-	 * @throws Exception Exceptions if chunker provider for given content doesn't exist
+	 * @param chunkContext the current chunk
+	 * @return the {@link RepeatStatus} for this tasklet
+	 * @throws Exception when things fail to execute
 	 */
 	@Override
 	public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
 			throws Exception {
-		JobParameters jobParameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
-
-		directory = jobParameters.getString("dataPath");
-		payloadPath = jobParameters.getString("payLoadContentFile");
-		String resultDirName = jobParameters.getString("chunkContentsDir");
+		File dir = new File(directory);
 		String payload = Helpers.readFile(payloadPath);
 
 		Schema schema = this.service.getSchemaForContent(payload);
@@ -73,12 +56,10 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 		taskInfo = new HashMap<>();
 		assert fProvider != null;
 		int numberOfFragments = fProvider.getCount(payload);
-		assert resultDirName != null;
-		Files.createDirectories(Paths.get(resultDirName));
 		for (int i = 0; i < numberOfFragments; i++) {
 			String content = fProvider.get(payload, i);
 			assert iProvider != null;
-			String outFilePath = resultDirName + File.separator + i + fileExtension;
+			String outFilePath = directory + File.separator + i + fileExtension;
 			Helpers.writeFile(outFilePath, content);
 			String identifier = iProvider.get(content);
 			taskInfo.put(outFilePath, identifier);
@@ -90,6 +71,7 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		Assert.notNull(directory, "directory must be set");
 	}
 
 	/**
@@ -102,9 +84,16 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 				taskInfo);
 	}
 
-	public PayloadChunkerTasklet setSchemaService(SchemaService service) {
+	public void setDirectory(String directory) {
+		this.directory = directory;
+	}
+
+	public void setSchemaService(SchemaService service) {
 		this.service = service;
-		return this;
+	}
+
+	public void setPayloadPath(String payloadPath) {
+		this.payloadPath = payloadPath;
 	}
 
 }

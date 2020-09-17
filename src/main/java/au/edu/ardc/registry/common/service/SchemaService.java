@@ -95,25 +95,20 @@ public class SchemaService {
 	 * @return Schema
 	 */
 	@Cacheable("schema")
-	public XMLSchema getXMLSchemaByNameSpace(String nameSpace) throws ContentNotSupportedException {
-		XMLSchema xs = null;
+	public XMLSchema getXMLSchemaByNameSpace(String nameSpace) {
 		logger.debug("Load schema by nameSpace {}", nameSpace);
 		Iterator<Schema> found = this.getSchemas().stream().filter(schema -> schema.getClass().equals(XMLSchema.class))
 				.iterator();
 
 		while (found.hasNext()) {
-			xs = (XMLSchema) found.next();
+			XMLSchema xs = (XMLSchema) found.next();
 			logger.debug("nameSpaces {}", xs.getNamespace());
 			if (xs.getNamespace().equals(nameSpace)) {
 				return xs;
 			}
-			xs = null;
 		}
-		if (xs == null) {
-			throw new ContentNotSupportedException("XML for nameSpace: " + nameSpace + " is not supported");
-			// return null;
-		}
-		return xs;
+
+		return null;
 	}
 
 	/**
@@ -144,16 +139,15 @@ public class SchemaService {
 	 * @param schema The Schema to validate against
 	 * @param payload the String payload to validate
 	 * @return true if validation success
-	 * @throws ContentNotSupportedException throws exception for validator creation and
-	 * validation
+	 * @throws Exception throws exception for validator creation and validation
 	 */
-	public boolean validate(Schema schema, String payload) throws ContentNotSupportedException {
+	public boolean validate(Schema schema, String payload) throws Exception {
 		// detect type of schema
 		// todo refactor ValidatorFactory.getValidator(schema.getClass())
 		// logger.debug("schema {}, payload {}", schema, payload);
 		SchemaValidator validator = SchemaValidatorFactory.getValidator(schema);
 		if (validator == null) {
-			throw new ContentNotSupportedException("Validator for schema " + schema.getId() + " is not found");
+			throw new Exception(String.format("Validator for schema %s is not found", schema.getId()));
 		}
 
 		return validator.validate(schema, payload);

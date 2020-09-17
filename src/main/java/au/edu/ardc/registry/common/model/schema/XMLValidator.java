@@ -18,10 +18,10 @@ public class XMLValidator implements SchemaValidator {
 	Logger logger = LoggerFactory.getLogger(XMLValidator.class);
 
 	public boolean validate(Schema schema, String xmlString) {
+		XMLSchema xmlSchema = (XMLSchema) schema;
+		String XSDPath = xmlSchema.getLocalSchemaLocation();
+		logger.debug("Validating XML String with schema {} schemaLocation: {}", schema.getId(), XSDPath);
 		try {
-			XMLSchema xmlSchema = (XMLSchema) schema;
-			String XSDPath = xmlSchema.getLocalSchemaLocation();
-			logger.debug("Validating XML String with schema {} schemaLocation: {}", schema.getId(), XSDPath);
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 			javax.xml.validation.Schema validationSchema = factory
 					.newSchema(getClass().getClassLoader().getResource(XSDPath));

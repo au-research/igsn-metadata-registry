@@ -23,25 +23,22 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public class UserAccessValidator {
 
-	private final ValidationService validationService;
+	private final ValidationService vService;
 
-	private final SchemaService schemaService;
+	private final SchemaService sService;
 
 	private final IdentifierRepository identifierRepository;
 
 	private final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
-	private UUID allocationID;
-
-	public UserAccessValidator(IdentifierRepository identifierRepository, ValidationService validationService,
-			SchemaService schemaService) {
+	public UserAccessValidator(IdentifierRepository identifierRepository, ValidationService vService,
+			SchemaService sService) {
 		this.identifierRepository = identifierRepository;
-		this.schemaService = schemaService;
-		this.validationService = validationService;
+		this.sService = sService;
+		this.vService = vService;
 	}
 
 	/**
@@ -55,32 +52,13 @@ public class UserAccessValidator {
 	 */
 	public boolean canUserCreateIGSNRecord(String content, User user)
 			throws ContentNotSupportedException, ForbiddenOperationException {
-		Schema schema = schemaService.getSchemaForContent(content);
+		Schema schema = sService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
-		IGSNAllocation igsnAllocation = null;
-		String prefix = "######";
-		String namespace = "######";
 		for (String identifierValue : identifiers) {
-			if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
-				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
-			}
-			if (igsnAllocation == null) {
-				// get the first record and make sure all other records has the same
-				// prefix and namespace
-				igsnAllocation = getIGSNAllocation(identifierValue, user, Scope.CREATE);
-				if (igsnAllocation == null) {
-					throw new ForbiddenOperationException(
-							"User has no access to the given Identifier: " + identifierValue);
-				}
-				allocationID = igsnAllocation.getId();
-				prefix = igsnAllocation.getPrefix();
-				namespace = igsnAllocation.getNamespace();
-			}
-			else if (!identifierValue.startsWith(prefix + "/" + namespace)) {
-				throw new ForbiddenOperationException(
-						"Identifier prefix is different from previous: " + identifierValue);
+			if (!this.canCreateIdentifier(identifierValue, user)) {
+				throw new ForbiddenOperationException("User has no access to the given Identifier: " + identifierValue);
 			}
 		}
 		return true;
@@ -98,7 +76,7 @@ public class UserAccessValidator {
 	 */
 	public boolean canUserUpdateIGSNRecord(String content, User user)
 			throws ContentNotSupportedException, ForbiddenOperationException {
-		Schema schema = schemaService.getSchemaForContent(content);
+		Schema schema = sService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
@@ -123,38 +101,57 @@ public class UserAccessValidator {
 	 * space
 	 * @param identifierValue an IGSN identifier
 	 * @param user and IGSN User
-	 * @param scope {create | update}
 	 * @return IGSNAllocation for the given identifier if the user has access to
 	 */
 
-	public IGSNAllocation getIGSNAllocation(String identifierValue, User user, Scope scope) {
+	public IGSNAllocation getIGSNAllocation(String identifierValue, User user) {
 		// get allocation from identifier that user has access to
 		List<Allocation> allocations = user.getAllocationsByType(this.IGSNallocationType);
 		for (Allocation allocation : allocations) {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();
 			String namespace = ia.getNamespace();
-			if (identifierValue.startsWith(prefix + "/" + namespace) && ia.getScopes().contains(scope)) {
+			if (identifierValue.startsWith(prefix + "/" + namespace)) {
 				return ia;
 			}
 		}
 		return null;
 	}
 
-	public UUID getAllocationID() {
-		return allocationID;
+	/**
+	 * Tests if user has create scope
+	 * @param identifierValue an IGSN identifier value
+	 * @param user and IGSN User
+	 * @return true if the user can create the Identifier
+	 */
+	public boolean canCreateIdentifier(String identifierValue, User user) {
+		// If record already exists with the given Identifier then false
+		if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
+			return false;
+		}
+		// get allocation from identifier that user has access to
+		List<Allocation> allocations = user.getAllocationsByType(this.IGSNallocationType);
+		for (Allocation allocation : allocations) {
+			IGSNAllocation ia = (IGSNAllocation) allocation;
+			String prefix = ia.getPrefix();
+			String namespace = ia.getNamespace();
+			if (identifierValue.startsWith(prefix + "/" + namespace) && ia.getScopes().contains(Scope.CREATE)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean hasAccessToRecord(Record record, User user) {
-		return validationService.validateRecordOwnership(record, user);
+		return vService.validateRecordOwnership(record, user);
 	}
 
 	public boolean canCreate(IGSNAllocation a, User user) {
-		return validationService.validateAllocationScope(a, user, Scope.CREATE);
+		return vService.validateAllocationScope(a, user, Scope.CREATE);
 	}
 
 	public boolean canUpdate(IGSNAllocation a, User user) {
-		return validationService.validateAllocationScope(a, user, Scope.UPDATE);
+		return vService.validateAllocationScope(a, user, Scope.UPDATE);
 	}
 
 }

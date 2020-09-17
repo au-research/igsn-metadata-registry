@@ -1,7 +1,6 @@
 package au.edu.ardc.registry.common.transform;
 
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.exception.TransformerNotFoundException;
 
 public class TransformerFactory {
 
@@ -11,8 +10,9 @@ public class TransformerFactory {
 			return Class.forName(fqn).newInstance();
 		}
 		catch (Exception e) {
-			throw new TransformerNotFoundException(
-					"Unable to transform From " + fromSchema.getId() + " To " + toSchema.getId());
+			// todo throw special exception for this
+			e.printStackTrace();
+			return null;
 		}
 	}
 

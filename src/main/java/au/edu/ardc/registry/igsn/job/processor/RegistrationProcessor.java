@@ -1,8 +1,8 @@
-package au.edu.ardc.registry.job.processor;
+package au.edu.ardc.registry.igsn.job.processor;
 
 import org.springframework.batch.item.ItemProcessor;
 
-public class IngestProcessor implements ItemProcessor<String, String> {
+public class RegistrationProcessor implements ItemProcessor<String, String> {
 
 	@Override
 	public String process(String s) throws Exception {

@@ -154,5 +154,4 @@ public class RecordDTO {
 	public void setType(String type) {
 		this.type = type;
 	}
-
 }

@@ -251,11 +251,11 @@ public class VersionService {
 		return true;
 	}
 
-	public static String getHash(Version version) {
+	public String getHash(Version version) {
 		return DigestUtils.sha1Hex(version.getContent());
 	}
 
-	public static String getHash(String content) {
+	public String getHash(String content) {
 		return DigestUtils.sha1Hex(content);
 	}
 
