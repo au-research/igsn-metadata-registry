@@ -7,11 +7,13 @@ import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.model.schema.XMLSchema;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
+import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
+import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import au.edu.ardc.registry.igsn.validator.VersionContentValidator;
@@ -38,21 +40,25 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
 	private VersionService versionService;
 
-	private IdentifierService identifierService;
+	private VersionRepository versionRepository;
 
 	private String supportedSchema = SchemaService.ARDCv1;
 
 	private Version existingRegistrationMDVersion;
 
+	private IGSNAllocation allocation;
+
+	private String landingPage;
+
 	public UpdateIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
 			IdentifierRepository identifierRepository, RecordService recordService, VersionService versionService,
-			IdentifierService identifierService) {
+			VersionRepository versionRepository) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
 		this.identifierRepository = identifierRepository;
 		this.recordService = recordService;
 		this.versionService = versionService;
-		this.identifierService = identifierService;
+		this.versionRepository = versionRepository;
 	}
 
 	@Override
@@ -61,7 +67,8 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		Version newVersion = getRegistrationMetadata(identifier);
 		if (isDifferentRegistrationMetadata(newVersion)) {
-			updateMDS(newVersion);
+			// TODO replace current registration Metadata
+			result = String.valueOf(updateMDS(newVersion));
 		}
 		return result;
 	}
@@ -119,10 +126,10 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 		return (!oldHash.equals(newHash));
 	}
 
-	private boolean updateMDS(Version regMetaVersion) {
-		boolean success = false;
+	private int updateMDS(Version regMetaVersion) {
+		int responseCode = 0;
 
-		return success;
+		return responseCode;
 	}
 
 }
