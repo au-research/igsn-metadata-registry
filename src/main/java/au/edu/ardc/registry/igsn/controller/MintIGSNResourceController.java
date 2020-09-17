@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,6 +35,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import au.edu.ardc.registry.common.entity.Record;
@@ -86,6 +88,7 @@ public class MintIGSNResourceController {
 
 	/**
 	 * @param request the entire http request object
+	 * @param ownerType (Optional default is User)
 	 * @return an IGSN response
 	 * @throws IOException if content an not be accessed or saved
 	 * @throws ContentNotSupportedException if content is not supported as per schema.json
@@ -100,13 +103,15 @@ public class MintIGSNResourceController {
 			content = @Content(schema = @Schema(implementation = Record.class)))
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request)
+	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request,
+			@RequestParam(required = false, defaultValue = "User") String ownerType)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		IGSNServiceRequest IGSNRequest = igsnService.createRequest(user, IGSNEventType.MINT);
 		String dataPath = IGSNRequest.getDataPath();
-
+		boolean isValidPayload = false;
+		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierRepository, validationService,
 				schemaService);
@@ -115,20 +120,31 @@ public class MintIGSNResourceController {
 
 		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
 				userAccessValidator);
+		// try {
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
-		String payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
+		payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
-		boolean isValidPayload = validator.isValidMintPayload(payload, user);
+		isValidPayload = validator.isValidMintPayload(payload, user);
+		// }catch (Exception e){
+		// throw new ContentNotSupportedException("Content Not Supported: " +
+		// e.getMessage());
+		// }
+
 		if (isValidPayload) {
 			// If All is good, then start an IGSN import and MDS mint job
 			// try job execution and catch any exception
+			UUID allocationID = userAccessValidator.getAllocationID();
 
 			try {
 				JobParameters jobParameters = new JobParametersBuilder()
 						.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-						.addString("creatorID", user.getId().toString()).addString("filePath", payLoadContentPath)
-						.addString("targetPath", dataPath + File.separator + "output.txt").toJobParameters();
+						.addString("creatorID", user.getId().toString())
+						.addString("payLoadContentFile", payLoadContentPath)
+						.addString("allocationID", allocationID.toString()).addString("ownerType", ownerType)
+						.addString("chunkContentsDir", dataPath + File.separator + "chunks")
+						.addString("filePath", dataPath + File.separator + "igsn_list.txt")
+						.addString("dataPath", dataPath).toJobParameters();
 
 				jobLauncher.run(igsnImportJob, jobParameters);
 			}

@@ -49,13 +49,18 @@ public class XMLUtil {
 			if (attributes != null) {
 				for (int i = 0; i < attributes.getLength(); i++) {
 					Node node = attributes.item(i);
-					if (node.getNamespaceURI() == "http://www.w3.org/2000/xmlns/"
-							&& node.getLocalName().equals(rootPrefix))
-						return node.getNodeValue();
+					if (node.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")
+							&& node.getLocalName().equals(rootPrefix)) {
+						nameSpace = node.getNodeValue();
+					}
+
 				}
 			}
 		}
 		catch (Exception e) {
+			throw new ContentNotSupportedException("Unable to determine namespace for given Document");
+		}
+		if (nameSpace.equals("")) {
 			throw new ContentNotSupportedException("Unable to determine namespace for given Document");
 		}
 		return nameSpace;

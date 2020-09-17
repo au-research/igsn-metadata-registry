@@ -5,13 +5,13 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.URLRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.igsn.job.processor.UpdateIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
-import au.edu.ardc.registry.job.processor.IngestProcessor;
-import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
+import au.edu.ardc.registry.job.processor.UpdateProcessor;
 import au.edu.ardc.registry.job.writer.NoOpItemWriter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 @Configuration
-public class IGSNMintJobConfig {
+public class IGSNUpdateJobConfig {
 
 	@Autowired
 	public JobBuilderFactory jobBuilderFactory;
@@ -66,33 +66,34 @@ public class IGSNMintJobConfig {
 	URLRepository urlRepository;
 
 	@Bean
-	public Job IGSNImportJob() {
-		return jobBuilderFactory.get("IGSNImportJob").incrementer(new RunIdIncrementer())
-				.listener(new JobCompletionListener()).flow(chunk()).next(ingest()).next(registration()).end().build();
+	public Job IGSNUpdateJob() {
+		return jobBuilderFactory.get("IGSNUpdatetJob").incrementer(new RunIdIncrementer())
+				.listener(new JobCompletionListener()).flow(chunkUpdate()).next(update()).next(registrationUpdate())
+				.end().build();
 	}
 
 	@Bean
-	public Step chunk() {
-		return stepBuilderFactory.get("chunk").tasklet(payloadChunkerTasklet()).build();
+	public Step chunkUpdate() {
+		return stepBuilderFactory.get("chunk-update").tasklet(payloadChunkerTasklet2()).build();
 	}
 
 	@Bean
-	public PayloadChunkerTasklet payloadChunkerTasklet() {
+	public PayloadChunkerTasklet payloadChunkerTasklet2() {
 		return new PayloadChunkerTasklet().setSchemaService(schemaService);
 	}
 
 	@Bean
-	public Step ingest() {
-		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader())
-				.processor(new IngestProcessor(schemaService, validationService, identifierRepository, recordRepository,
+	public Step update() {
+		return stepBuilderFactory.get("update").<String, Resource>chunk(1).reader(new PayloadContentReader())
+				.processor(new UpdateProcessor(schemaService, validationService, identifierRepository, recordRepository,
 						versionRepository, urlRepository))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 
 	@Bean
-	public Step registration() {
-		return stepBuilderFactory.get("registration").<String, String>chunk(1).reader(new IGSNItemReader())
-				.processor(new MintIGSNProcessor(schemaService, kcService, identifierRepository, recordService,
+	public Step registrationUpdate() {
+		return stepBuilderFactory.get("registration-update").<String, String>chunk(1).reader(new IGSNItemReader())
+				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierRepository, recordService,
 						versionService, versionRepository))
 				.writer(new NoOpItemWriter<>()).build();
 	}

@@ -18,7 +18,7 @@ class IGSNRecordServiceTest {
 	void create() {
 		Record record = IGSNRecordService.create();
 		assertThat(record).isNotNull();
-        assertThat(record).isInstanceOf(Record.class);
+		assertThat(record).isInstanceOf(Record.class);
 		assertThat(record.getType()).isEqualTo(IGSNRecordService.recordType);
 	}
 

@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
-public class IngestProcessor implements ItemProcessor<Resource, Resource> {
+public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 
 	private IdentifierRepository identifierRepository;
 
@@ -51,7 +51,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 
 	private Schema schema;
 
-	public IngestProcessor(SchemaService schemaService, ValidationService validationService,
+	public UpdateProcessor(SchemaService schemaService, ValidationService validationService,
 			IdentifierRepository identifierRepository, RecordRepository recordRepository,
 			VersionRepository versionRepository, URLRepository urlRepository) {
 
@@ -89,15 +89,18 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 				Metadata.LandingPage);
 		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
-		Record record = addRecord();
-		System.out.println("record id : " + record.getId());
-		addIdentifier(identifieValue, record);
-		addURL(landingPage, record);
-		addVersion(content, record);
+		// TODO find corresponding record and update it!
+
+		//
+		//
+		// Record record = addRecord();
+		// System.out.println("record id : " + record.getId());
+		// addURL(landingPage, record);
+		// addVersion(content, record);
 		Helpers.appendToFile(outputFilePath, identifieValue);
 	}
 
-	private Record addRecord() {
+	private Record updateRecord() {
 		// create the record
 		Record record = new Record();
 		record.setCreatedAt(new Date());
@@ -110,19 +113,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		return recordRepository.saveAndFlush(record);
 	}
 
-	private void addIdentifier(String identifierValue, Record record) {
-		// create the identifier
-		Identifier identifier = new Identifier();
-		identifier.setCreatedAt(new Date());
-		identifier.setRecord(record);
-		identifier.setType(Identifier.Type.IGSN);
-		identifier.setValue(identifierValue);
-		identifier.setStatus(Identifier.Status.RESERVED);
-		System.out.println("addIdentifier:" + identifier.getId());
-		identifierRepository.saveAndFlush(identifier);
-	}
-
-	private void addURL(String urlValue, Record record) {
+	private void updateURL(String urlValue, Record record) {
 		URL url = new URL();
 		url.setCreatedAt(new Date());
 		url.setRecord(record);
@@ -133,7 +124,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 
 	}
 
-	private void addVersion(String content, Record record) {
+	private void updateVersion(String content, Record record) {
 		Version version = new Version();
 		version.setRecord(record);
 		version.setSchema(schema.getId());
