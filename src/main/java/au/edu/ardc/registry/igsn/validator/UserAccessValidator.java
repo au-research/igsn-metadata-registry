@@ -85,7 +85,7 @@ public class UserAccessValidator {
 			if (!identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
 				throw new ForbiddenOperationException("Record doesn't exists with identifier: " + identifierValue);
 			}
-			Identifier existingIdentifier = identifierRepository.findFirstByValueAndType(identifierValue,
+			Identifier existingIdentifier = identifierRepository.findByValueAndType(identifierValue,
 					Identifier.Type.IGSN);
 			Record record = existingIdentifier.getRecord();
 			this.hasAccessToRecord(record, user);

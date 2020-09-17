@@ -35,7 +35,7 @@ class IGSNServiceReserveControllerIT extends KeycloakIntegrationTest {
 		assertThat(identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, "12703/XXAB12345"));
 
 		// they are in reserved status
-		Identifier identifier = identifierRepository.findFirstByValueAndType("12073/XXAA1234567", Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findByValueAndType("12073/XXAA1234567", Identifier.Type.IGSN);
 		assertThat(identifier.getStatus()).isEqualTo(Identifier.Status.RESERVED);
 	}
 

@@ -39,9 +39,9 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 
 	/**
 	 * @param contribution a contribution to a {@link StepExecution},
-	 * @param chunkContext the current chunk
-	 * @return the {@link RepeatStatus} for this tasklet
-	 * @throws Exception when things fail to execute
+	 * @param chunkContext
+	 * @return
+	 * @throws Exception
 	 */
 	@Override
 	public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
