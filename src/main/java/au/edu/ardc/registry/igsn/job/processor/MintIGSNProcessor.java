@@ -65,7 +65,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		String result = "";
 		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		byte[] registrationMetaBody = addRegistrationMetadata(identifier);
-		mintIGSN(registrationMetaBody, identifierValue, landingPage);
+		// mintIGSN(registrationMetaBody, identifierValue, landingPage);
 		return result;
 
 	}

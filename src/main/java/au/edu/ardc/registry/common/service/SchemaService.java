@@ -144,7 +144,8 @@ public class SchemaService {
 	 * @param schema The Schema to validate against
 	 * @param payload the String payload to validate
 	 * @return true if validation success
-	 * @throws ContentNotSupportedException throws exception for validator creation and validation
+	 * @throws ContentNotSupportedException throws exception for validator creation and
+	 * validation
 	 */
 	public boolean validate(Schema schema, String payload) throws ContentNotSupportedException {
 		// detect type of schema
