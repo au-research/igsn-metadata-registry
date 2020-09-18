@@ -12,17 +12,11 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
-import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Cacheable;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class UserAccessValidator {
@@ -107,7 +101,7 @@ public class UserAccessValidator {
 			if (!identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
 				throw new ForbiddenOperationException("Record doesn't exists with identifier: " + identifierValue);
 			}
-			Identifier existingIdentifier = identifierRepository.findByValueAndType(identifierValue,
+			Identifier existingIdentifier = identifierRepository.findFirstByValueAndType(identifierValue,
 					Identifier.Type.IGSN);
 			Record record = existingIdentifier.getRecord();
 			this.hasAccessToRecord(record, user);

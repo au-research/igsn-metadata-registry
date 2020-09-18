@@ -1,22 +1,16 @@
 package au.edu.ardc.registry.igsn.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
-import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.model.schema.XMLSchema;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
-import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
-import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
-import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
-import au.edu.ardc.registry.igsn.validator.VersionContentValidator;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -24,9 +18,7 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemProcessor;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
@@ -64,7 +56,7 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 	@Override
 	public String process(@NotNull String identifierValue) {
 		String result = "";
-		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
 		Version newVersion = getRegistrationMetadata(identifier);
 		if (isDifferentRegistrationMetadata(newVersion)) {
 			// TODO replace current registration Metadata

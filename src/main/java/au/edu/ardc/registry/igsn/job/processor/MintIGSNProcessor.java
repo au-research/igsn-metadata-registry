@@ -3,7 +3,6 @@ package au.edu.ardc.registry.igsn.job.processor;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
-import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
@@ -12,7 +11,6 @@ import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
-import au.edu.ardc.registry.exception.MDSClientConfigurationException;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
@@ -63,7 +61,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 	@Override
 	public String process(@NotNull String identifierValue) throws Exception {
 		String result = "";
-		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
 		byte[] registrationMetaBody = addRegistrationMetadata(identifier);
 		// mintIGSN(registrationMetaBody, identifierValue, landingPage);
 		return result;
