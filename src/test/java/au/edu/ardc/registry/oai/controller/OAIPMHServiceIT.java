@@ -59,7 +59,7 @@ public class OAIPMHServiceIT extends WebIntegrationTest {
 		this.webTestClient.get()
 				.uri(base_url + "?verb=GetRecord&identifier=gjdhgjdfhgjfd&metadataPrefix=ardc-igsn-desc-1.0").exchange()
 				.expectStatus().isOk().expectBody().xpath("/OAI-PMH/error")
-				.isEqualTo("Record with identifier does not exist");
+				.isEqualTo("The value of the identifier argument is unknown or illegal in this repository.");
 	}
 
 }
