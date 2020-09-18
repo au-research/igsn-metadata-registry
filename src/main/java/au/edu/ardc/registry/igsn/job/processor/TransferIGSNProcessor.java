@@ -51,7 +51,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 					String.format("Identifier %s of type %s does not exists", identifierValue, Identifier.Type.IGSN));
 		}
 
-		Identifier identifier = identifierRepository.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
 		Record record = identifier.getRecord();
 
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));

@@ -15,8 +15,6 @@ import java.util.UUID;
 		indexes = { @Index(name = "idx_owner", columnList = "ownerType,ownerId"),
 				@Index(name = "idx_visible", columnList = "visible"),
 				@Index(name = "idx_id_visible", columnList = "id,visible") })
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(discriminatorType = DiscriminatorType.STRING, name = "type")
 public class Record {
 
 	@Id
@@ -29,7 +27,6 @@ public class Record {
 
 	private String title;
 
-	@Column(name = "type", insertable = false, updatable = false)
 	private String type;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -68,7 +65,7 @@ public class Record {
 	 * Empty constructor
 	 */
 	public Record() {
-
+		this.setType("Record");
 	}
 
 	/**
@@ -78,6 +75,7 @@ public class Record {
 	 */
 	public Record(UUID uuid) {
 		this.id = uuid;
+		this.setType("Record");
 	}
 
 	public UUID getId() {
@@ -194,6 +192,10 @@ public class Record {
 
 	public String getType() {
 		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public static enum OwnerType {

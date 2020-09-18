@@ -4,12 +4,13 @@ import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.exception.APIExceptionResponse;
+import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,8 +41,17 @@ public class RecordsPublicController {
 	@GetMapping("")
 	@Operation(summary = "Get all publicly available records", description = "Retrieves all publicly available records")
 	@PageableOperation
-	public ResponseEntity<Page<RecordDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable) {
-		Page<RecordDTO> result = service.findAllPublic(pageable);
+	public ResponseEntity<Page<RecordDTO>> index(@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String type) {
+
+		RecordSpecification searchSpecification = new RecordSpecification();
+		searchSpecification.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
+
+		if (type != null) {
+			searchSpecification.add(new SearchCriteria("type", type, SearchOperation.EQUAL));
+		}
+
+		Page<RecordDTO> result = service.search(searchSpecification, pageable);
 		return ResponseEntity.ok().body(result);
 	}
 

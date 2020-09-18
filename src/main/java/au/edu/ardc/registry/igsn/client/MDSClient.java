@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.client;
 
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
+import au.edu.ardc.registry.exception.MDSClientConfigurationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +28,16 @@ public class MDSClient {
 	 * WebClient with Basic Authentication
 	 *
 	 */
-	public MDSClient(IGSNAllocation allocation) {
+	public MDSClient(IGSNAllocation allocation) throws MDSClientConfigurationException {
 		String mds_username = allocation.getMds_username();
 		String mds_password = allocation.getMds_password();
 		String mds_url = allocation.getMds_url();
-
+		if (mds_username == null)
+			throw new MDSClientConfigurationException("MDS user name is not configured");
+		if (mds_password == null)
+			throw new MDSClientConfigurationException("MDS password is not configured");
+		if (mds_url == null)
+			throw new MDSClientConfigurationException("MDS url is not configured");
 		this.web_client = WebClient.builder().filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
 				.build();
 		this.mds_url = mds_url;

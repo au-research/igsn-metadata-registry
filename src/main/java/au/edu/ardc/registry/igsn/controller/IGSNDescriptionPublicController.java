@@ -32,7 +32,8 @@ public class IGSNDescriptionPublicController {
 
 	final SchemaService schemaService;
 
-	public IGSNDescriptionPublicController(IdentifierService identifierService, VersionService versionService, SchemaService schemaService) {
+	public IGSNDescriptionPublicController(IdentifierService identifierService, VersionService versionService,
+			SchemaService schemaService) {
 		this.identifierService = identifierService;
 		this.versionService = versionService;
 		this.schemaService = schemaService;

@@ -279,11 +279,11 @@ public class VersionService {
 		return true;
 	}
 
-	public String getHash(Version version) {
+	public static String getHash(Version version) {
 		return DigestUtils.sha1Hex(version.getContent());
 	}
 
-	public String getHash(String content) {
+	public static String getHash(String content) {
 		return DigestUtils.sha1Hex(content);
 	}
 

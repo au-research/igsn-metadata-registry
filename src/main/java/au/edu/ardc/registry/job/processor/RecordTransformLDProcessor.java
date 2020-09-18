@@ -32,7 +32,7 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 	}
 
 	@Override
-	public Record process(Record record)  {
+	public Record process(Record record) {
 		log.debug("Processing json-ld transformation for record {}", record.getId());
 
 		// obtain the version
@@ -41,6 +41,7 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 			log.error("No valid version (with schema {}) found for record {}", defaultSchema, record.getId());
 			return null;
 		}
+		log.debug("version = {}", version.getId());
 
 		// obtain the transformer
 		Schema fromSchema = schemaService.getSchemaByID(defaultSchema);
@@ -50,28 +51,33 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 			log.error("Failed to obtain a transformer from {} to {}", defaultSchema, SchemaService.ARDCv1JSONLD);
 			return null;
 		}
-		log.debug("Transformer obtained");
+		log.debug("Transformer from {} to {} obtained", defaultSchema, SchemaService.ARDCv1JSONLD);
 
 		// perform the transform
-		Version jsonLDVersion = transformer.transform(version);
-		jsonLDVersion.setHash(versionService.getHash(jsonLDVersion));
-		// todo jsonLDVersion.setCreatorID
+		try {
+			Version jsonLDVersion = transformer.transform(version);
+			jsonLDVersion.setHash(versionService.getHash(jsonLDVersion));
 
-		// todo check if there's existing current json-ld and if they're different
-		Version existingVersion = versionService.findVersionForRecord(record, SchemaService.ARDCv1JSONLD);
-		if (existingVersion != null && existingVersion.getHash().equals(jsonLDVersion.getHash())) {
-			log.info("There's already a version with existing hash {} for schema {}, skipping",
-					existingVersion.getHash(), SchemaService.ARDCv1JSONLD);
+			// check if there's existing current json-ld and if they're different
+			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.ARDCv1JSONLD);
+			if (existingVersion != null && existingVersion.getHash().equals(jsonLDVersion.getHash())) {
+				log.info("There's already a version with existing hash {} for schema {}, skipping",
+						existingVersion.getHash(), SchemaService.ARDCv1JSONLD);
+				return recordService.findById(record.getId().toString());
+			}
+
+			// save the newly created version
+			versionService.save(jsonLDVersion);
+
+			// todo recordService.touch(record, user) for historical detail
+			log.info("Processed json-ld transformation for record {}", record.getId());
 			return recordService.findById(record.getId().toString());
 		}
-
-		// save the newly created version
-		versionService.save(jsonLDVersion);
-
-		// todo recordService.touch(record, user) for historical detail
-
-		log.debug("Processed json-ld transformation for record {}", record.getId());
-		return recordService.findById(record.getId().toString());
+		catch (Exception e) {
+			e.printStackTrace();
+			log.error("Error transforming json-ld for record = {} reason: {}", record.getId(), e.getMessage());
+			return null;
+		}
 	}
 
 }

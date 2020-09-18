@@ -53,7 +53,7 @@ class IGSNServiceTransferControllerTest extends KeycloakIntegrationTest {
 				.body(Mono.just(requestBody), String.class).exchange().expectStatus().isOk().expectBody()
 				.jsonPath("$.id").exists().jsonPath("$.status").exists();
 
-		Identifier identifier = identifierRepository.findByValueAndType("12073/XXAA123456", Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findFirstByValueAndType("12073/XXAA123456", Identifier.Type.IGSN);
 		assertThat(identifier.getRecord().getOwnerID()).isEqualTo(UUID.fromString(targetOwnerID));
 		assertThat(identifier.getRecord().getOwnerType()).isEqualTo(Record.OwnerType.valueOf(targetOwnerType));
 	}
