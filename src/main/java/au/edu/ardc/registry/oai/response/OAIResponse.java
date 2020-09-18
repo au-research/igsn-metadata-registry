@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.oai.response;
 
 import au.edu.ardc.registry.oai.model.RequestFragment;
+import au.edu.ardc.registry.oai.model.ResumptionTokenFragment;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -24,6 +25,8 @@ public class OAIResponse {
 
 	private RequestFragment request;
 
+	public ResumptionTokenFragment resumptionToken;
+
 	public OAIResponse() {
 		this.responseDate = new Date();
 		this.request = new RequestFragment();
@@ -44,6 +47,11 @@ public class OAIResponse {
 
 	public void setRequest(RequestFragment request) {
 		this.request = request;
+	}
+
+	public void setResumptionToken(String completeListSize, String cursor, String resumptionToken) {
+		this.resumptionToken = new ResumptionTokenFragment();
+		this.resumptionToken.setToken(completeListSize, cursor, resumptionToken);
 	}
 
 }

@@ -1,6 +1,5 @@
 package au.edu.ardc.registry.oai.controller;
 
-import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
@@ -14,6 +13,8 @@ import au.edu.ardc.registry.oai.response.*;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @Controller
@@ -47,8 +50,9 @@ public class OAIPMHService {
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_XML_VALUE)
 	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false) String verb,
-			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix)
-			throws JsonProcessingException {
+			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix,
+											  @RequestParam(required = false) String resumptionToken)
+            throws IOException {
 
 		if (verb == null || verb.equals(""))
 			throw new BadVerbException("Illegal OAI verb", "badVerb");
@@ -83,7 +87,7 @@ public class OAIPMHService {
 						"cannotDisseminateFormat");
 			}
 			requestFragment.setMetadataPrefix(metadataPrefix);
-			return getRecords(metadataPrefix, requestFragment);
+			return getRecords(metadataPrefix, requestFragment, resumptionToken);
 		}
 		else if (verb.equals("ListIdentifiers")) {
 			if (metadataPrefix == null) {
@@ -124,11 +128,11 @@ public class OAIPMHService {
 				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 			}
 			catch (Exception e) {
-				throw new BadVerbException("Record with identifier does not exist", "badVerb");
+				throw new BadVerbException("The value of the identifier argument is unknown or illegal in this repository.", "idDoesNotExist");
 			}
 		}
 		catch (Exception e) {
-			throw new BadVerbException("Record with identifier does not exist", "badVerb");
+			throw new BadVerbException("The value of the identifier argument is unknown or illegal in this repository.", "idDoesNotExist");
 		}
 	}
 
@@ -146,24 +150,54 @@ public class OAIPMHService {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 	}
 
-	private ResponseEntity<OAIResponse> getRecords(String metadataPrefix, RequestFragment requestFragment)
-			throws BadVerbException {
+	private ResponseEntity<OAIResponse> getRecords(String metadataPrefix, RequestFragment requestFragment, String resumptionToken)
+			throws BadVerbException, JsonProcessingException {
 		OAIListRecordsResponse response = new OAIListRecordsResponse();
 		ListRecordsFragment listRecordsFragment = new ListRecordsFragment();
-		Pageable pageable = PageRequest.of(0, 100);
+		long completeListSize = 0;
+		long cursor = 0;
+		int pageSize = 100;
+		String newResumptionToken ="";
+		ObjectMapper objectMapper = new ObjectMapper();
+		Pageable pageable = PageRequest.of(0, 10);
+		if(resumptionToken!=null) {
+			try {
+				byte[] decodedBytes = Base64.getDecoder().decode(resumptionToken);
+				String resumptionDecoded = new String(decodedBytes);
+				JsonNode jsonNode = objectMapper.readTree(resumptionDecoded);
+				String page = jsonNode.get("pageNumber").asText();
+				pageable = PageRequest.of(Integer.valueOf(page), pageSize);
+				Pageable newPageable = PageRequest.of(Integer.valueOf(page) + 1, pageSize);
+				String newPageableAsString = objectMapper.writeValueAsString(newPageable);
+				newResumptionToken = Base64.getEncoder().encodeToString(newPageableAsString.getBytes());
+			}
+			catch(Exception e){
+				throw new BadVerbException("The value of the resumptionToken argument is invalid or expired",
+						"badResumptionToken");
+			}
+		}else{
+			Pageable newPageable = PageRequest.of(1, pageSize);
+			String newPageableAsString = objectMapper.writeValueAsString(newPageable);
+			newResumptionToken = Base64.getEncoder().encodeToString(newPageableAsString.getBytes());
+		}
 		try {
-			Page<Record> records = recordService.findAllPublicRecords(pageable);
-			for (Record record : records) {
-				Version version = versionService.findVersionForRecord(record, metadataPrefix);
-				if (version != null) {
-					String content = new String(version.getContent());
-					RecordFragment recordFragment = new RecordFragment(record, content);
-					listRecordsFragment.setListRecords(recordFragment);
-				}
+			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, pageable);
+			if(!versions.isLast()) {
+				completeListSize = versions.getTotalElements();
+				cursor = versions.getNumberOfElements() * pageable.getPageNumber()  ;
+				response.setResumptionToken
+						(String.valueOf(completeListSize), String.valueOf(cursor), newResumptionToken);
+			}
+			for (Version version : versions) {
+				Record record = version.getRecord();
+				String content = new String(version.getContent());
+				RecordFragment recordFragment = new RecordFragment(record, content);
+				listRecordsFragment.setListRecords(recordFragment);
 			}
 		}
-		catch (Exception e) {
-			throw new BadVerbException("Records do not exist", "badVerb");
+		catch(Exception e){
+			throw new BadVerbException("The combination of the values of the from, until, " +
+					"set and metadataPrefix arguments results in an empty list.", "noRecordsMatch");
 		}
 		response.setRequest(requestFragment);
 		response.setRecordsFragment(listRecordsFragment);
@@ -175,18 +209,21 @@ public class OAIPMHService {
 		OAIListIdentifiersResponse response = new OAIListIdentifiersResponse();
 		ListIdentifiersFragment listIdentifiersFragment = new ListIdentifiersFragment();
 		Pageable pageable = PageRequest.of(0, 100);
-		Page<Record> records = recordService.findAllPublicRecords(pageable);
-		for (Record record : records) {
-			Version version = versionService.findVersionForRecord(record, metadataPrefix);
-			if (version != null) {
-				RecordHeaderFragment headerFragment = new RecordHeaderFragment(record.getId().toString(),
-						record.getModifiedAt().toString());
-				listIdentifiersFragment.setListIdentifiers(headerFragment);
+
+		try {
+			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, pageable);
+			for (Version version : versions) {
+				Record record = version.getRecord();
+					RecordHeaderFragment headerFragment = new RecordHeaderFragment(record.getId().toString(),
+							record.getModifiedAt().toString());
+					listIdentifiersFragment.setListIdentifiers(headerFragment);
 			}
+		}
+		catch(Exception e){
+			throw new BadVerbException("Records do not exist", "badVerb");
 		}
 		response.setRequest(requestFragment);
 		response.setIdentifiersFragment(listIdentifiersFragment);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
 	}
-
 }

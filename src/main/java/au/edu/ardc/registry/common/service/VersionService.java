@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
+import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
@@ -105,6 +106,16 @@ public class VersionService {
 	}
 
 	/**
+	 * Search for {@link Version} with {@link VersionSpecification}
+	 * @param specs {@link VersionSpecification} that includes {@link SearchCriteria}
+	 * @param pageable {@link Pageable}
+	 * @return page {@link VersionDTO}
+	 */
+	public Page<Version> searchVersions(VersionSpecification specs, Pageable pageable) {
+		Page<Version> versions = repository.findAll(specs, pageable);
+		return versions;
+	}
+	/**
 	 * Search for all {@link Version} that belongs to a particular {@link Record} uses the
 	 * internal {@link #search} method to provide the formatting of the result
 	 * @param record {@link Record}
@@ -116,6 +127,23 @@ public class VersionService {
 		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
 		return search(specs, pageable);
 	}
+
+
+	/**
+	 * Search for all public {@link Version} that has a particular {@link Schema} uses the
+	 * internal {@link #searchVersions} method to provide the formatting of the result
+	 * @param schema {@link String}
+	 * @param pageable {@link Pageable}
+	 * @return a @{@link Page} of {@link Version}
+	 */
+	public Page<Version> findAllCurrentVersionsOfSchema(String schema, Pageable pageable) {
+		VersionSpecification specs = new VersionSpecification();
+		specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
+		Page<Version> versions = searchVersions(specs, pageable);
+		return versions;
+	}
+
 
 	/**
 	 * Return a single {@link Version} for a {@link Record} given the Schema string

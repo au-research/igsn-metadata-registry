@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.VersionRepository;
@@ -32,6 +33,12 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import au.edu.ardc.registry.TestHelper;
+import au.edu.ardc.registry.common.dto.RecordDTO;
+import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
+import au.edu.ardc.registry.common.entity.Record;
+
+
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { VersionService.class, SchemaService.class, VersionMapper.class, ModelMapper.class })
 public class VersionServiceTest {
@@ -47,6 +54,10 @@ public class VersionServiceTest {
 
 	@MockBean
 	ValidationService validationService;
+
+
+	@MockBean
+	private RecordRepository recordRepository;
 
 	@Test
 	@DisplayName("when creating with a valid request, a DTO is returned properly")
@@ -289,6 +300,36 @@ public class VersionServiceTest {
 
 		// false case
 		assertThat(service.exists(UUID.randomUUID().toString())).isFalse();
+	}
+
+	@Test
+	public void it_can_find_versions_existence_by_schema_and_visible_record() {
+
+
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setVisible(true);
+		when(recordRepository.save(any(Record.class))).thenReturn(record);
+
+
+		// and 10 versions
+		List<Version> mockResult = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			Version version = TestHelper.mockVersion(record);
+			version.setSchema("ardc-igsn-desc-1.0");
+			when(repository.save(any(Version.class))).thenReturn(version);
+		}
+
+
+				// ensure repository call findAllCurrentVersionsOfSchema
+
+
+		Page<Version> actual = service.findAllCurrentVersionsOfSchema("ardc-igsn-desc-1.0", PageRequest.of(0, 5));
+		System.out.print(actual);
+		// is a valid Page<Version>
+	//	Assertions.assertThat(actual.getContent()).hasSize(1);
+	//	Assertions.assertThat(actual.getTotalElements()).isEqualTo(1);
+	//	Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
+
 	}
 
 }
