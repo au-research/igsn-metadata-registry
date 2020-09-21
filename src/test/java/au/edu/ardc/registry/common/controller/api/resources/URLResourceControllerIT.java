@@ -103,7 +103,7 @@ class URLResourceControllerIT extends KeycloakIntegrationTest {
 
 		// when POST, expects 201, Location Header, and the ID in the body
 		URLDTO resultDTO = this.webTestClient.post().uri(resourceBaseUrl)
-				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Authorization", getBasicAuthenticationHeader(adminUsername, adminPassword))
 				.body(Mono.just(dto), URLDTO.class).exchange().expectStatus().isCreated().expectHeader()
 				.exists("Location").expectBody(URLDTO.class).returnResult().getResponseBody();
 

@@ -18,4 +18,10 @@ public abstract class KeycloakIntegrationTest extends WebIntegrationTest {
 	@Value("${test.kc.user.rsid}")
 	public String resourceID;
 
+	@Value("${test.kc.admin.username}")
+	public String adminUsername;
+
+	@Value("${test.kc.admin.password}")
+	public String adminPassword;
+
 }
