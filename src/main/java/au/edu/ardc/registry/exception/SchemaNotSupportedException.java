@@ -18,4 +18,5 @@ public class SchemaNotSupportedException extends APIException {
 	public String getMessageID() {
 		return "api.error.schema-not-supported";
 	}
+
 }

@@ -216,34 +216,4 @@ public class SchemaService {
 		return null;
 	}
 
-	/**
-	 * Checks if the given schema is available for OAI export
-	 * @param schema the schema to be checked
-	 * @return Boolean
-	 */
-	public Boolean isOAIProvider(Schema schema) {
-		try {
-			schema.getProviders().containsKey(Metadata.OAI);
-			return true;
-		}
-		catch (Exception e) {
-			return false;
-		}
-	}
-
-	/**
-	 * Checks if the given schema is available for OAI export
-	 * @return List of schemas that are able to export to oai
-	 */
-	public List<Schema> getOAIProviders() {
-		List<Schema> oaiSchemas = new ArrayList<Schema>();
-		List<Schema> schemas = this.getSchemas();
-		for (Schema schema : schemas) {
-			if (this.isOAIProvider(schema)) {
-				oaiSchemas.add(schema);
-			}
-		}
-		return oaiSchemas;
-	}
-
 }

@@ -1,8 +1,6 @@
 package au.edu.ardc.registry.oai.controller;
 
-import au.edu.ardc.registry.exception.APIException;
-import au.edu.ardc.registry.oai.exception.BadArgumentException;
-import au.edu.ardc.registry.oai.exception.BadVerbException;
+import au.edu.ardc.registry.oai.exception.*;
 import au.edu.ardc.registry.oai.model.ErrorFragment;
 import au.edu.ardc.registry.oai.model.RequestFragment;
 import au.edu.ardc.registry.oai.response.OAIExceptionResponse;
@@ -16,10 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.stream.XMLStreamException;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Locale;
 
@@ -29,30 +24,10 @@ public class OAIPMHControllerAdvice {
 	@Autowired
 	MessageSource messageSource;
 
-	@ExceptionHandler(value = { BadVerbException.class })
-	public ResponseEntity<Object> handleBadVerb(RuntimeException ex, HttpServletRequest request)
-			throws XMLStreamException, IOException {
-
-		OAIExceptionResponse response = new OAIExceptionResponse();
-		ErrorFragment errorFragment = new ErrorFragment();
-		errorFragment.setValue(ex.getMessage());
-		errorFragment.setCode(BadVerbException.getCode());
-		RequestFragment requestFragment = new RequestFragment();
-		requestFragment.setValue(request.getRequestURL().toString());
-		response.setRequest(requestFragment);
-		response.setResponseDate(new Date());
-		response.setError(errorFragment);
-
-		// add xml declaration
-		XmlMapper mapper = new XmlMapper();
-		mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-		String xml = mapper.writeValueAsString(response);
-
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(xml);
-	}
-
-	@ExceptionHandler(value = { BadArgumentException.class })
-	public ResponseEntity<Object> handleBadVerb(APIException ex, HttpServletRequest request, Locale locale)
+	@ExceptionHandler(value = { BadArgumentException.class, BadResumptionTokenException.class,
+			CannotDisseminateFormatException.class, IdDoesNotExistException.class, NoRecordsMatchException.class,
+			NoSetHierarchy.class, NoMetadataFormats.class, BadVerbException.class })
+	public ResponseEntity<Object> handleOAIException(OAIException ex, HttpServletRequest request, Locale locale)
 			throws JsonProcessingException {
 
 		OAIExceptionResponse response = new OAIExceptionResponse();
@@ -60,7 +35,7 @@ public class OAIPMHControllerAdvice {
 		ErrorFragment errorFragment = new ErrorFragment();
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		errorFragment.setValue(message);
-		errorFragment.setCode(BadVerbException.getCode());
+		errorFragment.setCode(ex.getCode());
 
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());

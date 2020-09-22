@@ -63,11 +63,8 @@ class OAIPMHControllerTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url)
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request)
-				.andDo(print())
-				.andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
-				.andExpect(status().isOk());
+		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
+				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").exists()).andExpect(status().isOk());
 	}
 
 	@Test
@@ -76,8 +73,7 @@ class OAIPMHControllerTest {
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
 		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
-				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
-				.andExpect(status().isOk());
+				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").exists()).andExpect(status().isOk());
 	}
 
 	@Test

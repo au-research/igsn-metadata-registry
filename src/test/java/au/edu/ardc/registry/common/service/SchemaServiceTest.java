@@ -151,30 +151,4 @@ class SchemaServiceTest {
 		assertThat(theLocation).isEqualTo("https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd");
 	}
 
-	@Test
-	void isOAIProvider() {
-		Schema schema1 = service.getSchemaByID(SchemaService.ARDCv1);
-		if (service.isOAIProvider(schema1)) {
-			String thenamespace = schema1.getNamespace();
-			assertThat(thenamespace).isEqualTo("https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc");
-		}
-	}
-
-	@Test
-	void isOAIProvider_false() {
-		Schema schema1 = service.getSchemaByID(SchemaService.CSIROv3);
-		if (!service.isOAIProvider(schema1)) {
-			String theSchemaId = schema1.getId();
-			assertThat(theSchemaId).isEqualTo(SchemaService.CSIROv3);
-		}
-	}
-
-	@Test
-	void getOAIProviders() {
-		List<Schema> oaiSchemas = service.getOAIProviders();
-		for (Schema schema : oaiSchemas) {
-			assertThat(service.isOAIProvider(schema));
-		}
-	}
-
 }

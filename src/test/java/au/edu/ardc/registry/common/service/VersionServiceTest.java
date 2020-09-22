@@ -38,7 +38,6 @@ import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.entity.Record;
 
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { VersionService.class, SchemaService.class, VersionMapper.class, ModelMapper.class })
 public class VersionServiceTest {
@@ -54,7 +53,6 @@ public class VersionServiceTest {
 
 	@MockBean
 	ValidationService validationService;
-
 
 	@MockBean
 	private RecordRepository recordRepository;
@@ -305,11 +303,9 @@ public class VersionServiceTest {
 	@Test
 	public void it_can_find_versions_existence_by_schema_and_visible_record() {
 
-
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		record.setVisible(true);
 		when(recordRepository.save(any(Record.class))).thenReturn(record);
-
 
 		// and 10 versions
 		List<Version> mockResult = new ArrayList<>();
@@ -319,16 +315,14 @@ public class VersionServiceTest {
 			when(repository.save(any(Version.class))).thenReturn(version);
 		}
 
-
-				// ensure repository call findAllCurrentVersionsOfSchema
-
+		// ensure repository call findAllCurrentVersionsOfSchema
 
 		Page<Version> actual = service.findAllCurrentVersionsOfSchema("ardc-igsn-desc-1.0", PageRequest.of(0, 5));
 		System.out.print(actual);
 		// is a valid Page<Version>
-	//	Assertions.assertThat(actual.getContent()).hasSize(1);
-	//	Assertions.assertThat(actual.getTotalElements()).isEqualTo(1);
-	//	Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
+		// Assertions.assertThat(actual.getContent()).hasSize(1);
+		// Assertions.assertThat(actual.getTotalElements()).isEqualTo(1);
+		// Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
 
 	}
 

@@ -2,7 +2,7 @@ package au.edu.ardc.registry.common.provider;
 
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.oai.exception.BadVerbException;
+import au.edu.ardc.registry.oai.exception.BadResumptionTokenException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,20 +32,20 @@ public class OAIProvider {
 	public static String getResumptionToken(String resumptionToken, Integer pageSize) throws JsonProcessingException {
 		String newResumptionToken = "";
 		ObjectMapper objectMapper = new ObjectMapper();
-		if(resumptionToken!=null) {
+		if (resumptionToken != null) {
 			try {
 				byte[] decodedBytes = Base64.getDecoder().decode(resumptionToken);
 				String resumptionDecoded = new String(decodedBytes);
 				JsonNode jsonNode = objectMapper.readTree(resumptionDecoded);
-				Pageable newPageable = PageRequest.of(jsonNode.get("pageNumber").asInt()+1, pageSize);
+				Pageable newPageable = PageRequest.of(jsonNode.get("pageNumber").asInt() + 1, pageSize);
 				String newPageableAsString = objectMapper.writeValueAsString(newPageable);
 				newResumptionToken = Base64.getEncoder().encodeToString(newPageableAsString.getBytes());
 			}
-			catch(Exception e){
-				throw new BadVerbException("The value of the resumptionToken argument is invalid or expired",
-						"badResumptionToken");
+			catch (Exception e) {
+				throw new BadResumptionTokenException();
 			}
-		}else{
+		}
+		else {
 			Pageable newPageable = PageRequest.of(1, pageSize);
 			String newPageableAsString = objectMapper.writeValueAsString(newPageable);
 			newResumptionToken = Base64.getEncoder().encodeToString(newPageableAsString.getBytes());
@@ -53,28 +53,27 @@ public class OAIProvider {
 		return newResumptionToken;
 	}
 
-	public static int getCursor(String resumptionToken, int pageSize){
+	public static int getCursor(String resumptionToken, int pageSize) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		int cursor = pageSize;
-		if(resumptionToken!=null) {
+		if (resumptionToken != null) {
 			try {
 				byte[] decodedBytes = Base64.getDecoder().decode(resumptionToken);
 				String resumptionDecoded = new String(decodedBytes);
 				JsonNode jsonNode = objectMapper.readTree(resumptionDecoded);
 				cursor = (jsonNode.get("pageNumber").asInt() + 1) * pageSize;
 			}
-			catch(Exception e){
-				throw new BadVerbException("The value of the resumptionToken argument is invalid or expired",
-						"badResumptionToken");
+			catch (Exception e) {
+				throw new BadResumptionTokenException();
 			}
 		}
 		return cursor;
 	}
 
-	public static Pageable getPageable(String resumptionToken, int pageSize){
+	public static Pageable getPageable(String resumptionToken, int pageSize) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		Pageable pageable = PageRequest.of(1, pageSize);
-		if(resumptionToken!=null) {
+		if (resumptionToken != null) {
 			try {
 				byte[] decodedBytes = Base64.getDecoder().decode(resumptionToken);
 				String resumptionDecoded = new String(decodedBytes);
@@ -82,11 +81,11 @@ public class OAIProvider {
 				pageable = PageRequest.of(jsonNode.get("pageNumber").asInt(), pageSize);
 
 			}
-			catch(Exception e){
-				throw new BadVerbException("The value of the resumptionToken argument is invalid or expired",
-						"badResumptionToken");
+			catch (Exception e) {
+				throw new BadResumptionTokenException();
 			}
 		}
 		return pageable;
 	}
+
 }

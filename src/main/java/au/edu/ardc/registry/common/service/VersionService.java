@@ -115,6 +115,7 @@ public class VersionService {
 		Page<Version> versions = repository.findAll(specs, pageable);
 		return versions;
 	}
+
 	/**
 	 * Search for all {@link Version} that belongs to a particular {@link Record} uses the
 	 * internal {@link #search} method to provide the formatting of the result
@@ -127,7 +128,6 @@ public class VersionService {
 		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
 		return search(specs, pageable);
 	}
-
 
 	/**
 	 * Search for all public {@link Version} that has a particular {@link Schema} uses the
@@ -143,7 +143,6 @@ public class VersionService {
 		Page<Version> versions = searchVersions(specs, pageable);
 		return versions;
 	}
-
 
 	/**
 	 * Return a single {@link Version} for a {@link Record} given the Schema string

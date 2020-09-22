@@ -77,11 +77,11 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		versionRepository.saveAndFlush(version);
 
 		this.webTestClient.get()
-				.uri(base_url + "?verb=GetRecord&identifier="+id+"&metadataPrefix="+SchemaService.ARDCv1).exchange()
-				.expectStatus().isOk().expectBody()
-				.xpath("/OAI-PMH/GetRecord/record").exists()
+				.uri(base_url + "?verb=GetRecord&identifier=" + id + "&metadataPrefix=" + SchemaService.ARDCv1)
+				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/GetRecord/record").exists()
 				.xpath("/OAI-PMH/GetRecord/record/header").exists()
 				.xpath("/OAI-PMH/GetRecord/record/metadata/resources").exists()
 				.xpath("/OAI-PMH/GetRecord/record/header/identifier").isEqualTo(id);
 	}
+
 }
