@@ -10,6 +10,7 @@ import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
 import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.UpdateProcessor;
 import au.edu.ardc.registry.job.writer.NoOpItemWriter;
@@ -42,39 +43,27 @@ public class IGSNUpdateJobConfig {
 	IGSNService igsnService;
 
 	@Autowired
-	IdentifierRepository identifierRepository;
-
-	@Autowired
 	RecordService recordService;
 
 	@Autowired
-	ValidationService validationService;
-
-	@Autowired
-	RecordRepository recordRepository;
-
-	@Autowired
-	VersionService versionService;
+	IGSNVersionService igsnVersionService;
 
 	@Autowired
 	IdentifierService identifierService;
 
 	@Autowired
-	VersionRepository versionRepository;
-
-	@Autowired
-	URLRepository urlRepository;
+	URLService urlService;
 
 	@Bean
 	public Job IGSNUpdateJob() {
 		return jobBuilderFactory.get("IGSNUpdatetJob").incrementer(new RunIdIncrementer())
-				.listener(new JobCompletionListener()).flow(chunkUpdate()).next(update()).next(registrationUpdate())
-				.end().build();
+				.listener(new JobCompletionListener()).flow(chunkUpdatePayload()).next(update())
+				.next(registrationUpdate()).end().build();
 	}
 
 	@Bean
-	public Step chunkUpdate() {
-		return stepBuilderFactory.get("chunk-update").tasklet(payloadChunkerTasklet2()).build();
+	public Step chunkUpdatePayload() {
+		return stepBuilderFactory.get("chunkUpdatePayload").tasklet(payloadChunkerTasklet2()).build();
 	}
 
 	@Bean
@@ -84,17 +73,16 @@ public class IGSNUpdateJobConfig {
 
 	@Bean
 	public Step update() {
-		return stepBuilderFactory.get("update").<String, Resource>chunk(1).reader(new PayloadContentReader())
-				.processor(new UpdateProcessor(schemaService, validationService, identifierRepository, recordRepository,
-						versionRepository, urlRepository))
+		return stepBuilderFactory.get("update").<String, Resource>chunk(1).reader(new PayloadContentReader()).processor(
+				new UpdateProcessor(schemaService, identifierService, recordService, igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 
 	@Bean
 	public Step registrationUpdate() {
 		return stepBuilderFactory.get("registration-update").<String, String>chunk(1).reader(new IGSNItemReader())
-				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierRepository, recordService,
-						versionService, versionRepository))
+				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierService, recordService,
+						igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
@@ -29,7 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.*;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -43,6 +44,7 @@ import au.edu.ardc.registry.common.entity.Record;
 public class VersionServiceTest {
 
 	@Autowired
+	@Qualifier("VersionService")
 	VersionService service;
 
 	@MockBean
@@ -238,13 +240,13 @@ public class VersionServiceTest {
 		Page<VersionDTO> actual = service.findAllVersionsForRecord(record, PageRequest.of(0, 5));
 
 		// is a valid Page<VersionDTO>
-		Assertions.assertThat(actual.getContent()).hasSize(10);
-		Assertions.assertThat(actual.getTotalElements()).isEqualTo(10);
-		Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
+		assertThat(actual.getContent()).hasSize(10);
+		assertThat(actual.getTotalElements()).isEqualTo(10);
+		assertThat(actual.getTotalPages()).isEqualTo(1);
 
 		// contains only RecordDTO
 		long countOfVersionDTO = actual.stream().filter(t -> t instanceof VersionDTO).count();
-		Assertions.assertThat(countOfVersionDTO).isEqualTo(10);
+		assertThat(countOfVersionDTO).isEqualTo(10);
 
 		// repository is called
 		verify(repository, times(1)).findAll(any(VersionSpecification.class), any(Pageable.class));

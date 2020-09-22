@@ -17,27 +17,30 @@ import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 
-	private IdentifierRepository identifierRepository;
+	private IdentifierService identifierService;
 
-	private RecordRepository recordRepository;
+	private RecordService recordService;
 
-	private VersionRepository versionRepository;
+	private IGSNVersionService igsnVersionService;
 
-	private URLRepository urlRepository;
+	private URLService urlService;
 
 	private SchemaService schemaService;
 
@@ -51,14 +54,13 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 
 	private Schema schema;
 
-	public UpdateProcessor(SchemaService schemaService, ValidationService validationService,
-			IdentifierRepository identifierRepository, RecordRepository recordRepository,
-			VersionRepository versionRepository, URLRepository urlRepository) {
+	public UpdateProcessor(SchemaService schemaService, IdentifierService identifierService,
+			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
 
-		this.identifierRepository = identifierRepository;
-		this.recordRepository = recordRepository;
-		this.versionRepository = versionRepository;
-		this.urlRepository = urlRepository;
+		this.identifierService = identifierService;
+		this.recordService = recordService;
+		this.igsnVersionService = versionService;
+		this.urlService = urlService;
 		this.schemaService = schemaService;
 	}
 
@@ -84,47 +86,27 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
 		assert identifierProvider != null;
-		String identifieValue = identifierProvider.get(content);
+		String identifierValue = identifierProvider.get(content);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
 		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
-		// TODO find corresponding record and update it!
+		Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Record record = existingIdentifier.getRecord();
+		record.setModifierID(UUID.fromString(creatorID));
+		record.setModifiedAt(new Date());
+		List<Version> cVersions = record.getCurrentVersions();
 
-		//
-		//
-		// Record record = addRecord();
-		// System.out.println("record id : " + record.getId());
-		// addURL(landingPage, record);
-		// addVersion(content, record);
-		Helpers.appendToFile(outputFilePath, identifieValue);
+		for (Version v : cVersions) {
+			if (v.getSchema().equals(schema.getId())) {
+				igsnVersionService.end(v, UUID.fromString(creatorID));
+			}
+		}
+		addNewVersion(content, record);
+		Helpers.appendToFile(outputFilePath, identifierValue);
 	}
 
-	private Record updateRecord() {
-		// create the record
-		Record record = new Record();
-		record.setCreatedAt(new Date());
-		record.setOwnerID(UUID.fromString(creatorID));
-		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
-		record.setVisible(true);
-		record.setAllocationID(UUID.fromString(allocationID));
-		record.setCreatorID(UUID.fromString(creatorID));
-		System.out.println("addRecord");
-		return recordRepository.saveAndFlush(record);
-	}
-
-	private void updateURL(String urlValue, Record record) {
-		URL url = new URL();
-		url.setCreatedAt(new Date());
-		url.setRecord(record);
-		url.setUrl(urlValue);
-		System.out.println("addURL:" + url.getId());
-
-		urlRepository.saveAndFlush(url);
-
-	}
-
-	private void updateVersion(String content, Record record) {
+	private void addNewVersion(String content, Record record) {
 		Version version = new Version();
 		version.setRecord(record);
 		version.setSchema(schema.getId());
@@ -133,8 +115,8 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(content));
-		System.out.println("addVersion:" + version.getId());
-		versionRepository.saveAndFlush(version);
+		System.out.println("addNewVersion:" + version.getId());
+		igsnVersionService.save(version);
 	}
 
 }

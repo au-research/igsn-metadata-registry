@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
@@ -26,37 +27,34 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
 	private KeycloakService kcService;
 
-	private IdentifierRepository identifierRepository;
+	private IdentifierService identifierService;
 
 	private RecordService recordService;
 
-	private VersionService versionService;
+	private IGSNVersionService igsnVersionService;
 
-	private VersionRepository versionRepository;
+	private URLService urlService;
 
 	private String supportedSchema = SchemaService.ARDCv1;
 
 	private Version existingRegistrationMDVersion;
 
-	private IGSNAllocation allocation;
-
-	private String landingPage;
-
 	public UpdateIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
-			IdentifierRepository identifierRepository, RecordService recordService, VersionService versionService,
-			VersionRepository versionRepository) {
+			IdentifierService identifierService, RecordService recordService, IGSNVersionService igsnVersionService,
+			URLService urlService) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
-		this.identifierRepository = identifierRepository;
+		this.identifierService = identifierService;
 		this.recordService = recordService;
-		this.versionService = versionService;
-		this.versionRepository = versionRepository;
+		this.igsnVersionService = igsnVersionService;
+		this.urlService = urlService;
+
 	}
 
 	@Override
 	public String process(@NotNull String identifierValue) {
 		String result = "";
-		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		Version newVersion = getRegistrationMetadata(identifier);
 		if (isDifferentRegistrationMetadata(newVersion)) {
 			// TODO replace current registration Metadata

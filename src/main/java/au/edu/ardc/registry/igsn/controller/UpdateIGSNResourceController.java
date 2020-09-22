@@ -66,16 +66,13 @@ public class UpdateIGSNResourceController {
 	ValidationService validationService;
 
 	@Autowired
-	IdentifierRepository identifierRepository;
+	IdentifierService identifierService;
 
 	@Autowired
 	RecordService recordService;
 
 	@Autowired
 	VersionService versionService;
-
-	@Autowired
-	IdentifierService identifierService;
 
 	@Autowired
 	@Qualifier("standardJobLauncher")
@@ -101,7 +98,7 @@ public class UpdateIGSNResourceController {
 		boolean isValidPayload = false;
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
-		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierRepository, validationService,
+		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
 		VersionContentValidator versionContentValidator = new VersionContentValidator(recordService, versionService,
 				identifierService, schemaService);

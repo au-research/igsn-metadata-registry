@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
+import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
@@ -25,15 +26,15 @@ public class UserAccessValidator {
 
 	private final SchemaService schemaService;
 
-	private final IdentifierRepository identifierRepository;
+	private final IdentifierService identifierService;
 
 	private final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
 	private UUID allocationID;
 
-	public UserAccessValidator(IdentifierRepository identifierRepository, ValidationService validationService,
+	public UserAccessValidator(IdentifierService identifierService, ValidationService validationService,
 			SchemaService schemaService) {
-		this.identifierRepository = identifierRepository;
+		this.identifierService = identifierService;
 		this.schemaService = schemaService;
 		this.validationService = validationService;
 	}
@@ -57,9 +58,6 @@ public class UserAccessValidator {
 		String prefix = "######";
 		String namespace = "######";
 		for (String identifierValue : identifiers) {
-			if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
-				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
-			}
 			if (igsnAllocation == null) {
 				// get the first record and make sure all other records has the same
 				// prefix and namespace
@@ -74,7 +72,16 @@ public class UserAccessValidator {
 			}
 			else if (!identifierValue.startsWith(prefix + "/" + namespace)) {
 				throw new ForbiddenOperationException(
-						"Identifier prefix is different from previous: " + identifierValue);
+						identifierValue + " doesn't match previous Identifiers's prefix or namespace");
+			}
+			// security precaution
+			// check for existing record after user access only
+			// otherwise anyone can test for records even if it belongs to a different
+			// namespace
+
+			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+			if (existingIdentifier != null) {
+				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
 			}
 		}
 		return true;
@@ -97,12 +104,10 @@ public class UserAccessValidator {
 		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
 		for (String identifierValue : identifiers) {
-			// if record doesn't exist user can't update it
-			if (!identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
+			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+			if (existingIdentifier == null) {
 				throw new ForbiddenOperationException("Record doesn't exists with identifier: " + identifierValue);
 			}
-			Identifier existingIdentifier = identifierRepository.findFirstByValueAndType(identifierValue,
-					Identifier.Type.IGSN);
 			Record record = existingIdentifier.getRecord();
 			this.hasAccessToRecord(record, user);
 			if (!this.hasAccessToRecord(record, user)) {

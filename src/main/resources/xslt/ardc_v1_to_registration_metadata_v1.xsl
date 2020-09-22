@@ -17,9 +17,9 @@
 	</xsl:template>
 
 	<xsl:template match="igsn:resource">
-		<sample xmlns="http://schema.igsn.org/registration/1.1"
+		<sample xmlns="http://igsn.org/schema/kernel-v.1.0"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:schemaLocation="http://schema.igsn.org/registration/1.1 http://schema.igsn.org/registration/1.1/igsn.xsd">
+			xsi:schemaLocation="http://igsn.org/schema/kernel-v.1.0 http://doidb.wdc-terra.org/igsn/schemas/igsn.org/schema/1.0/igsn.xsd">
 			<xsl:apply-templates select="igsn:resourceIdentifier"/>
 			<xsl:if test="$registrantName != 'registrantName'">
 				<xsl:element name="registrant">
@@ -41,9 +41,9 @@
 			<xsl:apply-templates select="igsn:relatedResources"/>
 
 			<!-- registered, submitted updated deprecated destroyed -->
-			<xsl:element name="log" xmlns="http://schema.igsn.org/registration/1.1">
-				<xsl:apply-templates select="igsn:logDate"/>
-				<xsl:element name="logElement" xmlns="http://schema.igsn.org/registration/1.1">
+			<xsl:element name="log" xmlns="http://igsn.org/schema/kernel-v.1.0">
+				<!--xsl:apply-templates select="igsn:logDate"/-->
+				<xsl:element name="logElement" xmlns="http://igsn.org/schema/kernel-v.1.0">
 					<xsl:attribute name="event">
 						<xsl:value-of select="$eventType"/>
 					</xsl:attribute>
@@ -57,22 +57,22 @@
 	</xsl:template>
 
 	<xsl:template match="igsn:resourceIdentifier">
-		<xsl:element name="sampleNumber" xmlns="http://schema.igsn.org/registration/1.1">
-			<xsl:attribute name="identifierType" select="'igsn'"/>
+		<xsl:element name="sampleNumber" xmlns="http://igsn.org/schema/kernel-v.1.0">
+			<xsl:attribute name="identifierType"><xsl:text>igsn</xsl:text></xsl:attribute>
 			<xsl:value-of select="."/>
 		</xsl:element>
 	</xsl:template>
 
 	<xsl:template match="igsn:relatedResources">
 		<xsl:element name="relatedResourceIdentifiers"
-			xmlns="http://schema.igsn.org/registration/1.1">
+			xmlns="http://igsn.org/schema/kernel-v.1.0">
 			<xsl:apply-templates select="igsn:relatedResource"/>
 		</xsl:element>
 	</xsl:template>
 
 	<xsl:template match="igsn:relatedResource">
 		<xsl:element name="relatedResourceIdentifier"
-			xmlns="http://schema.igsn.org/registration/1.1">
+			xmlns="http://igsn.org/schema/kernel-v.1.0">
 			<xsl:attribute name="relatedIdentifierType">
 				<xsl:value-of select="igsn:relatedResourceIdentifier/@relatedResourceIdentifierType"/>
 			</xsl:attribute>
@@ -84,7 +84,7 @@
 	</xsl:template>
 
 	<xsl:template match="igsn:logDate">
-		<xsl:element name="logElement" xmlns="http://schema.igsn.org/registration/1.1">
+		<xsl:element name="logElement" xmlns="http://igsn.org/schema/kernel-v.1.0">
 			<xsl:attribute name="event">
 				<xsl:value-of select="@eventType"/>
 			</xsl:attribute>

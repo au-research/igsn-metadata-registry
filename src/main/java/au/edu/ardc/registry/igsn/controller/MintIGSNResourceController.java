@@ -67,9 +67,6 @@ public class MintIGSNResourceController {
 	ValidationService validationService;
 
 	@Autowired
-	IdentifierRepository identifierRepository;
-
-	@Autowired
 	RecordService recordService;
 
 	@Autowired
@@ -113,7 +110,7 @@ public class MintIGSNResourceController {
 		boolean isValidPayload = false;
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
-		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierRepository, validationService,
+		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
 		VersionContentValidator versionContentValidator = new VersionContentValidator(recordService, versionService,
 				identifierService, schemaService);

@@ -15,6 +15,7 @@ import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
@@ -31,13 +32,13 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 
 	private KeycloakService kcService;
 
-	private IdentifierRepository identifierRepository;
+	private IdentifierService identifierService;
 
 	private RecordService recordService;
 
-	private VersionService versionService;
+	private IGSNVersionService igsnVersionService;
 
-	private VersionRepository versionRepository;
+	private URLService urlService;
 
 	private String supportedSchema = SchemaService.ARDCv1;
 
@@ -48,22 +49,23 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 	private String landingPage;
 
 	public MintIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
-			IdentifierRepository identifierRepository, RecordService recordService, VersionService versionService,
-			VersionRepository versionRepository) {
+			IdentifierService identifierService, RecordService recordService, IGSNVersionService igsnVersionService,
+			URLService urlService) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
-		this.identifierRepository = identifierRepository;
+		this.identifierService = identifierService;
 		this.recordService = recordService;
-		this.versionService = versionService;
-		this.versionRepository = versionRepository;
+		this.igsnVersionService = igsnVersionService;
+		this.urlService = urlService;
+
 	}
 
 	@Override
 	public String process(@NotNull String identifierValue) throws Exception {
 		String result = "";
-		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		byte[] registrationMetaBody = addRegistrationMetadata(identifier);
-		// mintIGSN(registrationMetaBody, identifierValue, landingPage);
+		mintIGSN(registrationMetaBody, identifierValue, landingPage);
 		return result;
 
 	}
@@ -81,7 +83,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 			throws TransformerNotFoundException, NotFoundException {
 
 		Record record = identifier.getRecord();
-		Version supportedVersion = versionService.findVersionForRecord(record, supportedSchema);
+		Version supportedVersion = igsnVersionService.findVersionForRecord(record, supportedSchema);
 		ARDCv1ToRegistrationMetadataTransformer transformer = null;
 
 		if (supportedVersion == null) {
@@ -106,12 +108,21 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 
 		// TODO get some user info
 		/**
+		 * <xs:enumeration value="submitted"/> <!-- Date of the initial registration. -->
+		 * <xs:enumeration value="registered"/> <!-- The object is registered. -->
+		 * <xs:enumeration value="updated"/> <!-- Date of the last metadata update. -->
+		 * <xs:enumeration value="deprecated"/> <!-- The object description is deprecated.
+		 * The entry is no longer relevant, e.g. due to duplicate registration. -->
+		 * <xs:enumeration value="destroyed"/>
+		 *
+		 *
 		 * .setParam("registrantName") .setParam("nameIdentifier")
 		 * .setParam("nameIdentifierScheme")
 		 *
 		 */
 		String utcDateTimeStr = Instant.now().toString();
-		transformer.setParam("eventType", "created").setParam("timeStamp", utcDateTimeStr);
+		transformer.setParam("eventType", "registered").setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
+				allocation.getMds_username());
 
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
 		addVersion(registrationMetadataVersion, record);
@@ -124,7 +135,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(new String(version.getContent())));
 		System.out.println("addVersion Registration meta Version:" + version.getId());
-		versionRepository.saveAndFlush(version);
+		igsnVersionService.save(version);
 	}
 
 	private int mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {

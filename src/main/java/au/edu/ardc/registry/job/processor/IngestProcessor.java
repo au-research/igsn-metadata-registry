@@ -17,6 +17,7 @@ import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -31,15 +32,17 @@ import java.util.UUID;
 
 public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 
-	private IdentifierRepository identifierRepository;
-
-	private RecordRepository recordRepository;
-
-	private VersionRepository versionRepository;
-
-	private URLRepository urlRepository;
-
 	private SchemaService schemaService;
+
+	private KeycloakService kcService;
+
+	private IdentifierService identifierService;
+
+	private RecordService recordService;
+
+	private IGSNVersionService igsnVersionService;
+
+	private URLService urlService;
 
 	private String creatorID;
 
@@ -51,14 +54,13 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 
 	private Schema schema;
 
-	public IngestProcessor(SchemaService schemaService, ValidationService validationService,
-			IdentifierRepository identifierRepository, RecordRepository recordRepository,
-			VersionRepository versionRepository, URLRepository urlRepository) {
+	public IngestProcessor(SchemaService schemaService, IdentifierService identifierService,
+			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
 
-		this.identifierRepository = identifierRepository;
-		this.recordRepository = recordRepository;
-		this.versionRepository = versionRepository;
-		this.urlRepository = urlRepository;
+		this.identifierService = identifierService;
+		this.recordService = recordService;
+		this.igsnVersionService = versionService;
+		this.urlService = urlService;
 		this.schemaService = schemaService;
 	}
 
@@ -84,21 +86,22 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
 		assert identifierProvider != null;
-		String identifieValue = identifierProvider.get(content);
+		String identifierValue = identifierProvider.get(content);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
 		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
 		Record record = addRecord();
 		System.out.println("record id : " + record.getId());
-		addIdentifier(identifieValue, record);
+		addIdentifier(identifierValue, record);
 		addURL(landingPage, record);
 		addVersion(content, record);
-		Helpers.appendToFile(outputFilePath, identifieValue);
+		Helpers.appendToFile(outputFilePath, identifierValue);
 	}
 
 	private Record addRecord() {
 		// create the record
+
 		Record record = new Record();
 		record.setCreatedAt(new Date());
 		record.setOwnerID(UUID.fromString(creatorID));
@@ -107,7 +110,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
 		System.out.println("addRecord");
-		return recordRepository.saveAndFlush(record);
+		return recordService.create(record);
 	}
 
 	private void addIdentifier(String identifierValue, Record record) {
@@ -119,7 +122,8 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		identifier.setValue(identifierValue);
 		identifier.setStatus(Identifier.Status.RESERVED);
 		System.out.println("addIdentifier:" + identifier.getId());
-		identifierRepository.saveAndFlush(identifier);
+		identifierService.create(identifier);
+
 	}
 
 	private void addURL(String urlValue, Record record) {
@@ -128,9 +132,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		url.setRecord(record);
 		url.setUrl(urlValue);
 		System.out.println("addURL:" + url.getId());
-
-		urlRepository.saveAndFlush(url);
-
+		urlService.create(url);
 	}
 
 	private void addVersion(String content, Record record) {
@@ -143,7 +145,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(content));
 		System.out.println("addVersion:" + version.getId());
-		versionRepository.saveAndFlush(version);
+		igsnVersionService.save(version);
 	}
 
 }

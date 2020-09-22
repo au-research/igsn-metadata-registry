@@ -91,7 +91,7 @@ public class MDSClient {
 	private int addMetadata(String registrationMetadata) throws Exception {
 
 		String service_url = "metadata";
-
+		System.out.println(" registrationMetadata:" + registrationMetadata);
 		int response_code = 0;
 
 		try {

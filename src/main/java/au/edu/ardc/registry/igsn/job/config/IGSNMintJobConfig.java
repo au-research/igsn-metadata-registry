@@ -9,6 +9,7 @@ import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
 import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.IngestProcessor;
 import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
@@ -33,47 +34,33 @@ public class IGSNMintJobConfig {
 	public StepBuilderFactory stepBuilderFactory;
 
 	@Autowired
-	SchemaService schemaService;
+	private SchemaService schemaService;
 
 	@Autowired
-	KeycloakService kcService;
+	private KeycloakService kcService;
 
 	@Autowired
-	IGSNService igsnService;
+	private IdentifierService identifierService;
 
 	@Autowired
-	IdentifierRepository identifierRepository;
+	private RecordService recordService;
 
 	@Autowired
-	RecordService recordService;
+	private IGSNVersionService igsnVersionService;
 
 	@Autowired
-	ValidationService validationService;
-
-	@Autowired
-	RecordRepository recordRepository;
-
-	@Autowired
-	VersionService versionService;
-
-	@Autowired
-	IdentifierService identifierService;
-
-	@Autowired
-	VersionRepository versionRepository;
-
-	@Autowired
-	URLRepository urlRepository;
+	private URLService urlService;
 
 	@Bean
 	public Job IGSNImportJob() {
 		return jobBuilderFactory.get("IGSNImportJob").incrementer(new RunIdIncrementer())
-				.listener(new JobCompletionListener()).flow(chunk()).next(ingest()).next(registration()).end().build();
+				.listener(new JobCompletionListener()).flow(chunkPayload()).next(ingest()).next(registration()).end()
+				.build();
 	}
 
 	@Bean
-	public Step chunk() {
-		return stepBuilderFactory.get("chunk").tasklet(payloadChunkerTasklet()).build();
+	public Step chunkPayload() {
+		return stepBuilderFactory.get("chunkPayload").tasklet(payloadChunkerTasklet()).build();
 	}
 
 	@Bean
@@ -83,17 +70,16 @@ public class IGSNMintJobConfig {
 
 	@Bean
 	public Step ingest() {
-		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader())
-				.processor(new IngestProcessor(schemaService, validationService, identifierRepository, recordRepository,
-						versionRepository, urlRepository))
+		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader()).processor(
+				new IngestProcessor(schemaService, identifierService, recordService, igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 
 	@Bean
 	public Step registration() {
 		return stepBuilderFactory.get("registration").<String, String>chunk(1).reader(new IGSNItemReader())
-				.processor(new MintIGSNProcessor(schemaService, kcService, identifierRepository, recordService,
-						versionService, versionRepository))
+				.processor(new MintIGSNProcessor(schemaService, kcService, identifierService, recordService,
+						igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 

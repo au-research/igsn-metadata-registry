@@ -18,6 +18,7 @@ import com.google.common.base.Converter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
+@Primary
+@Service("VersionService")
 public class VersionService {
 
 	@Autowired

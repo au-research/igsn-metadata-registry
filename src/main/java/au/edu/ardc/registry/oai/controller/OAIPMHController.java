@@ -44,8 +44,8 @@ public class OAIPMHController {
 			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix,
 			@RequestParam(required = false) String resumptionToken) throws IOException {
 
-
-		if (!oaipmhService.isValidVerb(verb)) throw new BadVerbException();
+		if (!oaipmhService.isValidVerb(verb))
+			throw new BadVerbException();
 
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());
@@ -53,24 +53,24 @@ public class OAIPMHController {
 
 		OAIResponse response = new OAIResponse();
 		switch (verb) {
-			case "Identify":
-				response = oaipmhService.identify();
-				break;
-			case "GetRecord":
-				response = oaipmhService.getRecord(metadataPrefix, identifier);
-				requestFragment.setIdentifier(identifier);
-				requestFragment.setMetadataPrefix(metadataPrefix);
-				break;
-			case "ListRecords":
-				response = oaipmhService.listRecords(metadataPrefix, resumptionToken);
-				requestFragment.setMetadataPrefix(metadataPrefix);
-				break;
-			case "ListIdentifiers":
-				response = oaipmhService.listIdentifiers(metadataPrefix, resumptionToken);
-				break;
-			case "ListMetadataFormats":
-				response = oaipmhService.listMetadataFormats();
-				break;
+		case "Identify":
+			response = oaipmhService.identify();
+			break;
+		case "GetRecord":
+			response = oaipmhService.getRecord(metadataPrefix, identifier);
+			requestFragment.setIdentifier(identifier);
+			requestFragment.setMetadataPrefix(metadataPrefix);
+			break;
+		case "ListRecords":
+			response = oaipmhService.listRecords(metadataPrefix, resumptionToken);
+			requestFragment.setMetadataPrefix(metadataPrefix);
+			break;
+		case "ListIdentifiers":
+			response = oaipmhService.listIdentifiers(metadataPrefix, resumptionToken);
+			break;
+		case "ListMetadataFormats":
+			response = oaipmhService.listMetadataFormats();
+			break;
 		}
 
 		response.setRequest(requestFragment);
