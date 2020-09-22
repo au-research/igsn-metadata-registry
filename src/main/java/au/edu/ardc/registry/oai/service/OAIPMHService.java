@@ -26,7 +26,7 @@ public class OAIPMHService {
 
 	public static final int pageSize = 100;
 
-	private enum Verb {
+	public static enum Verb {
 
 		IDENTIFY("Identify"), GETRECORD("GetRecord"), LISTRECORDS("ListRecords"), LISTIDENTIFIERS(
 				"ListIdentifiers"), LISTSETS("ListSets"), LISTMETADATAFORMATS("ListMetadataFormats");
