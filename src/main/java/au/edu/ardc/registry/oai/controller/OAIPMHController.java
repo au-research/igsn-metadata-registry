@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.oai.controller;
 
+import au.edu.ardc.registry.common.config.ApplicationProperties;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
@@ -12,6 +13,7 @@ import au.edu.ardc.registry.oai.model.*;
 import au.edu.ardc.registry.oai.response.*;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.oai.service.OAIPMHService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +35,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping(value = "/api/services/oai-pmh", produces = MediaType.APPLICATION_XML_VALUE)
-public class OAIPMHService {
+public class OAIPMHController {
 
 	@Autowired
 	SchemaService schemaService;
@@ -45,88 +47,62 @@ public class OAIPMHService {
 	VersionService versionService;
 
 	@Autowired
+	ApplicationProperties applicationProperties;
+
+	@Autowired
+	OAIPMHService oaipmhService;
+
+	@Autowired
 	private Environment env;
 
 	@GetMapping(value = "", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false) String verb,
+	public ResponseEntity<OAIResponse> handle(HttpServletRequest request, @RequestParam(required = false, defaultValue = "") String verb,
 			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix,
 											  @RequestParam(required = false) String resumptionToken)
             throws IOException {
-
-		if (verb == null || verb.equals(""))
-			throw new BadVerbException("Illegal OAI verb", "badVerb");
 
 		RequestFragment requestFragment = new RequestFragment();
 		requestFragment.setValue(request.getRequestURL().toString());
 		requestFragment.setVerb(verb);
 
-		if (verb.equals("Identify")) {
-			return identify(requestFragment);
-		}
-		else if (verb.equals("GetRecord")) {
-			if (metadataPrefix == null)
-				throw new BadVerbException("Metadata prefix required", "badArgument");
-			if (!schemaService.isOAIProvider(schemaService.getSchemaByID(metadataPrefix))) {
-				throw new BadVerbException("Metadata prefix " + metadataPrefix + " is not supported",
-						"cannotDisseminateFormat");
-			}
-			if (identifier == null) {
-				throw new BadVerbException("Identifier required", "badArgument");
-			}
-			requestFragment.setIdentifier(identifier);
-			requestFragment.setMetadataPrefix(metadataPrefix);
-			return getRecord(identifier, metadataPrefix, requestFragment);
-		}
-		else if (verb.equals("ListRecords")) {
-			if (metadataPrefix == null) {
-				throw new BadVerbException("Metadata prefix required", "badArgument");
-			}
-			if (!schemaService.isOAIProvider(schemaService.getSchemaByID(metadataPrefix))) {
-				throw new BadVerbException("Metadata prefix '" + metadataPrefix + "' is not supported",
-						"cannotDisseminateFormat");
-			}
-			requestFragment.setMetadataPrefix(metadataPrefix);
-			return getRecords(metadataPrefix, requestFragment, resumptionToken);
-		}
-		else if (verb.equals("ListIdentifiers")) {
-			if (metadataPrefix == null) {
-				throw new BadVerbException("Metadata prefix required", "badArgument");
-			}
-			if (!schemaService.isOAIProvider(schemaService.getSchemaByID(metadataPrefix))) {
-				throw new BadVerbException("Metadata prefix '" + metadataPrefix + "' is not supported",
-						"cannotDisseminateFormat");
-			}
-			requestFragment.setMetadataPrefix(metadataPrefix);
-			return getIdentifiers(metadataPrefix, requestFragment, resumptionToken);
-		}
-		else if (verb.equals("ListMetadataFormats")) {
-			return ListMetadataFormats(requestFragment);
-		}
-		else {
-			throw new BadVerbException("Illegal OAI verb", "badVerb");
-		}
-	}
+		OAIResponse response;
+		switch (verb) {
+			case "Identify":
+				response = oaipmhService.identify();
 
-	private ResponseEntity<OAIResponse> identify(RequestFragment requestFragment) {
-		IdentifyFragment identify = new IdentifyFragment();
-		identify.setRepositoryName(env.getProperty("app.name"));
-		OAIResponse response = new OAIIdentifyResponse(identify);
-		response.setRequest(requestFragment);
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
-	}
+				response.setRequest(requestFragment);
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
+			case "GetRecord":
+				response = oaipmhService.getRecord(metadataPrefix, identifier);
+				requestFragment.setIdentifier(identifier);
+				requestFragment.setMetadataPrefix(metadataPrefix);
 
-	private ResponseEntity<OAIResponse> getRecord(String identifier, String metadataPrefix,
-			RequestFragment requestFragment) {
-		try {
-			Record record = recordService.findById(identifier);
-			Version version = versionService.findVersionForRecord(record, metadataPrefix);
-			String content = new String(version.getContent());
-			GetRecordResponse response = new GetRecordResponse(record, content);
-			response.setRequest(requestFragment);
-			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
-		}
-		catch (Exception e) {
-			throw new BadVerbException("The value of the identifier argument is unknown or illegal in this repository.", "idDoesNotExist");
+				response.setRequest(requestFragment);
+				return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(response);
+			case "ListRecords":
+				if (metadataPrefix == null) {
+					throw new BadVerbException("Metadata prefix required", "badArgument");
+				}
+				if (!schemaService.isOAIProvider(schemaService.getSchemaByID(metadataPrefix))) {
+					throw new BadVerbException("Metadata prefix '" + metadataPrefix + "' is not supported",
+							"cannotDisseminateFormat");
+				}
+				requestFragment.setMetadataPrefix(metadataPrefix);
+				return getRecords(metadataPrefix, requestFragment, resumptionToken);
+			case "ListIdentifiers":
+				if (metadataPrefix == null) {
+					throw new BadVerbException("Metadata prefix required", "badArgument");
+				}
+				if (!schemaService.isOAIProvider(schemaService.getSchemaByID(metadataPrefix))) {
+					throw new BadVerbException("Metadata prefix '" + metadataPrefix + "' is not supported",
+							"cannotDisseminateFormat");
+				}
+				requestFragment.setMetadataPrefix(metadataPrefix);
+				return getIdentifiers(metadataPrefix, requestFragment, resumptionToken);
+			case "ListMetadataFormats":
+				return ListMetadataFormats(requestFragment);
+			default:
+				throw new BadVerbException("Illegal OAI verb", "badVerb");
 		}
 	}
 

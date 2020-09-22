@@ -1,9 +1,13 @@
 package au.edu.ardc.registry.oai.controller;
 
+import au.edu.ardc.registry.common.config.ApplicationProperties;
 import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.oai.model.IdentifyFragment;
+import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
+import au.edu.ardc.registry.oai.service.OAIPMHService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,14 +24,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = OAIPMHService.class,
+@WebMvcTest(controllers = OAIPMHController.class,
 		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = { WebConfig.class }))
 @AutoConfigureMockMvc
-class OAIPMHServiceTest {
+class OAIPMHControllerTest {
 
 	final String base_url = "/api/services/oai-pmh";
 
@@ -43,6 +48,12 @@ class OAIPMHServiceTest {
 	@MockBean
 	VersionService versionService;
 
+	@MockBean
+	ApplicationProperties applicationProperties;
+
+	@MockBean
+	OAIPMHService oaipmhService;
+
 	@Autowired
 	private Environment env;
 
@@ -52,7 +63,9 @@ class OAIPMHServiceTest {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url)
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
 
-		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
+		mockMvc.perform(request)
+				.andDo(print())
+				.andExpect(content().contentType(MediaType.APPLICATION_XML))
 				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").string("Illegal OAI verb"))
 				.andExpect(status().isOk());
 	}
@@ -71,6 +84,10 @@ class OAIPMHServiceTest {
 	void handle_verb_Identify_returns() throws Exception {
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url + "/?verb=Identify")
 				.contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
+
+		OAIIdentifyResponse mockResponse = new OAIIdentifyResponse(new IdentifyFragment());
+		mockResponse.getIdentify().setRepositoryName("IGSN Registry");
+		when(oaipmhService.identify()).thenReturn(mockResponse);
 
 		mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
 				.andExpect(xpath("/OAI-PMH/Identify/repositoryName").string("IGSN Registry"))
