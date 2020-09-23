@@ -1,14 +1,19 @@
 package au.edu.ardc.registry.igsn.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.LandingPageProvider;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
+import au.edu.ardc.registry.igsn.client.MDSClient;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
@@ -19,7 +24,9 @@ import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemProcessor;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
@@ -39,6 +46,16 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
 	private Version existingRegistrationMDVersion;
 
+	private IGSNAllocation allocation;
+
+	private String creatorID;
+
+	private String igsnServiceRequestID;
+
+	private String allocationID;
+
+	private String landingPage;
+
 	public UpdateIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
 			IdentifierService identifierService, RecordService recordService, IGSNVersionService igsnVersionService,
 			URLService urlService) {
@@ -52,74 +69,90 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 	}
 
 	@Override
-	public String process(@NotNull String identifierValue) {
+	public String process(@NotNull String identifierValue) throws Exception {
 		String result = "";
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-		Version newVersion = getRegistrationMetadata(identifier);
-		if (isDifferentRegistrationMetadata(newVersion)) {
-			// TODO replace current registration Metadata
-			result = String.valueOf(updateMDS(newVersion));
-		}
+		byte[] registrationMetaBody = addRegistrationMetadata(identifier);
+		mintIGSN(registrationMetaBody, identifierValue, landingPage);
 		return result;
+
 	}
 
 	@BeforeStep
-	public void beforeStep(final StepExecution stepExecution) {
+	public void beforeStep(final StepExecution stepExecution) throws Exception {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		igsnServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		allocationID = jobParameters.getString("allocationID");
+		creatorID = jobParameters.getString("creatorID");
+		allocation = (IGSNAllocation) kcService.getAllocationByResourceID(allocationID);
 
 	}
 
-	private Version getRegistrationMetadata(Identifier identifier)
+	private byte[] addRegistrationMetadata(Identifier identifier)
 			throws TransformerNotFoundException, NotFoundException {
-		List<Version> versions = identifier.getRecord().getCurrentVersions();
+		Record record = identifier.getRecord();
+		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
 		ARDCv1ToRegistrationMetadataTransformer transformer = null;
-		boolean hasSupportedVersion = false;
-		existingRegistrationMDVersion = null;
-		Version supportedVersion = null;
-		for (Version version : versions) {
-			if (version.getSchema().equals(SchemaService.IGSNREGv1)) {
-				existingRegistrationMDVersion = version;
-			}
-			if (version.getSchema().equals(supportedSchema)) {
-				hasSupportedVersion = true;
-				supportedVersion = version;
-				try {
-					Schema fromSchema = schemaService.getSchemaByID(supportedSchema);
-					Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
-					transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory.create(fromSchema,
-							toSchema);
-				}
-				catch (TransformerNotFoundException e) {
-					throw e;
-				}
-			}
-		}
-		if (!hasSupportedVersion) {
+
+		if (supportedVersion == null) {
 			throw new NotFoundException(
 					"Unable to generate registration metadata missing " + supportedSchema + " version");
 		}
+
+		try {
+			Schema fromSchema = schemaService.getSchemaByID(supportedSchema);
+			Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
+			transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory.create(fromSchema, toSchema);
+			LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(fromSchema,
+					Metadata.LandingPage);
+			assert landingPageProvider != null;
+			landingPage = landingPageProvider.get(new String(supportedVersion.getContent()));
+
+		}
+		catch (TransformerNotFoundException e) {
+			throw e;
+		}
+
 		// TODO get some user info
 		/**
+		 * <xs:enumeration value="submitted"/> <!-- Date of the initial registration. -->
+		 * <xs:enumeration value="registered"/> <!-- The object is registered. -->
+		 * <xs:enumeration value="updated"/> <!-- Date of the last metadata update. -->
+		 * <xs:enumeration value="deprecated"/> <!-- The object description is deprecated.
+		 * The entry is no longer relevant, e.g. due to duplicate registration. -->
+		 * <xs:enumeration value="destroyed"/>
+		 *
+		 *
 		 * .setParam("registrantName") .setParam("nameIdentifier")
 		 * .setParam("nameIdentifierScheme")
 		 *
 		 */
 		String utcDateTimeStr = Instant.now().toString();
-		transformer.setParam("eventType", "CREATED").setParam("timeStamp", utcDateTimeStr);
-		return transformer.transform(supportedVersion);
+		transformer.setParam("eventType", "updated").setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
+				allocation.getMds_username());
+
+		Version registrationMetadataVersion = transformer.transform(supportedVersion);
+		addVersion(registrationMetadataVersion, record);
+		return registrationMetadataVersion.getContent();
 	}
 
-	private boolean isDifferentRegistrationMetadata(Version newVersion) {
-		String newHash = VersionService.getHash(newVersion);
-		String oldHash = VersionService.getHash(existingRegistrationMDVersion);
-		return (!oldHash.equals(newHash));
+	private void addVersion(Version version, Record record) {
+		// End current Version
+		Version currentVersions = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
+		igsnVersionService.end(currentVersions, UUID.fromString(creatorID));
+		// Add latest version
+		version.setRecord(record);
+		version.setCreatedAt(new Date());
+		version.setCurrent(true);
+		version.setCreatorID(UUID.fromString(creatorID));
+		version.setHash(VersionService.getHash(new String(version.getContent())));
+		System.out.println("addVersion Registration meta Version:" + version.getId());
+		igsnVersionService.save(version);
 	}
 
-	private int updateMDS(Version regMetaVersion) {
-		int responseCode = 0;
-
-		return responseCode;
+	private int mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {
+		MDSClient mdsClient = new MDSClient(allocation);
+		return mdsClient.mintIGSN(new String(body), identifierValue, landingPage, false);
 	}
 
 }

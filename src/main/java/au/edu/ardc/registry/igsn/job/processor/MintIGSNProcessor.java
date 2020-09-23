@@ -83,7 +83,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 			throws TransformerNotFoundException, NotFoundException {
 
 		Record record = identifier.getRecord();
-		Version supportedVersion = igsnVersionService.findVersionForRecord(record, supportedSchema);
+		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
 		ARDCv1ToRegistrationMetadataTransformer transformer = null;
 
 		if (supportedVersion == null) {

@@ -1,17 +1,12 @@
 package au.edu.ardc.registry.igsn.job.config;
 
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
-import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.common.repository.URLRepository;
-import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
-import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
-import au.edu.ardc.registry.job.processor.IngestProcessor;
+import au.edu.ardc.registry.job.processor.IngestRecordProcessor;
 import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
 import au.edu.ardc.registry.job.writer.NoOpItemWriter;
 import org.springframework.batch.core.Job;
@@ -70,8 +65,9 @@ public class IGSNMintJobConfig {
 
 	@Bean
 	public Step ingest() {
-		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader()).processor(
-				new IngestProcessor(schemaService, identifierService, recordService, igsnVersionService, urlService))
+		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader())
+				.processor(new IngestRecordProcessor(schemaService, identifierService, recordService,
+						igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 
