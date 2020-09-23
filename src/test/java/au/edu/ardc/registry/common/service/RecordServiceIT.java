@@ -56,26 +56,6 @@ public class RecordServiceIT {
 	}
 
 	@Test
-	public void findPublic_2Public1Private_2Returns() {
-		// given 2 public records
-		for (int i = 0; i < 2; i++) {
-			Record record = TestHelper.mockRecord();
-			record.setVisible(true);
-			repository.saveAndFlush(record);
-		}
-		// and 1 private record
-		Record record = TestHelper.mockRecord();
-		record.setVisible(false);
-		repository.saveAndFlush(record);
-
-		// found 2 records when findPublic
-		assertThat(service.findAllPublic(PageRequest.of(0, 10))).hasSize(2);
-
-		// found 1 record when findPublic with 1 per page
-		assertThat(service.findAllPublic(PageRequest.of(0, 1))).hasSize(1);
-	}
-
-	@Test
 	public void create_UserSufficientPermission_returnsDTO() {
 		// given the user with proper permission
 		User user = TestHelper.mockUser();

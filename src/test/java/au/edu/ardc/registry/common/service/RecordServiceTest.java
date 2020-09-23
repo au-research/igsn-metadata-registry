@@ -332,36 +332,6 @@ public class RecordServiceTest {
 	}
 
 	@Test
-	void findPublic_10records_callsRepository() {
-		// given 10 records
-		List<Record> mockResult = new ArrayList<>();
-		for (int i = 0; i < 10; i++) {
-			Record record = TestHelper.mockRecord(UUID.randomUUID());
-			record.setVisible(true);
-			mockResult.add(record);
-		}
-
-		// setup the world
-		Page<Record> mockPage = new PageImpl(mockResult);
-		when(repository.findAll(any(RecordSpecification.class), any(Pageable.class))).thenReturn(mockPage);
-
-		// when findPublic
-		Page<RecordDTO> actual = service.findAllPublic(PageRequest.of(0, 10));
-
-		// is a valid Page<RecordDTO>
-		assertThat(actual.getContent()).hasSize(10);
-		assertThat(actual.getTotalElements()).isEqualTo(10);
-		assertThat(actual.getTotalPages()).isEqualTo(1);
-
-		// contains only RecordDTO
-		long countOfRecordDTO = actual.stream().filter(t -> t instanceof RecordDTO).count();
-		assertThat(countOfRecordDTO).isEqualTo(10);
-
-		// repository is called
-		verify(repository, times(1)).findAll(any(RecordSpecification.class), any(Pageable.class));
-	}
-
-	@Test
 	void findPublicById_notfound_throwsException() {
 		// given no record
 		when(repository.findById(anyString())).thenReturn(null);

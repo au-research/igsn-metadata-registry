@@ -51,9 +51,6 @@ public class RecordResourceController {
 	private KeycloakService kcService;
 
 	@Autowired
-	private IdentifierService identifierService;
-
-	@Autowired
 	private VersionService versionService;
 
 	@Autowired
@@ -64,7 +61,7 @@ public class RecordResourceController {
 			description = "Retrieves all record resources that the current user has access to")
 	@ApiResponse(responseCode = "200",
 			content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecordDTO.class))))
-	public ResponseEntity<Page<?>> index(HttpServletRequest request,
+	public ResponseEntity<Page<RecordDTO>> index(HttpServletRequest request,
 			@PageableDefault @Parameter(hidden = true) Pageable pageable,
 			@RequestParam(required = false) String title) {
 		// obtain a list of ownerIDs include the current user ownerID

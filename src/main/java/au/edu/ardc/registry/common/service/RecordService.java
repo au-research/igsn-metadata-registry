@@ -36,49 +36,10 @@ public class RecordService {
 	@Autowired
 	private ValidationService validationService;
 
-	/**
-	 * Returns all record that the user created Returns all record that the user owned
-	 * Returns all record that the user has access to via allocation todo refactor to
-	 * return a page of RecordDTO todo refactor to use Pageable
-	 * @param ownerID The current loggedIn user UUID
-	 * @return a list of records that the currently logged in user owned
-	 */
-	public List<Record> findOwned(UUID ownerID) {
-		// todo findOwned by user ID as well as allocation IDs
-
-		return repository.findOwned(ownerID);
-	}
-
 	public Page<RecordDTO> search(Specification<Record> specs, Pageable pageable) {
 		Page<Record> result = repository.findAll(specs, pageable);
+
 		return result.map(getDTOConverter());
-	}
-
-	public Page<Record> searchRecords(Specification<Record> specs, Pageable pageable) {
-		Page<Record> result = repository.findAll(specs, pageable);
-		return result;
-	}
-
-	/**
-	 * Return all publicly available records
-	 * @param pageable Pageable
-	 * @return a list of RecordDTO that fits the criteria
-	 */
-	public Page<RecordDTO> findAllPublic(Pageable pageable) {
-		RecordSpecification visibleSpec = new RecordSpecification();
-		visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
-		return search(visibleSpec, pageable);
-	}
-
-	/**
-	 * Return all publicly available records
-	 * @param pageable Pageable
-	 * @return a list of Recordsthat fits the criteria
-	 */
-	public Page<Record> findAllPublicRecords(Pageable pageable) {
-		RecordSpecification visibleSpec = new RecordSpecification();
-		visibleSpec.add(new SearchCriteria("visible", true, SearchOperation.EQUAL));
-		return searchRecords(visibleSpec, pageable);
 	}
 
 	/**

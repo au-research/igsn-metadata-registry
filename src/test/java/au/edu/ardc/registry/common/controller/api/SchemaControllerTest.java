@@ -1,12 +1,16 @@
 package au.edu.ardc.registry.common.controller.api;
 
+import au.edu.ardc.registry.common.service.APILoggingService;
+import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,11 +22,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
+@WebMvcTest(controllers = SchemaController.class)
+@Import({ APILoggingService.class, SchemaService.class })
 @AutoConfigureMockMvc
 public class SchemaControllerTest {
 
 	private final String baseUrl = "/api/resources/schemas/";
+
+	@Autowired
+	SchemaService schemaService;
+
+	@MockBean
+	KeycloakService kcService;
 
 	@Autowired
 	private MockMvc mockMvc;

@@ -1,11 +1,13 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.TestHelper;
+import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.dto.URLDTO;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RecordService;
@@ -14,9 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -31,7 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest
+@WebMvcTest(controllers = {IdentifierResourceController.class})
+@Import(APILoggingService.class)
 @AutoConfigureMockMvc
 public class IdentifierResourceControllerTest {
 
