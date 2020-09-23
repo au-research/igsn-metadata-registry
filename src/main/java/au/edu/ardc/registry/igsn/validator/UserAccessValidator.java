@@ -14,6 +14,7 @@ import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 
@@ -49,10 +50,9 @@ public class UserAccessValidator {
 	 * @throws ForbiddenOperationException when user has no access to the identifier
 	 */
 	public boolean canUserCreateIGSNRecord(String content, User user)
-			throws ContentNotSupportedException, ForbiddenOperationException {
+			throws ContentNotSupportedException, ForbiddenOperationException, ContentProviderNotFoundException {
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
 		IGSNAllocation igsnAllocation = null;
 		String prefix = "######";
@@ -98,10 +98,9 @@ public class UserAccessValidator {
 	 * @throws ForbiddenOperationException when user has no access to the identifier
 	 */
 	public boolean canUserUpdateIGSNRecord(String content, User user)
-			throws ContentNotSupportedException, ForbiddenOperationException {
+			throws ContentNotSupportedException, ForbiddenOperationException, ContentProviderNotFoundException {
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		assert provider != null;
 		List<String> identifiers = provider.getAll(content);
 		for (String identifierValue : identifiers) {
 			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);

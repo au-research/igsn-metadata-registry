@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = { MeController.class })
-@Import({MeController.class, APILoggingService.class})
+@Import({ MeController.class, APILoggingService.class })
 @AutoConfigureMockMvc
 public class MeControllerTest {
 

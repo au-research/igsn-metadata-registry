@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {IdentifierResourceController.class})
+@WebMvcTest(controllers = { IdentifierResourceController.class })
 @Import(APILoggingService.class)
 @AutoConfigureMockMvc
 public class IdentifierResourceControllerTest {

@@ -7,73 +7,75 @@ import java.util.List;
 import java.util.UUID;
 
 public class UserDTO {
-    private UUID id;
 
-    private String username;
+	private UUID id;
 
-    private String email;
+	private String username;
 
-    private String name;
+	private String email;
 
-    private List<String> roles;
+	private String name;
 
-    private List<DataCenter> dataCenters;
+	private List<String> roles;
 
-    private List<AllocationDTO> allocations;
+	private List<DataCenter> dataCenters;
 
-    public UUID getId() {
-        return id;
-    }
+	private List<AllocationDTO> allocations;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public String getUsername() {
-        return username;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+	public String getUsername() {
+		return username;
+	}
 
-    public String getEmail() {
-        return email;
-    }
+	public void setUsername(String username) {
+		this.username = username;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public List<String> getRoles() {
-        return roles;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
-    }
+	public List<String> getRoles() {
+		return roles;
+	}
 
-    public List<DataCenter> getDataCenters() {
-        return dataCenters;
-    }
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
 
-    public void setDataCenters(List<DataCenter> dataCenters) {
-        this.dataCenters = dataCenters;
-    }
+	public List<DataCenter> getDataCenters() {
+		return dataCenters;
+	}
 
-    public List<AllocationDTO> getAllocations() {
-        return allocations;
-    }
+	public void setDataCenters(List<DataCenter> dataCenters) {
+		this.dataCenters = dataCenters;
+	}
 
-    public void setAllocations(List<AllocationDTO> allocations) {
-        this.allocations = allocations;
-    }
+	public List<AllocationDTO> getAllocations() {
+		return allocations;
+	}
+
+	public void setAllocations(List<AllocationDTO> allocations) {
+		this.allocations = allocations;
+	}
+
 }

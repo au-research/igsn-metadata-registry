@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.XMLUtil;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -36,7 +37,7 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 	}
 
 	@Override
-	public Record process(Record record) {
+	public Record process(Record record) throws ContentProviderNotFoundException {
 		logger.debug("Processing title for record {} ", record.getId());
 
 		// Thread.sleep(2000);
@@ -53,16 +54,10 @@ public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 
 		// obtain the title from the xml
 		String title;
-		try {
-			Schema schema = schemaService.getSchemaByID(version.getSchema());
-			TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
-			title = provider.get(xml);
-		}
-		catch (Exception ex) {
-			logger.error("Failed obtaining title for record {} from XML", record.getId());
-			ex.printStackTrace();
-			return null;
-		}
+		Schema schema = schemaService.getSchemaByID(version.getSchema());
+		TitleProvider provider = (TitleProvider) MetadataProviderFactory.create(schema, Metadata.Title);
+		title = provider.get(xml);
+
 		logger.debug("Found title {} for record {}", title, record.getId());
 
 		// save the title on the record

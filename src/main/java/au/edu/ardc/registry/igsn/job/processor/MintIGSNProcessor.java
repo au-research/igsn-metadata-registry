@@ -11,6 +11,7 @@ import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
@@ -66,6 +67,8 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		byte[] registrationMetaBody = addRegistrationMetadata(identifier);
 		mintIGSN(registrationMetaBody, identifierValue, landingPage);
+		identifier.setStatus(Identifier.Status.ACCESSIBLE);
+		identifierService.update(identifier);
 		return result;
 
 	}
@@ -80,7 +83,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 	}
 
 	private byte[] addRegistrationMetadata(Identifier identifier)
-			throws TransformerNotFoundException, NotFoundException {
+			throws TransformerNotFoundException, NotFoundException, ContentProviderNotFoundException {
 
 		Record record = identifier.getRecord();
 		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
@@ -98,7 +101,6 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 			transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory.create(fromSchema, toSchema);
 			LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(fromSchema,
 					Metadata.LandingPage);
-			assert landingPageProvider != null;
 			landingPage = landingPageProvider.get(new String(supportedVersion.getContent()));
 
 		}

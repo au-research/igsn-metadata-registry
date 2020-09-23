@@ -5,12 +5,8 @@ import java.util.*;
 
 import javax.annotation.PostConstruct;
 
-import au.edu.ardc.registry.common.provider.Metadata;
-import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
-import au.edu.ardc.registry.common.provider.OAIProvider;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.JSONValidationException;
-import au.edu.ardc.registry.exception.SchemaNotSupportedException;
 import au.edu.ardc.registry.exception.XMLValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

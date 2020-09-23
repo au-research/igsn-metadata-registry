@@ -1,16 +1,8 @@
 package au.edu.ardc.registry.igsn.validator;
 
-import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.provider.IdentifierProvider;
-import au.edu.ardc.registry.common.provider.Metadata;
-import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
-import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.exception.*;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Payload Validator is the top level validator when records sent to the registry it

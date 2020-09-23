@@ -6,43 +6,45 @@ import java.util.List;
 import java.util.UUID;
 
 public class AllocationDTO {
-    private UUID id;
 
-    private String name;
+	private UUID id;
 
-    private List<Scope> scopes;
+	private String name;
 
-    private String type;
+	private List<Scope> scopes;
 
-    public UUID getId() {
-        return id;
-    }
+	private String type;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public List<Scope> getScopes() {
-        return scopes;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setScopes(List<Scope> scopes) {
-        this.scopes = scopes;
-    }
+	public List<Scope> getScopes() {
+		return scopes;
+	}
 
-    public String getType() {
-        return type;
-    }
+	public void setScopes(List<Scope> scopes) {
+		this.scopes = scopes;
+	}
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
 }

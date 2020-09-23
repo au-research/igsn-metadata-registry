@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = URLResourceController.class)
-@Import({URLResourceController.class, APILoggingService.class})
+@Import({ URLResourceController.class, APILoggingService.class })
 @AutoConfigureMockMvc
 public class URLResourceControllerTest {
 

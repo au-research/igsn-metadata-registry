@@ -105,8 +105,8 @@ public class UpdateIGSNResourceController {
 		// compares existing versions for the given records
 		// rejects records if current version iun the registry already contains the given
 		// content
-		VersionContentValidator versionContentValidator = new VersionContentValidator(recordService, versionService,
-				identifierService, schemaService);
+		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, versionService,
+				schemaService);
 
 		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
 				userAccessValidator);

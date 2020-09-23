@@ -6,16 +6,14 @@ import au.edu.ardc.registry.common.entity.URL;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.provider.IdentifierProvider;
-import au.edu.ardc.registry.common.provider.LandingPageProvider;
-import au.edu.ardc.registry.common.provider.Metadata;
-import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.URLRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
@@ -79,21 +77,27 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 		return null;
 	}
 
-	private void processContent(Resource item) throws IOException {
-		System.out.println("File is LOADING:" + item.getFilename());
+	private void processContent(Resource item) throws IOException, ContentProviderNotFoundException {
 		String content = Helpers.readFile(item.getFile().getPath());
 		schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
-		assert identifierProvider != null;
 		String identifierValue = identifierProvider.get(content);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
-		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
 		Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-		// update the Record
+		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
+				Metadata.Visibility);
+
+		String isPublic = visibilityProvider.get(content);
+		boolean visible = false;
+		if (isPublic.toLowerCase().equals("true")) {
+			visible = true;
+		}
+
 		Record record = existingIdentifier.getRecord();
+		record.setVisible(visible);
 		record.setModifierID(UUID.fromString(creatorID));
 		record.setModifiedAt(new Date());
 		// end current version for the given schema
@@ -101,6 +105,7 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 		igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
 		// add new version
 		addNewVersion(content, record);
+		recordService.save(record);
 		// append the identifier to the text file for minting IGSN prcessor use
 		Helpers.appendToFile(outputFilePath, identifierValue);
 	}
@@ -114,7 +119,6 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(content));
-		System.out.println("addNewVersion:" + version.getId());
 		igsnVersionService.save(version);
 	}
 

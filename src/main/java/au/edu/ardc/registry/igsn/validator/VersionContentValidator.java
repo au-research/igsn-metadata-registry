@@ -9,43 +9,36 @@ import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
-import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
 public class VersionContentValidator {
 
-	private final RecordService rService;
+	private final VersionService versionService;
 
-	private final VersionService vService;
+	private final IdentifierService identifierService;
 
-	private final IdentifierService iService;
+	private final SchemaService schemaService;
 
-	private final SchemaService sService;
-
-	public VersionContentValidator(RecordService rService, VersionService vService, IdentifierService iService,
-			SchemaService sService) {
-		this.rService = rService;
-		this.vService = vService;
-		this.iService = iService;
-		this.sService = sService;
+	public VersionContentValidator(IdentifierService identifierService, VersionService versionService,
+			SchemaService schemaService) {
+		this.versionService = versionService;
+		this.identifierService = identifierService;
+		this.schemaService = schemaService;
 	}
 
-	public boolean isNewContent(String payload) throws VersionContentAlreadyExisted {
-		Schema schema = sService.getSchemaForContent(payload);
+	public boolean isNewContent(String payload) throws VersionContentAlreadyExisted, ContentProviderNotFoundException {
+		Schema schema = schemaService.getSchemaForContent(payload);
 		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
 		IdentifierProvider iProvider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		boolean isNewContent = false;
-		assert fProvider != null;
 		int numberOfFragments = fProvider.getCount(payload);
 		for (int i = 0; i < numberOfFragments; i++) {
 			String content = fProvider.get(payload, i);
-			assert iProvider != null;
 			String identifier = iProvider.get(content);
 			isNewContent = this.isNewContent(content, identifier, schema.getId());
 		}
@@ -54,7 +47,7 @@ public class VersionContentValidator {
 
 	public boolean isNewContent(String content, String identifier, String schemaID)
 			throws VersionContentAlreadyExisted {
-		Identifier i = iService.findByValueAndType(identifier, Identifier.Type.IGSN);
+		Identifier i = identifierService.findByValueAndType(identifier, Identifier.Type.IGSN);
 		if (i == null)
 			return true;
 		Record record = i.getRecord();
@@ -65,7 +58,7 @@ public class VersionContentValidator {
 
 	public boolean isNewContent(String content, Version version, String schemaID) throws VersionContentAlreadyExisted {
 		String versionHash = version.getHash();
-		String incomingHash = vService.getHash(content);
+		String incomingHash = versionService.getHash(content);
 		if (incomingHash.equals(versionHash)) {
 			throw new VersionContentAlreadyExisted(schemaID, versionHash);
 		}

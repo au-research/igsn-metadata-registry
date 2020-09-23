@@ -7,6 +7,7 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
@@ -54,11 +55,13 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 	 * @param contribution a contribution to a {@link StepExecution},
 	 * @param chunkContext the current context for the tasklet {@link ChunkContext},
 	 * @return RepeatStatus {@link RepeatStatus},
-	 * @throws Exception Exceptions if chunker provider for given content doesn't exist
+	 * @throws ContentProviderNotFoundException Exceptions if chunker provider for given
+	 * content doesn't exist
+	 * @throws IOException Exceptions if files cannot be opened or saved
 	 */
 	@Override
 	public RepeatStatus execute(@NotNull StepContribution contribution, @NotNull ChunkContext chunkContext)
-			throws Exception {
+			throws ContentProviderNotFoundException, IOException {
 		JobParameters jobParameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
 
 		directory = jobParameters.getString("dataPath");
@@ -71,13 +74,11 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
 		IdentifierProvider iProvider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		taskInfo = new HashMap<>();
-		assert fProvider != null;
 		int numberOfFragments = fProvider.getCount(payload);
 		assert resultDirName != null;
 		Files.createDirectories(Paths.get(resultDirName));
 		for (int i = 0; i < numberOfFragments; i++) {
 			String content = fProvider.get(payload, i);
-			assert iProvider != null;
 			String outFilePath = resultDirName + File.separator + i + fileExtension;
 			Helpers.writeFile(outFilePath, content);
 			String identifier = iProvider.get(content);

@@ -6,16 +6,14 @@ import au.edu.ardc.registry.common.entity.URL;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.provider.IdentifierProvider;
-import au.edu.ardc.registry.common.provider.LandingPageProvider;
-import au.edu.ardc.registry.common.provider.Metadata;
-import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.URLRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
@@ -79,37 +77,38 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		return null;
 	}
 
-	private void processContent(Resource item) throws IOException {
-		System.out.println("File is LOADING:" + item.getFilename());
+	private void processContent(Resource item) throws IOException, ContentProviderNotFoundException {
 		String content = Helpers.readFile(item.getFile().getPath());
 		schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
-		assert identifierProvider != null;
 		String identifierValue = identifierProvider.get(content);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
-		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
-		Record record = addRecord();
-		System.out.println("record id : " + record.getId());
+		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
+				Metadata.Visibility);
+		String isPublic = visibilityProvider.get(content);
+		boolean visible = false;
+		if (isPublic.toLowerCase().equals("true"))
+			visible = true;
+		Record record = addRecord(visible);
 		addIdentifier(identifierValue, record);
 		addURL(landingPage, record);
 		addVersion(content, record);
 		Helpers.appendToFile(outputFilePath, identifierValue);
 	}
 
-	private Record addRecord() {
+	private Record addRecord(boolean visible) {
 		// create the record
 
 		Record record = new Record();
 		record.setCreatedAt(new Date());
 		record.setOwnerID(UUID.fromString(creatorID));
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
-		record.setVisible(true);
+		record.setVisible(visible);
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
-		System.out.println("addRecord");
 		return recordService.create(record);
 	}
 
@@ -120,8 +119,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		identifier.setRecord(record);
 		identifier.setType(Identifier.Type.IGSN);
 		identifier.setValue(identifierValue);
-		identifier.setStatus(Identifier.Status.RESERVED);
-		System.out.println("addIdentifier:" + identifier.getId());
+		identifier.setStatus(Identifier.Status.PENDING);
 		identifierService.create(identifier);
 
 	}
@@ -131,7 +129,6 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		url.setCreatedAt(new Date());
 		url.setRecord(record);
 		url.setUrl(urlValue);
-		System.out.println("addURL:" + url.getId());
 		urlService.create(url);
 	}
 
@@ -144,7 +141,6 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(content));
-		System.out.println("addVersion:" + version.getId());
 		igsnVersionService.save(version);
 	}
 
