@@ -42,7 +42,7 @@ public class IGSNVersionService {
 		versionService.save(version);
 	}
 
-	public Version findVersionForRecord(Record record, String supportedSchema) {
+	public Version getCurrentVersionForRecord(Record record, String supportedSchema) {
 		return versionService.findVersionForRecord(record, supportedSchema);
 	}
 

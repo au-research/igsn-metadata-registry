@@ -93,52 +93,57 @@ public class UpdateIGSNResourceController {
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		IGSNServiceRequest IGSNRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
-		String dataPath = IGSNRequest.getDataPath();
-		boolean isValidPayload = false;
+		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
+		String dataPath = igsnRequest.getDataPath();
+
 		String payLoadContentPath = "";
+		// validates XML or JSON content against its schema
 		ContentValidator contentValidator = new ContentValidator(schemaService);
+		// tests for the user's access to the records with the given IGSN Identifiers
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
+		// compares existing versions for the given records
+		// rejects records if current version iun the registry already contains the given
+		// content
 		VersionContentValidator versionContentValidator = new VersionContentValidator(recordService, versionService,
 				identifierService, schemaService);
 
 		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
 				userAccessValidator);
-		// try {
+
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
 		payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
-		isValidPayload = validator.isValidUpdatePayload(payload, user);
-		// }catch (Exception e){
-		// throw new ContentNotSupportedException("Content Not Supported: " +
-		// e.getMessage());
-		// }
+		// throws validation exception is anything is wrong with the payload for the given
+		// user
+		// to update the registry content
+		validator.validateUpdatePayload(payload, user);
+		// If All is good, then start an IGSN import and MDS update job
+		// try job execution and catch any exception
+		UUID allocationID = userAccessValidator.getAllocationID();
 
-		if (isValidPayload) {
-			// If All is good, then start an IGSN import and MDS update job
-			// try job execution and catch any exception
+		try {
+			JobParameters jobParameters = new JobParametersBuilder()
+					.addString("IGSNServiceRequestID", igsnRequest.getId().toString())
+					.addString("creatorID", user.getId().toString()).addString("payLoadContentFile", payLoadContentPath)
+					.addString("allocationID", allocationID.toString()).addString("ownerType", ownerType)
+					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
+					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
+					.toJobParameters();
 
-			try {
-				JobParameters jobParameters = new JobParametersBuilder()
-						.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-						.addString("creatorID", user.getId().toString())
-						.addString("payLoadContentFile", payLoadContentPath).addString("ownerType", ownerType)
-						.addString("chunkContentsDir", dataPath + File.separator + "chunks")
-						.addString("filePath", dataPath + File.separator + "igsn_list.txt")
-						.addString("dataPath", dataPath).toJobParameters();
-
-				jobLauncher.run(igsnUpdateJob, jobParameters);
-			}
-			catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
-					| JobInstanceAlreadyCompleteException e) {
-				throw new APIException(e.getMessage());
-			}
-			request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
-			MDC.put("event.action", "update-request");
+			jobLauncher.run(igsnUpdateJob, jobParameters);
 		}
-		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(IGSNRequest);
+		catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
+				| JobInstanceAlreadyCompleteException e) {
+			throw new APIException(e.getMessage());
+		}
+		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		MDC.put("event.action", "update-request");
+
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
 
 }

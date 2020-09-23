@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
-public class IngestProcessor implements ItemProcessor<Resource, Resource> {
+public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> {
 
 	private SchemaService schemaService;
 
@@ -54,7 +54,7 @@ public class IngestProcessor implements ItemProcessor<Resource, Resource> {
 
 	private Schema schema;
 
-	public IngestProcessor(SchemaService schemaService, IdentifierService identifierService,
+	public IngestRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
 			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
 
 		this.identifierService = identifierService;

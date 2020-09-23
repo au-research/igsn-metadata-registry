@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
+public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> {
 
 	private IdentifierService identifierService;
 
@@ -54,7 +54,7 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 
 	private Schema schema;
 
-	public UpdateProcessor(SchemaService schemaService, IdentifierService identifierService,
+	public UpdateRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
 			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
 
 		this.identifierService = identifierService;
@@ -67,10 +67,10 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 	@BeforeStep
 	public void beforeStep(final StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		this.creatorID = jobParameters.getString("creatorID");
-		this.outputFilePath = jobParameters.getString("filePath");
-		this.allocationID = jobParameters.getString("allocationID");
-		this.ownerType = jobParameters.getString("ownerType");
+		creatorID = jobParameters.getString("creatorID");
+		outputFilePath = jobParameters.getString("filePath");
+		allocationID = jobParameters.getString("allocationID");
+		ownerType = jobParameters.getString("ownerType");
 	}
 
 	@Override
@@ -92,17 +92,16 @@ public class UpdateProcessor implements ItemProcessor<Resource, Resource> {
 		assert landingPageProvider != null;
 		String landingPage = landingPageProvider.get(content);
 		Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		// update the Record
 		Record record = existingIdentifier.getRecord();
 		record.setModifierID(UUID.fromString(creatorID));
 		record.setModifiedAt(new Date());
-		List<Version> cVersions = record.getCurrentVersions();
-
-		for (Version v : cVersions) {
-			if (v.getSchema().equals(schema.getId())) {
-				igsnVersionService.end(v, UUID.fromString(creatorID));
-			}
-		}
+		// end current version for the given schema
+		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, schema.getId());
+		igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
+		// add new version
 		addNewVersion(content, record);
+		// append the identifier to the text file for minting IGSN prcessor use
 		Helpers.appendToFile(outputFilePath, identifierValue);
 	}
 

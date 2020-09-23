@@ -105,54 +105,45 @@ public class MintIGSNResourceController {
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		IGSNServiceRequest IGSNRequest = igsnService.createRequest(user, IGSNEventType.MINT);
-		String dataPath = IGSNRequest.getDataPath();
-		boolean isValidPayload = false;
+		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
+		String dataPath = igsnRequest.getDataPath();
+
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
-		VersionContentValidator versionContentValidator = new VersionContentValidator(recordService, versionService,
-				identifierService, schemaService);
+		// to validate records to MINT we don't need versionContentValidator
+		// since no existing version should exist
+		PayloadValidator validator = new PayloadValidator(contentValidator, null, userAccessValidator);
 
-		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
-				userAccessValidator);
-		// try {
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
 		payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
-		isValidPayload = validator.isValidMintPayload(payload, user);
-		// }catch (Exception e){
-		// throw new ContentNotSupportedException("Content Not Supported: " +
-		// e.getMessage());
-		// }
+		validator.validateMintPayload(payload, user);
 
-		if (isValidPayload) {
-			// If All is good, then start an IGSN import and MDS mint job
-			// try job execution and catch any exception
-			UUID allocationID = userAccessValidator.getAllocationID();
+		// If All is good, then start an IGSN import and MDS mint job
+		// try job execution and catch any exception
+		UUID allocationID = userAccessValidator.getAllocationID();
 
-			try {
-				JobParameters jobParameters = new JobParametersBuilder()
-						.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-						.addString("creatorID", user.getId().toString())
-						.addString("payLoadContentFile", payLoadContentPath)
-						.addString("allocationID", allocationID.toString()).addString("ownerType", ownerType)
-						.addString("chunkContentsDir", dataPath + File.separator + "chunks")
-						.addString("filePath", dataPath + File.separator + "igsn_list.txt")
-						.addString("dataPath", dataPath).toJobParameters();
-
-				jobLauncher.run(igsnImportJob, jobParameters);
-			}
-			catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
-					| JobInstanceAlreadyCompleteException e) {
-				throw new APIException(e.getMessage());
-			}
-			request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
-			MDC.put("event.action", "mint-request");
+		try {
+			JobParameters jobParameters = new JobParametersBuilder()
+					.addString("IGSNServiceRequestID", igsnRequest.getId().toString())
+					.addString("creatorID", user.getId().toString()).addString("payLoadContentFile", payLoadContentPath)
+					.addString("allocationID", allocationID.toString()).addString("ownerType", ownerType)
+					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
+					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
+					.toJobParameters();
+			jobLauncher.run(igsnImportJob, jobParameters);
 		}
-		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(IGSNRequest);
+		catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
+				| JobInstanceAlreadyCompleteException e) {
+			throw new APIException(e.getMessage());
+		}
+		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
+		MDC.put("event.action", "mint-request");
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
 
 }

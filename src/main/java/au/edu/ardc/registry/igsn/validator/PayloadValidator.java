@@ -21,56 +21,49 @@ import java.util.List;
  */
 public class PayloadValidator {
 
-	private final ContentValidator cValidator;
+	private final ContentValidator contentValidator;
 
-	private final UserAccessValidator uaValidator;
+	private final UserAccessValidator userAccessValidator;
 
-	private final VersionContentValidator vcValidator;
+	private final VersionContentValidator versionContentValidator;
 
-	public PayloadValidator(ContentValidator cValidator, VersionContentValidator vcValidator,
-			UserAccessValidator uaValidator) {
-		this.vcValidator = vcValidator;
-		this.cValidator = cValidator;
-		this.uaValidator = uaValidator;
+	public PayloadValidator(ContentValidator contentValidator, VersionContentValidator versionContentValidator,
+			UserAccessValidator userAccessValidator) {
+		this.contentValidator = contentValidator;
+		this.userAccessValidator = userAccessValidator;
+		this.versionContentValidator = versionContentValidator;
 	}
 
 	/**
 	 * @param content String the payload content as String
 	 * @param user the logged in User who requested the mint / update
-	 * @return true if the content can be processed or false if errors or access is denied
-	 * to user
 	 * @throws IOException and other type of exceptions by contentValidator and user
 	 * access validator
 	 */
-	public boolean isValidMintPayload(String content, User user) throws IOException, ContentNotSupportedException,
+	public void validateMintPayload(String content, User user) throws IOException, ContentNotSupportedException,
 			XMLValidationException, JSONValidationException, ForbiddenOperationException {
 		// validate the entire XML or JSON content
-		cValidator.validate(content);
+		contentValidator.validate(content);
 		// check if the current user has insert or update access for the records with the
 		// given identifiers
-		uaValidator.canUserCreateIGSNRecord(content, user);
-
-		return true;
+		userAccessValidator.canUserCreateIGSNRecord(content, user);
 	}
 
 	/**
 	 * @param content String the payload content as String
 	 * @param user the logged in User who requested the mint / update
-	 * @return true if the content can be processed or false if errors or access is denied
-	 * to user
 	 * @throws IOException and other type of exceptions by contentValidator and user
 	 * access validator
 	 */
-	public boolean isValidUpdatePayload(String content, User user) throws IOException, ContentNotSupportedException,
+	public void validateUpdatePayload(String content, User user) throws IOException, ContentNotSupportedException,
 			XMLValidationException, JSONValidationException, ForbiddenOperationException, VersionContentAlreadyExisted {
 		// validate the entire XML or JSON content
-		cValidator.validate(content);
+		contentValidator.validate(content);
 		// check if the current user has insert or update access for the records with the
 		// given identifiers
-		uaValidator.canUserUpdateIGSNRecord(content, user);
+		userAccessValidator.canUserUpdateIGSNRecord(content, user);
 		// check if the contents are new compared what stored in the registry
-		vcValidator.isNewContent(content);
-		return true;
+		versionContentValidator.isNewContent(content);
 	}
 
 }

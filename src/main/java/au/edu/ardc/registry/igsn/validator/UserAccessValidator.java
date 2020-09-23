@@ -113,6 +113,7 @@ public class UserAccessValidator {
 			if (!this.hasAccessToRecord(record, user)) {
 				throw new ForbiddenOperationException("User has no access to t Record: " + record.getId());
 			}
+			allocationID = record.getAllocationID();
 		}
 		return true;
 	}
