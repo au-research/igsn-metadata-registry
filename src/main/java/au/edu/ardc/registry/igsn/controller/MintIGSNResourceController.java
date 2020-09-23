@@ -48,7 +48,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping(value = "/api/resources/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/services/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Version Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
@@ -141,7 +141,6 @@ public class MintIGSNResourceController {
 			throw new APIException(e.getMessage());
 		}
 		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
-		MDC.put("event.action", "mint-request");
 		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
 		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
