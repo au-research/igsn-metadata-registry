@@ -47,25 +47,13 @@ public class IGSNAllocation extends Allocation {
 		return this.mds_url;
 	}
 
-	public String getMds_password() {
-		return this.mds_password;
-	}
-
-	public String getMds_username() {
-		return this.mds_username;
-	}
-
-	public String getPrefix() {
-		return this.prefix;
-	}
-
-	public String getNamespace() {
-		return this.namespace;
-	}
-
 	public IGSNAllocation setMds_url(String md_url) {
 		this.mds_url = md_url;
 		return this;
+	}
+
+	public String getMds_password() {
+		return this.mds_password;
 	}
 
 	public IGSNAllocation setMds_password(String mds_password) {
@@ -73,14 +61,26 @@ public class IGSNAllocation extends Allocation {
 		return this;
 	}
 
+	public String getMds_username() {
+		return this.mds_username;
+	}
+
 	public IGSNAllocation setMds_username(String mds_username) {
 		this.mds_username = mds_username;
 		return this;
 	}
 
+	public String getPrefix() {
+		return this.prefix;
+	}
+
 	public IGSNAllocation setPrefix(String prefix) {
 		this.prefix = prefix;
 		return this;
+	}
+
+	public String getNamespace() {
+		return this.namespace;
 	}
 
 	public IGSNAllocation setNamespace(String namespace) {

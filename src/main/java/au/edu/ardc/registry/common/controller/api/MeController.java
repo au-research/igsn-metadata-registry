@@ -1,11 +1,13 @@
 package au.edu.ardc.registry.common.controller.api;
 
+import au.edu.ardc.registry.common.dto.UserDTO;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +30,12 @@ public class MeController {
 	@GetMapping(value = "")
 	@Operation(summary = "Describes the current logged in user", description = "Retrieve the current user details")
 	@ApiResponse(responseCode = "200")
-	public ResponseEntity<User> whoami(HttpServletRequest request) {
+	public ResponseEntity<UserDTO> whoami(HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		return ResponseEntity.ok(user);
+
+		ModelMapper mapper = new ModelMapper();
+		UserDTO dto = mapper.map(user, UserDTO.class);
+		return ResponseEntity.ok(dto);
 	}
 
 }
