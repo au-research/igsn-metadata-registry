@@ -97,9 +97,8 @@ public class MDSClientIT extends IntegrationTest {
 		MDSClient mc = new MDSClient(ia);
 		String identifier = "20.500.11812/XXAAAURRXDFVJA";
 		String landingPage = "";
-		mockMDS.enqueue(
-				new MockResponse().setBody("https://test.handle.ardc.edu.au/igsn/#/meta/20.500.11812/XXAAAURRXDFVJA")
-						.setResponseCode(200));
+		mockMDS.enqueue(new MockResponse().setBody("https://test.handle.ardc.edu.au/igsn/#/meta/20.500.11812/XXAAAURRXDFVJA")
+				.setResponseCode(200));
 		try {
 			landingPage = mc.getIGSNLandingPage(identifier);
 		}
@@ -118,7 +117,8 @@ public class MDSClientIT extends IntegrationTest {
 		MDSClient mc = new MDSClient(ia);
 		String identifier = "20.500.11812/XXAAAURRXDFVJA";
 		String metadata = "";
-		mockMDS.enqueue(new MockResponse().setBody("20.500.11812/XXAAAURRXDFVJA").setResponseCode(200));
+		mockMDS.enqueue(new MockResponse().setBody("20.500.11812/XXAAAURRXDFVJA")
+				.setResponseCode(200));
 		try {
 			metadata = mc.getIGSNMetadata(identifier);
 		}

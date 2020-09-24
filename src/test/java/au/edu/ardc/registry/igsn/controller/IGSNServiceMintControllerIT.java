@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-class MintIGSNResourceControllerIT extends KeycloakIntegrationTest {
+class IGSNServiceMintControllerIT extends KeycloakIntegrationTest {
 
 	public static MockWebServer mockMDS;
 
