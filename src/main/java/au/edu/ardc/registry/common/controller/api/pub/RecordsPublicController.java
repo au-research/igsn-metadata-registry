@@ -81,10 +81,11 @@ public class RecordsPublicController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	@ApiResponse(responseCode = "200", description = "Versions are found",
 			content = @Content(schema = @Schema(implementation = Page.class)))
+	@PageableOperation
 	public ResponseEntity<?> showVersions(
 			@Parameter(required = true, description = "the id of the record (uuid)",
 					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
-			@RequestParam(required = false) String schema, Pageable pageable) {
+			@RequestParam(required = false) String schema, @Parameter(hidden = true) Pageable pageable) {
 		// try to reuse the business logic of finding public record
 		Record record = service.findPublicById(id);
 
