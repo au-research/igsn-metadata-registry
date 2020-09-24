@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
+import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
@@ -16,7 +17,6 @@ import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,8 +60,7 @@ public class RecordResourceController {
 	@GetMapping("")
 	@Operation(summary = "Get all records",
 			description = "Retrieves all record resources that the current user has access to")
-	@ApiResponse(responseCode = "200",
-			content = @Content(array = @ArraySchema(schema = @Schema(implementation = RecordDTO.class))))
+	@PageableOperation
 	public ResponseEntity<Page<RecordDTO>> index(HttpServletRequest request,
 			@PageableDefault @Parameter(hidden = true) Pageable pageable,
 			@RequestParam(required = false) String title) {
@@ -89,6 +88,8 @@ public class RecordResourceController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	@ApiResponse(responseCode = "200", description = "Record is found",
 			content = @Content(schema = @Schema(implementation = RecordDTO.class)))
+	@ApiResponse(responseCode = "403", description = "User doesn't have access to the record",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<RecordDTO> show(
 			@Parameter(required = true, description = "the id of the record (uuid)",
 					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
@@ -118,6 +119,8 @@ public class RecordResourceController {
 			content = @Content(schema = @Schema(implementation = Record.class)))
 	@ApiResponse(responseCode = "404", description = "Record is not found",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "403", description = "User doesn't have access to the record",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<RecordDTO> update(
 			@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
 			@RequestBody RecordDTO recordDTO, HttpServletRequest request) {
@@ -133,6 +136,8 @@ public class RecordResourceController {
 	@ApiResponse(responseCode = "202", description = "Record is deleted")
 	@ApiResponse(responseCode = "404", description = "Record is not found",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
+	@ApiResponse(responseCode = "404", description = "User doesn't have access to the record",
+			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<?> destroy(@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
 			HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
@@ -141,7 +146,9 @@ public class RecordResourceController {
 	}
 
 	@GetMapping(value = "/{id}/versions")
-	public ResponseEntity<?> showVersions(HttpServletRequest request, Pageable pageable, @PathVariable String id,
+	@Operation(summary = "Get versions by Record ID", description = "Show all versions for a given record")
+	@PageableOperation
+	public ResponseEntity<Page<VersionDTO>> showVersions(HttpServletRequest request, Pageable pageable, @PathVariable String id,
 			@RequestParam(required = false) String schema) {
 		User user = kcService.getLoggedInUser(request);
 		Record record = recordService.findOwnedById(id, user);
