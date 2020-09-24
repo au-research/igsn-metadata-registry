@@ -13,8 +13,19 @@ public class ListIdentifiersFragment {
 
 	private List<RecordHeaderFragment> listIdentifiers = new ArrayList<RecordHeaderFragment>();
 
+	@JsonProperty("resumptionToken")
+	@JacksonXmlElementWrapper(useWrapping = false)
+	private ResumptionTokenFragment resumptionTokenFragment;
+
 	public void setListIdentifiers(RecordHeaderFragment recordHeaderFragment) {
 		listIdentifiers.add(recordHeaderFragment);
 	}
 
+	public void setResumptionTokenFragmentFragment(ResumptionTokenFragment resumptionTokenFragment) {
+		this.resumptionTokenFragment = resumptionTokenFragment;
+	}
+
+	public ResumptionTokenFragment getResumptionTokenFragment() {
+		return this.resumptionTokenFragment;
+	}
 }

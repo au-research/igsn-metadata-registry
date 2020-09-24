@@ -8,6 +8,7 @@ public class OAIListIdentifiersResponse extends OAIResponse {
 	@JsonProperty("ListIdentifiers")
 	private ListIdentifiersFragment listIdentifiersFragment;
 
+
 	public void setIdentifiersFragment(ListIdentifiersFragment listIdentifiersFragment) {
 		this.listIdentifiersFragment = listIdentifiersFragment;
 	}

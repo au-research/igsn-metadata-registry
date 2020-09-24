@@ -52,23 +52,23 @@ public class OAIPMHController {
 		requestFragment.setVerb(verb);
 
 		OAIResponse response = new OAIResponse();
-		switch (verb) {
-		case "Identify":
+		switch (OAIPMHService.Verb.valueOf(verb.toUpperCase())) {
+		case IDENTIFY:
 			response = oaipmhService.identify();
 			break;
-		case "GetRecord":
+		case GETRECORD:
 			response = oaipmhService.getRecord(metadataPrefix, identifier);
 			requestFragment.setIdentifier(identifier);
 			requestFragment.setMetadataPrefix(metadataPrefix);
 			break;
-		case "ListRecords":
+		case LISTRECORDS:
 			response = oaipmhService.listRecords(metadataPrefix, resumptionToken);
 			requestFragment.setMetadataPrefix(metadataPrefix);
 			break;
-		case "ListIdentifiers":
+		case LISTIDENTIFIERS:
 			response = oaipmhService.listIdentifiers(metadataPrefix, resumptionToken);
 			break;
-		case "ListMetadataFormats":
+		case LISTMETADATAFORMATS:
 			response = oaipmhService.listMetadataFormats();
 			break;
 		}
