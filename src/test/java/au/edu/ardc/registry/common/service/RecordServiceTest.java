@@ -373,16 +373,16 @@ public class RecordServiceTest {
 	}
 
 	@Test
-	void findPublicById_foundRecord_returnsDTO() {
+	void findPublicById_foundRecord_returns() {
 		// given a public record
-		Record record = TestHelper.mockRecord(UUID.randomUUID());
-		record.setVisible(true);
-		when(repository.findById(record.getId())).thenReturn(Optional.of(record));
+		Record expected = TestHelper.mockRecord(UUID.randomUUID());
+		expected.setVisible(true);
+		when(repository.findById(expected.getId())).thenReturn(Optional.of(expected));
 
-		// when findPublicById, returns a RecordDTO
-		RecordDTO dto = service.findPublicById(record.getId().toString());
-		assertThat(dto).isNotNull();
-		assertThat(dto).isInstanceOf(RecordDTO.class);
+		// when findPublicById, returns a Record
+		Record actual = service.findPublicById(expected.getId().toString());
+		assertThat(actual).isNotNull();
+		assertThat(actual).isInstanceOf(Record.class);
 	}
 
 }

@@ -69,7 +69,8 @@ public class RecordsPublicController {
 			content = @Content(schema = @Schema(implementation = RecordDTO.class)))
 	public ResponseEntity<RecordDTO> show(@Parameter(required = true, description = "the id of the record (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		RecordDTO dto = service.findPublicById(id);
+		Record record = service.findPublicById(id);
+		RecordDTO dto = recordMapper.convertToDTO(record);
 		return ResponseEntity.ok().body(dto);
 	}
 
@@ -85,8 +86,7 @@ public class RecordsPublicController {
 					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
 			@RequestParam(required = false) String schema, Pageable pageable) {
 		// try to reuse the business logic of finding public record
-		RecordDTO dto = service.findPublicById(id);
-		Record record = service.getMapper().convertToEntity(dto);
+		Record record = service.findPublicById(id);
 
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));

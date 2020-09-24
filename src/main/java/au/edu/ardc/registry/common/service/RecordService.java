@@ -61,12 +61,12 @@ public class RecordService {
 	 * @param id uuid of the record
 	 * @return RecordDTO
 	 */
-	public RecordDTO findPublicById(String id) {
+	public Record findPublicById(String id) {
 		Record record = findById(id);
 		if (record == null || !record.isVisible()) {
 			throw new RecordNotFoundException(id);
 		}
-		return mapper.convertToDTO(record);
+		return record;
 	}
 
 	/**
