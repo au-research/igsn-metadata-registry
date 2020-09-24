@@ -73,15 +73,52 @@
 	<xsl:template match="igsn:relatedResource">
 		<xsl:element name="relatedIdentifier"
 			xmlns="http://igsn.org/schema/kernel-v.1.0">
-			<xsl:attribute name="relatedIdentifierType">
-				<xsl:value-of select="igsn:relatedResourceIdentifier/@relatedResourceIdentifierType"/>
-			</xsl:attribute>
-			<xsl:attribute name="relationType">
-				<xsl:value-of select="@relationType"/>
-			</xsl:attribute>
+			<xsl:apply-templates select="igsn:relatedResourceIdentifier/@relatedResourceIdentifierType"/>
+			<xsl:apply-templates select="@relationType"/>
+
 			<xsl:value-of select="normalize-space(.)"/>
 		</xsl:element>
 	</xsl:template>
+
+	<xsl:template match="@relatedResourceIdentifierType">
+		<!-- 
+			https://doidb.wdc-terra.org//igsn/schemas/igsn.org/schema/1.0/include/igsn-relatedIdentifierType-v1.0.xsd
+		TODO: Need to map to the following values 
+		The type of related identifier supported
+		<xs:enumeration value="doi"/>
+		<xs:enumeration value="handle"/>
+		<xs:enumeration value="lsid"/>
+		<xs:enumeration value="url"/>
+		<xs:enumeration value="urn"/>
+		-->
+		<!--xsl:attribute name="relatedIdentifierType">
+			<xsl:value-of select="."/>
+		</xsl:attribute-->
+	</xsl:template>
+	
+	
+
+	<xsl:template match="@relationType">
+		<!-- 
+	TODO: Need to map to the following values 
+	https://doidb.wdc-terra.org//igsn/schemas/igsn.org/schema/1.0/include/igsn-relationType-v1.0.xsd
+	<xs:enumeration value="IsCitedBy"/>
+	<xs:enumeration value="IsPartOf"/>	
+	<xs:enumeration value="HasPart"/>	
+	<xs:enumeration value="IsReferencedBy"/>	
+	<xs:enumeration value="References"/>	
+	<xs:enumeration value="IsDocumentedBy"/>	
+	<xs:enumeration value="Documents"/>	
+	<xs:enumeration value="IsCompiledBy"/>	
+	<xs:enumeration value="Compiles"/>	
+	<xs:enumeration value="IsVariantFormOf"/>
+	<xs:enumeration value="IsOriginalFormOf"/>
+	-->
+		<!--xsl:attribute name="relationType">
+			<xsl:value-of select="."/>
+		</xsl:attribute-->
+	</xsl:template>
+
 
 	<xsl:template match="igsn:logDate">
 		<xsl:element name="logElement" xmlns="http://igsn.org/schema/kernel-v.1.0">
