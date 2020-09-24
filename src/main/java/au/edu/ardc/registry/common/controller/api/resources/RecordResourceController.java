@@ -4,7 +4,9 @@ import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
+import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
@@ -49,12 +51,15 @@ public class RecordResourceController {
 
 	private final RecordMapper recordMapper;
 
+	private final VersionMapper versionMapper;
+
 	public RecordResourceController(RecordService recordService, KeycloakService kcService,
-			VersionService versionService, RecordMapper recordMapper) {
+									VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
 		this.recordService = recordService;
 		this.kcService = kcService;
 		this.versionService = versionService;
 		this.recordMapper = recordMapper;
+		this.versionMapper = versionMapper;
 	}
 
 	@GetMapping("")
@@ -157,8 +162,8 @@ public class RecordResourceController {
 		if (schema != null) {
 			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		}
-		Page<VersionDTO> result = versionService.search(specs, pageable);
-		return ResponseEntity.ok().body(result);
+		Page<Version> result = versionService.search(specs, pageable);
+		return ResponseEntity.ok().body(result.map(versionMapper.getConverter()));
 	}
 
 }

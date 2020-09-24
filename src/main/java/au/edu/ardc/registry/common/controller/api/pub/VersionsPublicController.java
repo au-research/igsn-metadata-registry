@@ -2,21 +2,21 @@ package au.edu.ardc.registry.common.controller.api.pub;
 
 import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.VersionDTO;
+import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
-import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -31,11 +31,17 @@ import java.util.UUID;
 @Tag(name = "Versions Public API")
 public class VersionsPublicController {
 
-	@Autowired
-	VersionService service;
+	final VersionService service;
 
-	@Autowired
-	RecordService recordService;
+	final RecordService recordService;
+
+	final VersionMapper versionMapper;
+
+	public VersionsPublicController(VersionService service, RecordService recordService, VersionMapper versionMapper) {
+		this.service = service;
+		this.recordService = recordService;
+		this.versionMapper = versionMapper;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all publicly available versions",
@@ -56,8 +62,8 @@ public class VersionsPublicController {
 			specs.add(new SearchCriteria("record", recordEntity, SearchOperation.EQUAL));
 		}
 
-		Page<VersionDTO> result = service.search(specs, pageable);
-		return ResponseEntity.ok().body(result);
+		Page<Version> result = service.search(specs, pageable);
+		return ResponseEntity.ok().body(result.map(versionMapper.getConverter()));
 	}
 
 	@GetMapping("/{id}")
@@ -69,7 +75,8 @@ public class VersionsPublicController {
 			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
 	public ResponseEntity<VersionDTO> show(@Parameter(required = true, description = "the id of the version (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		VersionDTO dto = service.findPublicById(id);
+		Version version = service.findPublicById(id);
+		VersionDTO dto = versionMapper.convertToDTO(version);
 		return ResponseEntity.ok().body(dto);
 	}
 
@@ -83,9 +90,8 @@ public class VersionsPublicController {
 	public ResponseEntity<?> showContent(@Parameter(required = true, description = "the id of the version (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
 		// reuse the logic for finding public version
-		VersionDTO dto = service.findPublicById(id);
+		Version version = service.findPublicById(id);
 
-		Version version = service.findById(dto.getId());
 		return ResponseEntity.ok().body(version.getContent());
 	}
 

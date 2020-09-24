@@ -2,13 +2,16 @@ package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.config.ApplicationProperties;
-import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.controller.APIRestControllerAdvice;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
+import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.common.service.IdentifierService;
+import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.common.service.RecordService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -16,29 +19,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
 
 import static au.edu.ardc.registry.TestHelper.asJsonString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,7 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(RecordResourceController.class)
 @Import(RecordResourceController.class)
-@ContextConfiguration(classes = { RecordMapper.class, ModelMapper.class, APIRestControllerAdvice.class })
+@ContextConfiguration(
+		classes = { RecordMapper.class, VersionMapper.class, ModelMapper.class, APIRestControllerAdvice.class })
 @AutoConfigureMockMvc
 public class RecordResourceControllerTest {
 
@@ -56,6 +53,9 @@ public class RecordResourceControllerTest {
 
 	@Autowired
 	RecordMapper mapper;
+
+	@Autowired
+	VersionMapper versionMapper;
 
 	@MockBean
 	KeycloakService kcService;

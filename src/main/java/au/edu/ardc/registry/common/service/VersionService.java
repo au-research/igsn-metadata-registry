@@ -5,18 +5,16 @@ import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
-import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
-import com.google.common.base.Converter;
+import au.edu.ardc.registry.exception.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
@@ -28,27 +26,49 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Primary
-@Service("VersionService")
+@Service
 public class VersionService {
 
-	@Autowired
-	private VersionRepository repository;
+	private final ApplicationEventPublisher publisher;
 
-	@Autowired
-	private VersionMapper mapper;
+	private final VersionRepository repository;
 
-	@Autowired
-	private SchemaService schemaService;
+	private final VersionMapper versionMapper;
 
-	@Autowired
-	private RecordService recordService;
+	private final SchemaService schemaService;
 
-	@Autowired
-	private ValidationService validationService;
+	private final RecordService recordService;
 
-	@Autowired
-	ApplicationEventPublisher publisher;
+	private final ValidationService validationService;
+
+	public VersionService(ApplicationEventPublisher publisher, VersionRepository repository, VersionMapper mapper,
+			SchemaService schemaService, RecordService recordService, ValidationService validationService) {
+		this.publisher = publisher;
+		this.repository = repository;
+		this.versionMapper = mapper;
+		this.schemaService = schemaService;
+		this.recordService = recordService;
+		this.validationService = validationService;
+	}
+
+	/**
+	 * Provides the hash of a version. Uses the {@link #getHash(String)} to get the hash
+	 * of the Version's content
+	 * @param version the {@link Version} to obtain the hash from
+	 * @return the hash of the version's content
+	 */
+	public static String getHash(Version version) {
+		return getHash(new String(version.getContent()));
+	}
+
+	/**
+	 * Provides the hash in sha1 for the provided String
+	 * @param content the String to get the hash from
+	 * @return the hash of that string
+	 */
+	public static String getHash(String content) {
+		return DigestUtils.sha1Hex(content);
+	}
 
 	/**
 	 * End the life of a {@link Version} The registry supports soft deleting of a
@@ -84,16 +104,12 @@ public class VersionService {
 	 * @param id the String uuid of the {@link Version}
 	 * @return {@link VersionDTO}
 	 */
-	public VersionDTO findPublicById(String id) {
+	public Version findPublicById(String id) {
 		Version version = findById(id);
 		if (version == null || !version.getRecord().isVisible()) {
 			throw new VersionNotFoundException(id);
 		}
-		return mapper.convertToDTO(version);
-	}
-
-	public VersionMapper getMapper() {
-		return mapper;
+		return version;
 	}
 
 	/**
@@ -102,38 +118,12 @@ public class VersionService {
 	 * @param pageable {@link Pageable}
 	 * @return page {@link VersionDTO}
 	 */
-	public Page<VersionDTO> search(VersionSpecification specs, Pageable pageable) {
-		Page<Version> versions = repository.findAll(specs, pageable);
-		return versions.map(getDTOConverter());
+	public Page<Version> search(VersionSpecification specs, Pageable pageable) {
+		return repository.findAll(specs, pageable);
 	}
 
 	/**
-	 * Search for {@link Version} with {@link VersionSpecification}
-	 * @param specs {@link VersionSpecification} that includes {@link SearchCriteria}
-	 * @param pageable {@link Pageable}
-	 * @return page {@link VersionDTO}
-	 */
-	public Page<Version> searchVersions(VersionSpecification specs, Pageable pageable) {
-		Page<Version> versions = repository.findAll(specs, pageable);
-		return versions;
-	}
-
-	/**
-	 * Search for all {@link Version} that belongs to a particular {@link Record} uses the
-	 * internal {@link #search} method to provide the formatting of the result
-	 * @param record {@link Record}
-	 * @param pageable {@link Pageable}
-	 * @return a @{@link Page} of {@link VersionDTO}
-	 */
-	public Page<VersionDTO> findAllVersionsForRecord(Record record, Pageable pageable) {
-		VersionSpecification specs = new VersionSpecification();
-		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
-		return search(specs, pageable);
-	}
-
-	/**
-	 * Search for all public {@link Version} that has a particular {@link Schema} uses the
-	 * internal {@link #searchVersions} method to provide the formatting of the result
+	 * Search for all public {@link Version} that has a particular {@link Schema}
 	 * @param schema {@link String}
 	 * @param pageable {@link Pageable}
 	 * @return a @{@link Page} of {@link Version}
@@ -142,8 +132,7 @@ public class VersionService {
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
-		Page<Version> versions = searchVersions(specs, pageable);
-		return versions;
+		return search(specs, pageable);
 	}
 
 	/**
@@ -157,37 +146,6 @@ public class VersionService {
 	}
 
 	/**
-	 * Useful {@link Converter} for use with converting between {@link Version} and
-	 * {@link VersionDTO} Uses for {@link #search} method to help provide results in DTO
-	 * versions
-	 * @return Converter {@link Converter}
-	 */
-	public Converter<Version, VersionDTO> getDTOConverter() {
-		return new Converter<Version, VersionDTO>() {
-			@Override
-			protected VersionDTO doForward(Version version) {
-				return mapper.convertToDTO(version);
-			}
-
-			@Override
-			protected Version doBackward(VersionDTO versionDTO) {
-				return mapper.convertToEntity(versionDTO);
-			}
-		};
-	}
-
-	/**
-	 * Retrieve all owned versions Owned versions are the versions that which records the
-	 * user have access to
-	 * <p>
-	 * todo accept User UUID as a parameter todo update findOwned at the repository level
-	 * @return a list of Versions that is owned by the user
-	 */
-	public List<Version> findOwned() {
-		return repository.findAll();
-	}
-
-	/**
 	 * Tell if a version exists by id
 	 * @param id the uuid of the Version
 	 * @return if the uuid correlate to an existing version
@@ -196,11 +154,11 @@ public class VersionService {
 		return repository.existsById(UUID.fromString(id));
 	}
 
-	// create
-	public Version create(Version newVersion) {
-		return repository.save(newVersion);
-	}
-
+	/**
+	 * Persist a {@link Version}
+	 * @param version a {@link Version} to persist
+	 * @return the persisted {@link Version}
+	 */
 	public Version save(Version version) {
 		if (version.getCreatedAt() == null) {
 			version.setCreatedAt(new Date());
@@ -208,9 +166,15 @@ public class VersionService {
 		return repository.saveAndFlush(version);
 	}
 
-	public VersionDTO create(VersionDTO dto, User user) {
+	/**
+	 * Creates a {@link Version}
+	 * @param dto the {@link VersionDTO} to create from
+	 * @param user the logged in {@link User}
+	 * @return the persisted {@link Version}
+	 */
+	public Version create(VersionDTO dto, User user) {
 		// versionDTO should already be @Valid from controller
-		Version version = mapper.convertToEntity(dto);
+		Version version = versionMapper.convertToEntity(dto);
 
 		// validate schema
 		if (!schemaService.supportsSchema(version.getSchema())) {
@@ -263,9 +227,15 @@ public class VersionService {
 		// RecordUpdatedEvent
 		publisher.publishEvent(new RecordUpdatedEvent(version.getRecord(), user));
 
-		return mapper.convertToDTO(version);
+		return version;
 	}
 
+	/**
+	 * Delete a {@link Version} by id and {@link User}
+	 * @param id the id uuid format of the {@link Version}
+	 * @param user the logged in {@link User}
+	 * @return true if the {@link Version} is deleted successfully
+	 */
 	public boolean delete(String id, User user) {
 		if (!repository.existsById(UUID.fromString(id))) {
 			throw new VersionNotFoundException(id);
@@ -278,14 +248,6 @@ public class VersionService {
 
 		repository.deleteById(id);
 		return true;
-	}
-
-	public static String getHash(Version version) {
-		return DigestUtils.sha1Hex(version.getContent());
-	}
-
-	public static String getHash(String content) {
-		return DigestUtils.sha1Hex(content);
 	}
 
 }

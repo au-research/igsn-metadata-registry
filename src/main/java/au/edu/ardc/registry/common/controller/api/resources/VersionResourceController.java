@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
+import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Version;
@@ -54,9 +55,8 @@ public class VersionResourceController {
 	@GetMapping("")
 	@Operation(summary = "Get all versions",
 			description = "Retrieves all versions resources that the current user has access to")
-	@ApiResponse(responseCode = "200",
-			content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class))))
-	public ResponseEntity<?> index(HttpServletRequest request,
+	@PageableOperation
+	public ResponseEntity<Page<VersionDTO>> index(HttpServletRequest request,
 			@PageableDefault @Parameter(hidden = true) Pageable pageable,
 			@RequestParam(required = false) String schema) {
 		// obtain a list of ownerIDs include the current user ownerID
@@ -70,8 +70,8 @@ public class VersionResourceController {
 			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		}
 
-		Page<VersionDTO> result = service.search(specs, pageable);
-		return ResponseEntity.ok(result);
+		Page<Version> result = service.search(specs, pageable);
+		return ResponseEntity.ok(result.map(versionMapper.getConverter()));
 	}
 
 	@GetMapping(value = "/{id}")
@@ -94,12 +94,13 @@ public class VersionResourceController {
 	@Operation(summary = "Creates a new version", description = "Add a new version to the registry")
 	@ApiResponse(responseCode = "201", description = "Version is created",
 			content = @Content(schema = @Schema(implementation = Version.class)))
-	public ResponseEntity<VersionDTO> store(@Valid @RequestBody VersionDTO versionDTO, HttpServletRequest request) {
+	public ResponseEntity<VersionDTO> store(@RequestBody VersionDTO versionDTO, HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		VersionDTO resultDTO = service.create(versionDTO, user);
+		Version version = service.create(versionDTO, user);
+		VersionDTO dto = versionMapper.convertToDTO(version);
 
-		URI location = URI.create("/api/resources/versions/" + resultDTO.getId());
-		return ResponseEntity.created(location).body(resultDTO);
+		URI location = URI.create("/api/resources/versions/" + dto.getId());
+		return ResponseEntity.created(location).body(dto);
 	}
 
 	@DeleteMapping("/{id}")
