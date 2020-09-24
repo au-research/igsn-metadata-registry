@@ -19,6 +19,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -54,9 +55,6 @@ class OAIPMHControllerTest {
 	@MockBean
 	OAIPMHService oaipmhService;
 
-	@Autowired
-	private Environment env;
-
 	@Test
 	@DisplayName("Throws an exception and returns the error element with badverb code attribute")
 	void test_handle_noVerbParam_throwsException() throws Exception {
@@ -75,20 +73,5 @@ class OAIPMHControllerTest {
 		mockMvc.perform(request).andDo(print()).andExpect(content().contentType(MediaType.APPLICATION_XML))
 				.andExpect(xpath("/OAI-PMH/error[@code='badVerb']").exists()).andExpect(status().isOk());
 	}
-
-	// @Test
-	// void handle_verb_Identify_returns() throws Exception {
-	// MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get(base_url +
-	// "/?verb=Identify")
-	// .contentType(MediaType.APPLICATION_XML).accept(MediaType.APPLICATION_XML);
-
-	// OAIIdentifyResponse mockResponse = new OAIIdentifyResponse(new IdentifyFragment());
-	// mockResponse.getIdentify().setRepositoryName("IGSN Registry");
-	// when(oaipmhService.identify()).thenReturn(mockResponse);
-
-	// mockMvc.perform(request).andExpect(content().contentType(MediaType.APPLICATION_XML))
-	// .andExpect(xpath("/OAI-PMH").string("IGSN Registry"))
-	// .andExpect(status().isOk());
-	// }
 
 }

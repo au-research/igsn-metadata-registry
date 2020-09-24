@@ -76,7 +76,7 @@ class OAIPMHServiceTest {
 
 	@Test
 	void isValidVerb_false() {
-		assertThat(service.isValidVerb("nonsenseVerb")).isEqualTo(false);
+		assertThat(service.isValidVerb("nonsenseVerb")).isFalse();
 	}
 
 	@Test

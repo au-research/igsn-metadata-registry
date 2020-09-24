@@ -110,9 +110,11 @@ public class OAIPMHService {
 			}
 			response.setRecordsFragment(listRecordsFragment);
 			if (!versions.isLast()) {
-				response.setResumptionToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
+				ResumptionTokenFragment resumptionTokenFragment = new ResumptionTokenFragment();
+				resumptionTokenFragment.setToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
 						newResumptionToken);
-			}
+				listRecordsFragment.setResumptionTokenFragmentFragment(resumptionTokenFragment);
+			}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 			return response;
 		}
 		catch (Exception e) {
@@ -145,8 +147,10 @@ public class OAIPMHService {
 			}
 			response.setIdentifiersFragment(listIdentifiersFragment);
 			if (!versions.isLast()) {
-				response.setResumptionToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
+				ResumptionTokenFragment resumptionTokenFragment = new ResumptionTokenFragment();
+				resumptionTokenFragment.setToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
 						newResumptionToken);
+				listIdentifiersFragment.setResumptionTokenFragmentFragment(resumptionTokenFragment);
 			}
 			return response;
 		}
