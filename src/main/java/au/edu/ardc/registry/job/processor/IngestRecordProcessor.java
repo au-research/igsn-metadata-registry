@@ -109,7 +109,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		record.setVisible(visible);
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
-		return recordService.create(record);
+		return recordService.save(record);
 	}
 
 	private void addIdentifier(String identifierValue, Record record) {

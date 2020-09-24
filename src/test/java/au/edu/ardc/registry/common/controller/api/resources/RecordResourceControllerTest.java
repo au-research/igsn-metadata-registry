@@ -110,15 +110,14 @@ public class RecordResourceControllerTest {
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		record.setOwnerID(user.getId());
 		record.setAllocationID(UUID.randomUUID());
-		RecordDTO dto = mapper.convertToDTO(record);
 
 		// given a creator with an allocation and a proposed datacenter
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
-		when(recordService.create(any(RecordDTO.class), any(User.class))).thenReturn(dto);
+		when(recordService.create(any(RecordDTO.class), any(User.class))).thenReturn(record);
 
 		// when POST to the records endpoint with the allocationID and datacenterID
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/records/")
-				.content(asJsonString(dto)).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+				.content(asJsonString(mapper.convertToDTO(record))).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
 		mockMvc.perform(request).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").value(record.getId().toString()))
@@ -147,15 +146,14 @@ public class RecordResourceControllerTest {
 	public void update_UserSufficientPermission_202() throws Exception {
 		// given a record
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
-		RecordDTO dto = mapper.convertToDTO(record);
 
 		// setting up the world
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
-		when(recordService.update(any(RecordDTO.class), any(User.class))).thenReturn(dto);
+		when(recordService.update(any(RecordDTO.class), any(User.class))).thenReturn(record);
 
 		// when PUT to the record endpoint
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-				.put("/api/resources/records/" + record.getId().toString()).content(asJsonString(dto))
+				.put("/api/resources/records/" + record.getId().toString()).content(asJsonString(mapper.convertToDTO(record)))
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
 		// should returns an accepted header with the dto returned

@@ -107,8 +107,9 @@ public class RecordResourceController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<RecordDTO> store(@RequestBody RecordDTO recordDTO, HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		RecordDTO resultDTO = recordService.create(recordDTO, user);
-		return ResponseEntity.created(URI.create("/api/resources/records/" + resultDTO.getId())).body(resultDTO);
+		Record record = recordService.create(recordDTO, user);
+		RecordDTO dto = recordMapper.convertToDTO(record);
+		return ResponseEntity.created(URI.create("/api/resources/records/" + dto.getId())).body(dto);
 	}
 
 	@PutMapping("/{id}")
@@ -122,8 +123,9 @@ public class RecordResourceController {
 			@RequestBody RecordDTO recordDTO, HttpServletRequest request) {
 		recordDTO.setId(UUID.fromString(id));
 		User user = kcService.getLoggedInUser(request);
-		RecordDTO resultDTO = recordService.update(recordDTO, user);
-		return ResponseEntity.accepted().body(resultDTO);
+		Record record = recordService.update(recordDTO, user);
+		RecordDTO dto = recordMapper.convertToDTO(record);
+		return ResponseEntity.accepted().body(dto);
 	}
 
 	@DeleteMapping("/{id}")

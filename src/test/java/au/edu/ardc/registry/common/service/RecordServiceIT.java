@@ -76,9 +76,9 @@ public class RecordServiceIT {
 		dto.setAllocationID(allocation.getId());
 
 		// when create
-		RecordDTO result = service.create(dto, user);
+		Record result = service.create(dto, user);
 		assertThat(result).isNotNull();
-		assertThat(result).isInstanceOf(RecordDTO.class);
+		assertThat(result).isInstanceOf(Record.class);
 		assertThat(result.getId()).isNotNull();
 
 		// actualRecord has createdAt, creatorID, ownerType and ownerID
@@ -111,9 +111,9 @@ public class RecordServiceIT {
 		dto.setOwnerID(updatedOwnerID);
 
 		// when create
-		RecordDTO result = service.create(dto, user);
+		Record result = service.create(dto, user);
 		assertThat(result).isNotNull();
-		assertThat(result).isInstanceOf(RecordDTO.class);
+		assertThat(result).isInstanceOf(Record.class);
 		assertThat(result.getId()).isNotNull();
 
 		// actualRecord has createdAt, creatorID, ownerType and ownerID
@@ -143,10 +143,10 @@ public class RecordServiceIT {
 		dto.setVisible(false);
 
 		// when update with the modified object
-		RecordDTO resultDTO = service.update(dto, user);
+		Record result = service.update(dto, user);
 
 		// the result dto is the same as the object
-		assertThat(resultDTO).isInstanceOf(RecordDTO.class);
+		assertThat(result).isInstanceOf(Record.class);
 
 		// record is updated with the new status
 		Record actual = service.findById(record.getId().toString());
@@ -183,14 +183,14 @@ public class RecordServiceIT {
 		dto.setOwnerID(updatedOwnerID);
 
 		// when update
-		RecordDTO resultDTO = service.update(dto, user);
+		Record result = service.update(dto, user);
 
-		// the resultDTO contains the updated fields with no exception
-		assertThat(resultDTO).isNotNull();
-		assertThat(resultDTO.getCreatedAt()).isEqualTo(updatedCreatedAt);
-		assertThat(resultDTO.getModifiedAt()).isEqualTo(updatedModifiedAt);
-		assertThat(resultDTO.getCreatorID()).isEqualTo(updatedCreatorID);
-		assertThat(resultDTO.getOwnerID()).isEqualTo(updatedOwnerID);
+		// the result contains the updated fields with no exception
+		assertThat(result).isNotNull();
+		assertThat(result.getCreatedAt()).isEqualTo(updatedCreatedAt);
+		assertThat(result.getModifiedAt()).isEqualTo(updatedModifiedAt);
+		assertThat(result.getCreatorID()).isEqualTo(updatedCreatorID);
+		assertThat(result.getOwnerID()).isEqualTo(updatedOwnerID);
 
 		// and the result record in the database contains the updated fields
 		Record actualRecord = service.findById(record.getId().toString());

@@ -153,10 +153,10 @@ public class RecordServiceTest {
 		when(validationService.validateAllocationScope(any(Allocation.class), eq(user), eq(Scope.CREATE))).thenReturn(true);
 
 		// when the service creates the record with the dto and the user
-		RecordDTO result = service.create(dto, user);
+		Record result = service.create(dto, user);
 
 		// dto exists and repository.save is called
-		assertThat(result).isInstanceOf(RecordDTO.class);
+		assertThat(result).isInstanceOf(Record.class);
 		assertThat(result.getId()).isNotNull();
 		verify(repository, times(1)).save(any(Record.class));
 	}
@@ -283,8 +283,8 @@ public class RecordServiceTest {
 		when(repository.save(any(Record.class))).thenReturn(record);
 		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
-		RecordDTO expected = service.update(dto, user);
-		assertThat(expected).isInstanceOf(RecordDTO.class);
+		Record expected = service.update(dto, user);
+		assertThat(expected).isInstanceOf(Record.class);
 		verify(repository, times(1)).save(any(Record.class));
 	}
 
@@ -312,8 +312,8 @@ public class RecordServiceTest {
 		when(repository.save(any(Record.class))).thenReturn(record);
 		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
-		RecordDTO expected = service.update(dto, user);
-		assertThat(expected).isInstanceOf(RecordDTO.class);
+		Record expected = service.update(dto, user);
+		assertThat(expected).isInstanceOf(Record.class);
 		verify(repository, times(1)).save(any(Record.class));
 	}
 
@@ -343,8 +343,8 @@ public class RecordServiceTest {
 		when(repository.save(any(Record.class))).thenReturn(TestHelper.mockRecord());
 		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
-		RecordDTO expected = service.update(dto, user);
-		assertThat(expected).isInstanceOf(RecordDTO.class);
+		Record expected = service.update(dto, user);
+		assertThat(expected).isInstanceOf(Record.class);
 		verify(repository, times(1)).save(any(Record.class));
 	}
 

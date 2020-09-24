@@ -112,7 +112,7 @@ public class RecordService {
 	 * @param user User Model
 	 * @return RecordDTO if the creation is successful
 	 */
-	public RecordDTO create(RecordDTO recordDTO, User user) {
+	public Record create(RecordDTO recordDTO, User user) {
 		// recordDTO should already be @Valid
 		Record record = mapper.convertToEntity(recordDTO);
 
@@ -141,7 +141,7 @@ public class RecordService {
 
 		record = repository.save(record);
 
-		return mapper.convertToDTO(record);
+		return record;
 	}
 
 	/**
@@ -162,26 +162,13 @@ public class RecordService {
 		return true;
 	}
 
-	public RecordMapper getMapper() {
-		return mapper;
-	}
-
-	/**
-	 * Persist a newRecord todo refactor remove
-	 * @param newRecord a Valid Record
-	 * @return the newly persisted record with updated uuid
-	 */
-	public Record create(Record newRecord) {
-		return repository.save(newRecord);
-	}
-
 	/**
 	 * Updates a record Validates record existence Validates User ownership
 	 * @param recordDTO the dto of the record
 	 * @param user User model
 	 * @return RecordDTO
 	 */
-	public RecordDTO update(RecordDTO recordDTO, User user) {
+	public Record update(RecordDTO recordDTO, User user) {
 		if (!exists(recordDTO.getId().toString())) {
 			throw new RecordNotFoundException(recordDTO.getId().toString());
 		}
@@ -213,7 +200,7 @@ public class RecordService {
 
 		record = repository.save(record);
 
-		return mapper.convertToDTO(record);
+		return record;
 	}
 
 	public Record save(Record record) {
