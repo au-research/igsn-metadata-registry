@@ -9,7 +9,6 @@ public class OAIListRecordsResponse extends OAIResponse {
 	@JsonProperty("ListRecords")
 	private ListRecordsFragment listRecordsFragment;
 
-
 	public void setRecordsFragment(ListRecordsFragment listRecordsFragment) {
 		this.listRecordsFragment = listRecordsFragment;
 	}

@@ -117,7 +117,8 @@ public class RecordResourceControllerTest {
 
 		// when POST to the records endpoint with the allocationID and datacenterID
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/records/")
-				.content(asJsonString(mapper.convertToDTO(record))).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+				.content(asJsonString(mapper.convertToDTO(record))).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
 		mockMvc.perform(request).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").value(record.getId().toString()))
@@ -153,8 +154,9 @@ public class RecordResourceControllerTest {
 
 		// when PUT to the record endpoint
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-				.put("/api/resources/records/" + record.getId().toString()).content(asJsonString(mapper.convertToDTO(record)))
-				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+				.put("/api/resources/records/" + record.getId().toString())
+				.content(asJsonString(mapper.convertToDTO(record))).contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON);
 
 		// should returns an accepted header with the dto returned
 		mockMvc.perform(request).andExpect(status().isAccepted())

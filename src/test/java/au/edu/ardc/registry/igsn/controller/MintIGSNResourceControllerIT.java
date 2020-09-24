@@ -28,7 +28,9 @@ import static org.mockito.Mockito.when;
 class MintIGSNResourceControllerIT extends KeycloakIntegrationTest {
 
 	public static MockWebServer mockMDS;
+
 	private final String baseUrl = "/api/services/igsn/mint/";
+
 	@MockBean
 	KeycloakService kcService;
 

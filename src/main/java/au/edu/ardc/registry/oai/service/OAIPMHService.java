@@ -114,7 +114,7 @@ public class OAIPMHService {
 				resumptionTokenFragment.setToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
 						newResumptionToken);
 				listRecordsFragment.setResumptionTokenFragmentFragment(resumptionTokenFragment);
-			}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+			}
 			return response;
 		}
 		catch (Exception e) {

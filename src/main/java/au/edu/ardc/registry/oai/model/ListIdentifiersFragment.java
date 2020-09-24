@@ -28,4 +28,5 @@ public class ListIdentifiersFragment {
 	public ResumptionTokenFragment getResumptionTokenFragment() {
 		return this.resumptionTokenFragment;
 	}
+
 }

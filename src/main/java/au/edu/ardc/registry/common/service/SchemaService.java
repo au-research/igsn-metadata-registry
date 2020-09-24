@@ -26,8 +26,7 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.common.util.XMLUtil;
 
 /**
- * A Service that deals with supported Schema.
- * Upon
+ * A Service that deals with supported Schema. Upon
  */
 @Service
 public class SchemaService {

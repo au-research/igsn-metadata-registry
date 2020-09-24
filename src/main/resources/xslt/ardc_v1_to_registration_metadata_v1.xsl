@@ -6,8 +6,8 @@
 	<xsl:param name="registrantName" select="'registrantName'"/>
 	<xsl:param name="nameIdentifier" select="'nameIdentifier'"/>
 	<xsl:param name="nameIdentifierScheme" select="'nameIdentifierScheme'"/>
-	<xsl:param name="eventType" select="'eventType'"/>
-	<xsl:param name="timeStamp" select="'timeStamp'"/>
+	<xsl:param name="eventType" select="'updated'"/>
+	<xsl:param name="timeStamp" select="'2018-06-06T13:45:45.5654'"/>
 	<!--
     XSLT transformation to create registration metadata v1.1 from an IGSN CSIRO v3.0 record
     -->
@@ -71,7 +71,7 @@
 	</xsl:template>
 
 	<xsl:template match="igsn:relatedResource">
-		<xsl:element name="relatedResourceIdentifier"
+		<xsl:element name="relatedIdentifier"
 			xmlns="http://igsn.org/schema/kernel-v.1.0">
 			<xsl:attribute name="relatedIdentifierType">
 				<xsl:value-of select="igsn:relatedResourceIdentifier/@relatedResourceIdentifierType"/>

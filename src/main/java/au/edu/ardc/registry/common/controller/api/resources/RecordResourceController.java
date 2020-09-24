@@ -50,7 +50,7 @@ public class RecordResourceController {
 	private final RecordMapper recordMapper;
 
 	public RecordResourceController(RecordService recordService, KeycloakService kcService,
-									VersionService versionService, RecordMapper recordMapper) {
+			VersionService versionService, RecordMapper recordMapper) {
 		this.recordService = recordService;
 		this.kcService = kcService;
 		this.versionService = versionService;
