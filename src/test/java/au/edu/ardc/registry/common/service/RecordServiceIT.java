@@ -11,8 +11,15 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +31,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Transactional
 public class RecordServiceIT {
@@ -39,19 +45,21 @@ public class RecordServiceIT {
 	RecordMapper mapper;
 
 	@Test
-	public void findById_recordExists_returnsDTO() {
+	public void findById_recordExists_returnsRecord() {
 		User user = TestHelper.mockUser();
 
 		// given a record
 		Record expected = TestHelper.mockRecord();
+		expected.setOwnerType(Record.OwnerType.User);
+		expected.setOwnerID(user.getId());
 		repository.saveAndFlush(expected);
 
 		// when findById
-		RecordDTO actual = service.findById(expected.getId().toString(), user);
+		Record actual = service.findOwnedById(expected.getId().toString(), user);
 
 		// found the right record
 		assertThat(actual).isNotNull();
-		assertThat(actual).isInstanceOf(RecordDTO.class);
+		assertThat(actual).isInstanceOf(Record.class);
 		assertThat(actual.getId()).isEqualTo(expected.getId());
 	}
 

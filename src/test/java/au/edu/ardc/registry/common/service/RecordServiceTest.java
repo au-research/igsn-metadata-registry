@@ -14,6 +14,7 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
@@ -35,7 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { RecordService.class, RecordMapper.class, ModelMapper.class, ValidationService.class })
+@ContextConfiguration(classes = { RecordService.class, RecordMapper.class, ModelMapper.class })
 public class RecordServiceTest {
 
 	@Autowired
@@ -44,21 +45,32 @@ public class RecordServiceTest {
 	@MockBean
 	private RecordRepository repository;
 
+	@MockBean
+	ValidationService validationService;
+
 	@Test
-	void findById_recordExists_returnRecord() {
+	@DisplayName("search will pass along to repository.findAll(specs, pageable)")
+	void search() {
+		service.search(new RecordSpecification(), PageRequest.of(0, 10));
+		verify(repository, times(1)).findAll(any(RecordSpecification.class), any(Pageable.class));
+	}
+
+	@Test
+	void findOwnedById_recordExists_returnRecord() {
 		// given a record & user
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		User user = TestHelper.mockUser();
 
 		// mock repository
 		when(repository.findById(record.getId())).thenReturn(Optional.of(record));
+		when(validationService.validateRecordOwnership(record, user)).thenReturn(true);
 
-		// when findById
-		RecordDTO actual = service.findById(record.getId().toString(), user);
+		// when findOwnedById
+		Record actual = service.findOwnedById(record.getId().toString(), user);
 
 		// returns the same record
 		assertThat(actual).isNotNull();
-		assertThat(actual).isInstanceOf(RecordDTO.class);
+		assertThat(actual).isInstanceOf(Record.class);
 		assertThat(actual.getId()).isEqualTo(record.getId());
 	}
 
@@ -73,7 +85,7 @@ public class RecordServiceTest {
 
 		// when findById expects RecordNotFoundException
 		Assertions.assertThrows(RecordNotFoundException.class, () -> {
-			service.findById(record.getId().toString(), user);
+			service.findOwnedById(record.getId().toString(), user);
 		});
 	}
 
@@ -138,6 +150,7 @@ public class RecordServiceTest {
 		// setup repository mock
 		Record expected = TestHelper.mockRecord(UUID.randomUUID());
 		when(repository.save(any(Record.class))).thenReturn(expected);
+		when(validationService.validateAllocationScope(any(Allocation.class), eq(user), eq(Scope.CREATE))).thenReturn(true);
 
 		// when the service creates the record with the dto and the user
 		RecordDTO result = service.create(dto, user);
@@ -181,6 +194,7 @@ public class RecordServiceTest {
 		// record exists for deletion
 		when(repository.existsById(record.getId())).thenReturn(true);
 		when(repository.findById(record.getId())).thenReturn(Optional.of(record));
+		when(validationService.validateRecordOwnership(record, user)).thenReturn(true);
 
 		// when delete
 		boolean result = service.delete(record.getId().toString(), user);
@@ -250,7 +264,7 @@ public class RecordServiceTest {
 	}
 
 	@Test
-	public void update_OnwerTypeUser_returnsDTO() {
+	public void update_OwnerTypeUser_returnsDTO() {
 		// given a User
 		User user = TestHelper.mockUser();
 
@@ -267,6 +281,7 @@ public class RecordServiceTest {
 		when(repository.existsById(dto.getId())).thenReturn(true);
 		when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
 		when(repository.save(any(Record.class))).thenReturn(record);
+		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
 		RecordDTO expected = service.update(dto, user);
 		assertThat(expected).isInstanceOf(RecordDTO.class);
@@ -295,6 +310,7 @@ public class RecordServiceTest {
 		when(repository.existsById(dto.getId())).thenReturn(true);
 		when(repository.findById(any(UUID.class))).thenReturn(Optional.of(record));
 		when(repository.save(any(Record.class))).thenReturn(record);
+		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
 		RecordDTO expected = service.update(dto, user);
 		assertThat(expected).isInstanceOf(RecordDTO.class);
@@ -325,6 +341,7 @@ public class RecordServiceTest {
 		when(repository.existsById(dto.getId())).thenReturn(true);
 		when(repository.findById(dto.getId())).thenReturn(Optional.of(record));
 		when(repository.save(any(Record.class))).thenReturn(TestHelper.mockRecord());
+		when(validationService.validateRecordOwnership(any(Record.class), eq(user))).thenReturn(true);
 
 		RecordDTO expected = service.update(dto, user);
 		assertThat(expected).isInstanceOf(RecordDTO.class);

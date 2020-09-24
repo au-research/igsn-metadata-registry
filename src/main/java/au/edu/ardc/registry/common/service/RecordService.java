@@ -1,63 +1,59 @@
 package au.edu.ardc.registry.common.service;
 
-import au.edu.ardc.registry.common.model.Allocation;
-import au.edu.ardc.registry.common.model.Scope;
-import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.RecordNotFoundException;
+import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.Scope;
+import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
-import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
-import au.edu.ardc.registry.common.repository.specs.SearchOperation;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
 import com.google.common.base.Converter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The Service layer for accessing {@link Record}
+ *
+ * @author Minh Duc Nguyen
+ * @version 1.0
+ * @since 2020-09-25
+ */
 @Service
 public class RecordService {
 
-	@Autowired
-	private RecordRepository repository;
+	private final RecordRepository repository;
 
-	@Autowired
-	private RecordMapper mapper;
+	private final RecordMapper mapper;
 
-	@Autowired
-	private ValidationService validationService;
+	private final ValidationService validationService;
 
-	public Page<RecordDTO> search(Specification<Record> specs, Pageable pageable) {
-		Page<Record> result = repository.findAll(specs, pageable);
-
-		return result.map(getDTOConverter());
+	public RecordService(RecordRepository repository, RecordMapper mapper, ValidationService validationService) {
+		this.repository = repository;
+		this.mapper = mapper;
+		this.validationService = validationService;
 	}
 
 	/**
-	 * Reusable DTO converter for use within the class
-	 * @return Converter between Record and RecordDTO
+	 * Perform a search based on the predefined Search Specification
+	 * {@link RecordSpecification}. To obtain DTO versions, it's recommended to use the
+	 * DTOConverter available at {@link RecordMapper}. <pre>
+	 * {@code result.map(recordMapper.getConverter();}
+	 * </pre>
+	 * @param specs an instance of {@link RecordSpecification} to search on
+	 * @param pageable an instance of {@link Pageable} to determine pagination
+	 * @return a {@link Page} of {@link Record} that matches the JPA specs applied
 	 */
-	private Converter<Record, RecordDTO> getDTOConverter() {
-		return new Converter<Record, RecordDTO>() {
-			@Override
-			protected RecordDTO doForward(Record record) {
-				return mapper.convertToDTO(record);
-			}
-
-			@Override
-			protected Record doBackward(RecordDTO recordDTO) {
-				return mapper.convertToEntity(recordDTO);
-			}
-		};
+	public Page<Record> search(Specification<Record> specs, Pageable pageable) {
+		return repository.findAll(specs, pageable);
 	}
 
 	/**
@@ -90,14 +86,16 @@ public class RecordService {
 	 * @param user the current logged in user
 	 * @return RecordDTO
 	 */
-	public RecordDTO findById(String id, User user) {
+	public Record findOwnedById(String id, User user) {
 		Optional<Record> opt = repository.findById(UUID.fromString(id));
 		Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
-		return mapper.convertToDTO(record);
-	}
 
-	// todo List<RecordDTO> findOwnedBy(User)
-	// todo List<RecordDTO> findCreatedBy(User)
+		if (!validationService.validateRecordOwnership(record, user)) {
+			throw new ForbiddenOperationException("User does not have access to create record for this allocation");
+		}
+
+		return record;
+	}
 
 	/**
 	 * Tell if a record exists by id todo handle soft delete

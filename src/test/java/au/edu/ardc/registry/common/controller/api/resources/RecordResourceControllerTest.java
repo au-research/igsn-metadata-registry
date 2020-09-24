@@ -78,7 +78,7 @@ public class RecordResourceControllerTest {
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
-		when(recordService.findById(record.getId().toString(), user)).thenThrow(RecordNotFoundException.class);
+		when(recordService.findOwnedById(record.getId().toString(), user)).thenThrow(RecordNotFoundException.class);
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
 				.get("/api/resources/records/" + record.getId().toString()).contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +93,7 @@ public class RecordResourceControllerTest {
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
-		when(recordService.findById(record.getId().toString(), user)).thenReturn(mapper.convertToDTO(record));
+		when(recordService.findOwnedById(record.getId().toString(), user)).thenReturn(record);
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
 				.get("/api/resources/records/" + record.getId().toString()).contentType(MediaType.APPLICATION_JSON)

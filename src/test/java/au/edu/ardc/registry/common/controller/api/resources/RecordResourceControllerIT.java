@@ -99,6 +99,8 @@ class RecordResourceControllerIT extends KeycloakIntegrationTest {
 	void show_recordExist_200() {
 		// given a record
 		Record record = TestHelper.mockRecord();
+		record.setOwnerID(UUID.fromString(userID));
+		record.setOwnerType(Record.OwnerType.User);
 		recordRepository.saveAndFlush(record);
 
 		// when show with authentication, gets 200 and the record

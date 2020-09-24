@@ -1,20 +1,19 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
-import au.edu.ardc.registry.common.config.ApplicationProperties;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.VersionDTO;
+import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
-import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -23,11 +22,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,17 +41,21 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "oauth2")
 public class RecordResourceController {
 
-	@Autowired
-	private RecordService recordService;
+	private final RecordService recordService;
 
-	@Autowired
-	private KeycloakService kcService;
+	private final KeycloakService kcService;
 
-	@Autowired
-	private VersionService versionService;
+	private final VersionService versionService;
 
-	@Autowired
-	ApplicationProperties applicationProperties;
+	private final RecordMapper recordMapper;
+
+	public RecordResourceController(RecordService recordService, KeycloakService kcService,
+									VersionService versionService, RecordMapper recordMapper) {
+		this.recordService = recordService;
+		this.kcService = kcService;
+		this.versionService = versionService;
+		this.recordMapper = recordMapper;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all records",
@@ -77,9 +78,9 @@ public class RecordResourceController {
 		}
 
 		// perform the search
-		Page<RecordDTO> result = recordService.search(specs, pageable);
+		Page<Record> result = recordService.search(specs, pageable);
 
-		return ResponseEntity.ok().body(result);
+		return ResponseEntity.ok().body(result.map(recordMapper.getConverter()));
 	}
 
 	@GetMapping(value = "/{id}")
@@ -93,8 +94,9 @@ public class RecordResourceController {
 					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
 			HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		RecordDTO record = recordService.findById(id, user);
-		return ResponseEntity.ok().body(record);
+		Record record = recordService.findOwnedById(id, user);
+		RecordDTO dto = recordMapper.convertToDTO(record);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/")
@@ -137,9 +139,10 @@ public class RecordResourceController {
 	}
 
 	@GetMapping(value = "/{id}/versions")
-	public ResponseEntity<?> showVersions(Pageable pageable, @PathVariable String id,
+	public ResponseEntity<?> showVersions(HttpServletRequest request, Pageable pageable, @PathVariable String id,
 			@RequestParam(required = false) String schema) {
-		Record record = recordService.findById(id);
+		User user = kcService.getLoggedInUser(request);
+		Record record = recordService.findOwnedById(id, user);
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("record", record, SearchOperation.EQUAL));
 		if (schema != null) {

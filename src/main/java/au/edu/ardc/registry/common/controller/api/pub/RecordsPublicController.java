@@ -3,6 +3,7 @@ package au.edu.ardc.registry.common.controller.api.pub;
 import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.VersionDTO;
+import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
@@ -17,7 +18,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -32,11 +32,17 @@ import java.util.UUID;
 @Tag(name = "Record Public API")
 public class RecordsPublicController {
 
-	@Autowired
-	RecordService service;
+	final RecordService service;
 
-	@Autowired
-	VersionService versionService;
+	final VersionService versionService;
+
+	final RecordMapper recordMapper;
+
+	public RecordsPublicController(RecordService service, VersionService versionService, RecordMapper recordMapper) {
+		this.service = service;
+		this.versionService = versionService;
+		this.recordMapper = recordMapper;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all publicly available records", description = "Retrieves all publicly available records")
@@ -51,8 +57,8 @@ public class RecordsPublicController {
 			searchSpecification.add(new SearchCriteria("type", type, SearchOperation.EQUAL));
 		}
 
-		Page<RecordDTO> result = service.search(searchSpecification, pageable);
-		return ResponseEntity.ok().body(result);
+		Page<Record> result = service.search(searchSpecification, pageable);
+		return ResponseEntity.ok().body(result.map(recordMapper.getConverter()));
 	}
 
 	@GetMapping(value = "/{id}")
