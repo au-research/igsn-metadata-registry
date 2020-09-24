@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
@@ -52,7 +51,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Version Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
-public class MintIGSNResourceController {
+public class IGSNServiceUpdateController {
 
 	@Autowired
 	private KeycloakService kcService;
@@ -67,62 +66,60 @@ public class MintIGSNResourceController {
 	ValidationService validationService;
 
 	@Autowired
+	IdentifierService identifierService;
+
+	@Autowired
 	RecordService recordService;
 
 	@Autowired
 	VersionService versionService;
 
 	@Autowired
-	IdentifierService identifierService;
-
-	@Autowired
 	@Qualifier("standardJobLauncher")
 	JobLauncher jobLauncher;
 
 	@Autowired
-	@Qualifier("IGSNImportJob")
-	Job igsnImportJob;
+	@Qualifier("IGSNUpdateJob")
+	Job igsnUpdateJob;
 
-	/**
-	 * @param request the entire http request object
-	 * @param ownerType (Optional default is User)
-	 * @return an IGSN response
-	 * @throws IOException if content an not be accessed or saved
-	 * @throws ContentNotSupportedException if content is not supported as per schema.json
-	 * @throws XMLValidationException if content is XML but it's invalid
-	 * @throws JSONValidationException if content is JSON but it's invalid
-	 * @throws ForbiddenOperationException if user has no access rights to the given
-	 * records
-	 */
-	@PostMapping("/mint")
-	@Operation(summary = "Creates new IGSN record(s)", description = "Add new IGSN record(s) to the registry")
+	@PostMapping("/update")
+	@Operation(summary = "Update existing IGSN record(s)", description = "Update IGSN record(s) to the registry")
 	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
 			content = @Content(schema = @Schema(implementation = Record.class)))
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request,
+	public ResponseEntity<IGSNServiceRequest> update(HttpServletRequest request,
 			@RequestParam(required = false, defaultValue = "User") String ownerType)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
+		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
 		String dataPath = igsnRequest.getDataPath();
 
 		String payLoadContentPath = "";
+		// validates XML or JSON content against its schema
 		ContentValidator contentValidator = new ContentValidator(schemaService);
+		// tests for the user's access to the records with the given IGSN Identifiers
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
-		// to validate records to MINT we don't need versionContentValidator
-		// since no existing version should exist
-		PayloadValidator validator = new PayloadValidator(contentValidator, null, userAccessValidator);
+		// compares existing versions for the given records
+		// rejects records if current version iun the registry already contains the given
+		// content
+		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, versionService,
+				schemaService);
+
+		PayloadValidator validator = new PayloadValidator(contentValidator, versionContentValidator,
+				userAccessValidator);
 
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
 		payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
-		validator.validateMintPayload(payload, user);
-
-		// If All is good, then start an IGSN import and MDS mint job
+		// throws validation exception is anything is wrong with the payload for the given
+		// user
+		// to update the registry content
+		validator.validateUpdatePayload(payload, user);
+		// If All is good, then start an IGSN import and MDS update job
 		// try job execution and catch any exception
 		UUID allocationID = userAccessValidator.getAllocationID();
 
@@ -134,13 +131,17 @@ public class MintIGSNResourceController {
 					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
 					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
 					.toJobParameters();
-			jobLauncher.run(igsnImportJob, jobParameters);
+
+			jobLauncher.run(igsnUpdateJob, jobParameters);
 		}
 		catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
 				| JobInstanceAlreadyCompleteException e) {
 			throw new APIException(e.getMessage());
 		}
 		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
+		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		MDC.put("event.action", "update-request");
+
 		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
 		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
