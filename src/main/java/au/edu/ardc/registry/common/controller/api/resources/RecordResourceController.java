@@ -54,7 +54,7 @@ public class RecordResourceController {
 	private final VersionMapper versionMapper;
 
 	public RecordResourceController(RecordService recordService, KeycloakService kcService,
-									VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
+			VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
 		this.recordService = recordService;
 		this.kcService = kcService;
 		this.versionService = versionService;
@@ -153,8 +153,8 @@ public class RecordResourceController {
 	@GetMapping(value = "/{id}/versions")
 	@Operation(summary = "Get versions by Record ID", description = "Show all versions for a given record")
 	@PageableOperation
-	public ResponseEntity<Page<VersionDTO>> showVersions(HttpServletRequest request, Pageable pageable, @PathVariable String id,
-			@RequestParam(required = false) String schema) {
+	public ResponseEntity<Page<VersionDTO>> showVersions(HttpServletRequest request, Pageable pageable,
+			@PathVariable String id, @RequestParam(required = false) String schema) {
 		User user = kcService.getLoggedInUser(request);
 		Record record = recordService.findOwnedById(id, user);
 		VersionSpecification specs = new VersionSpecification();

@@ -41,7 +41,7 @@ class ARDCv1ToJSONLDTransformerTest {
 		assertThat(transformer).isNotNull();
 
 		// given a version
-		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		String xml = Helpers.readFile("src/test/resources/xml/jsonld_input_test.xml");
 		Version version = TestHelper.mockVersion();
 		version.setContent(xml.getBytes());
 
@@ -56,12 +56,13 @@ class ARDCv1ToJSONLDTransformerTest {
 
 		// json assertions
 		String resultJSON = new String(actual.getContent());
+		System.out.println(resultJSON);
 		assertThat(resultJSON).isNotBlank();
 		DocumentContext json = JsonPath.parse(resultJSON);
 
 		MatcherAssert.assertThat(json, isJson());
-		MatcherAssert.assertThat(json, hasJsonPath("$['@igsn']", equalTo("10273/XX0TUIAYLV")));
-		MatcherAssert.assertThat(json, hasJsonPath("$.@id", equalTo("http://hdl.handle.net/10273/XX0TUIAYLV")));
+		MatcherAssert.assertThat(json, hasJsonPath("$['@igsn']", equalTo("10273/XXAB000C0")));
+		MatcherAssert.assertThat(json, hasJsonPath("$.@id", equalTo("http://hdl.handle.net/10273/XXAB000C0")));
 		MatcherAssert.assertThat(json, hasJsonPath("$.description"));
 		MatcherAssert.assertThat(json, hasJsonPath("$.description.location"));
 	}

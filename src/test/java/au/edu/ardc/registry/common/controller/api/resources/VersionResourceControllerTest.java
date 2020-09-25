@@ -118,6 +118,8 @@ public class VersionResourceControllerTest {
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
 		// expects 201 and Location header
-		mockMvc.perform(request).andDo(MockMvcResultHandlers.print()).andExpect(status().isCreated()).andExpect(header().exists("Location"));
+		mockMvc.perform(request).andDo(MockMvcResultHandlers.print()).andExpect(status().isCreated())
+				.andExpect(header().exists("Location"));
 	}
+
 }

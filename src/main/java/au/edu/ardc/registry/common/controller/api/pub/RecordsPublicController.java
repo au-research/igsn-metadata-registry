@@ -41,7 +41,8 @@ public class RecordsPublicController {
 
 	final VersionMapper versionMapper;
 
-	public RecordsPublicController(RecordService service, VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
+	public RecordsPublicController(RecordService service, VersionService versionService, RecordMapper recordMapper,
+			VersionMapper versionMapper) {
 		this.service = service;
 		this.versionService = versionService;
 		this.recordMapper = recordMapper;

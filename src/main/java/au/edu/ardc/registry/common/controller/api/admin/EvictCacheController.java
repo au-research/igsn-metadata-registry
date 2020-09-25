@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@Tag(name="Admin Operations")
+@Tag(name = "Admin Operations")
 @RequestMapping("/api/admin/caches")
 public class EvictCacheController {
 

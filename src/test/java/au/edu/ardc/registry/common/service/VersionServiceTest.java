@@ -58,14 +58,16 @@ public class VersionServiceTest {
 	void findPublicById_throwsException() {
 		// throws exception when version doesn't exist
 		when(versionRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
-		Assert.assertThrows(VersionNotFoundException.class, () -> versionService.findPublicById(UUID.randomUUID().toString()));
+		Assert.assertThrows(VersionNotFoundException.class,
+				() -> versionService.findPublicById(UUID.randomUUID().toString()));
 
 		// throws exception when version exists but record is not visible
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		record.setVisible(false);
 		Version version = TestHelper.mockVersion(record);
 		when(versionRepository.findById(any(UUID.class))).thenReturn(Optional.of(version));
-		Assert.assertThrows(VersionNotFoundException.class, () -> versionService.findPublicById(UUID.randomUUID().toString()));
+		Assert.assertThrows(VersionNotFoundException.class,
+				() -> versionService.findPublicById(UUID.randomUUID().toString()));
 	}
 
 	@Test
@@ -86,7 +88,8 @@ public class VersionServiceTest {
 	@DisplayName("findVersionForRecord calls findFirstByRecordAndSchemaAndCurrentIsTrue")
 	void findVersionForRecord() {
 		versionService.findVersionForRecord(TestHelper.mockRecord(), SchemaService.ARDCv1);
-		verify(versionRepository, times(1)).findFirstByRecordAndSchemaAndCurrentIsTrue(any(Record.class), eq(SchemaService.ARDCv1));
+		verify(versionRepository, times(1)).findFirstByRecordAndSchemaAndCurrentIsTrue(any(Record.class),
+				eq(SchemaService.ARDCv1));
 	}
 
 	@Test
@@ -144,7 +147,8 @@ public class VersionServiceTest {
 		when(recordService.findById(anyString())).thenReturn(record);
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
 		when(versionRepository.save(any(Version.class))).thenReturn(expected);
-		when(versionRepository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean())).thenReturn(true);
+		when(versionRepository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean()))
+				.thenReturn(true);
 
 		// throws ForbiddenOpereationException if repository has
 		// existsBySchemaAndHashAndCurrent

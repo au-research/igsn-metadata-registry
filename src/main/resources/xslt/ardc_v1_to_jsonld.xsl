@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:igsn="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc" version="2.0"
+                xmlns:igsn="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc"
+                xmlns:xslUtil="au.edu.ardc.registry.common.util.XSLUtil"
+                version="2.0"
                 exclude-result-prefixes="igsn">
     <xsl:output indent="yes" method="text"/>
 
@@ -57,29 +59,29 @@
     </xsl:template>
 
     <xsl:template match="igsn:resourceIdentifier" mode="igsn-id">
-        <xsl:text>    "@id": "http://hdl.handle.net/</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "@id": "http://hdl.handle.net/</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:resourceIdentifier" mode="igsn">
-        <xsl:text>    "@igsn" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "@igsn" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
 
     <xsl:template match="igsn:landingPage" mode="URL">
-        <xsl:text>    "URL" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "URL" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
 
     <xsl:template match="igsn:landingPage" mode="json-ld">
-        <xsl:text>    "landingPage" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "landingPage" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:resourceTitle" mode="json-ld">
-        <xsl:text>    "title" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "title" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
@@ -105,7 +107,7 @@
     </xsl:template>
 
     <xsl:template match="igsn:classification" mode="json-ld">
-        <xsl:text>"</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
+        <xsl:text>"</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>"</xsl:text>
         <xsl:if test="following-sibling::igsn:classification">
             <xsl:text>,</xsl:text>
         </xsl:if>
@@ -114,7 +116,7 @@
     <xsl:template match="igsn:logDate" mode="json-ld">
 <xsl:text>          {
         "igsnvoc:@type": "</xsl:text><xsl:value-of select="@eventType"/><xsl:text>",
-        "igsnvoc:timestamp": "</xsl:text><xsl:value-of select="."/><xsl:text>"
+        "igsnvoc:timestamp": "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>"
         }</xsl:text>
         <xsl:if test="following-sibling::igsn:logDate">
             <xsl:text>,</xsl:text>
@@ -145,7 +147,7 @@
     </xsl:template>
 
     <xsl:template match="igsn:resourceType | igsn:materialType" mode="json-ld">
-        <xsl:text>"</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
+        <xsl:text>"</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>"</xsl:text>
         <xsl:if test="following-sibling::igsn:resourceType">
             <xsl:text>,</xsl:text>
         </xsl:if>
@@ -155,7 +157,7 @@
     </xsl:template>
 
     <xsl:template match="igsn:locality" mode="json-ld">
-        <xsl:text>"address": "</xsl:text><xsl:value-of select="."/><xsl:text>"</xsl:text>
+        <xsl:text>"address": "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>"</xsl:text>
         <xsl:if test="following-sibling::igsn:locality">
             <xsl:text>,</xsl:text>
         </xsl:if>
@@ -165,12 +167,12 @@
     </xsl:template>
 
     <xsl:template match="igsn:curatorName" mode="json-ld">
-        <xsl:text>    "curator" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "curator" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 
     <xsl:template match="igsn:contributorName" mode="json-ld">
-        <xsl:text>    "contributor" : "</xsl:text><xsl:value-of select="."/><xsl:text>",
+        <xsl:text>    "contributor" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
 </xsl:text>
     </xsl:template>
 

@@ -90,7 +90,6 @@ public class RecordService {
 
 	/**
 	 * Find a record only if it's owned by the provided user
-	 *
 	 * @param id uuid of the record
 	 * @param user the current logged in user
 	 * @return RecordDTO
