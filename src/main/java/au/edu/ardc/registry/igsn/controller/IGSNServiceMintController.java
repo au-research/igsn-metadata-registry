@@ -90,8 +90,8 @@ public class IGSNServiceMintController {
 	/**
 	 * @param request the entire http request object
 	 * @param ownerType (Optional) default is 'User'
-	 * @param wait (Optional) return instantly and start a backbroung job or wait until
-	 * mint is completed default is 0
+	 * @param wait (Optional) {yes, true, 1 | no false 0}return instantly and start a
+	 * background job or wait until mint is completed default is {no , false, 0}
 	 * @return an IGSN response
 	 * @throws IOException if content an not be accessed or saved
 	 * @throws ContentNotSupportedException if content is not supported as per schema.json
@@ -108,13 +108,12 @@ public class IGSNServiceMintController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false, defaultValue = "0") String wait)
+			@RequestParam(required = false, defaultValue = "0") boolean wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
 		String dataPath = igsnRequest.getDataPath();
-		boolean doWaitUntilCompletion = wait.equals("1");
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
@@ -141,7 +140,7 @@ public class IGSNServiceMintController {
 					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
 					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
 					.toJobParameters();
-			if (doWaitUntilCompletion) {
+			if (wait) {
 				standardJobLauncher.run(igsnImportJob, jobParameters);
 			}
 			else {
