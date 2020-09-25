@@ -1,17 +1,24 @@
 package au.edu.ardc.registry.common.util;
 
+/**
+* XSLUtils a collection of functions that are much simpler in Java than XSLT
+*/
 public class XSLUtil {
 
-	public XSLUtil() {
-
+	/**
+	 * @param mixedCase String containing mixed case characters
+	 * @return String upper cased
+	 */
+	public static String toUpperCase(String mixedCase) {
+		return mixedCase.toUpperCase();
 	}
 
-	public static String toUpperCase(String dirtyText) {
-		return dirtyText.toUpperCase();
-	}
-
-	public static String toLowerCase(String dirtyText) {
-		return dirtyText.toLowerCase();
+	/**
+	 * @param mixedCase String containing mixed case characters
+	 * @return String lower cased
+	 */
+	public static String toLowerCase(String mixedCase) {
+		return mixedCase.toLowerCase();
 	}
 
 	/**
