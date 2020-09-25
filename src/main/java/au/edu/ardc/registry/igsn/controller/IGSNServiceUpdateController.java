@@ -76,12 +76,29 @@ public class IGSNServiceUpdateController {
 
 	@Autowired
 	@Qualifier("standardJobLauncher")
-	JobLauncher jobLauncher;
+	JobLauncher standardJobLauncher;
+
+	@Autowired
+	@Qualifier("asyncJobLauncher")
+	JobLauncher asyncJobLauncher;
 
 	@Autowired
 	@Qualifier("IGSNUpdateJob")
 	Job igsnUpdateJob;
 
+	/**
+	 * @param request the entire http request object
+	 * @param ownerType (Optional) default is 'User'
+	 * @param wait (Optional) return instantly and start a background job or wait until
+	 * mint is completed default is 0
+	 * @return an IGSN response
+	 * @throws IOException if content an not be accessed or saved
+	 * @throws ContentNotSupportedException if content is not supported as per schema.json
+	 * @throws XMLValidationException if content is XML but it's invalid
+	 * @throws JSONValidationException if content is JSON but it's invalid
+	 * @throws ForbiddenOperationException if user has no access rights to the given
+	 * records
+	 */
 	@PostMapping("/update")
 	@Operation(summary = "Update existing IGSN record(s)", description = "Update IGSN record(s) to the registry")
 	@ApiResponse(responseCode = "202", description = "IGSN Record(s) accepted",
@@ -89,13 +106,14 @@ public class IGSNServiceUpdateController {
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<IGSNServiceRequest> update(HttpServletRequest request,
-			@RequestParam(required = false, defaultValue = "User") String ownerType)
+			@RequestParam(required = false, defaultValue = "User") String ownerType,
+			@RequestParam(required = false, defaultValue = "0") String wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
 		String dataPath = igsnRequest.getDataPath();
-
+		boolean doWaitUntilCompletion = wait.equals("1");
 		String payLoadContentPath = "";
 		// validates XML or JSON content against its schema
 		ContentValidator contentValidator = new ContentValidator(schemaService);
@@ -131,8 +149,12 @@ public class IGSNServiceUpdateController {
 					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
 					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
 					.toJobParameters();
-
-			jobLauncher.run(igsnUpdateJob, jobParameters);
+			if (doWaitUntilCompletion) {
+				standardJobLauncher.run(igsnUpdateJob, jobParameters);
+			}
+			else {
+				asyncJobLauncher.run(igsnUpdateJob, jobParameters);
+			}
 		}
 		catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
 				| JobInstanceAlreadyCompleteException e) {
