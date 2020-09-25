@@ -37,7 +37,6 @@ public class PayloadContentReader extends MultiResourceItemReader {
 	public void beforeStep(StepExecution stepExecution) throws IOException {
 		JobParameters jobParameters = stepExecution.getJobParameters();
 		chunkContentsDir = jobParameters.getString("chunkContentsDir");
-		System.out.println("Processing Directory: " + chunkContentsDir);
 		init();
 	}
 
@@ -45,7 +44,6 @@ public class PayloadContentReader extends MultiResourceItemReader {
 		this.setName("PayloadContentReader");
 		ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resourcePatternResolver.getResources("file:" + chunkContentsDir + File.separator + "*");
-		System.out.println("Number of Files: " + resources.length);
 		super.setResources(resources);
 		super.setDelegate(new ResourcePassthroughReader());
 	}

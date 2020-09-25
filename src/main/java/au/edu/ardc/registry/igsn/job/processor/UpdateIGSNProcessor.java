@@ -146,7 +146,6 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 		version.setCurrent(true);
 		version.setCreatorID(UUID.fromString(creatorID));
 		version.setHash(VersionService.getHash(new String(version.getContent())));
-		System.out.println("addVersion Registration meta Version:" + version.getId());
 		igsnVersionService.save(version);
 	}
 

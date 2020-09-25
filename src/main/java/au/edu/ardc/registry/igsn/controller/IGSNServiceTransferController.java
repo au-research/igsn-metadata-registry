@@ -3,6 +3,7 @@ package au.edu.ardc.registry.igsn.controller;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
@@ -54,29 +55,15 @@ public class IGSNServiceTransferController {
 	@PostMapping("")
 	public ResponseEntity<IGSNServiceRequest> handle(HttpServletRequest request, @RequestParam UUID ownerID,
 			@RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
-			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, IOException {
 		User user = kcService.getLoggedInUser(request);
 
 		IGSNServiceRequest IGSNRequest = service.createRequest(user, IGSNEventType.TRANSFER);
 		String dataPath = IGSNRequest.getDataPath();
 
 		// write IGSNList to input.txt
-		String filePath = dataPath + "/requested-identifiers.txt";
-		try {
-			File inputIGSNFile = new File(filePath);
-			if (inputIGSNFile.createNewFile()) {
-				System.out.println("File created: " + inputIGSNFile.getName());
-			}
-			else {
-				System.out.println("File already exists.");
-			}
-			FileWriter writer = new FileWriter(filePath);
-			writer.write(IGSNList);
-			writer.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		String filePath = dataPath + "/input.txt";
+		Helpers.writeFile(filePath, IGSNList);
 
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())

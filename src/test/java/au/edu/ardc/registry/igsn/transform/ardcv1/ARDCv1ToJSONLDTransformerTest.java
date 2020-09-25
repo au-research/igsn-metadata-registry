@@ -56,7 +56,6 @@ class ARDCv1ToJSONLDTransformerTest {
 
 		// json assertions
 		String resultJSON = new String(actual.getContent());
-		System.out.println(resultJSON);
 		assertThat(resultJSON).isNotBlank();
 		DocumentContext json = JsonPath.parse(resultJSON);
 

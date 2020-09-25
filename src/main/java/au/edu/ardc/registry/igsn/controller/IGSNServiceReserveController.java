@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.controller;
 
 import au.edu.ardc.registry.common.service.APILoggingService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
@@ -57,7 +58,7 @@ public class IGSNServiceReserveController {
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String IGSNList)
 			throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
-			JobInstanceAlreadyCompleteException {
+			JobInstanceAlreadyCompleteException, IOException {
 		// todo validate request body contains 1 IGSN per line
 		User user = kcService.getLoggedInUser(request);
 		// todo validate ownership & allocationID & IGSNList
@@ -72,21 +73,7 @@ public class IGSNServiceReserveController {
 
 		// write IGSNList to input.txt
 		String filePath = dataPath + "/input.txt";
-		try {
-			File inputIGSNFile = new File(filePath);
-			if (inputIGSNFile.createNewFile()) {
-				System.out.println("File created: " + inputIGSNFile.getName());
-			}
-			else {
-				System.out.println("File already exists.");
-			}
-			FileWriter writer = new FileWriter(filePath);
-			writer.write(IGSNList);
-			writer.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		Helpers.writeFile(filePath, IGSNList);
 
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())

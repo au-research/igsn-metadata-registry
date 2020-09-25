@@ -45,7 +45,6 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
 	@Override
 	public String process(String identifierValue) {
-		System.out.println("Dealing with" + identifierValue);
 		if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
 			igsnService.getLoggerFor(request).severe(
 					String.format("Identifier %s of type %s does not exists", identifierValue, Identifier.Type.IGSN));

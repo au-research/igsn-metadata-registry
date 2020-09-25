@@ -136,7 +136,6 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(new String(version.getContent())));
-		System.out.println("addVersion Registration meta Version:" + version.getId());
 		igsnVersionService.save(version);
 	}
 
