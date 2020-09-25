@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.common.util;
 
 /**
-* XSLUtils a collection of functions that are much simpler in Java than XSLT
-*/
+ * XSLUtils a collection of functions that are much simpler in Java than XSLT
+ */
 public class XSLUtil {
 
 	/**

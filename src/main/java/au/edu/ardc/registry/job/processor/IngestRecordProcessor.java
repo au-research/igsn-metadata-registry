@@ -88,11 +88,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		String landingPage = landingPageProvider.get(content);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
-		String isPublic = visibilityProvider.get(content);
-		boolean visible = false;
-		if (isPublic.toLowerCase().equals("true"))
-			visible = true;
-		Record record = addRecord(visible);
+		Record record = addRecord(visibilityProvider.get(content));
 		addIdentifier(identifierValue, record);
 		addURL(landingPage, record);
 		addVersion(content, record);

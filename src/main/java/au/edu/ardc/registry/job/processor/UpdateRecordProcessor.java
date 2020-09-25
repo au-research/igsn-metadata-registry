@@ -90,14 +90,8 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
 
-		String isPublic = visibilityProvider.get(content);
-		boolean visible = false;
-		if (isPublic.toLowerCase().equals("true")) {
-			visible = true;
-		}
-
 		Record record = existingIdentifier.getRecord();
-		record.setVisible(visible);
+		record.setVisible(visibilityProvider.get(content));
 		record.setModifierID(UUID.fromString(creatorID));
 		record.setModifiedAt(new Date());
 		// end current version for the given schema
