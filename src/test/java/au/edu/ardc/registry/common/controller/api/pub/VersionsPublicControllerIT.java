@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -165,7 +166,7 @@ class VersionsPublicControllerIT extends WebIntegrationTest {
 		recordRepository.saveAndFlush(record);
 		Version version = TestHelper.mockVersion(record);
 		String xml = Helpers.readFile("src/test/resources/xml/sample_igsn_csiro_v3.xml");
-		version.setSchema("igsn-descriptive-csiro-v3");
+		version.setSchema(SchemaService.CSIROv3);
 		version.setContent(xml.getBytes());
 		version.setCurrent(true);
 		versionRepository.saveAndFlush(version);

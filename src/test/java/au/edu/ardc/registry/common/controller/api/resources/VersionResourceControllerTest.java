@@ -5,10 +5,7 @@ import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.service.APILoggingService;
-import au.edu.ardc.registry.common.service.KeycloakService;
-import au.edu.ardc.registry.common.service.RecordService;
-import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -36,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = VersionResourceController.class)
-@Import({ APILoggingService.class, VersionMapper.class })
+@Import({ APILoggingService.class, VersionMapper.class, SchemaService.class})
 @AutoConfigureMockMvc
 public class VersionResourceControllerTest {
 

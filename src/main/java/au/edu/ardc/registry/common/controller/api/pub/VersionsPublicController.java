@@ -5,10 +5,12 @@ import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.schema.JSONSchema;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.common.service.RecordService;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,16 +33,20 @@ import java.util.UUID;
 @Tag(name = "Versions Public API")
 public class VersionsPublicController {
 
-	final VersionService service;
+	final VersionService versionService;
 
 	final RecordService recordService;
 
 	final VersionMapper versionMapper;
 
-	public VersionsPublicController(VersionService service, RecordService recordService, VersionMapper versionMapper) {
-		this.service = service;
+	final SchemaService schemaService;
+
+	public VersionsPublicController(VersionService versionService, RecordService recordService,
+			VersionMapper versionMapper, SchemaService schemaService) {
+		this.versionService = versionService;
 		this.recordService = recordService;
 		this.versionMapper = versionMapper;
+		this.schemaService = schemaService;
 	}
 
 	@GetMapping("")
@@ -62,8 +68,10 @@ public class VersionsPublicController {
 			specs.add(new SearchCriteria("record", recordEntity, SearchOperation.EQUAL));
 		}
 
-		Page<Version> result = service.search(specs, pageable);
-		return ResponseEntity.ok().body(result.map(versionMapper.getConverter()));
+		Page<Version> result = versionService.search(specs, pageable);
+		Page<VersionDTO> resultDTO = result.map(versionMapper.getConverter());
+
+		return ResponseEntity.ok().body(resultDTO);
 	}
 
 	@GetMapping("/{id}")
@@ -75,7 +83,7 @@ public class VersionsPublicController {
 			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
 	public ResponseEntity<VersionDTO> show(@Parameter(required = true, description = "the id of the version (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		Version version = service.findPublicById(id);
+		Version version = versionService.findPublicById(id);
 		VersionDTO dto = versionMapper.convertToDTO(version);
 		return ResponseEntity.ok().body(dto);
 	}
@@ -85,14 +93,16 @@ public class VersionsPublicController {
 			description = "Return the content of the public version")
 	@ApiResponse(responseCode = "404", description = "Version is not found",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	@ApiResponse(responseCode = "200", description = "Version is found",
-			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
 	public ResponseEntity<?> showContent(@Parameter(required = true, description = "the id of the version (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		// reuse the logic for finding public version
-		Version version = service.findPublicById(id);
+		Version version = versionService.findPublicById(id);
 
-		return ResponseEntity.ok().body(version.getContent());
+		MediaType mediaType = MediaType.APPLICATION_XML;
+		if (schemaService.getSchemaByID(version.getSchema()).getClass().equals(JSONSchema.class)) {
+			mediaType = MediaType.APPLICATION_JSON;
+		}
+
+		return ResponseEntity.ok().contentType(mediaType).body(version.getContent());
 	}
 
 }
