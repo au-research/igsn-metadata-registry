@@ -19,6 +19,7 @@ public class Request {
 	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
 	private UUID id;
 
+	@SuppressWarnings("JpaAttributeTypeInspection")
 	@Convert(converter = HashMapAttributeConverter.class)
 	@Column(length=4096)
 	private Map<String, String> attributes;
@@ -46,7 +47,7 @@ public class Request {
 
 	}
 
-	public UUID getId() {
+    public UUID getId() {
 		return id;
 	}
 
