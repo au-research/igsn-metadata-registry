@@ -61,6 +61,9 @@ public class Record {
 	@Where(clause = "current = 1")
 	private List<Version> currentVersions;
 
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID requestID;
+
 	/**
 	 * Empty constructor
 	 */
@@ -196,6 +199,14 @@ public class Record {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public UUID getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(UUID requestID) {
+		this.requestID = requestID;
 	}
 
 	public static enum OwnerType {

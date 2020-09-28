@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,8 +28,6 @@ public class Request {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	private String dataPath;
-
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt;
 
@@ -41,10 +40,8 @@ public class Request {
 	@Enumerated(EnumType.STRING)
 	private IGSNEventType type;
 
-	private boolean manual = false;
-
 	public Request() {
-
+		this.attributes = new HashMap<>();
 	}
 
     public UUID getId() {
@@ -88,19 +85,11 @@ public class Request {
 	}
 
 	public String getDataPath() {
-		return dataPath;
+		return attributes.get("dataPath");
 	}
 
 	public void setDataPath(String dataPath) {
-		this.dataPath = dataPath;
-	}
-
-	public boolean isManual() {
-		return manual;
-	}
-
-	public void setManual(boolean manual) {
-		this.manual = manual;
+		this.attributes.put("dataPath", dataPath);
 	}
 
 	public IGSNEventType getType() {

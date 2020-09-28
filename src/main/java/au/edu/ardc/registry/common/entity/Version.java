@@ -47,6 +47,9 @@ public class Version {
 
 	private String hash;
 
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID requestID;
+
 	/**
 	 * Empty constructor
 	 */
@@ -141,4 +144,11 @@ public class Version {
 		this.endedBy = endedBy;
 	}
 
+	public UUID getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(UUID requestID) {
+		this.requestID = requestID;
+	}
 }

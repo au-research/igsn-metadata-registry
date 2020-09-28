@@ -82,6 +82,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 		record.setVisible(false);
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
+		record.setRequestID(request.getId());
 
 		record = recordRepository.saveAndFlush(record);
 		igsnService.getLoggerFor(request).info(String.format("Created record %s ", record.getId()));

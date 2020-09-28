@@ -72,4 +72,5 @@ class RequestServiceTest {
 		requestService.search(new RequestSpecification(), PageRequest.of(0, 10));
 		verify(requestRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
 	}
+
 }
