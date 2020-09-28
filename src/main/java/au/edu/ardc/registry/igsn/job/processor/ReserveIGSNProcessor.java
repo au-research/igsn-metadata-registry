@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
+import au.edu.ardc.registry.igsn.service.IGSNRecordService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -75,7 +76,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 		}
 
 		// create the record
-		Record record = new Record();
+		Record record = IGSNRecordService.create();
 		record.setCreatedAt(new Date());
 		record.setOwnerID(UUID.fromString(ownerID));
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
@@ -90,6 +91,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 		// create the identifier
 		Identifier identifier = new Identifier();
 		identifier.setCreatedAt(new Date());
+		identifier.setUpdatedAt(new Date());
 		identifier.setRecord(record);
 		identifier.setType(Identifier.Type.IGSN);
 		identifier.setValue(identifierValue);

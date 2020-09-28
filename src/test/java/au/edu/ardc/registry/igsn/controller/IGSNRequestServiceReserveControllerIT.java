@@ -4,6 +4,7 @@ import au.edu.ardc.registry.KeycloakIntegrationTest;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
+import au.edu.ardc.registry.igsn.service.IGSNRecordService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
@@ -50,6 +51,7 @@ class IGSNRequestServiceReserveControllerIT extends KeycloakIntegrationTest {
 		// associating record check (is not visible, has request ID)
 		Record record = identifier.getRecord();
 		assertThat(record).isNotNull();
+		assertThat(record.getType()).isEqualTo(IGSNRecordService.recordType);
 		assertThat(record.isVisible()).isFalse();
 		assertThat(record.getRequestID()).isNotNull();
 		assertThat(record.getCreatedAt()).isNotNull();
