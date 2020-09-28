@@ -6,7 +6,7 @@ import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.writer.IGSNItemWriter;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -32,7 +32,7 @@ public class IGSNTransferJobConfig {
 	RecordRepository recordRepository;
 
 	@Autowired
-	IGSNService igsnService;
+    IGSNRequestService igsnService;
 
 	@Bean(name = "TransferIGSNJob")
 	public Job TransferIGSNJob() {

@@ -2,9 +2,9 @@ package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.repository.IGSNServiceRequestRepository;
+import au.edu.ardc.registry.common.repository.RequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,28 +21,28 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
 @Service
-public class IGSNService {
+public class IGSNRequestService {
 
-	Logger logger = LoggerFactory.getLogger(IGSNService.class);
+	Logger logger = LoggerFactory.getLogger(IGSNRequestService.class);
 
 	@Autowired
 	IGSNProperties IGSNProperties;
 
 	@Autowired
-	private IGSNServiceRequestRepository repository;
+	private RequestRepository repository;
 
 	private Map<String, java.util.logging.Logger> loggers = new HashMap<>();
 
-	public IGSNServiceRequest findById(String id) {
-		Optional<IGSNServiceRequest> opt = repository.findById(UUID.fromString(id));
+	public Request findById(String id) {
+		Optional<Request> opt = repository.findById(UUID.fromString(id));
 		return opt.orElse(null);
 	}
 
-	public IGSNServiceRequest save(IGSNServiceRequest request) {
+	public Request save(Request request) {
 		return repository.saveAndFlush(request);
 	}
 
-	public java.util.logging.Logger getLoggerFor(IGSNServiceRequest request) {
+	public java.util.logging.Logger getLoggerFor(Request request) {
 		String loggerID = "IGSNServiceRequest." + request.getId();
 
 		if (loggers.containsKey(loggerID)) {
@@ -73,7 +73,7 @@ public class IGSNService {
 		return logger;
 	}
 
-	public void closeLoggerFor(IGSNServiceRequest request) {
+	public void closeLoggerFor(Request request) {
 		String loggerID = "IGSNServiceRequest." + request.getId();
 
 		if (!loggers.containsKey(loggerID)) {
@@ -87,10 +87,10 @@ public class IGSNService {
 		loggers.remove(loggerID);
 	}
 
-	public IGSNServiceRequest createRequest(User user, IGSNEventType type) {
+	public Request createRequest(User user, IGSNEventType type) {
 		// create IGSNServiceRequest
 		logger.debug("Creating IGSNServiceRequest for user: {}", user);
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		request.setType(type);
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(user.getId());

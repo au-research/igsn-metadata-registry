@@ -1,13 +1,12 @@
 package au.edu.ardc.registry.igsn.controller;
 
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -42,7 +39,7 @@ public class IGSNServiceTransferController {
 	IGSNProperties IGSNProperties;
 
 	@Autowired
-	IGSNService service;
+	IGSNRequestService service;
 
 	@Autowired
 	@Qualifier("standardJobLauncher")
@@ -53,12 +50,12 @@ public class IGSNServiceTransferController {
 	Job transferIGSNJob;
 
 	@PostMapping("")
-	public ResponseEntity<IGSNServiceRequest> handle(HttpServletRequest request, @RequestParam UUID ownerID,
-			@RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
+	public ResponseEntity<Request> handle(HttpServletRequest request, @RequestParam UUID ownerID,
+                                          @RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
 			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, IOException {
 		User user = kcService.getLoggedInUser(request);
 
-		IGSNServiceRequest IGSNRequest = service.createRequest(user, IGSNEventType.TRANSFER);
+		Request IGSNRequest = service.createRequest(user, IGSNEventType.TRANSFER);
 		String dataPath = IGSNRequest.getDataPath();
 
 		// write IGSNList to input.txt
@@ -74,7 +71,7 @@ public class IGSNServiceTransferController {
 		jobLauncher.run(transferIGSNJob, jobParameters);
 
 		// set the IGSNServiceRequest in the request for later logging
-		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
+		request.setAttribute(String.valueOf(Request.class), IGSNRequest);
 
 		return ResponseEntity.ok().body(IGSNRequest);
 	}

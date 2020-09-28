@@ -2,32 +2,21 @@ package au.edu.ardc.registry.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.common.entity.URL;
 import au.edu.ardc.registry.common.entity.Version;
-import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
-import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.common.repository.URLRepository;
-import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
-import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> {

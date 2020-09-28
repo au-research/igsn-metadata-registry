@@ -3,10 +3,9 @@ package au.edu.ardc.registry.igsn.service;
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.repository.IGSNServiceRequestRepository;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.common.repository.RequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,24 +22,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { IGSNService.class })
-class IGSNServiceTest {
+@ContextConfiguration(classes = { IGSNRequestService.class })
+class IGSNRequestServiceTest {
 
 	@MockBean
-	private IGSNServiceRequestRepository repository;
+	private RequestRepository repository;
 
 	@MockBean
 	private IGSNProperties properties;
 
 	@Autowired
-	private IGSNService service;
+	private IGSNRequestService service;
 
 	@Test
 	void findById_foundRecord_returnsIGSNServiceRequest() {
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		when(repository.findById(any(UUID.class))).thenReturn(Optional.of(request));
 
-		IGSNServiceRequest actual = service.findById(UUID.randomUUID().toString());
+		Request actual = service.findById(UUID.randomUUID().toString());
 
 		verify(repository, times(1)).findById(any(UUID.class));
 		assertThat(actual).isNotNull();
@@ -48,7 +47,7 @@ class IGSNServiceTest {
 
 	@Test
 	void findById_notfound_returnsNull() {
-		IGSNServiceRequest actual = service.findById(UUID.randomUUID().toString());
+		Request actual = service.findById(UUID.randomUUID().toString());
 
 		verify(repository, times(1)).findById(any(UUID.class));
 		assertThat(actual).isNull();
@@ -61,16 +60,16 @@ class IGSNServiceTest {
 
 		String randomDataPath = "/tmp/" + UUID.randomUUID().toString();
 		User user = TestHelper.mockUser();
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		request.setId(UUID.randomUUID());
 		request.setDataPath(randomDataPath + "/" + request.getId());
 
-		when(repository.save(any(IGSNServiceRequest.class))).thenReturn(request);
+		when(repository.save(any(Request.class))).thenReturn(request);
 		when(properties.getDataPath()).thenReturn(randomDataPath);
 
-		IGSNServiceRequest actual = service.createRequest(user, IGSNEventType.RESERVE);
+		Request actual = service.createRequest(user, IGSNEventType.RESERVE);
 
-		verify(repository, times(2)).save(any(IGSNServiceRequest.class));
+		verify(repository, times(2)).save(any(Request.class));
 
 		// ensure directory path is created
 		assertThat(actual).isNotNull();

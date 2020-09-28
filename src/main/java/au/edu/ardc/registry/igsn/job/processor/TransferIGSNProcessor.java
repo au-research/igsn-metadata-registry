@@ -1,11 +1,11 @@
 package au.edu.ardc.registry.igsn.job.processor;
 
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
-	IGSNService igsnService;
+	IGSNRequestService igsnService;
 
 	RecordRepository recordRepository;
 
@@ -25,10 +25,10 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
 	private String ownerType;
 
-	private IGSNServiceRequest request;
+	private Request request;
 
 	public TransferIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository,
-			IGSNService igsnService) {
+								 IGSNRequestService igsnService) {
 		this.recordRepository = recordRepository;
 		this.identifierRepository = identifierRepository;
 		this.igsnService = igsnService;

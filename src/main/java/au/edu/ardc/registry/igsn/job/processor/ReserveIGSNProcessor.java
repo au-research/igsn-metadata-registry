@@ -1,11 +1,11 @@
 package au.edu.ardc.registry.igsn.job.processor;
 
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterStep;
@@ -22,7 +22,7 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 
 	IdentifierRepository identifierRepository;
 
-	IGSNService igsnService;
+	IGSNRequestService igsnService;
 
 	private String allocationID;
 
@@ -32,12 +32,12 @@ public class ReserveIGSNProcessor implements ItemProcessor<String, String> {
 
 	private String ownerType;
 
-	private IGSNServiceRequest request;
+	private Request request;
 
 	private ExecutionContext executionContext;
 
 	public ReserveIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository,
-			IGSNService igsnService) {
+								IGSNRequestService igsnService) {
 		this.recordRepository = recordRepository;
 		this.identifierRepository = identifierRepository;
 		this.igsnService = igsnService;

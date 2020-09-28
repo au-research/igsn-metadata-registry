@@ -7,13 +7,12 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.validator.ContentValidator;
 import au.edu.ardc.registry.igsn.validator.PayloadValidator;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
@@ -57,7 +56,7 @@ public class IGSNServiceUpdateController {
 	private KeycloakService kcService;
 
 	@Autowired
-	IGSNService igsnService;
+	IGSNRequestService igsnService;
 
 	@Autowired
 	SchemaService schemaService;
@@ -105,13 +104,13 @@ public class IGSNServiceUpdateController {
 			content = @Content(schema = @Schema(implementation = Record.class)))
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	public ResponseEntity<IGSNServiceRequest> update(HttpServletRequest request,
-			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false, defaultValue = "0") boolean wait)
+	public ResponseEntity<Request> update(HttpServletRequest request,
+                                          @RequestParam(required = false, defaultValue = "User") String ownerType,
+                                          @RequestParam(required = false, defaultValue = "0") boolean wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
+		Request igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
 		String dataPath = igsnRequest.getDataPath();
 		String payLoadContentPath = "";
 		// validates XML or JSON content against its schema
@@ -159,11 +158,11 @@ public class IGSNServiceUpdateController {
 				| JobInstanceAlreadyCompleteException e) {
 			throw new APIException(e.getMessage());
 		}
-		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
-		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		igsnRequest.setStatus(Request.Status.ACCEPTED);
+		request.setAttribute(String.valueOf(Request.class), igsnRequest);
 		MDC.put("event.action", "update-request");
 
-		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		request.setAttribute(String.valueOf(Request.class), igsnRequest);
 		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
 

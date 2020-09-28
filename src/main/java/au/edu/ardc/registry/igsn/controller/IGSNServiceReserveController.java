@@ -1,13 +1,12 @@
 package au.edu.ardc.registry.igsn.controller;
 
-import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -43,7 +40,7 @@ public class IGSNServiceReserveController {
 	IGSNProperties IGSNProperties;
 
 	@Autowired
-	IGSNService service;
+	IGSNRequestService service;
 
 	@Autowired
 	@Qualifier("standardJobLauncher")
@@ -54,9 +51,9 @@ public class IGSNServiceReserveController {
 	Job reserveIGSNJob;
 
 	@PostMapping("")
-	public ResponseEntity<IGSNServiceRequest> handle(HttpServletRequest request, @RequestParam UUID allocationID,
-			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false) String ownerID, @RequestBody String IGSNList)
+	public ResponseEntity<Request> handle(HttpServletRequest request, @RequestParam UUID allocationID,
+                                          @RequestParam(required = false, defaultValue = "User") String ownerType,
+                                          @RequestParam(required = false) String ownerID, @RequestBody String IGSNList)
 			throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
 			JobInstanceAlreadyCompleteException, IOException {
 		// todo validate request body contains 1 IGSN per line
@@ -68,7 +65,7 @@ public class IGSNServiceReserveController {
 		}
 		// todo validateOwnerID if ownerType=DataCenter
 
-		IGSNServiceRequest IGSNRequest = service.createRequest(user, IGSNEventType.RESERVE);
+		Request IGSNRequest = service.createRequest(user, IGSNEventType.RESERVE);
 		String dataPath = IGSNRequest.getDataPath();
 
 		// write IGSNList to input.txt
@@ -84,7 +81,7 @@ public class IGSNServiceReserveController {
 		jobLauncher.run(reserveIGSNJob, jobParameters);
 
 		// set the IGSNServiceRequest in the request for later logging
-		request.setAttribute(String.valueOf(IGSNServiceRequest.class), IGSNRequest);
+		request.setAttribute(String.valueOf(Request.class), IGSNRequest);
 
 		return ResponseEntity.ok().body(IGSNRequest);
 	}

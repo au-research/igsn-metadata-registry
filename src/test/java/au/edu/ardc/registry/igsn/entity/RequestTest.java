@@ -1,6 +1,6 @@
 package au.edu.ardc.registry.igsn.entity;
 
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +14,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-class IGSNServiceRequestTest {
+class RequestTest {
 
 	@Autowired
 	TestEntityManager entityManager;
 
 	@Test
 	void auto_generated_uuid_test() {
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		entityManager.persistAndFlush(request);
 
 		// uuid is generated and is the correct format

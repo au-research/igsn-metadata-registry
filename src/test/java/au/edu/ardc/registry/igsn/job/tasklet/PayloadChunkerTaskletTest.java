@@ -2,7 +2,7 @@ package au.edu.ardc.registry.igsn.job.tasklet;
 
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.igsn.job.config.IGSNMintJobConfig;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.BatchConfig;
@@ -65,7 +65,7 @@ class PayloadChunkerTaskletTest {
 	void chunkJob_success() throws IOException {
 
 		// given a datapath already containing some files ready to be batched
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		request.setId(UUID.randomUUID());
 		String dataPath = "/tmp/" + request.getId().toString();
 		Helpers.newOrEmptyDirecory(dataPath);

@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class IGSNServiceReserveControllerIT extends KeycloakIntegrationTest {
+class IGSNRequestServiceReserveControllerIT extends KeycloakIntegrationTest {
 
 	private final String baseUrl = "/api/services/igsn/reserve";
 

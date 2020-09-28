@@ -1,20 +1,27 @@
-package au.edu.ardc.registry.igsn.entity;
+package au.edu.ardc.registry.common.entity;
 
+import au.edu.ardc.registry.common.entity.converter.HashMapAttributeConverter;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "igsn_service_requests")
-public class IGSNServiceRequest {
+@Table(name = "requests")
+public class Request {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
 	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
 	private UUID id;
+
+	@Convert(converter = HashMapAttributeConverter.class)
+	@Column(length=4096)
+	private Map<String, String> attributes;
 
 	@Enumerated(EnumType.STRING)
 	private Status status;
@@ -35,7 +42,7 @@ public class IGSNServiceRequest {
 
 	private boolean manual = false;
 
-	public IGSNServiceRequest() {
+	public Request() {
 
 	}
 
@@ -101,6 +108,14 @@ public class IGSNServiceRequest {
 
 	public void setType(IGSNEventType type) {
 		this.type = type;
+	}
+
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
 	}
 
 	public enum Status {

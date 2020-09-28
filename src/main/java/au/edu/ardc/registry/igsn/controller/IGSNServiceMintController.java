@@ -1,30 +1,24 @@
 package au.edu.ardc.registry.igsn.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-
-import au.edu.ardc.registry.common.model.Allocation;
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
+import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.validator.ContentValidator;
 import au.edu.ardc.registry.igsn.validator.PayloadValidator;
 import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
-import au.edu.ardc.registry.igsn.validator.VersionContentValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
-import org.slf4j.MDC;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.JobParametersInvalidException;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
@@ -38,14 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.common.model.User;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/services/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -58,7 +49,7 @@ public class IGSNServiceMintController {
 	private KeycloakService kcService;
 
 	@Autowired
-	IGSNService igsnService;
+	IGSNRequestService igsnService;
 
 	@Autowired
 	SchemaService schemaService;
@@ -106,13 +97,13 @@ public class IGSNServiceMintController {
 			content = @Content(schema = @Schema(implementation = Record.class)))
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	public ResponseEntity<IGSNServiceRequest> mint(HttpServletRequest request,
-			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false, defaultValue = "0") boolean wait)
+	public ResponseEntity<Request> mint(HttpServletRequest request,
+										@RequestParam(required = false, defaultValue = "User") String ownerType,
+										@RequestParam(required = false, defaultValue = "0") boolean wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		IGSNServiceRequest igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
+		Request igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
 		String dataPath = igsnRequest.getDataPath();
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
@@ -146,14 +137,13 @@ public class IGSNServiceMintController {
 			else {
 				asyncJobLauncher.run(igsnImportJob, jobParameters);
 			}
-
 		}
 		catch (JobParametersInvalidException | JobExecutionAlreadyRunningException | JobRestartException
 				| JobInstanceAlreadyCompleteException e) {
 			throw new APIException(e.getMessage());
 		}
-		igsnRequest.setStatus(IGSNServiceRequest.Status.ACCEPTED);
-		request.setAttribute(String.valueOf(IGSNServiceRequest.class), igsnRequest);
+		igsnRequest.setStatus(Request.Status.ACCEPTED);
+		request.setAttribute(String.valueOf(Request.class), igsnRequest);
 		return ResponseEntity.status(HttpStatus.SC_ACCEPTED).body(igsnRequest);
 	}
 

@@ -5,7 +5,7 @@ import au.edu.ardc.registry.igsn.job.processor.UpdateIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.UpdateRecordProcessor;
@@ -36,7 +36,7 @@ public class IGSNUpdateJobConfig {
 	KeycloakService kcService;
 
 	@Autowired
-	IGSNService igsnService;
+    IGSNRequestService igsnService;
 
 	@Autowired
 	RecordService recordService;
