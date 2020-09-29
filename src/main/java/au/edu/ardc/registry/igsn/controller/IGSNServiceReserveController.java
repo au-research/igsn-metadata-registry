@@ -1,5 +1,7 @@
 package au.edu.ardc.registry.igsn.controller;
 
+import au.edu.ardc.registry.common.dto.RequestDTO;
+import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
@@ -44,6 +46,9 @@ public class IGSNServiceReserveController {
 	RequestService requestService;
 
 	@Autowired
+	RequestMapper requestMapper;
+
+	@Autowired
 	@Qualifier("standardJobLauncher")
 	JobLauncher jobLauncher;
 
@@ -52,7 +57,7 @@ public class IGSNServiceReserveController {
 	Job reserveIGSNJob;
 
 	@PostMapping("")
-	public ResponseEntity<Request> handle(HttpServletRequest request, @RequestParam UUID allocationID,
+	public ResponseEntity<RequestDTO> handle(HttpServletRequest request, @RequestParam UUID allocationID,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String IGSNList)
 			throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException,
@@ -92,7 +97,9 @@ public class IGSNServiceReserveController {
 		// set the IGSNServiceRequest in the request for later logging
 		request.setAttribute(String.valueOf(Request.class), IGSNRequest);
 
-		return ResponseEntity.ok().body(IGSNRequest);
+		RequestDTO dto = requestMapper.convertToDTO(IGSNRequest);
+
+		return ResponseEntity.ok().body(dto);
 	}
 
 }
