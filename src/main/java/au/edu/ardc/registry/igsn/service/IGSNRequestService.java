@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.igsn.service;
 
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.common.entity.Request;
@@ -106,6 +107,8 @@ public class IGSNRequestService {
 			logger.debug("Creating data path: {}", path.toAbsolutePath());
 			Files.createDirectories(path);
 			logger.debug("Created data path: {}", path.toAbsolutePath());
+			request.setAttribute(Attribute.DATA_PATH, path.toAbsolutePath().toString());
+
 			request.setDataPath(path.toAbsolutePath().toString());
 			// todo store the data path to the IGSNServiceRequest
 		}

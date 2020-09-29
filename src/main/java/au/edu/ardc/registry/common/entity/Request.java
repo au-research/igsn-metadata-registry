@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.common.entity;
 
 import au.edu.ardc.registry.common.entity.converter.HashMapAttributeConverter;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -82,6 +83,24 @@ public class Request {
 
 	public void setCreatedBy(UUID id) {
 		this.createdBy = id;
+	}
+
+	public String getAttribute(String key) {
+		return this.attributes.getOrDefault(key, null);
+	}
+
+	public Request setAttribute(String key, String value) {
+		this.attributes.put(key, value);
+		return this;
+	}
+
+	public Request setAttribute(Attribute key, String value) {
+		this.attributes.put(key.toString(), value);
+		return this;
+	}
+
+	public String getAttribute(Attribute attribute) {
+		return this.attributes.getOrDefault(attribute.toString(), null);
 	}
 
 	public String getDataPath() {

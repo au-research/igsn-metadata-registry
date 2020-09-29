@@ -72,6 +72,14 @@ public class IGSNServiceReserveController {
 		String filePath = dataPath + "/input.txt";
 		Helpers.writeFile(filePath, IGSNList);
 
+		// @formatter:off
+		IGSNRequest.setAttribute("creatorID", user.getId().toString())
+				.setAttribute("ownerID", ownerID)
+				.setAttribute("ownerType", ownerType)
+				.setAttribute("filePath", filePath)
+				.setAttribute("targetPath", dataPath + "/output.txt");
+		// @formatter:on
+
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
 				.addString("creatorID", user.getId().toString()).addString("allocationID", allocationID.toString())
