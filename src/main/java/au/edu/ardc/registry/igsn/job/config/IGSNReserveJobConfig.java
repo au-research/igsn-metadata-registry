@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.igsn.job.config;
 
+import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.igsn.job.listener.IGSNJobListener;
 import au.edu.ardc.registry.igsn.job.processor.ReserveIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
@@ -38,17 +39,23 @@ public class IGSNReserveJobConfig {
 	@Autowired
 	TaskExecutor asyncTaskExecutor;
 
+	@Autowired
+	RequestService requestService;
+
+	@Autowired
+	IGSNRequestService igsnRequestService;
+
 	@Bean(name = "ReserveIGSNJob")
 	public Job ReserveIGSNJob() {
-		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService)).flow(reserveIGSN())
+		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService, requestService)).flow(reserveIGSN())
 				.end().build();
 	}
 
 	@Bean
 	public Step reserveIGSN() {
-		return stepBuilderFactory.get("Reserve IGSN").<String, String>chunk(1).reader(new IGSNItemReader())
-				.processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService))
-				.writer(new IGSNItemWriter()).faultTolerant().retryLimit(3)
+		return stepBuilderFactory.get("Reserve IGSN").<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
+				.processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService, requestService))
+				.writer(new IGSNItemWriter(igsnRequestService)).faultTolerant().retryLimit(3)
 				.retry(DeadlockLoserDataAccessException.class).build();
 	}
 

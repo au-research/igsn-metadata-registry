@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.IngestRecordProcessor;
@@ -46,6 +47,9 @@ public class IGSNMintJobConfig {
 	@Autowired
 	private URLService urlService;
 
+	@Autowired
+	IGSNRequestService igsnRequestService;
+
 	@Bean
 	public Job IGSNImportJob() {
 		return jobBuilderFactory.get("IGSNImportJob").incrementer(new RunIdIncrementer())
@@ -73,7 +77,7 @@ public class IGSNMintJobConfig {
 
 	@Bean
 	public Step registration() {
-		return stepBuilderFactory.get("registration").<String, String>chunk(1).reader(new IGSNItemReader())
+		return stepBuilderFactory.get("registration").<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
 				.processor(new MintIGSNProcessor(schemaService, kcService, identifierService, recordService,
 						igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();

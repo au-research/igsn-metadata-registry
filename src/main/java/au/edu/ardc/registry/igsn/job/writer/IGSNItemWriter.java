@@ -1,5 +1,8 @@
 package au.edu.ardc.registry.igsn.job.writer;
 
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -13,10 +16,18 @@ public class IGSNItemWriter extends FlatFileItemWriter<String> {
 
 	private String targetPath;
 
+	private final IGSNRequestService igsnRequestService;
+
+	public IGSNItemWriter(IGSNRequestService igsnRequestService) {
+		this.igsnRequestService = igsnRequestService;
+	}
+
 	@BeforeStep
 	public void beforeStep(StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		this.targetPath = jobParameters.getString("targetPath");
+		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(IGSNServiceRequestID);
+		this.targetPath = request.getAttribute(Attribute.IMPORTED_IDENTIFIERS_PATH);
 		init();
 	}
 

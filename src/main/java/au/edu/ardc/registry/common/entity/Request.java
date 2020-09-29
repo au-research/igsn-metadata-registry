@@ -103,14 +103,6 @@ public class Request {
 		return this.attributes.getOrDefault(attribute.toString(), null);
 	}
 
-	public String getDataPath() {
-		return attributes.get("dataPath");
-	}
-
-	public void setDataPath(String dataPath) {
-		this.attributes.put("dataPath", dataPath);
-	}
-
 	public IGSNEventType getType() {
 		return type;
 	}

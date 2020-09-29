@@ -1,5 +1,8 @@
 package au.edu.ardc.registry.igsn.job.reader;
 
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -17,14 +20,19 @@ public class IGSNItemReader extends FlatFileItemReader<String> {
 
 	private String filePath;
 
-	public IGSNItemReader() {
+	private IGSNRequestService igsnRequestService;
+
+	public IGSNItemReader(IGSNRequestService igsnRequestService) {
 		super();
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@BeforeStep
 	public void beforeStep(StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		this.filePath = jobParameters.getString("filePath");
+		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(IGSNServiceRequestID);
+		this.filePath = request.getAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH);
 		init();
 	}
 

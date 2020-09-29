@@ -1,11 +1,14 @@
 package au.edu.ardc.registry.igsn.job.processor;
 
-import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
+import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
+import org.apache.logging.log4j.core.Logger;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -15,39 +18,41 @@ import java.util.UUID;
 
 public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
+	private final RequestService requestService;
+
 	IGSNRequestService igsnService;
 
 	RecordRepository recordRepository;
 
 	IdentifierRepository identifierRepository;
 
-	private String ownerID;
-
-	private String ownerType;
-
 	private Request request;
 
+	private Logger logger;
+
 	public TransferIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository,
-								 IGSNRequestService igsnService) {
+			IGSNRequestService igsnService, RequestService requestService) {
 		this.recordRepository = recordRepository;
 		this.identifierRepository = identifierRepository;
 		this.igsnService = igsnService;
+		this.requestService = requestService;
 	}
 
 	@BeforeStep
 	public void beforeStep(final StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		this.ownerID = jobParameters.getString("ownerID");
-		this.ownerType = jobParameters.getString("ownerType");
 		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
 		this.request = igsnService.findById(IGSNServiceRequestID);
+		this.logger = requestService.getLoggerFor(request);
 	}
 
 	@Override
 	public String process(String identifierValue) {
+		String ownerID = this.request.getAttribute(Attribute.OWNER_ID);
+		String ownerType = this.request.getAttribute(Attribute.OWNER_TYPE);
+
 		if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
-			igsnService.getLoggerFor(request).severe(
-					String.format("Identifier %s of type %s does not exists", identifierValue, Identifier.Type.IGSN));
+			logger.error("Identifier {} of type {} does not exists", identifierValue, Identifier.Type.IGSN);
 		}
 
 		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
@@ -56,8 +61,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
 		record.setOwnerID(UUID.fromString(ownerID));
 		recordRepository.save(record);
-		igsnService.getLoggerFor(request).info(String.format("Updated record %s ownerType to %s and ownerID to %s",
-				record.getId(), ownerType, ownerID));
+		logger.info("Updated record {} ownerType to {} and ownerID to {}", record.getId(), ownerType, ownerID);
 
 		return identifierValue;
 	}

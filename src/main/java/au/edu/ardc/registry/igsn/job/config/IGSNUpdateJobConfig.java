@@ -36,7 +36,7 @@ public class IGSNUpdateJobConfig {
 	KeycloakService kcService;
 
 	@Autowired
-    IGSNRequestService igsnService;
+    IGSNRequestService igsnRequestService;
 
 	@Autowired
 	RecordService recordService;
@@ -77,7 +77,7 @@ public class IGSNUpdateJobConfig {
 
 	@Bean
 	public Step registrationUpdate() {
-		return stepBuilderFactory.get("registration-update").<String, String>chunk(1).reader(new IGSNItemReader())
+		return stepBuilderFactory.get("registration-update").<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
 				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierService, recordService,
 						igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();

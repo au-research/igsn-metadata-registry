@@ -122,6 +122,7 @@ public class RequestService {
 		Appender appender = FileAppender.newBuilder().setName(loggerName).setLayout(layout).withFileName(loggerPath)
 				.withAppend(true).setConfiguration(configuration).withLocking(false).withImmediateFlush(true)
 				.withBufferSize(8192).withAdvertise(false).withAdvertiseUri("").build();
+		appender.start();
 		loggerConfig.addAppender(appender, Level.INFO, null);
 
 		// add a new logger with the provided config
@@ -138,7 +139,18 @@ public class RequestService {
 	 * @return the absolute String path to the log file
 	 */
 	public String getLoggerPathFor(Request request) {
-		return applicationProperties.getDataPath() + "/requests/" + request.getId() + "/logs";
+		String separator = System.getProperty("file.separator");
+		return getDataPathFor(request) + separator + "logs";
+	}
+
+	/**
+	 * Return the official data path for a given {@link Request}
+	 * @param request the {@link Request}
+	 * @return absolute path to the {@link Request}
+	 */
+	public String getDataPathFor(Request request) {
+		String separator = System.getProperty("file.separator");
+		return applicationProperties.getDataPath() + separator + "requests" + separator + request.getId();
 	}
 
 	/**

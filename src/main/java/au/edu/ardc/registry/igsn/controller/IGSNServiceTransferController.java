@@ -1,11 +1,12 @@
 package au.edu.ardc.registry.igsn.controller;
 
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.igsn.config.IGSNProperties;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -36,10 +37,10 @@ public class IGSNServiceTransferController {
 	KeycloakService kcService;
 
 	@Autowired
-	IGSNProperties IGSNProperties;
+	IGSNRequestService service;
 
 	@Autowired
-	IGSNRequestService service;
+	RequestService requestService;
 
 	@Autowired
 	@Qualifier("standardJobLauncher")
@@ -51,22 +52,29 @@ public class IGSNServiceTransferController {
 
 	@PostMapping("")
 	public ResponseEntity<Request> handle(HttpServletRequest request, @RequestParam UUID ownerID,
-                                          @RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
+			@RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
 			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, IOException {
 		User user = kcService.getLoggedInUser(request);
 
 		Request IGSNRequest = service.createRequest(user, IGSNEventType.TRANSFER);
-		String dataPath = IGSNRequest.getDataPath();
 
 		// write IGSNList to input.txt
-		String filePath = dataPath + "/input.txt";
-		Helpers.writeFile(filePath, IGSNList);
+		String requestedIdentifierFilePath = IGSNRequest.getAttribute(Attribute.DATA_PATH)
+				+ "/requested-identifiers.txt";
+		Helpers.writeFile(requestedIdentifierFilePath, IGSNList);
+
+		// @formatter:off
+		IGSNRequest.setAttribute(Attribute.CREATOR_ID, user.getId().toString())
+				.setAttribute(Attribute.OWNER_ID, ownerID.toString())
+				.setAttribute(Attribute.OWNER_TYPE, ownerType)
+				.setAttribute(Attribute.DATA_PATH, requestService.getDataPathFor(IGSNRequest))
+				.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(IGSNRequest))
+				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, requestedIdentifierFilePath)
+				.setAttribute(Attribute.IMPORTED_IDENTIFIERS_PATH, IGSNRequest.getAttribute(Attribute.DATA_PATH) + "/imported-identifiers.txt");
+		// @formatter:on
 
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString())
-				.addString("ownerID", ownerID.toString()).addString("ownerType", ownerType)
-				.addString("filePath", filePath).addString("targetPath", dataPath + "/updated-identifiers.txt")
-				.toJobParameters();
+				.addString("IGSNServiceRequestID", IGSNRequest.getId().toString()).toJobParameters();
 
 		jobLauncher.run(transferIGSNJob, jobParameters);
 

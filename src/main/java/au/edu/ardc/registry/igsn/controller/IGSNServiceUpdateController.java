@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.*;
@@ -111,7 +112,7 @@ public class IGSNServiceUpdateController {
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		Request igsnRequest = igsnService.createRequest(user, IGSNEventType.UPDATE);
-		String dataPath = igsnRequest.getDataPath();
+		String dataPath = igsnRequest.getAttribute(Attribute.DATA_PATH);
 		String payLoadContentPath = "";
 		// validates XML or JSON content against its schema
 		ContentValidator contentValidator = new ContentValidator(schemaService);

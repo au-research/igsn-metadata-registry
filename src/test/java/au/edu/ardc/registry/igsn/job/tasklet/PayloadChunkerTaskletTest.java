@@ -4,11 +4,13 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.igsn.job.config.IGSNMintJobConfig;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.BatchConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.test.JobLauncherTestUtils;
@@ -49,6 +51,9 @@ class PayloadChunkerTaskletTest {
 
 	@MockBean
 	IGSNVersionService igsnVersionService;
+
+	@MockBean
+	IGSNRequestService igsnRequestService;
 
 	@MockBean
 	URLService urlService;

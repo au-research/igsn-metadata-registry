@@ -1,16 +1,20 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.igsn.config.IGSNProperties;
-import au.edu.ardc.registry.igsn.entity.IGSNEventType;
+import au.edu.ardc.registry.common.config.ApplicationProperties;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RequestRepository;
+import au.edu.ardc.registry.common.service.RequestService;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
@@ -22,14 +26,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = { IGSNRequestService.class })
+@EnableAutoConfiguration
+@ContextConfiguration(classes = { IGSNRequestService.class, RequestService.class, ApplicationProperties.class })
+@TestPropertySource("classpath:application.properties")
 class IGSNRequestServiceTest {
 
 	@MockBean
 	private RequestRepository repository;
-
-	@MockBean
-	private IGSNProperties properties;
 
 	@Autowired
 	private IGSNRequestService service;
@@ -55,17 +58,11 @@ class IGSNRequestServiceTest {
 
 	@Test
 	void createRequest() {
-		// todo pull data path from src/test/resources/application.properties instead of
-		// mocking
-
-		String randomDataPath = "/tmp/" + UUID.randomUUID().toString();
 		User user = TestHelper.mockUser();
 		Request request = new Request();
 		request.setId(UUID.randomUUID());
-		request.setDataPath(randomDataPath + "/" + request.getId());
 
 		when(repository.save(any(Request.class))).thenReturn(request);
-		when(properties.getDataPath()).thenReturn(randomDataPath);
 
 		Request actual = service.createRequest(user, IGSNEventType.RESERVE);
 
@@ -73,16 +70,14 @@ class IGSNRequestServiceTest {
 
 		// ensure directory path is created
 		assertThat(actual).isNotNull();
-		assertThat(request.getDataPath()).isNotNull();
-		assertThat(new File(randomDataPath).exists()).isTrue();
-		assertThat(new File(randomDataPath).canRead()).isTrue();
-		assertThat(new File(randomDataPath).canWrite()).isTrue();
-		assertThat(new File(request.getDataPath()).exists()).isTrue();
-		assertThat(new File(request.getDataPath()).canRead()).isTrue();
-		assertThat(new File(request.getDataPath()).canWrite()).isTrue();
+		File dataPath = new File(request.getAttribute(Attribute.DATA_PATH));
+		assertThat(request.getAttribute(Attribute.DATA_PATH)).isNotNull();
+		assertThat(dataPath.exists()).isTrue();
+		assertThat(dataPath.canRead()).isTrue();
+		assertThat(dataPath.canWrite()).isTrue();
 
 		// clean up
-		new File(randomDataPath).deleteOnExit();
+		dataPath.deleteOnExit();
 	}
 
 }

@@ -73,13 +73,12 @@ public class RequestResourceController {
 		User user = kcService.getLoggedInUser(httpRequest);
 		Request request = requestService.findOwnedById(id, user);
 
-		String dataPath = request.getAttributes().get("dataPath");
-		String logsPath = dataPath + "/logs";
-		File logFile = new File(dataPath + "/logs");
+		String logPath = requestService.getLoggerPathFor(request);
+		File logFile = new File(logPath);
 		if (!logFile.exists()) {
-			throw new RuntimeException(String.format("Logs Path: %s doesn't exist", logsPath));
+			throw new RuntimeException(String.format("Logs Path: %s doesn't exist", logPath));
 		}
-		String logContent = Helpers.readFile(logsPath);
+		String logContent = Helpers.readFile(logPath);
 
 		return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(logContent);
 	}

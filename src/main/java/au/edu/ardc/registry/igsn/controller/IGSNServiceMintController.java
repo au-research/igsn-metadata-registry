@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.controller;
 
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
@@ -104,7 +105,8 @@ public class IGSNServiceMintController {
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
 		Request igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
-		String dataPath = igsnRequest.getDataPath();
+		String dataPath = igsnRequest.getAttribute(Attribute.DATA_PATH);
+
 		String payLoadContentPath = "";
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
