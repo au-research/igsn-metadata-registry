@@ -28,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -124,6 +121,8 @@ public class IGSNServiceMintController {
 		// If All is good, then start an IGSN import and MDS mint job
 		// try job execution and catch any exception
 		UUID allocationID = userAccessValidator.getAllocationID();
+
+		igsnRequest.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
 
 		try {
 			JobParameters jobParameters = new JobParametersBuilder()

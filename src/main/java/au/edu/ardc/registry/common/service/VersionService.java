@@ -163,7 +163,8 @@ public class VersionService {
 		if (version.getCreatedAt() == null) {
 			version.setCreatedAt(new Date());
 		}
-		return repository.saveAndFlush(version);
+		version = repository.saveAndFlush(version);
+		return version;
 	}
 
 	/**
