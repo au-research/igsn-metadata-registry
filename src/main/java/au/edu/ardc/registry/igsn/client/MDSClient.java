@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -65,7 +66,7 @@ public class MDSClient {
 			if (!(testMode))
 				response_code = addMetadata(registrationMetadata);
 		}
-		catch (Exception e) {
+		catch (HttpServerErrorException e) {
 			throw e;
 		}
 		return response_code;

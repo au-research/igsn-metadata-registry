@@ -47,7 +47,10 @@ public class IGSNServiceMintController {
 	private KeycloakService kcService;
 
 	@Autowired
-	IGSNRequestService igsnService;
+	IGSNRequestService igsnRequestService;
+
+	@Autowired
+	RequestService requestService;
 
 	@Autowired
 	SchemaService schemaService;
@@ -101,10 +104,10 @@ public class IGSNServiceMintController {
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
-		Request igsnRequest = igsnService.createRequest(user, IGSNEventType.MINT);
-		String dataPath = igsnRequest.getAttribute(Attribute.DATA_PATH);
 
-		String payLoadContentPath = "";
+		Request igsnRequest = igsnRequestService.createRequest(user, IGSNEventType.MINT);
+		String dataPath = requestService.getDataPathFor(igsnRequest);
+
 		ContentValidator contentValidator = new ContentValidator(schemaService);
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
 				schemaService);
@@ -114,24 +117,36 @@ public class IGSNServiceMintController {
 
 		String payload = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
-		payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
+		String payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
 		Helpers.writeFile(payLoadContentPath, payload);
 		validator.validateMintPayload(payload, user);
 
 		// If All is good, then start an IGSN import and MDS mint job
 		// try job execution and catch any exception
 		UUID allocationID = userAccessValidator.getAllocationID();
+		// @formatter:off
+		igsnRequest.setAttribute(Attribute.CREATOR_ID, user.getId().toString())
+				.setAttribute(Attribute.OWNER_TYPE, ownerType)
+				.setAttribute(Attribute.DATA_PATH, dataPath)
+				.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(igsnRequest))
+				.setAttribute(Attribute.IMPORTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
+		// @formatter:on
 
-		igsnRequest.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
+
 
 		try {
+			// @formatter:off
 			JobParameters jobParameters = new JobParametersBuilder()
 					.addString("IGSNServiceRequestID", igsnRequest.getId().toString())
-					.addString("creatorID", user.getId().toString()).addString("payLoadContentFile", payLoadContentPath)
-					.addString("allocationID", allocationID.toString()).addString("ownerType", ownerType)
+					.addString("creatorID", user.getId().toString())
+					.addString("payLoadContentFile", payLoadContentPath)
+					.addString("allocationID", allocationID.toString())
+					.addString("ownerType", ownerType)
 					.addString("chunkContentsDir", dataPath + File.separator + "chunks")
-					.addString("filePath", dataPath + File.separator + "igsn_list.txt").addString("dataPath", dataPath)
+					.addString("filePath", dataPath + File.separator + "igsn_list.txt")
+					.addString("dataPath", dataPath)
 					.toJobParameters();
+			// @formatter:on
 			if (wait) {
 				standardJobLauncher.run(igsnImportJob, jobParameters);
 			}
