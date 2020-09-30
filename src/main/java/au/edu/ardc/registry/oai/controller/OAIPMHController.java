@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Date;
 
 @Controller
 @RequestMapping(value = "/api/services/oai-pmh", produces = MediaType.APPLICATION_XML_VALUE)
@@ -42,7 +43,8 @@ public class OAIPMHController {
 	public ResponseEntity<OAIResponse> handle(HttpServletRequest request,
 			@RequestParam(required = false, defaultValue = "") String verb,
 			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix,
-			@RequestParam(required = false) String resumptionToken) throws IOException {
+			@RequestParam(required = false) String resumptionToken, @RequestParam(required = false) String from,
+			@RequestParam(required = false) String until) throws IOException {
 
 		if (!oaipmhService.isValidVerb(verb))
 			throw new BadVerbException();
@@ -62,11 +64,11 @@ public class OAIPMHController {
 			requestFragment.setMetadataPrefix(metadataPrefix);
 			break;
 		case LISTRECORDS:
-			response = oaipmhService.listRecords(metadataPrefix, resumptionToken);
+			response = oaipmhService.listRecords(metadataPrefix, resumptionToken, from, until);
 			requestFragment.setMetadataPrefix(metadataPrefix);
 			break;
 		case LISTIDENTIFIERS:
-			response = oaipmhService.listIdentifiers(metadataPrefix, resumptionToken);
+			response = oaipmhService.listIdentifiers(metadataPrefix, resumptionToken, from, until);
 			break;
 		case LISTMETADATAFORMATS:
 			response = oaipmhService.listMetadataFormats();

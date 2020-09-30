@@ -8,12 +8,14 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.oai.service.OAIPMHService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.Date;
 
 public class OAIPMHControllerIT extends WebIntegrationTest {
 
@@ -22,6 +24,9 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 
 	@Autowired
 	VersionRepository versionRepository;
+
+	@Autowired
+	OAIPMHService service;
 
 	@BeforeEach
 	void setUp() {
@@ -81,4 +86,36 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 				.xpath("/OAI-PMH/GetRecord/record/header/identifier").isEqualTo(id);
 	}
 
+	@Test
+	void handle_verb_ListRecords_returnsRecords() throws IOException {
+		int i =0;
+		Date versionDate=service.convertDate("2020-09-23T09:30:25Z");
+		System.out.println("Versiondate1  :: " +versionDate);
+		for(i=0;i<110;i++) {
+			Record record = TestHelper.mockRecord();
+			record.setModifiedAt(versionDate);
+			recordRepository.saveAndFlush(record);
+
+			Version version = TestHelper.mockVersion(record);
+			version.setCurrent(true);
+			String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+			version.setContent(validXML.getBytes());
+			version.setSchema(SchemaService.ARDCv1);
+
+			version.setCreatedAt(versionDate);
+			versionRepository.saveAndFlush(version);
+		}
+
+		String from = "2020-09-23T09:30:23Z";
+		String until = "2020-09-23T09:30:26Z";
+		Date fromDate = service.convertDate(from);
+		System.out.println("From date :: " + fromDate);
+		this.webTestClient.get()
+				.uri(base_url + "?verb=ListRecords&metadataPrefix=" + SchemaService.ARDCv1 + "&from="+ from + "&until=" + until)
+				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/ListRecords").exists()
+				.xpath("/OAI-PMH/ListRecords/record/header").exists()
+				.xpath("/OAI-PMH/ListRecords/record").nodeCount(10)
+				.xpath("/OAI-PMH/ListRecords/record/metadata/resources").exists()
+				.xpath("/OAI-PMH/ListRecords/resumptionToken").exists();
+	}
 }

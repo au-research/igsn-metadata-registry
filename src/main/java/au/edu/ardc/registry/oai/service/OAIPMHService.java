@@ -18,8 +18,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class OAIPMHService {
@@ -85,7 +93,7 @@ public class OAIPMHService {
 		}
 	}
 
-	public OAIResponse listRecords(String metadataPrefix, String resumptionToken) throws JsonProcessingException {
+	public OAIResponse listRecords(String metadataPrefix, String resumptionToken, String from, String until) throws JsonProcessingException {
 		if (metadataPrefix == null) {
 			throw new BadArgumentException();
 		}
@@ -94,14 +102,22 @@ public class OAIPMHService {
 			throw new CannotDisseminateFormatException();
 		}
 
+		Date fromDate = convertDate(from);
+		Date untilDate = convertDate(until);
+
 		OAIListRecordsResponse response = new OAIListRecordsResponse();
 		ListRecordsFragment listRecordsFragment = new ListRecordsFragment();
 
 		long cursor = OAIProvider.getCursor(resumptionToken, pageSize);
-		String newResumptionToken = OAIProvider.getResumptionToken(resumptionToken, pageSize);
+		String newResumptionToken;
+		if(fromDate!=null) {
+			newResumptionToken = fromDate.toString() + " ::: ";
+		}else{
+			newResumptionToken = OAIProvider.getResumptionToken(resumptionToken, pageSize);
+		}
 		Pageable pageable = OAIProvider.getPageable(resumptionToken, pageSize);
 		try {
-			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, pageable);
+			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, fromDate ,untilDate, pageable);
 			for (Version version : versions) {
 				Record record = version.getRecord();
 				String content = new String(version.getContent());
@@ -114,7 +130,7 @@ public class OAIPMHService {
 				resumptionTokenFragment.setToken(String.valueOf(versions.getTotalElements()), String.valueOf(cursor),
 						newResumptionToken);
 				listRecordsFragment.setResumptionTokenFragmentFragment(resumptionTokenFragment);
-			}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+			}
 			return response;
 		}
 		catch (Exception e) {
@@ -123,7 +139,7 @@ public class OAIPMHService {
 
 	}
 
-	public OAIResponse listIdentifiers(String metadataPrefix, String resumptionToken) throws JsonProcessingException {
+	public OAIResponse listIdentifiers(String metadataPrefix, String resumptionToken, String from, String until) throws JsonProcessingException {
 		if (metadataPrefix == null) {
 			throw new BadArgumentException();
 		}
@@ -132,17 +148,25 @@ public class OAIPMHService {
 			throw new CannotDisseminateFormatException();
 		}
 
+		Date fromDate = convertDate(from);
+		Date untilDate = convertDate(until);
+
 		OAIListIdentifiersResponse response = new OAIListIdentifiersResponse();
 		ListIdentifiersFragment listIdentifiersFragment = new ListIdentifiersFragment();
 		long cursor = OAIProvider.getCursor(resumptionToken, pageSize);
-		String newResumptionToken = OAIProvider.getResumptionToken(resumptionToken, pageSize);
+		String newResumptionToken;
+		if(fromDate!=null) {
+			newResumptionToken = fromDate.toString() + " ::: ";
+		}else{
+			newResumptionToken = OAIProvider.getResumptionToken(resumptionToken, pageSize);
+		}
 		Pageable pageable = OAIProvider.getPageable(resumptionToken, pageSize);
 		try {
-			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, pageable);
+			Page<Version> versions = versionService.findAllCurrentVersionsOfSchema(metadataPrefix, fromDate, untilDate, pageable);
 			for (Version version : versions) {
 				Record record = version.getRecord();
 				RecordHeaderFragment headerFragment = new RecordHeaderFragment(record.getId().toString(),
-						record.getModifiedAt().toString());
+						record.getModifiedAt());
 				listIdentifiersFragment.setListIdentifiers(headerFragment);
 			}
 			response.setIdentifiersFragment(listIdentifiersFragment);
@@ -213,6 +237,45 @@ public class OAIPMHService {
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Converts the supplied ISO 8601
+	 * @param inputDate the date to be converted
+	 * @return Date
+	 */
+	//public Date convertDate(String inputDate){
+
+	//	try {
+	//		if(inputDate. indexOf('T')>0){
+	//			LocalDateTime parsedDate = LocalDateTime.parse(inputDate, DateTimeFormatter.ISO_DATE_TIME);
+	//			return java.sql.Timestamp.valueOf(parsedDate);
+	//		}else{
+	//			LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
+	//			return java.sql.Timestamp.valueOf(parsedDate);
+	//		}
+	//	}
+	//	catch(Exception e){
+	//		return null;
+	//	}
+	//}
+	public Date convertDate(String inputDate){
+
+		try {
+			if(inputDate. indexOf('T')>0){
+				DateTimeFormatter formatters = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				LocalDateTime parsedDate = LocalDateTime.parse(inputDate, formatters);
+				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				return out;
+			}else{
+				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
+				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				return out;
+			}
+		}
+		catch(Exception e){
+			return null;
+		}
 	}
 
 }

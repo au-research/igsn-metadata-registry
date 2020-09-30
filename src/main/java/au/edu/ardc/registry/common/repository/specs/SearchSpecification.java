@@ -2,6 +2,7 @@ package au.edu.ardc.registry.common.repository.specs;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class SearchSpecification {
@@ -29,6 +30,14 @@ public class SearchSpecification {
 			else if (criteria.getOperation().equals(SearchOperation.GREATER_THAN_EQUAL)) {
 				predicates
 						.add(builder.greaterThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString()));
+			}
+			else if (criteria.getOperation().equals(SearchOperation.DATE_GREATER_THAN_EQUAL)) {
+				// special join to the record table
+				predicates.add(builder.greaterThanOrEqualTo(root.join("record").get(criteria.getKey()), (Date)criteria.getValue()));
+			}
+			else if (criteria.getOperation().equals(SearchOperation.DATE_LESS_THAN_EQUAL)) {
+				// special join to the record table
+				predicates.add(builder.lessThanOrEqualTo(root.join("record").get(criteria.getKey()), (Date)criteria.getValue()));
 			}
 			else if (criteria.getOperation().equals(SearchOperation.LESS_THAN_EQUAL)) {
 				predicates.add(builder.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString()));

@@ -6,7 +6,6 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.oai.exception.BadArgumentException;
-import au.edu.ardc.registry.oai.exception.BadVerbException;
 import au.edu.ardc.registry.oai.exception.CannotDisseminateFormatException;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
@@ -18,7 +17,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -101,4 +105,31 @@ class OAIPMHServiceTest {
 		});
 	}
 
+	@Test
+	void listRecords() {
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listRecords(null,null, null, null);
+		});
+
+		Assert.assertThrows(CannotDisseminateFormatException.class, () -> {
+			service.listRecords("nonsense", null, null, null);
+		});
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listRecords(null, null, null, null);
+		});
+	}
+
+
+	@Test
+	void convertDate(){
+		String ISO8601Date = "2011-12-03";
+		String ISO8601DateTime = "2020-09-27T12:56:47Z";
+
+		Date newDate = service.convertDate(ISO8601Date);
+		assertThat(newDate).isInstanceOf(Date.class);
+
+		Date newDateTime = service.convertDate(ISO8601DateTime);
+		assertThat(newDateTime).isInstanceOf(Date.class);
+	}
 }

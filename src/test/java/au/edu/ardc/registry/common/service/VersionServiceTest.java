@@ -6,10 +6,13 @@ import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.repository.RecordRepository;
+import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
+import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
+import au.edu.ardc.registry.oai.service.OAIPMHService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -28,6 +31,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -303,29 +313,64 @@ public class VersionServiceTest {
 	}
 
 	@Test
-	public void it_can_find_versions_existence_by_schema_and_visible_record() {
+	public void it_can_find_versions_existence_by_schema_and_visible_record() throws ParseException {
 
-		Record record = TestHelper.mockRecord(UUID.randomUUID());
-		record.setVisible(true);
-		when(recordRepository.save(any(Record.class))).thenReturn(record);
+		String from = "2019-06-25";
+		String until = "2020-10-28";
 
-		// and 10 versions
-		List<Version> mockResult = new ArrayList<>();
+		Date fromDate = convertDate(from);
+		Date untilDate = convertDate(until);
+
 		for (int i = 0; i < 10; i++) {
+			Record record = TestHelper.mockRecord(UUID.randomUUID());
+			record.setVisible(true);
+			record.setModifiedAt(fromDate);
+			recordRepository.saveAndFlush(record);
+
+			String created = "2019-07-25";
+			Date createdAtDate = convertDate(created);
+			System.out.println(createdAtDate);
 			Version version = TestHelper.mockVersion(record);
-			version.setSchema("ardc-igsn-desc-1.0");
-			when(repository.save(any(Version.class))).thenReturn(version);
+			version.setSchema(SchemaService.ARDCv1);
+			version.setCreatedAt(createdAtDate);
+			version.setCurrent(true);
+			repository.saveAndFlush(version);
 		}
 
 		// ensure repository call findAllCurrentVersionsOfSchema
 
-		Page<Version> actual = service.findAllCurrentVersionsOfSchema("ardc-igsn-desc-1.0", PageRequest.of(0, 5));
+		VersionSpecification specs = new VersionSpecification();
+		specs.add(new SearchCriteria("schema", SchemaService.ARDCv1, SearchOperation.EQUAL));
+		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
+		specs.add(new SearchCriteria("createdAt", fromDate,  SearchOperation.DATE_GREATER_THAN_EQUAL));
+		//specs.add(new SearchCriteria("createdAt", untilDate,  SearchOperation.DATE_LESS_THAN_EQUAL));
+		Page<Version> versions = service.searchVersions(specs,PageRequest.of(0, 5));
+		System.out.print(versions);
+		Page<Version> actual = service.findAllCurrentVersionsOfSchema(SchemaService.ARDCv1, fromDate, null, PageRequest.of(0, 5));
 		System.out.print(actual);
 		// is a valid Page<Version>
 		// Assertions.assertThat(actual.getContent()).hasSize(1);
 		// Assertions.assertThat(actual.getTotalElements()).isEqualTo(1);
 		// Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
 
+	}
+
+	public Date convertDate(String inputDate){
+
+		try {
+			if(inputDate. indexOf('T')>0){
+				LocalDateTime parsedDate = LocalDateTime.parse(inputDate, DateTimeFormatter.ISO_DATE_TIME);
+				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				return out;
+			}else{
+				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
+				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				return out;
+			}
+		}
+		catch(Exception e){
+			return null;
+		}
 	}
 
 }

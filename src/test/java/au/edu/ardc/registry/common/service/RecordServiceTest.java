@@ -150,7 +150,8 @@ public class RecordServiceTest {
 		// setup repository mock
 		Record expected = TestHelper.mockRecord(UUID.randomUUID());
 		when(repository.save(any(Record.class))).thenReturn(expected);
-		when(validationService.validateAllocationScope(any(Allocation.class), eq(user), eq(Scope.CREATE))).thenReturn(true);
+		when(validationService.validateAllocationScope(any(Allocation.class), eq(user), eq(Scope.CREATE)))
+				.thenReturn(true);
 
 		// when the service creates the record with the dto and the user
 		Record result = service.create(dto, user);
