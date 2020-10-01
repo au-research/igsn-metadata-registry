@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.IngestRecordProcessor;
@@ -18,6 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.BackOffContext;
+import org.springframework.retry.backoff.BackOffInterruptedException;
+import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.web.client.HttpServerErrorException;
 
 @Configuration
 public class IGSNMintJobConfig {
@@ -46,6 +53,12 @@ public class IGSNMintJobConfig {
 	@Autowired
 	private URLService urlService;
 
+	@Autowired
+	IGSNRequestService igsnRequestService;
+
+	@Autowired
+	BackOffPolicy backOffPolicy;
+
 	@Bean
 	public Job IGSNImportJob() {
 		return jobBuilderFactory.get("IGSNImportJob").incrementer(new RunIdIncrementer())
@@ -65,18 +78,33 @@ public class IGSNMintJobConfig {
 
 	@Bean
 	public Step ingest() {
-		return stepBuilderFactory.get("ingest").<String, Resource>chunk(1).reader(new PayloadContentReader())
+		//@formatter:off
+		return stepBuilderFactory.get("ingest")
+				.<String, Resource>chunk(1)
+				.reader(new PayloadContentReader())
 				.processor(new IngestRecordProcessor(schemaService, identifierService, recordService,
 						igsnVersionService, urlService))
-				.writer(new NoOpItemWriter<>()).build();
+				.writer(new NoOpItemWriter<>())
+				.build();
+		//@formatter:on
 	}
 
 	@Bean
 	public Step registration() {
-		return stepBuilderFactory.get("registration").<String, String>chunk(1).reader(new IGSNItemReader())
+		//@formatter:off
+		return stepBuilderFactory.get("registration")
+				.<String, String>chunk(1)
+				.reader(new IGSNItemReader(igsnRequestService))
 				.processor(new MintIGSNProcessor(schemaService, kcService, identifierService, recordService,
 						igsnVersionService, urlService))
+				.faultTolerant()
+				.retryLimit(5)
+				.retry(HttpServerErrorException.class)
+				.backOffPolicy(backOffPolicy)
 				.writer(new NoOpItemWriter<>()).build();
+		//@formatter:on
 	}
+
+
 
 }

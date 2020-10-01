@@ -14,8 +14,7 @@ app.contact.email=admin@localhost
 app.contact.url=https://ardc.edu.au
 app.url=http://localhost:${server.port}${server.servlet.context-path}
 app.portal-url=http://localhost:8085/igsn-portal/
-
-app.igsn.data-path=/tmp/igsn-registry/
+app.data-path=/tmp/igsn-registry/
 
 # languages
 spring.messages.basename=messages,config.i18n.messages

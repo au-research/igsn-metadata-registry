@@ -14,20 +14,23 @@ public class ARDCv1VisibilityProvider implements VisibilityProvider {
 	 * @return the first 'isPublic' element's content
 	 */
 	@Override
-	public String get(String content) {
-		String isPublic = "true";
+	public boolean get(String content) {
+		boolean visible = false;
 		// assume if the isPublic not set or ommited the record is visible
 		try {
 			NodeList nodeList = XMLUtil.getXPath(content, "//isPublic");
 			if (nodeList.getLength() > 0) {
 				Node isPublicNode = nodeList.item(0);
-				isPublic = isPublicNode.getTextContent();
+				String isPublic = isPublicNode.getTextContent();
+				if (isPublic.toLowerCase().equals("true")) {
+					visible = true;
+				}
 			}
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
 		}
-		return isPublic;
+		return visible;
 	}
 
 }

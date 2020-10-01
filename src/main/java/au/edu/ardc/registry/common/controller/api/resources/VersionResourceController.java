@@ -1,26 +1,27 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
+import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Version;
-import au.edu.ardc.registry.exception.APIExceptionResponse;
-import au.edu.ardc.registry.exception.VersionNotFoundException;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.model.schema.JSONSchema;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
+import au.edu.ardc.registry.exception.VersionNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -29,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -42,21 +42,27 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "oauth2")
 public class VersionResourceController {
 
-	@Autowired
-	VersionMapper versionMapper;
+	private final VersionMapper versionMapper;
 
-	@Autowired
-	private VersionService service;
+	private final VersionService versionService;
 
-	@Autowired
-	private KeycloakService kcService;
+	private final KeycloakService kcService;
+
+	private final SchemaService schemaService;
+
+	public VersionResourceController(VersionMapper versionMapper, VersionService versionService,
+			KeycloakService kcService, SchemaService schemaService) {
+		this.versionMapper = versionMapper;
+		this.versionService = versionService;
+		this.kcService = kcService;
+		this.schemaService = schemaService;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all versions",
 			description = "Retrieves all versions resources that the current user has access to")
-	@ApiResponse(responseCode = "200",
-			content = @Content(array = @ArraySchema(schema = @Schema(implementation = Version.class))))
-	public ResponseEntity<?> index(HttpServletRequest request,
+	@PageableOperation
+	public ResponseEntity<Page<VersionDTO>> index(HttpServletRequest request,
 			@PageableDefault @Parameter(hidden = true) Pageable pageable,
 			@RequestParam(required = false) String schema) {
 		// obtain a list of ownerIDs include the current user ownerID
@@ -70,8 +76,10 @@ public class VersionResourceController {
 			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		}
 
-		Page<VersionDTO> result = service.search(specs, pageable);
-		return ResponseEntity.ok(result);
+		Page<Version> result = versionService.search(specs, pageable);
+		Page<VersionDTO> resultDTO = result.map(versionMapper.getConverter());
+
+		return ResponseEntity.ok(resultDTO);
 	}
 
 	@GetMapping(value = "/{id}")
@@ -82,7 +90,7 @@ public class VersionResourceController {
 			content = @Content(schema = @Schema(implementation = Version.class)))
 	public ResponseEntity<VersionDTO> show(@Parameter(required = true, description = "the id of the version (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		Version version = service.findById(id);
+		Version version = versionService.findById(id);
 		if (version == null) {
 			throw new VersionNotFoundException(id);
 		}
@@ -93,13 +101,14 @@ public class VersionResourceController {
 	@PostMapping("/")
 	@Operation(summary = "Creates a new version", description = "Add a new version to the registry")
 	@ApiResponse(responseCode = "201", description = "Version is created",
-			content = @Content(schema = @Schema(implementation = Version.class)))
-	public ResponseEntity<VersionDTO> store(@Valid @RequestBody VersionDTO versionDTO, HttpServletRequest request) {
+			content = @Content(schema = @Schema(implementation = VersionDTO.class)))
+	public ResponseEntity<VersionDTO> store(@RequestBody VersionDTO versionDTO, HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		VersionDTO resultDTO = service.create(versionDTO, user);
+		Version version = versionService.create(versionDTO, user);
+		VersionDTO dto = versionMapper.convertToDTO(version);
 
-		URI location = URI.create("/api/resources/versions/" + resultDTO.getId());
-		return ResponseEntity.created(location).body(resultDTO);
+		URI location = URI.create("/api/resources/versions/" + dto.getId());
+		return ResponseEntity.created(location).body(dto);
 	}
 
 	@DeleteMapping("/{id}")
@@ -109,18 +118,18 @@ public class VersionResourceController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<?> destroy(HttpServletRequest request,
 			@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		// todo consider PUT /{id} with {state:ENDED} to end a version instead
-		// todo DELETE a resource should always delete it
-		if (!service.exists(id)) {
+		if (!versionService.exists(id)) {
 			throw new VersionNotFoundException(id);
 		}
 		User user = kcService.getLoggedInUser(request);
 
-		Version version = service.findById(id);
+		Version version = versionService.findById(id);
 
 		// upon deleting a version, end the version instead
-		version = service.end(version, user);
-		return ResponseEntity.accepted().body(version);
+		version = versionService.end(version, user);
+
+		VersionDTO dto = versionMapper.convertToDTO(version);
+		return ResponseEntity.accepted().body(dto);
 	}
 
 	@GetMapping(value = "/{id}/content",
@@ -131,14 +140,17 @@ public class VersionResourceController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<?> content(
 			@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
-		if (!service.exists(id)) {
+		if (!versionService.exists(id)) {
 			throw new VersionNotFoundException(id);
 		}
-		Version version = service.findById(id);
+		Version version = versionService.findById(id);
 
-		String content = new String(version.getContent());
+		MediaType mediaType = MediaType.APPLICATION_XML;
+		if (schemaService.getSchemaByID(version.getSchema()).getClass().equals(JSONSchema.class)) {
+			mediaType = MediaType.APPLICATION_JSON;
+		}
 
-		return ResponseEntity.ok(content);
+		return ResponseEntity.ok().contentType(mediaType).body(version.getContent());
 	}
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class VersionDTO {
@@ -26,6 +27,8 @@ public class VersionDTO {
 	private String content;
 
 	private String hash;
+
+	private UUID requestID;
 
 	public VersionDTO() {
 		this.current = true;
@@ -95,4 +98,11 @@ public class VersionDTO {
 		this.hash = hash;
 	}
 
+	public UUID getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(UUID requestID) {
+		this.requestID = requestID;
+	}
 }

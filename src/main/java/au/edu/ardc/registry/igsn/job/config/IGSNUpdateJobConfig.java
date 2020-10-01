@@ -5,7 +5,7 @@ import au.edu.ardc.registry.igsn.job.processor.UpdateIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
 import au.edu.ardc.registry.igsn.job.tasklet.PayloadChunkerTasklet;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.listener.JobCompletionListener;
 import au.edu.ardc.registry.job.processor.UpdateRecordProcessor;
@@ -19,6 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.web.client.HttpServerErrorException;
 
 @Configuration
 public class IGSNUpdateJobConfig {
@@ -36,7 +39,7 @@ public class IGSNUpdateJobConfig {
 	KeycloakService kcService;
 
 	@Autowired
-	IGSNService igsnService;
+    IGSNRequestService igsnRequestService;
 
 	@Autowired
 	RecordService recordService;
@@ -49,6 +52,9 @@ public class IGSNUpdateJobConfig {
 
 	@Autowired
 	URLService urlService;
+
+	@Autowired
+	BackOffPolicy backOffPolicy;
 
 	@Bean
 	public Job IGSNUpdateJob() {
@@ -77,10 +83,17 @@ public class IGSNUpdateJobConfig {
 
 	@Bean
 	public Step registrationUpdate() {
-		return stepBuilderFactory.get("registration-update").<String, String>chunk(1).reader(new IGSNItemReader())
+		//@formatter:off
+		return stepBuilderFactory.get("registration-update")
+				.<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
 				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierService, recordService,
 						igsnVersionService, urlService))
+				.faultTolerant()
+				.retryLimit(5)
+				.retry(HttpServerErrorException.class)
+				.backOffPolicy(backOffPolicy)
 				.writer(new NoOpItemWriter<>()).build();
+		//@formatter:on
 	}
 
 }

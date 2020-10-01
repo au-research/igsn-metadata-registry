@@ -2,7 +2,7 @@ package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
@@ -151,7 +151,7 @@ public class APILoggingService {
 		ecs.set("service", service);
 
 		// igsn
-		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		Request igsn = (Request) request.getAttribute(String.valueOf(Request.class));
 		if (igsn != null) {
 			ecs.set("igsn", mapper.valueToTree(igsn));
 		}
@@ -173,7 +173,7 @@ public class APILoggingService {
 	/**
 	 * Determine the ECS field event.action based on the current request
 	 *
-	 * By default, returns "api". If there's an {@link IGSNServiceRequest} in the request,
+	 * By default, returns "api". If there's an {@link Request} in the request,
 	 * the action will be in the associated {@link IGSNEventType}
 	 * @see <a href=
 	 * "https://www.elastic.co/guide/en/ecs/current/ecs-event.html">ecs-event</a>
@@ -186,7 +186,7 @@ public class APILoggingService {
 		String action = "api";
 
 		// if it's an IGSN request, then the action is the type
-		IGSNServiceRequest igsn = (IGSNServiceRequest) request.getAttribute(String.valueOf(IGSNServiceRequest.class));
+		Request igsn = (Request) request.getAttribute(String.valueOf(Request.class));
 		if (igsn != null) {
 			action = igsn.getType().getAction();
 		}

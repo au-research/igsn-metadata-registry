@@ -12,62 +12,109 @@ import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
-import au.edu.ardc.registry.oai.service.OAIPMHService;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Description;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.common.dto.RecordDTO;
-import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
-import au.edu.ardc.registry.common.entity.Record;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { VersionService.class, SchemaService.class, VersionMapper.class, ModelMapper.class })
 public class VersionServiceTest {
 
 	@Autowired
-	@Qualifier("VersionService")
-	VersionService service;
+	VersionService versionService;
 
 	@MockBean
 	RecordService recordService;
 
 	@MockBean
-	VersionRepository repository;
+	VersionRepository versionRepository;
+
+	@MockBean
+	RecordRepository recordRepository;
 
 	@MockBean
 	ValidationService validationService;
 
-	@MockBean
-	private RecordRepository recordRepository;
+	@Test
+	@DisplayName("search calls repository.findAll")
+	void search() {
+		versionService.search(new VersionSpecification(), PageRequest.of(0, 10));
+		verify(versionRepository, times(1)).findAll(any(VersionSpecification.class), any(Pageable.class));
+	}
+
+	@Test
+	@DisplayName("findPublicById throws exception when version is not found or record is not visible")
+	void findPublicById_throwsException() {
+		// throws exception when version doesn't exist
+		when(versionRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+		Assert.assertThrows(VersionNotFoundException.class,
+				() -> versionService.findPublicById(UUID.randomUUID().toString()));
+
+		// throws exception when version exists but record is not visible
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setVisible(false);
+		Version version = TestHelper.mockVersion(record);
+		when(versionRepository.findById(any(UUID.class))).thenReturn(Optional.of(version));
+		Assert.assertThrows(VersionNotFoundException.class,
+				() -> versionService.findPublicById(UUID.randomUUID().toString()));
+	}
+
+	@Test
+	@DisplayName("findPublicById returns a version when record is visible")
+	void findPublicById_visibleRecord_returnsVersion() {
+		// get version correctly
+		Record expectedRecord = TestHelper.mockRecord(UUID.randomUUID());
+		expectedRecord.setVisible(true);
+		Version expectedVersion = TestHelper.mockVersion(expectedRecord);
+		expectedRecord.setId(UUID.randomUUID());
+		when(versionRepository.findById(any(UUID.class))).thenReturn(Optional.of(expectedVersion));
+		Version actualVersion = versionService.findPublicById(expectedRecord.getId().toString());
+		assertThat(actualVersion).isNotNull();
+		assertThat(actualVersion).isInstanceOf(Version.class);
+	}
+
+	@Test
+	@DisplayName("findVersionForRecord calls findFirstByRecordAndSchemaAndCurrentIsTrue")
+	void findVersionForRecord() {
+		versionService.findVersionForRecord(TestHelper.mockRecord(), SchemaService.ARDCv1);
+		verify(versionRepository, times(1)).findFirstByRecordAndSchemaAndCurrentIsTrue(any(Record.class),
+				eq(SchemaService.ARDCv1));
+	}
+
+	@Test
+	@DisplayName("save calls saveAndFlush")
+	void save() {
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		Version version = TestHelper.mockVersion(record);
+		version.setCreatedAt(null);
+		when(versionRepository.saveAndFlush(any(Version.class))).thenReturn(version);
+
+		versionService.save(TestHelper.mockVersion());
+		verify(versionRepository, times(1)).saveAndFlush(any(Version.class));
+	}
 
 	@Test
 	@DisplayName("when creating with a valid request, a DTO is returned properly")
@@ -87,13 +134,13 @@ public class VersionServiceTest {
 		when(recordService.exists(anyString())).thenReturn(true);
 		when(recordService.findById(anyString())).thenReturn(record);
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
-		when(repository.save(any(Version.class))).thenReturn(expected);
+		when(versionRepository.save(any(Version.class))).thenReturn(expected);
 
 		// when the service creates the version, verify the save method is called
-		VersionDTO resultDTO = service.create(dto, user);
-		assertThat(resultDTO).isNotNull();
-		assertThat(resultDTO).isInstanceOf(VersionDTO.class);
-		verify(repository, times(1)).save(any(Version.class));
+		Version actual = versionService.create(dto, user);
+		assertThat(actual).isNotNull();
+		assertThat(actual).isInstanceOf(Version.class);
+		verify(versionRepository, times(1)).save(any(Version.class));
 	}
 
 	@Test
@@ -111,14 +158,13 @@ public class VersionServiceTest {
 		when(recordService.exists(anyString())).thenReturn(true);
 		when(recordService.findById(anyString())).thenReturn(record);
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
-		when(repository.save(any(Version.class))).thenReturn(expected);
+		when(versionRepository.save(any(Version.class))).thenReturn(expected);
+		when(versionRepository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean()))
+				.thenReturn(true);
 
 		// throws ForbiddenOpereationException if repository has
 		// existsBySchemaAndHashAndCurrent
-		when(repository.existsBySchemaAndHashAndCurrent(anyString(), anyString(), anyBoolean())).thenReturn(true);
-		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
-			service.create(dto, user);
-		});
+		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> versionService.create(dto, user));
 	}
 
 	@Test
@@ -134,9 +180,7 @@ public class VersionServiceTest {
 		dto.setContent("blah");
 
 		// when the service creates the version, expects exception
-		Assert.assertThrows(SchemaNotSupportedException.class, () -> {
-			service.create(dto, user);
-		});
+		Assert.assertThrows(SchemaNotSupportedException.class, () -> versionService.create(dto, user));
 	}
 
 	@Test
@@ -150,9 +194,7 @@ public class VersionServiceTest {
 		when(recordService.exists(dto.getId())).thenReturn(false);
 
 		// when the service creates the version, expects exception
-		Assert.assertThrows(RecordNotFoundException.class, () -> {
-			service.create(dto, TestHelper.mockUser());
-		});
+		Assert.assertThrows(RecordNotFoundException.class, () -> versionService.create(dto, TestHelper.mockUser()));
 	}
 
 	@Test
@@ -173,16 +215,13 @@ public class VersionServiceTest {
 		when(recordService.exists(record.getId().toString())).thenReturn(true);
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(false);
 
-		Assert.assertThrows(ForbiddenOperationException.class, () -> {
-			service.create(dto, user);
-		});
+		Assert.assertThrows(ForbiddenOperationException.class, () -> versionService.create(dto, user));
 	}
 
 	@Test
 	void delete_VersionNotFound_throwException() {
-		Assert.assertThrows(VersionNotFoundException.class, () -> {
-			service.delete(UUID.randomUUID().toString(), TestHelper.mockUser());
-		});
+		Assert.assertThrows(VersionNotFoundException.class,
+				() -> versionService.delete(UUID.randomUUID().toString(), TestHelper.mockUser()));
 	}
 
 	@Test
@@ -194,14 +233,13 @@ public class VersionServiceTest {
 		Version version = TestHelper.mockVersion(record.getId());
 
 		// mock repository
-		when(repository.existsById(version.getId())).thenReturn(true);
-		when(repository.findById(version.getId())).thenReturn(Optional.of(version));
+		when(versionRepository.existsById(version.getId())).thenReturn(true);
+		when(versionRepository.findById(version.getId())).thenReturn(Optional.of(version));
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(false);
 
 		// throws ForbiddenOperationException
-		Assert.assertThrows(ForbiddenOperationException.class, () -> {
-			service.delete(version.getId().toString(), TestHelper.mockUser());
-		});
+		Assert.assertThrows(ForbiddenOperationException.class,
+				() -> versionService.delete(version.getId().toString(), TestHelper.mockUser()));
 	}
 
 	@Test
@@ -213,53 +251,21 @@ public class VersionServiceTest {
 		Version version = TestHelper.mockVersion(record.getId());
 
 		// mock repository
-		when(repository.existsById(version.getId())).thenReturn(true);
-		when(repository.findById(version.getId())).thenReturn(Optional.of(version));
+		when(versionRepository.existsById(version.getId())).thenReturn(true);
+		when(versionRepository.findById(version.getId())).thenReturn(Optional.of(version));
 		when(validationService.validateRecordOwnership(any(Record.class), any(User.class))).thenReturn(true);
 
 		// when delete, repository.deleteById is called
-		service.delete(version.getId().toString(), TestHelper.mockUser());
-		verify(repository, times(1)).deleteById(version.getId().toString());
+		versionService.delete(version.getId().toString(), TestHelper.mockUser());
+		verify(versionRepository, times(1)).deleteById(version.getId().toString());
 	}
 
 	@Test
 	void getHash_ValidVersion_returnsHash() {
 		Version version = TestHelper.mockVersion();
 		version.setContent("random".getBytes());
-		String actual = service.getHash(version);
+		String actual = VersionService.getHash(version);
 		assertThat(actual).isEqualTo(DigestUtils.sha1Hex("random"));
-	}
-
-	@Test
-	void findAllVersionsForRecord() {
-		// given a record
-		Record record = TestHelper.mockRecord(UUID.randomUUID());
-
-		// and 5 versions
-		List<Version> mockResult = new ArrayList<>();
-		for (int i = 0; i < 10; i++) {
-			Version version = TestHelper.mockVersion(record);
-			mockResult.add(version);
-		}
-
-		// setup the world
-		Page<Version> mockPage = new PageImpl(mockResult);
-		when(repository.findAll(any(VersionSpecification.class), any(Pageable.class))).thenReturn(mockPage);
-
-		// when findAllVersionsForRecord
-		Page<VersionDTO> actual = service.findAllVersionsForRecord(record, PageRequest.of(0, 5));
-
-		// is a valid Page<VersionDTO>
-		assertThat(actual.getContent()).hasSize(10);
-		assertThat(actual.getTotalElements()).isEqualTo(10);
-		assertThat(actual.getTotalPages()).isEqualTo(1);
-
-		// contains only RecordDTO
-		long countOfVersionDTO = actual.stream().filter(t -> t instanceof VersionDTO).count();
-		assertThat(countOfVersionDTO).isEqualTo(10);
-
-		// repository is called
-		verify(repository, times(1)).findAll(any(VersionSpecification.class), any(Pageable.class));
 	}
 
 	// todo update
@@ -271,12 +277,12 @@ public class VersionServiceTest {
 	public void end() {
 		Version version = TestHelper.mockVersion();
 		User user = TestHelper.mockUser();
-		when(repository.save(any(Version.class))).thenReturn(version);
+		when(versionRepository.save(any(Version.class))).thenReturn(version);
 
-		Version endedVersion = service.end(version, user);
+		Version endedVersion = versionService.end(version, user);
 
 		// ensure the repository call save
-		verify(repository, times(1)).save(version);
+		verify(versionRepository, times(1)).save(version);
 
 		assertThat(endedVersion.isCurrent()).isFalse();
 		assertThat(endedVersion.getEndedAt()).isNotNull();
@@ -288,12 +294,12 @@ public class VersionServiceTest {
 	public void it_can_find_version_by_id() {
 		UUID id = UUID.randomUUID();
 		Version version = TestHelper.mockVersion(id);
-		when(repository.findById(id)).thenReturn(Optional.of(version));
+		when(versionRepository.findById(id)).thenReturn(Optional.of(version));
 
-		Version actual = service.findById(id.toString());
+		Version actual = versionService.findById(id.toString());
 
 		// ensure repository call findById
-		verify(repository, times(1)).findById(any(UUID.class));
+		verify(versionRepository, times(1)).findById(any(UUID.class));
 
 		assertThat(actual).isInstanceOf(Version.class);
 	}
@@ -301,15 +307,16 @@ public class VersionServiceTest {
 	@Test
 	public void it_can_find_version_existence_by_id() {
 		UUID id = UUID.randomUUID();
-		when(repository.existsById(id)).thenReturn(true);
+		when(versionRepository.existsById(id)).thenReturn(true);
 
-		assertThat(service.exists(id.toString())).isTrue();
+		assertThat(versionService.exists(id.toString())).isTrue();
 
 		// ensure repository call findById
-		verify(repository, times(1)).existsById(any(UUID.class));
+		verify(versionRepository, times(1)).existsById(any(UUID.class));
 
 		// false case
-		assertThat(service.exists(UUID.randomUUID().toString())).isFalse();
+
+		assertThat(versionService.exists(UUID.randomUUID().toString())).isFalse();
 	}
 
 	@Test
@@ -334,7 +341,7 @@ public class VersionServiceTest {
 			version.setSchema(SchemaService.ARDCv1);
 			version.setCreatedAt(createdAtDate);
 			version.setCurrent(true);
-			repository.saveAndFlush(version);
+			versionRepository.saveAndFlush(version);
 		}
 
 		// ensure repository call findAllCurrentVersionsOfSchema
@@ -344,14 +351,16 @@ public class VersionServiceTest {
 		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
 		specs.add(new SearchCriteria("createdAt", fromDate,  SearchOperation.DATE_GREATER_THAN_EQUAL));
 		//specs.add(new SearchCriteria("createdAt", untilDate,  SearchOperation.DATE_LESS_THAN_EQUAL));
-		Page<Version> versions = service.searchVersions(specs,PageRequest.of(0, 5));
+		Page<Version> versions = versionService.search(specs,PageRequest.of(0, 5));
 		System.out.print(versions);
-		Page<Version> actual = service.findAllCurrentVersionsOfSchema(SchemaService.ARDCv1, fromDate, null, PageRequest.of(0, 5));
+		Page<Version> actual = versionService.findAllCurrentVersionsOfSchema(SchemaService.ARDCv1, fromDate, null, PageRequest.of(0, 5));
 		System.out.print(actual);
 		// is a valid Page<Version>
 		// Assertions.assertThat(actual.getContent()).hasSize(1);
 		// Assertions.assertThat(actual.getTotalElements()).isEqualTo(1);
 		// Assertions.assertThat(actual.getTotalPages()).isEqualTo(1);
+
+		assertThat(versionService.exists(UUID.randomUUID().toString())).isFalse();
 
 	}
 

@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.controller.api.admin;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
+@Tag(name = "Admin Operations")
 @RequestMapping("/api/admin/caches")
 public class EvictCacheController {
 

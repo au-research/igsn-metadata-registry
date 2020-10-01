@@ -15,6 +15,8 @@ public class ApplicationProperties {
 
 	private String version;
 
+	private String dataPath;
+
 	public String getPortalUrl() {
 		return portalUrl;
 	}
@@ -45,6 +47,14 @@ public class ApplicationProperties {
 
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public String getDataPath() {
+		return dataPath.replaceAll("/$", "");
+	}
+
+	public void setDataPath(String dataPath) {
+		this.dataPath = dataPath;
 	}
 
 }

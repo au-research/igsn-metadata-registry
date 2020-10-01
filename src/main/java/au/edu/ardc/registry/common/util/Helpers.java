@@ -48,12 +48,7 @@ public class Helpers {
 
 	public static void writeFile(String filePath, String content) throws IOException {
 		File inputIGSNFile = new File(filePath);
-		if (inputIGSNFile.createNewFile()) {
-			System.out.println("File created: " + inputIGSNFile.getName());
-		}
-		else {
-			System.out.println("File already exists.");
-		}
+		boolean newFile = inputIGSNFile.createNewFile();
 		FileWriter writer = new FileWriter(filePath);
 		writer.write(content);
 		writer.close();
@@ -62,12 +57,7 @@ public class Helpers {
 	public static void appendToFile(String filePath, String content) throws IOException {
 		File inputIGSNFile = new File(filePath);
 		String newLine = System.getProperty("line.separator");
-		if (inputIGSNFile.createNewFile()) {
-			System.out.println("File created: " + inputIGSNFile.getName());
-		}
-		else {
-			System.out.println("File already exists.");
-		}
+		boolean newFile = inputIGSNFile.createNewFile();
 		FileWriter writer = new FileWriter(filePath, true);
 		writer.write(content + newLine);
 		writer.close();

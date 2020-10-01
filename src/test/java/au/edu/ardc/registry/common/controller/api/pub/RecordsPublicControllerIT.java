@@ -53,6 +53,31 @@ class RecordsPublicControllerIT extends WebIntegrationTest {
 	}
 
 	@Test
+	void index_filterByType_returnsResults() {
+		// given a Record
+		recordRepository.saveAndFlush(TestHelper.mockRecord());
+
+		// and an IGSNRecord
+		Record igsnRecord = TestHelper.mockRecord();
+		igsnRecord.setType("IGSN");
+		recordRepository.saveAndFlush(igsnRecord);
+
+		// @formatter:off
+		this.webTestClient.get()
+				.uri(uriBuilder
+						-> uriBuilder.path(baseUrl)
+						.queryParam("type", "IGSN")
+						.build())
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody()
+				.jsonPath("$.numberOfElements").isEqualTo(1)
+				.jsonPath("$.content[0].id").isNotEmpty();
+		// @formatter:on
+
+	}
+
+	@Test
 	void show_notFoundOrPrivate_404() {
 		// random record returns 404
 		this.webTestClient.get().uri(baseUrl + UUID.randomUUID().toString()).exchange().expectStatus().isNotFound();

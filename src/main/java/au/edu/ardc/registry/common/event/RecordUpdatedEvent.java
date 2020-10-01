@@ -5,9 +5,9 @@ import au.edu.ardc.registry.common.model.User;
 
 public class RecordUpdatedEvent {
 
-	private Record record;
+	private final Record record;
 
-	private User user;
+	private final User user;
 
 	public RecordUpdatedEvent(Record record, User user) {
 		this.record = record;
@@ -18,16 +18,8 @@ public class RecordUpdatedEvent {
 		return record;
 	}
 
-	public void setRecord(Record record) {
-		this.record = record;
-	}
-
 	public User getUser() {
 		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
 	}
 
 }

@@ -2,9 +2,10 @@ package au.edu.ardc.registry.common.controller.api.pub;
 
 import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.RecordDTO;
-import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
+import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
@@ -38,10 +39,14 @@ public class RecordsPublicController {
 
 	final RecordMapper recordMapper;
 
-	public RecordsPublicController(RecordService service, VersionService versionService, RecordMapper recordMapper) {
+	final VersionMapper versionMapper;
+
+	public RecordsPublicController(RecordService service, VersionService versionService, RecordMapper recordMapper,
+			VersionMapper versionMapper) {
 		this.service = service;
 		this.versionService = versionService;
 		this.recordMapper = recordMapper;
+		this.versionMapper = versionMapper;
 	}
 
 	@GetMapping("")
@@ -81,10 +86,11 @@ public class RecordsPublicController {
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	@ApiResponse(responseCode = "200", description = "Versions are found",
 			content = @Content(schema = @Schema(implementation = Page.class)))
+	@PageableOperation
 	public ResponseEntity<?> showVersions(
 			@Parameter(required = true, description = "the id of the record (uuid)",
 					schema = @Schema(implementation = UUID.class)) @PathVariable String id,
-			@RequestParam(required = false) String schema, Pageable pageable) {
+			@RequestParam(required = false) String schema, @Parameter(hidden = true) Pageable pageable) {
 		// try to reuse the business logic of finding public record
 		Record record = service.findPublicById(id);
 
@@ -95,8 +101,8 @@ public class RecordsPublicController {
 			specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		}
 
-		Page<VersionDTO> result = versionService.search(specs, pageable);
-		return ResponseEntity.ok().body(result);
+		Page<Version> result = versionService.search(specs, pageable);
+		return ResponseEntity.ok().body(result.map(versionMapper.getConverter()));
 	}
 
 }

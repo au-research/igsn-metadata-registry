@@ -2,13 +2,15 @@ package au.edu.ardc.registry.igsn.job.tasklet;
 
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.igsn.job.config.IGSNMintJobConfig;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.job.BatchConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.test.JobLauncherTestUtils;
@@ -51,6 +53,9 @@ class PayloadChunkerTaskletTest {
 	IGSNVersionService igsnVersionService;
 
 	@MockBean
+	IGSNRequestService igsnRequestService;
+
+	@MockBean
 	URLService urlService;
 
 	@Autowired
@@ -65,7 +70,7 @@ class PayloadChunkerTaskletTest {
 	void chunkJob_success() throws IOException {
 
 		// given a datapath already containing some files ready to be batched
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		request.setId(UUID.randomUUID());
 		String dataPath = "/tmp/" + request.getId().toString();
 		Helpers.newOrEmptyDirecory(dataPath);

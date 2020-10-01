@@ -1,9 +1,6 @@
 package au.edu.ardc.registry;
 
-import au.edu.ardc.registry.common.entity.Identifier;
-import au.edu.ardc.registry.common.entity.URL;
-import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.entity.*;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
@@ -211,4 +208,11 @@ public class TestHelper {
 		return allocation;
 	}
 
+    public static Request mockRequest() {
+		Request request = new Request();
+		request.setStatus(Request.Status.ACCEPTED);
+		request.setCreatedAt(new Date());
+		request.setCreatedBy(UUID.randomUUID());
+		return request;
+    }
 }

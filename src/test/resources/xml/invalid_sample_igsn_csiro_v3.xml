@@ -2,7 +2,6 @@
 <resources xmlns="https://igsn.csiro.au/schemas/3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://igsn.csiro.au/schemas/3.0 https://igsn.csiro.au/schemas/3.0/igsn-csiro-v3.0.xsd">
     <resource registeredObjectType="http://pid.geoscience.gov.au/def/voc/igsn-codelists/PhysicalSample">
         <landingPage>http://example.com.au/abcde</landingPage>
-        <isPublic>true</isPublic>
         <resourceTitle>A title worthy for kings</resourceTitle>
         <alternateIdentifiers>
             <alternateIdentifier>Another identifer option</alternateIdentifier>

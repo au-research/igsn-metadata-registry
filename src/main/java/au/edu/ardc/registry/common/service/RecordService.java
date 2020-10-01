@@ -10,7 +10,6 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
-import com.google.common.base.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,7 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * The Service layer for accessing {@link Record}
+ * The Service layer for operation against {@link Record}
  *
  * @author Minh Duc Nguyen
  * @version 1.0
@@ -32,14 +31,23 @@ public class RecordService {
 
 	private final RecordRepository repository;
 
-	private final RecordMapper mapper;
+	private final RecordMapper recordMapper;
 
 	private final ValidationService validationService;
 
 	public RecordService(RecordRepository repository, RecordMapper mapper, ValidationService validationService) {
 		this.repository = repository;
-		this.mapper = mapper;
+		this.recordMapper = mapper;
 		this.validationService = validationService;
+	}
+
+	/**
+	 * Saves and persist a {@link Record}. Generates the UUID for the record
+	 * @param record The {@link Record} to save and flush
+	 * @return The {@link Record} persisted
+	 */
+	public Record save(Record record) {
+		return repository.saveAndFlush(record);
 	}
 
 	/**
@@ -81,7 +89,7 @@ public class RecordService {
 	}
 
 	/**
-	 * todo unit test
+	 * Find a record only if it's owned by the provided user
 	 * @param id uuid of the record
 	 * @param user the current logged in user
 	 * @return RecordDTO
@@ -114,7 +122,7 @@ public class RecordService {
 	 */
 	public Record create(RecordDTO recordDTO, User user) {
 		// recordDTO should already be @Valid
-		Record record = mapper.convertToEntity(recordDTO);
+		Record record = recordMapper.convertToEntity(recordDTO);
 
 		// validate user access
 		Allocation allocation = new Allocation(record.getAllocationID());
@@ -201,10 +209,6 @@ public class RecordService {
 		record = repository.save(record);
 
 		return record;
-	}
-
-	public Record save(Record record) {
-		return repository.saveAndFlush(record);
 	}
 
 }

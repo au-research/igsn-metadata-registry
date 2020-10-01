@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.sql.DataSource;
@@ -56,6 +58,15 @@ public class BatchConfig {
 		SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("IGSNRegistryAsyncTaskExecutor");
 		asyncTaskExecutor.setConcurrencyLimit(5);
 		return asyncTaskExecutor;
+	}
+
+	@Bean
+	public BackOffPolicy backOffPolicy(){
+		ExponentialBackOffPolicy exponentialBackOffPolicy = new ExponentialBackOffPolicy();
+		exponentialBackOffPolicy.setInitialInterval(1000);
+		exponentialBackOffPolicy.setMultiplier(2.0);
+		exponentialBackOffPolicy.setMaxInterval(10000);
+		return exponentialBackOffPolicy;
 	}
 
 	@Autowired

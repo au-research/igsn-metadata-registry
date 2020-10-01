@@ -8,28 +8,22 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
-import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.scope.context.StepContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +35,7 @@ import java.util.Map;
  */
 public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 
-	Logger logger = LoggerFactory.getLogger(IGSNService.class);
+	Logger logger = LoggerFactory.getLogger(IGSNRequestService.class);
 
 	private String directory;
 

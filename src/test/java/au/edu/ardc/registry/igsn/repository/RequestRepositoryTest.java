@@ -1,7 +1,7 @@
 package au.edu.ardc.registry.igsn.repository;
 
-import au.edu.ardc.registry.common.repository.IGSNServiceRequestRepository;
-import au.edu.ardc.registry.igsn.entity.IGSNServiceRequest;
+import au.edu.ardc.registry.common.repository.RequestRepository;
+import au.edu.ardc.registry.common.entity.Request;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,26 +16,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-class IGSNServiceRequestRepositoryTest {
+class RequestRepositoryTest {
 
 	@Autowired
 	TestEntityManager entityManager;
 
 	@Autowired
-	IGSNServiceRequestRepository repository;
+    RequestRepository repository;
 
 	@Test
 	void findById() {
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		repository.save(request);
 
 		UUID id = request.getId();
 
-		Optional<IGSNServiceRequest> dbFound = repository.findById(id);
+		Optional<Request> dbFound = repository.findById(id);
 
 		assertThat(dbFound.isPresent()).isTrue();
-		IGSNServiceRequest found = dbFound.get();
-		assertThat(found).isInstanceOf(IGSNServiceRequest.class);
+		Request found = dbFound.get();
+		assertThat(found).isInstanceOf(Request.class);
 		assertThat(found.getId()).isEqualTo(request.getId());
 	}
 
@@ -43,7 +43,7 @@ class IGSNServiceRequestRepositoryTest {
 	void existsById() {
 		assertThat(repository.existsById(UUID.randomUUID())).isFalse();
 
-		IGSNServiceRequest request = new IGSNServiceRequest();
+		Request request = new Request();
 		repository.save(request);
 		UUID id = request.getId();
 

@@ -28,7 +28,6 @@ public class XMLUtilTest {
 		String xml = Helpers.readFile("src/test/resources/xml/sample_xml_prefix_cs_igsn.xml");
 		String xpath = "/resources/resource/resourceIdentifier";
 		NodeList l = XMLUtil.getXPath(xml, xpath);
-		System.out.println(l.item(0).getFirstChild().getNodeValue());
 		String identifier = l.item(0).getFirstChild().getNodeValue();
 		assertEquals(identifier, "XXAA45CJ1N");
 	}

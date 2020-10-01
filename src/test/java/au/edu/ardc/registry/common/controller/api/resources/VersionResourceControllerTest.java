@@ -1,13 +1,11 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.TestHelper;
-import au.edu.ardc.registry.common.config.WebConfig;
 import au.edu.ardc.registry.common.dto.VersionDTO;
 import au.edu.ardc.registry.common.dto.mapper.VersionMapper;
+import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.service.APILoggingService;
-import au.edu.ardc.registry.common.service.KeycloakService;
-import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -16,14 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
@@ -36,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = VersionResourceController.class)
-@Import(APILoggingService.class)
+@Import({ APILoggingService.class, VersionMapper.class, SchemaService.class})
 @AutoConfigureMockMvc
 public class VersionResourceControllerTest {
 
@@ -50,6 +47,9 @@ public class VersionResourceControllerTest {
 	KeycloakService kcService;
 
 	@MockBean
+	RecordService recordService;
+
+	@Autowired
 	VersionMapper versionMapper;
 
 	// todo index
@@ -101,41 +101,22 @@ public class VersionResourceControllerTest {
 
 	@Test
 	public void store_ValidRequest_returns201WithLocation() throws Exception {
-		// given a dto request
-		VersionDTO versionDTO = new VersionDTO();
-		versionDTO.setContent(Base64.getEncoder().encode("stuff".getBytes()).toString());
-		versionDTO.setRecord(UUID.randomUUID().toString());
-		versionDTO.setSchema("igsn-descriptive-v1");
-
 		// and a dto response
-		VersionDTO resultDTO = new VersionDTO();
-		resultDTO.setId(UUID.randomUUID().toString());
+		Version mockedRecord = TestHelper.mockVersion(UUID.randomUUID());
+		mockedRecord.setRecord(TestHelper.mockRecord(UUID.randomUUID()));
 
 		// setup mocks
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(TestHelper.mockUser());
-		when(service.create(any(VersionDTO.class), any(User.class))).thenReturn(versionDTO);
+		when(service.create(any(VersionDTO.class), any(User.class))).thenReturn(mockedRecord);
 
 		// when POST
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
-				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON);
+				.content(TestHelper.asJsonString(versionMapper.convertToDTO(mockedRecord)))
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
 
 		// expects 201 and Location header
-		mockMvc.perform(request).andExpect(status().isCreated()).andExpect(header().exists("Location"));
-	}
-
-	@Test
-	public void store_iInvalidRequest_returns400() throws Exception {
-		// given an invalid dto request
-		VersionDTO versionDTO = new VersionDTO();
-
-		// when POST
-		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post("/api/resources/versions/")
-				.content(TestHelper.asJsonString(versionDTO)).contentType(MediaType.APPLICATION_JSON)
-				.accept(MediaType.APPLICATION_JSON);
-
-		// expects 400
-		mockMvc.perform(request).andExpect(status().isBadRequest());
+		mockMvc.perform(request).andDo(MockMvcResultHandlers.print()).andExpect(status().isCreated())
+				.andExpect(header().exists("Location"));
 	}
 
 }

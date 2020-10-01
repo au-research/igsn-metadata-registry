@@ -1,14 +1,19 @@
-package au.edu.ardc.registry.igsn.entity;
+package au.edu.ardc.registry.common.entity;
 
+import au.edu.ardc.registry.common.entity.converter.HashMapAttributeConverter;
+import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "igsn_service_requests")
-public class IGSNServiceRequest {
+@Table(name = "requests")
+public class Request {
 
 	@Id
 	@GeneratedValue(generator = "UUID")
@@ -16,10 +21,13 @@ public class IGSNServiceRequest {
 	@Column(columnDefinition = "BINARY(16)", updatable = false, nullable = false, unique = true)
 	private UUID id;
 
+	@SuppressWarnings("JpaAttributeTypeInspection")
+	@Convert(converter = HashMapAttributeConverter.class)
+	@Column(length=4096)
+	private Map<String, String> attributes;
+
 	@Enumerated(EnumType.STRING)
 	private Status status;
-
-	private String dataPath;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt;
@@ -33,13 +41,11 @@ public class IGSNServiceRequest {
 	@Enumerated(EnumType.STRING)
 	private IGSNEventType type;
 
-	private boolean manual = false;
-
-	public IGSNServiceRequest() {
-
+	public Request() {
+		this.attributes = new HashMap<>();
 	}
 
-	public UUID getId() {
+    public UUID getId() {
 		return id;
 	}
 
@@ -79,20 +85,22 @@ public class IGSNServiceRequest {
 		this.createdBy = id;
 	}
 
-	public String getDataPath() {
-		return dataPath;
+	public String getAttribute(String key) {
+		return this.attributes.getOrDefault(key, null);
 	}
 
-	public void setDataPath(String dataPath) {
-		this.dataPath = dataPath;
+	public Request setAttribute(String key, String value) {
+		this.attributes.put(key, value);
+		return this;
 	}
 
-	public boolean isManual() {
-		return manual;
+	public Request setAttribute(Attribute key, String value) {
+		this.attributes.put(key.toString(), value);
+		return this;
 	}
 
-	public void setManual(boolean manual) {
-		this.manual = manual;
+	public String getAttribute(Attribute attribute) {
+		return this.attributes.getOrDefault(attribute.toString(), null);
 	}
 
 	public IGSNEventType getType() {
@@ -101,6 +109,14 @@ public class IGSNServiceRequest {
 
 	public void setType(IGSNEventType type) {
 		this.type = type;
+	}
+
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
 	}
 
 	public enum Status {

@@ -46,6 +46,8 @@ public class RecordDTO {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private List<IdentifierDTO> identifiers;
 
+	private UUID requestID;
+
 	public RecordDTO() {
 		this.currentVersions = new ArrayList<>();
 		this.identifiers = new ArrayList<>();
@@ -155,4 +157,11 @@ public class RecordDTO {
 		this.type = type;
 	}
 
+	public UUID getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(UUID requestID) {
+		this.requestID = requestID;
+	}
 }
