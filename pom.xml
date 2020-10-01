@@ -252,13 +252,7 @@
             <artifactId>spring-context</artifactId>
             <version>5.2.6.RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>au.edu.ardc.registry</groupId>
-            <artifactId>metadata-registry</artifactId>
-            <version>0.2-SNAPSHOT</version>
-        </dependency>
-
-    </dependencies>
+     </dependencies>
 
 
 
