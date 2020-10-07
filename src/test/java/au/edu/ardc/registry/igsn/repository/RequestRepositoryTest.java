@@ -22,7 +22,7 @@ class RequestRepositoryTest {
 	TestEntityManager entityManager;
 
 	@Autowired
-    RequestRepository repository;
+	RequestRepository repository;
 
 	@Test
 	void findById() {

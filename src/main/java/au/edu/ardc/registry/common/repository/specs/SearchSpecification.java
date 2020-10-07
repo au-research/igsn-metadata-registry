@@ -33,11 +33,13 @@ public class SearchSpecification {
 			}
 			else if (criteria.getOperation().equals(SearchOperation.DATE_GREATER_THAN_EQUAL)) {
 				// special join to the record table
-				predicates.add(builder.greaterThanOrEqualTo(root.join("record").get(criteria.getKey()), (Date)criteria.getValue()));
+				predicates.add(builder.greaterThanOrEqualTo(root.join("record").get(criteria.getKey()),
+						(Date) criteria.getValue()));
 			}
 			else if (criteria.getOperation().equals(SearchOperation.DATE_LESS_THAN_EQUAL)) {
 				// special join to the record table
-				predicates.add(builder.lessThanOrEqualTo(root.join("record").get(criteria.getKey()), (Date)criteria.getValue()));
+				predicates.add(builder.lessThanOrEqualTo(root.join("record").get(criteria.getKey()),
+						(Date) criteria.getValue()));
 			}
 			else if (criteria.getOperation().equals(SearchOperation.LESS_THAN_EQUAL)) {
 				predicates.add(builder.lessThanOrEqualTo(root.get(criteria.getKey()), criteria.getValue().toString()));

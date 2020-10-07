@@ -39,7 +39,7 @@ public class IGSNUpdateJobConfig {
 	KeycloakService kcService;
 
 	@Autowired
-    IGSNRequestService igsnRequestService;
+	IGSNRequestService igsnRequestService;
 
 	@Autowired
 	RecordService recordService;

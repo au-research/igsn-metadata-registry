@@ -42,7 +42,7 @@ public class VersionService {
 	private final ValidationService validationService;
 
 	public VersionService(ApplicationEventPublisher publisher, VersionRepository repository, VersionMapper mapper,
-						  SchemaService schemaService, RecordService recordService, ValidationService validationService) {
+			SchemaService schemaService, RecordService recordService, ValidationService validationService) {
 		this.publisher = publisher;
 		this.repository = repository;
 		this.versionMapper = mapper;
@@ -132,8 +132,10 @@ public class VersionService {
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
 		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
-		if(from!=null)specs.add(new SearchCriteria("modifiedAt", from,  SearchOperation.DATE_GREATER_THAN_EQUAL));
-		if(until!=null)specs.add(new SearchCriteria("modifiedAt", until,  SearchOperation.DATE_LESS_THAN_EQUAL));
+		if (from != null)
+			specs.add(new SearchCriteria("modifiedAt", from, SearchOperation.DATE_GREATER_THAN_EQUAL));
+		if (until != null)
+			specs.add(new SearchCriteria("modifiedAt", until, SearchOperation.DATE_LESS_THAN_EQUAL));
 		return search(specs, pageable);
 	}
 

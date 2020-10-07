@@ -208,11 +208,12 @@ public class TestHelper {
 		return allocation;
 	}
 
-    public static Request mockRequest() {
+	public static Request mockRequest() {
 		Request request = new Request();
 		request.setStatus(Request.Status.ACCEPTED);
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(UUID.randomUUID());
 		return request;
-    }
+	}
+
 }

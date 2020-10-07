@@ -33,21 +33,23 @@ public class IGSNTransferJobConfig {
 	RecordRepository recordRepository;
 
 	@Autowired
-    IGSNRequestService igsnRequestService;
+	IGSNRequestService igsnRequestService;
 
 	@Autowired
 	RequestService requestService;
 
 	@Bean(name = "TransferIGSNJob")
 	public Job TransferIGSNJob() {
-		return jobBuilderFactory.get("TransferIGSNJob").listener(new IGSNJobListener(igsnRequestService, requestService)).flow(transferIGSN())
-				.end().build();
+		return jobBuilderFactory.get("TransferIGSNJob")
+				.listener(new IGSNJobListener(igsnRequestService, requestService)).flow(transferIGSN()).end().build();
 	}
 
 	@Bean
 	public Step transferIGSN() {
-		return stepBuilderFactory.get("Transfer IGSN").<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
-				.processor(new TransferIGSNProcessor(recordRepository, identifierRepository, igsnRequestService, requestService))
+		return stepBuilderFactory.get("Transfer IGSN").<String, String>chunk(1)
+				.reader(new IGSNItemReader(igsnRequestService))
+				.processor(new TransferIGSNProcessor(recordRepository, identifierRepository, igsnRequestService,
+						requestService))
 				.writer(new IGSNItemWriter(igsnRequestService)).faultTolerant().retryLimit(3)
 				.retry(DeadlockLoserDataAccessException.class).build();
 	}

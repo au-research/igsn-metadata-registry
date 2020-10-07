@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = VersionResourceController.class)
-@Import({ APILoggingService.class, VersionMapper.class, SchemaService.class})
+@Import({ APILoggingService.class, VersionMapper.class, SchemaService.class })
 @AutoConfigureMockMvc
 public class VersionResourceControllerTest {
 

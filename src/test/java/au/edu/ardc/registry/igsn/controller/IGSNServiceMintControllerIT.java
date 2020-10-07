@@ -151,10 +151,11 @@ class IGSNServiceMintControllerIT extends KeycloakIntegrationTest {
 		assertThat(ardcv1Version.getContent()).isNotEmpty();
 
 		// json-ld is also created
-//		Version jsonldVersion = record.getCurrentVersions().stream()
-//				.filter(version -> version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
-//		assertThat(jsonldVersion).isNotNull();
-//		assertThat(jsonldVersion.getContent()).isNotEmpty();
+		// Version jsonldVersion = record.getCurrentVersions().stream()
+		// .filter(version ->
+		// version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
+		// assertThat(jsonldVersion).isNotNull();
+		// assertThat(jsonldVersion.getContent()).isNotEmpty();
 	}
 
 }

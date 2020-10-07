@@ -34,7 +34,7 @@ public class IGSNReserveJobConfig {
 	IdentifierRepository identifierRepository;
 
 	@Autowired
-    IGSNRequestService igsnService;
+	IGSNRequestService igsnService;
 
 	@Autowired
 	TaskExecutor asyncTaskExecutor;
@@ -47,14 +47,16 @@ public class IGSNReserveJobConfig {
 
 	@Bean(name = "ReserveIGSNJob")
 	public Job ReserveIGSNJob() {
-		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService, requestService)).flow(reserveIGSN())
-				.end().build();
+		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService, requestService))
+				.flow(reserveIGSN()).end().build();
 	}
 
 	@Bean
 	public Step reserveIGSN() {
-		return stepBuilderFactory.get("Reserve IGSN").<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
-				.processor(new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService, requestService))
+		return stepBuilderFactory.get("Reserve IGSN").<String, String>chunk(1)
+				.reader(new IGSNItemReader(igsnRequestService))
+				.processor(
+						new ReserveIGSNProcessor(recordRepository, identifierRepository, igsnService, requestService))
 				.writer(new IGSNItemWriter(igsnRequestService)).faultTolerant().retryLimit(3)
 				.retry(DeadlockLoserDataAccessException.class).build();
 	}

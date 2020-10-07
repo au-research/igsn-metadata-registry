@@ -54,7 +54,7 @@ public class RecordResourceController {
 	private final VersionMapper versionMapper;
 
 	public RecordResourceController(RecordService recordService, KeycloakService kcService,
-									VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
+			VersionService versionService, RecordMapper recordMapper, VersionMapper versionMapper) {
 		this.recordService = recordService;
 		this.kcService = kcService;
 		this.versionService = versionService;
@@ -67,8 +67,8 @@ public class RecordResourceController {
 			description = "Retrieves all record resources that the current user has access to")
 	@PageableOperation
 	public ResponseEntity<Page<RecordDTO>> index(HttpServletRequest request,
-												 @PageableDefault @Parameter(hidden = true) Pageable pageable,
-												 @RequestParam(required = false) String title) {
+			@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String title) {
 		// obtain a list of ownerIDs include the current user ownerID
 		User user = kcService.getLoggedInUser(request);
 		List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
@@ -144,7 +144,7 @@ public class RecordResourceController {
 	@ApiResponse(responseCode = "404", description = "User doesn't have access to the record",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<?> destroy(@Parameter(schema = @Schema(implementation = UUID.class)) @PathVariable String id,
-									 HttpServletRequest request) {
+			HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
 		recordService.delete(id, user);
 		return ResponseEntity.accepted().body(null);
@@ -154,7 +154,7 @@ public class RecordResourceController {
 	@Operation(summary = "Get versions by Record ID", description = "Show all versions for a given record")
 	@PageableOperation
 	public ResponseEntity<Page<VersionDTO>> showVersions(HttpServletRequest request, Pageable pageable,
-														 @PathVariable String id, @RequestParam(required = false) String schema) {
+			@PathVariable String id, @RequestParam(required = false) String schema) {
 		User user = kcService.getLoggedInUser(request);
 		Record record = recordService.findOwnedById(id, user);
 		VersionSpecification specs = new VersionSpecification();

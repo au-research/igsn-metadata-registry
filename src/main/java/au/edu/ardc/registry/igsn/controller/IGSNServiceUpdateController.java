@@ -109,8 +109,8 @@ public class IGSNServiceUpdateController {
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<Request> update(HttpServletRequest request,
-                                          @RequestParam(required = false, defaultValue = "User") String ownerType,
-                                          @RequestParam(required = false, defaultValue = "0") boolean wait)
+			@RequestParam(required = false, defaultValue = "User") String ownerType,
+			@RequestParam(required = false, defaultValue = "0") boolean wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);

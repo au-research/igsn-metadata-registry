@@ -108,7 +108,7 @@ class OAIPMHServiceTest {
 	@Test
 	void listRecords() {
 		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listRecords(null,null, null, null);
+			service.listRecords(null, null, null, null);
 		});
 
 		Assert.assertThrows(CannotDisseminateFormatException.class, () -> {
@@ -120,9 +120,8 @@ class OAIPMHServiceTest {
 		});
 	}
 
-
 	@Test
-	void convertDate(){
+	void convertDate() {
 		String ISO8601Date = "2011-12-03";
 		String ISO8601DateTime = "2020-09-27T12:56:47Z";
 
@@ -132,4 +131,5 @@ class OAIPMHServiceTest {
 		Date newDateTime = service.convertDate(ISO8601DateTime);
 		assertThat(newDateTime).isInstanceOf(Date.class);
 	}
+
 }

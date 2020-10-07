@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -349,11 +348,13 @@ public class VersionServiceTest {
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("schema", SchemaService.ARDCv1, SearchOperation.EQUAL));
 		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
-		specs.add(new SearchCriteria("createdAt", fromDate,  SearchOperation.DATE_GREATER_THAN_EQUAL));
-		//specs.add(new SearchCriteria("createdAt", untilDate,  SearchOperation.DATE_LESS_THAN_EQUAL));
-		Page<Version> versions = versionService.search(specs,PageRequest.of(0, 5));
+		specs.add(new SearchCriteria("createdAt", fromDate, SearchOperation.DATE_GREATER_THAN_EQUAL));
+		// specs.add(new SearchCriteria("createdAt", untilDate,
+		// SearchOperation.DATE_LESS_THAN_EQUAL));
+		Page<Version> versions = versionService.search(specs, PageRequest.of(0, 5));
 		System.out.print(versions);
-		Page<Version> actual = versionService.findAllCurrentVersionsOfSchema(SchemaService.ARDCv1, fromDate, null, PageRequest.of(0, 5));
+		Page<Version> actual = versionService.findAllCurrentVersionsOfSchema(SchemaService.ARDCv1, fromDate, null,
+				PageRequest.of(0, 5));
 		System.out.print(actual);
 		// is a valid Page<Version>
 		// Assertions.assertThat(actual.getContent()).hasSize(1);
@@ -364,20 +365,21 @@ public class VersionServiceTest {
 
 	}
 
-	public Date convertDate(String inputDate){
+	public Date convertDate(String inputDate) {
 
 		try {
-			if(inputDate. indexOf('T')>0){
+			if (inputDate.indexOf('T') > 0) {
 				LocalDateTime parsedDate = LocalDateTime.parse(inputDate, DateTimeFormatter.ISO_DATE_TIME);
-				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				Date out = Date.from(parsedDate.atZone(ZoneId.of("UTC")).toInstant());
 				return out;
-			}else{
+			}
+			else {
 				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
-				Date out = Date.from(parsedDate.atZone(ZoneId.systemDefault()).toInstant());
+				Date out = Date.from(parsedDate.atZone(ZoneId.of("UTC")).toInstant());
 				return out;
 			}
 		}
-		catch(Exception e){
+		catch (Exception e) {
 			return null;
 		}
 	}

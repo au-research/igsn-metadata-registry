@@ -4,58 +4,65 @@ import java.util.Date;
 import java.util.UUID;
 
 public class RequestDTO {
-    private UUID id;
-    private String status;
-    private String type;
-    private UUID createdBy;
-    private Date createdAt;
-    private Date updatedAt;
 
-    public UUID getId() {
-        return id;
-    }
+	private UUID id;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	private String status;
 
-    public String getStatus() {
-        return status;
-    }
+	private String type;
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	private UUID createdBy;
 
-    public String getType() {
-        return type;
-    }
+	private Date createdAt;
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	private Date updatedAt;
 
-    public UUID getCreatedBy() {
-        return createdBy;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    public void setCreatedBy(UUID createdBy) {
-        this.createdBy = createdBy;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
+	public String getType() {
+		return type;
+	}
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public UUID getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(UUID createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Date getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Date updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
 }

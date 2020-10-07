@@ -105,6 +105,4 @@ public class IGSNMintJobConfig {
 		//@formatter:on
 	}
 
-
-
 }

@@ -99,8 +99,8 @@ public class IGSNServiceMintController {
 	@ApiResponse(responseCode = "403", description = "Operation is forbidden",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
 	public ResponseEntity<Request> mint(HttpServletRequest request,
-										@RequestParam(required = false, defaultValue = "User") String ownerType,
-										@RequestParam(required = false, defaultValue = "0") boolean wait)
+			@RequestParam(required = false, defaultValue = "User") String ownerType,
+			@RequestParam(required = false, defaultValue = "0") boolean wait)
 			throws IOException, ContentNotSupportedException, XMLValidationException, JSONValidationException,
 			ForbiddenOperationException, APIException {
 		User user = kcService.getLoggedInUser(request);
@@ -131,8 +131,6 @@ public class IGSNServiceMintController {
 				.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(igsnRequest))
 				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
 		// @formatter:on
-
-
 
 		try {
 			// @formatter:off

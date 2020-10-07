@@ -61,7 +61,7 @@ public class BatchConfig {
 	}
 
 	@Bean
-	public BackOffPolicy backOffPolicy(){
+	public BackOffPolicy backOffPolicy() {
 		ExponentialBackOffPolicy exponentialBackOffPolicy = new ExponentialBackOffPolicy();
 		exponentialBackOffPolicy.setInitialInterval(1000);
 		exponentialBackOffPolicy.setMultiplier(2.0);

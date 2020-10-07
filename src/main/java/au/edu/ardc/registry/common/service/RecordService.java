@@ -141,7 +141,8 @@ public class RecordService {
 		if (validationService.validateAllocationScope(allocation, user, Scope.IMPORT)) {
 			record.setVisible(recordDTO.isVisible());
 			record.setCreatedAt(recordDTO.getCreatedAt() != null ? recordDTO.getCreatedAt() : record.getCreatedAt());
-			record.setModifiedAt(recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
+			record.setModifiedAt(
+					recordDTO.getModifiedAt() != null ? recordDTO.getModifiedAt() : record.getModifiedAt());
 			record.setCreatorID(recordDTO.getCreatorID() != null ? recordDTO.getCreatorID() : record.getCreatorID());
 			record.setOwnerID(recordDTO.getOwnerID() != null ? recordDTO.getOwnerID() : record.getOwnerID());
 			record.setOwnerType(recordDTO.getOwnerType() != null ? recordDTO.getOwnerType() : record.getOwnerType());
