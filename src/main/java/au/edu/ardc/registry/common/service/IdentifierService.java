@@ -4,15 +4,13 @@ import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.specs.IdentifierSpecification;
-import com.google.common.base.Converter;
-import org.springframework.beans.factory.annotation.Autowired;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,35 +23,30 @@ import java.util.UUID;
 @Service
 public class IdentifierService {
 
-	@Autowired
-	private IdentifierRepository repository;
+	private final IdentifierRepository repository;
 
-	@Autowired
-	private IdentifierMapper mapper;
+	private final IdentifierMapper mapper;
 
-	@Autowired
-	private RecordService recordService;
+	private final RecordService recordService;
 
-	@Autowired
-	private ValidationService validationService;
+	private final ValidationService validationService;
 
-	public Page<IdentifierDTO> search(IdentifierSpecification specs, Pageable pageable) {
-		Page<Identifier> identifiers = repository.findAll(specs, pageable);
-		return identifiers.map(getDTOConverter());
+	public IdentifierService(IdentifierRepository repository, IdentifierMapper mapper, RecordService recordService,
+			ValidationService validationService) {
+		this.repository = repository;
+		this.mapper = mapper;
+		this.recordService = recordService;
+		this.validationService = validationService;
 	}
 
-	public Converter<Identifier, IdentifierDTO> getDTOConverter() {
-		return new Converter<Identifier, IdentifierDTO>() {
-			@Override
-			protected IdentifierDTO doForward(Identifier version) {
-				return mapper.convertToDTO(version);
-			}
-
-			@Override
-			protected Identifier doBackward(IdentifierDTO versionDTO) {
-				return mapper.convertToEntity(versionDTO);
-			}
-		};
+	/**
+	 * Search for {@link Identifier}
+	 * @param specs the {@link IdentifierSpecification} for determining the filters
+	 * @param pageable the {@link Pageable} for pagination and row limit
+	 * @return a {@link Page} of {@link Identifier}
+	 */
+	public Page<Identifier> search(IdentifierSpecification specs, Pageable pageable) {
+		return repository.findAll(specs, pageable);
 	}
 
 	/**
@@ -71,10 +64,6 @@ public class IdentifierService {
 		return repository.findFirstByValueAndType(value, type);
 	}
 
-	public Identifier findIGSNByRecord(Record record) {
-		return repository.findFirstByRecordAndType(record, Identifier.Type.IGSN);
-	}
-
 	/**
 	 * Tell if an identifier exists by id
 	 * @param id the uuid of the Identifier
@@ -84,23 +73,12 @@ public class IdentifierService {
 		return repository.existsById(UUID.fromString(id));
 	}
 
-	/**
-	 * Retrieve all owned identifiers Owned identifiers are the identifiers that which
-	 * records the user have access to
-	 *
-	 * todo accept User UUID as a parameter todo update findOwned at the repository level
-	 * @return a list of Identifiers that is owned by the user
-	 */
-	public List<Identifier> findOwned() {
-		return repository.findAll();
+
+	public Identifier save(Identifier newIdentifier) {
+		return repository.saveAndFlush(newIdentifier);
 	}
 
-	// create
-	public Identifier create(Identifier newIdentifier) {
-		return repository.save(newIdentifier);
-	}
-
-	public IdentifierDTO create(IdentifierDTO dto, User user) {
+	public Identifier create(IdentifierDTO dto, User user) {
 		Identifier identifier = mapper.convertToEntity(dto);
 
 		// validate record existence
@@ -128,7 +106,7 @@ public class IdentifierService {
 
 		identifier = repository.save(identifier);
 
-		return mapper.convertToDTO(identifier);
+		return identifier;
 	}
 
 	/**

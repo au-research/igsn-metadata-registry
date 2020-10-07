@@ -108,8 +108,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		identifier.setType(Identifier.Type.IGSN);
 		identifier.setValue(identifierValue);
 		identifier.setStatus(Identifier.Status.PENDING);
-		identifierService.create(identifier);
-
+		identifierService.save(identifier);
 	}
 
 	private void addURL(String urlValue, Record record) {

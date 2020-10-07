@@ -2,6 +2,7 @@ package au.edu.ardc.registry.common.controller.api.pub;
 
 import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
+import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.repository.specs.IdentifierSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
@@ -10,7 +11,6 @@ import au.edu.ardc.registry.common.service.IdentifierService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -26,8 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Identifier Public API")
 public class IdentifiersPublicController {
 
-	@Autowired
-	IdentifierService identifierService;
+	final IdentifierService identifierService;
+
+	final IdentifierMapper identifierMapper;
+
+	public IdentifiersPublicController(IdentifierService identifierService, IdentifierMapper identifierMapper) {
+		this.identifierService = identifierService;
+		this.identifierMapper = identifierMapper;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all publicly available records", description = "Retrieves all publicly available records")
@@ -46,8 +52,9 @@ public class IdentifiersPublicController {
 			specs.add(new SearchCriteria("value", value, SearchOperation.EQUAL));
 		}
 
-		Page<IdentifierDTO> result = identifierService.search(specs, pageable);
-		return ResponseEntity.ok().body(result);
+		Page<Identifier> result = identifierService.search(specs, pageable);
+		Page<IdentifierDTO> resultDTO = result.map(identifierMapper.getConverter());
+		return ResponseEntity.ok().body(resultDTO);
 	}
 
 }

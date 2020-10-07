@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
+import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
@@ -110,9 +111,9 @@ public class RequestResourceController {
 
 		IdentifierSpecification specs = new IdentifierSpecification();
 		specs.add(new SearchCriteria("requestID", request.getId(), SearchOperation.RECORD_EQUAL));
-		Page<IdentifierDTO> result = identifierService.search(specs, pageable);
-
-		return ResponseEntity.ok(result);
+		Page<Identifier> result = identifierService.search(specs, pageable);
+		Page<IdentifierDTO> resultDTO = result.map(identifierMapper.getConverter());
+		return ResponseEntity.ok(resultDTO);
 	}
 
 	@PostMapping(value = "/")

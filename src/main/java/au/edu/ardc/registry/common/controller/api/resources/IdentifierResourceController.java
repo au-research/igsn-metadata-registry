@@ -1,15 +1,16 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
+import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.specs.IdentifierSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
 import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -18,7 +19,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -39,11 +39,18 @@ import java.util.UUID;
 @SecurityRequirement(name = "oauth2")
 public class IdentifierResourceController {
 
-	@Autowired
-	private IdentifierService service;
+	final IdentifierService service;
 
-	@Autowired
-	private KeycloakService kcService;
+	final KeycloakService kcService;
+
+	final IdentifierMapper identifierMapper;
+
+	public IdentifierResourceController(IdentifierService service, KeycloakService kcService,
+			IdentifierMapper identifierMapper) {
+		this.service = service;
+		this.kcService = kcService;
+		this.identifierMapper = identifierMapper;
+	}
 
 	@GetMapping("")
 	@Operation(summary = "Get all identifiers", description = "Retrieves all identifier resources")
@@ -59,9 +66,10 @@ public class IdentifierResourceController {
 			specs.add(new SearchCriteria("type", Identifier.Type.valueOf(type), SearchOperation.EQUAL));
 		}
 
-		Page<IdentifierDTO> result = service.search(specs, pageable);
+		Page<Identifier> result = service.search(specs, pageable);
+		Page<IdentifierDTO> resultDTO = result.map(identifierMapper.getConverter());
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.ok(resultDTO);
 	}
 
 	@GetMapping(value = "/{id}")
@@ -70,23 +78,25 @@ public class IdentifierResourceController {
 	@ApiResponse(responseCode = "404", description = "Identifier is not found")
 	@ApiResponse(responseCode = "200", description = "Identifier is found",
 			content = @Content(schema = @Schema(implementation = Identifier.class)))
-	public ResponseEntity<?> show(@Parameter(required = true, description = "the id of the identifier (uuid)",
+	public ResponseEntity<IdentifierDTO> show(@Parameter(required = true, description = "the id of the identifier (uuid)",
 			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
 		Identifier identifier = service.findById(id);
 		if (identifier == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
 		}
 
-		return ResponseEntity.ok().body(identifier);
+		IdentifierDTO dto = identifierMapper.getConverter().convert(identifier);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/")
 	@Operation(summary = "Creates a new identifier", description = "Add a new identifier to the registry")
 	@ApiResponse(responseCode = "201", description = "Identifier is created",
 			content = @Content(schema = @Schema(implementation = Identifier.class)))
-	public ResponseEntity<?> store(@RequestBody IdentifierDTO dto, HttpServletRequest request) {
+	public ResponseEntity<IdentifierDTO> store(@RequestBody IdentifierDTO dto, HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
-		IdentifierDTO resultDTO = service.create(dto, user);
+		Identifier identifier = service.create(dto, user);
+		IdentifierDTO resultDTO = identifierMapper.getConverter().convert(identifier);
 		URI location = URI.create("/api/resources/identifiers/" + resultDTO.getId());
 		return ResponseEntity.created(location).body(resultDTO);
 	}
@@ -97,7 +107,7 @@ public class IdentifierResourceController {
 			content = @Content(schema = @Schema(implementation = Identifier.class)))
 	@ApiResponse(responseCode = "404", description = "Identifier is not found",
 			content = @Content(schema = @Schema(implementation = APIExceptionResponse.class)))
-	public ResponseEntity<?> update(@PathVariable String id, @RequestBody Identifier updatedIdentifier,
+	public ResponseEntity<IdentifierDTO> update(@PathVariable String id, @RequestBody Identifier updatedIdentifier,
 			HttpServletRequest request) {
 		// ensure identifier exists
 		if (!service.exists(id)) {
@@ -111,8 +121,8 @@ public class IdentifierResourceController {
 		User user = kcService.getLoggedInUser(request);
 
 		Identifier updated = service.update(updatedIdentifier);
-
-		return ResponseEntity.ok().body(updated);
+		IdentifierDTO dto = identifierMapper.getConverter().convert(updated);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@DeleteMapping("/{id}")
@@ -120,16 +130,11 @@ public class IdentifierResourceController {
 	@ApiResponse(responseCode = "202", description = "Identifier is deleted")
 	@ApiResponse(responseCode = "404", description = "Identifier is not found")
 	public ResponseEntity<?> destroy(@PathVariable String id) {
-		// todo DELETE a resource should always delete it
 		if (!service.exists(id)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
 		}
-
-		Identifier identifier = service.findById(id);
-
 		service.delete(id);
-
-		return ResponseEntity.accepted().body(identifier);
+		return ResponseEntity.accepted().body(null);
 	}
 
 }

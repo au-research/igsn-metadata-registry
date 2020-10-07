@@ -3,31 +3,54 @@ package au.edu.ardc.registry.common.dto.mapper;
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.service.RecordService;
+import com.google.common.base.Converter;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IdentifierMapper {
 
-	@Autowired
-	ModelMapper modelMapper;
+	final ModelMapper modelMapper;
 
-	@Autowired
-	RecordService recordService;
+	final RecordService recordService;
+
+	protected Converter<Identifier, IdentifierDTO> converter;
+
+	public IdentifierMapper(ModelMapper modelMapper, RecordService recordService) {
+		this.modelMapper = modelMapper;
+		this.recordService = recordService;
+		this.converter = buildConverter();
+	}
 
 	public Identifier convertToEntity(IdentifierDTO dto) {
-		Identifier entity = modelMapper.map(dto, Identifier.class);
-		if (dto.getRecord() != null) {
-			entity.setRecord(recordService.findById(dto.getRecord().toString()));
-		}
-		return entity;
+		return converter.reverse().convert(dto);
 	}
 
 	public IdentifierDTO convertToDTO(Identifier entity) {
-		IdentifierDTO dto = modelMapper.map(entity, IdentifierDTO.class);
-		dto.setRecord(entity.getRecord().getId());
-		return dto;
+		return converter.convert(entity);
 	}
 
+	private Converter<Identifier, IdentifierDTO> buildConverter() {
+		return new Converter<Identifier, IdentifierDTO>() {
+			@Override
+			protected IdentifierDTO doForward(Identifier identifier) {
+				IdentifierDTO dto = modelMapper.map(identifier, IdentifierDTO.class);
+				dto.setRecord(identifier.getRecord().getId());
+				return dto;
+			}
+
+			@Override
+			protected Identifier doBackward(IdentifierDTO identifierDTO) {
+				Identifier entity = modelMapper.map(identifierDTO, Identifier.class);
+				if (identifierDTO.getRecord() != null) {
+					entity.setRecord(recordService.findById(identifierDTO.getRecord().toString()));
+				}
+				return entity;
+			}
+		};
+	}
+
+	public Converter<Identifier, IdentifierDTO> getConverter() {
+		return this.converter;
+	}
 }

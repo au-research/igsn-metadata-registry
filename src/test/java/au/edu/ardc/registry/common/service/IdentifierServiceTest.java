@@ -139,9 +139,9 @@ class IdentifierServiceTest {
 		when(repository.save(any(Identifier.class))).thenReturn(expected);
 
 		// when the service creates the version, verify the save method is called
-		IdentifierDTO resultDTO = service.create(dto, user);
-		assertThat(resultDTO).isNotNull();
-		assertThat(resultDTO).isInstanceOf(IdentifierDTO.class);
+		Identifier result = service.create(dto, user);
+		assertThat(result).isNotNull();
+		assertThat(result).isInstanceOf(Identifier.class);
 		verify(repository, times(1)).save(any(Identifier.class));
 	}
 
@@ -163,12 +163,11 @@ class IdentifierServiceTest {
 		when(repository.findAll(any(IdentifierSpecification.class), any(Pageable.class))).thenReturn(mockPage);
 
 		// when service.search
-		Page<IdentifierDTO> result = service.search(new IdentifierSpecification(), PageRequest.of(0, 2));
+		Page<Identifier> result = service.search(new IdentifierSpecification(), PageRequest.of(0, 2));
 
-		// the result is a Page of IdentifierDTO
+		// the result is a Page of Identifier
 		assertThat(result).isNotNull();
 		assertThat(result).hasSize(2);
-		assertThat(result.getContent()).extracting("class").containsOnly(IdentifierDTO.class);
 		verify(repository, times(1)).findAll(any(IdentifierSpecification.class), any(Pageable.class));
 	}
 
