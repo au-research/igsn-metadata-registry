@@ -2,8 +2,10 @@ package au.edu.ardc.registry.common.controller.api.resources;
 
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.dto.RecordDTO;
+import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.dto.mapper.RecordMapper;
+import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
@@ -22,14 +24,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 @RestController
 @RequestMapping(value = "/api/resources/requests")
@@ -50,22 +50,27 @@ public class RequestResourceController {
 
 	final IdentifierMapper identifierMapper;
 
+	final RequestMapper requestMapper;
+
 	public RequestResourceController(KeycloakService kcService, RequestService requestService,
 			RecordService recordService, RecordMapper recordMapper, IdentifierService identifierService,
-			IdentifierMapper identifierMapper) {
+			IdentifierMapper identifierMapper, RequestMapper requestMapper) {
 		this.kcService = kcService;
 		this.requestService = requestService;
 		this.recordService = recordService;
 		this.recordMapper = recordMapper;
 		this.identifierService = identifierService;
 		this.identifierMapper = identifierMapper;
+		this.requestMapper = requestMapper;
 	}
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<Request> show(@PathVariable String id, HttpServletRequest httpRequest) {
+	public ResponseEntity<RequestDTO> show(@PathVariable String id, HttpServletRequest httpRequest) {
 		User user = kcService.getLoggedInUser(httpRequest);
 		Request request = requestService.findOwnedById(id, user);
-		return ResponseEntity.ok().body(request);
+
+		RequestDTO dto = requestMapper.getConverter().convert(request);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@GetMapping(value = "/{id}/logs")
@@ -108,6 +113,42 @@ public class RequestResourceController {
 		Page<IdentifierDTO> result = identifierService.search(specs, pageable);
 
 		return ResponseEntity.ok(result);
+	}
+
+	@PostMapping(value = "/")
+	public ResponseEntity<RequestDTO> store(@RequestBody RequestDTO requestDTO, HttpServletRequest httpServletRequest) {
+		User user = kcService.getLoggedInUser(httpServletRequest);
+		Request request = requestService.create(requestDTO, user);
+
+		RequestDTO dto = requestMapper.getConverter().convert(request);
+		URI location = URI.create("/api/resources/requests/" + dto.getId().toString());
+		return ResponseEntity.created(location).body(dto);
+	}
+
+	@PutMapping(value = "/{id}")
+	public ResponseEntity<RequestDTO> update(@PathVariable String id, @RequestBody RequestDTO requestDTO,
+			HttpServletRequest httpServletRequest) {
+		User user = kcService.getLoggedInUser(httpServletRequest);
+		Request request = requestService.findById(id);
+		Request updatedRequest = requestService.update(request, requestDTO, user);
+
+		RequestDTO dto = requestMapper.getConverter().convert(updatedRequest);
+		return ResponseEntity.accepted().body(dto);
+	}
+
+	@PostMapping(value = "{id}/logs")
+	public ResponseEntity<String> appendLog(@PathVariable String id, @RequestBody String message,
+			HttpServletRequest httpRequest) throws IOException {
+		User user = kcService.getLoggedInUser(httpRequest);
+		Request request = requestService.findOwnedById(id, user);
+
+		requestService.getLoggerFor(request).info(message);
+		requestService.closeLoggerFor(request);
+
+		String logPath = requestService.getLoggerPathFor(request);
+		String logContent = Helpers.readFile(logPath);
+
+		return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(logContent);
 	}
 
 }

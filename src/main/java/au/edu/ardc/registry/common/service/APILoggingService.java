@@ -188,7 +188,7 @@ public class APILoggingService {
 		// if it's an IGSN request, then the action is the type
 		Request igsn = (Request) request.getAttribute(String.valueOf(Request.class));
 		if (igsn != null) {
-			action = igsn.getType().getAction();
+			action = igsn.getType();
 		}
 
 		return action;

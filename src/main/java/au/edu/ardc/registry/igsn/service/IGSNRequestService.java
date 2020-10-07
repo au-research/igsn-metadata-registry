@@ -46,7 +46,7 @@ public class IGSNRequestService {
 		// create IGSNServiceRequest
 		logger.debug("Creating IGSNServiceRequest for user: {}", user);
 		Request request = new Request();
-		request.setType(type);
+		request.setType(type.getAction());
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(user.getId());
 		request = repository.save(request);

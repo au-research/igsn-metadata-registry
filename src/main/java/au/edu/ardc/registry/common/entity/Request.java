@@ -2,7 +2,6 @@ package au.edu.ardc.registry.common.entity;
 
 import au.edu.ardc.registry.common.entity.converter.HashMapAttributeConverter;
 import au.edu.ardc.registry.common.model.Attribute;
-import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -23,7 +22,7 @@ public class Request {
 
 	@SuppressWarnings("JpaAttributeTypeInspection")
 	@Convert(converter = HashMapAttributeConverter.class)
-	@Column(length=4096)
+	@Column(length = 4096)
 	private Map<String, String> attributes;
 
 	@Enumerated(EnumType.STRING)
@@ -38,14 +37,13 @@ public class Request {
 	@Column(columnDefinition = "BINARY(16)")
 	private UUID createdBy;
 
-	@Enumerated(EnumType.STRING)
-	private IGSNEventType type;
+	private String type;
 
 	public Request() {
 		this.attributes = new HashMap<>();
 	}
 
-    public UUID getId() {
+	public UUID getId() {
 		return id;
 	}
 
@@ -103,11 +101,11 @@ public class Request {
 		return this.attributes.getOrDefault(attribute.toString(), null);
 	}
 
-	public IGSNEventType getType() {
+	public String getType() {
 		return type;
 	}
 
-	public void setType(IGSNEventType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 

@@ -1,7 +1,10 @@
 package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.config.ApplicationProperties;
+import au.edu.ardc.registry.common.dto.RequestDTO;
+import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RequestRepository;
 import au.edu.ardc.registry.common.repository.specs.RequestSpecification;
@@ -16,29 +19,36 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 @Service
 public class RequestService {
+
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(RequestService.class);
 
 	final RequestRepository requestRepository;
 
 	final ApplicationProperties applicationProperties;
 
+	final RequestMapper requestMapper;
+
 	private Map<String, Logger> loggers;
 
-	public RequestService(RequestRepository requestRepository, ApplicationProperties applicationProperties) {
+	public RequestService(RequestRepository requestRepository, ApplicationProperties applicationProperties, RequestMapper requestMapper) {
 		this.requestRepository = requestRepository;
 		this.applicationProperties = applicationProperties;
+		this.requestMapper = requestMapper;
 		loggers = new HashMap<>();
 	}
 
@@ -178,8 +188,61 @@ public class RequestService {
 		loggers.remove(loggerName);
 	}
 
-	// todo create
+	/**
+	 * Creates a new Request
+	 * @param dto the {@link RequestDTO} representation of the request
+	 * @param user the {@link User} that creates the request
+	 * @return the {@link Request} that was created and persisted
+	 */
+	public Request create(RequestDTO dto, User user) {
+		// todo validation
+		Request request = requestMapper.getConverter().reverse().convert(dto);
+		if (request == null) {
+			throw new RuntimeException("Failed to convert Request DTO");
+		}
+		request.setCreatedBy(user.getId());
+		request.setCreatedAt(new Date());
+		request.setUpdatedAt(new Date());
+
+		// save to obtain the request.id
+		request = requestRepository.save(request);
+
+		// create request directory
+		try {
+			Path path = Paths.get(getDataPathFor(request));
+			logger.info("Creating data path: {}", path.toAbsolutePath());
+			Files.createDirectories(path);
+			logger.info("Created data path: {}", path.toAbsolutePath());
+			request.setAttribute(Attribute.DATA_PATH, path.toAbsolutePath().toString());
+		}
+		catch (IOException e) {
+			logger.error("Failed creating data path {}", e.getMessage());
+		}
+
+		// create and close logger, so that the log file get created
+		getLoggerFor(request);
+		closeLoggerFor(request);
+
+		requestRepository.saveAndFlush(request);
+		return request;
+	}
+
+	public Request update(Request entity, RequestDTO dto, User user) {
+		// validate request ownership
+		if (!entity.getCreatedBy().equals(user.getId())) {
+			throw new ForbiddenOperationException("You don't own this request");
+		}
+
+		// updates these allowed fields
+		entity.setType(dto.getType() != null ? dto.getType(): entity.getType());
+		entity.setStatus(dto.getStatus() != null ? Request.Status.valueOf(dto.getStatus()) : entity.getStatus());
+
+		entity.setUpdatedAt(new Date());
+		requestRepository.saveAndFlush(entity);
+		return entity;
+	}
+
 	// todo delete
-	// todo update
+
 
 }

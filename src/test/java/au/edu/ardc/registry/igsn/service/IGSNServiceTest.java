@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.config.ApplicationProperties;
+import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
@@ -10,6 +11,7 @@ import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +29,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
-@ContextConfiguration(classes = { IGSNRequestService.class, RequestService.class, ApplicationProperties.class })
+@ContextConfiguration(classes = { IGSNRequestService.class, RequestService.class, ApplicationProperties.class,
+		RequestMapper.class, ModelMapper.class })
 @TestPropertySource("classpath:application.properties")
 class IGSNRequestServiceTest {
 
@@ -36,6 +39,9 @@ class IGSNRequestServiceTest {
 
 	@Autowired
 	private IGSNRequestService service;
+
+	@Autowired
+	RequestMapper requestMapper;
 
 	@Test
 	void findById_foundRecord_returnsIGSNServiceRequest() {
