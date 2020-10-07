@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.transform;
 
+import org.springframework.core.io.ClassPathResource;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -43,7 +44,7 @@ public class XSLTransformer {
 			TransformerFactory factory = TransformerFactory.newInstance();
 			Transformer transformer;
 
-			Source xslt = new StreamSource(new File(schemaPath));
+			Source xslt = new StreamSource(new ClassPathResource(schemaPath).getInputStream());
 			transformer = factory.newTransformer(xslt);
 
 			// set parameters if any

@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 
-	private static final String path = "src/main/resources/xslt/ardc_v1_to_registration_metadata_v1.xsl";
+	private static final String path = "xslt/ardc_v1_to_registration_metadata_v1.xsl";
 
 	private static final String targetSchemaID = SchemaService.IGSNREGv1;
 

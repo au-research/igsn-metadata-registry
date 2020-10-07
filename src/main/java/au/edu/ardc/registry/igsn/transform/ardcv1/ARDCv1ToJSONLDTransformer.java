@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 public class ARDCv1ToJSONLDTransformer implements Transformer {
 
-	private static final String path = "src/main/resources/xslt/ardc_v1_to_jsonld.xsl";
+	private static final String path = "xslt/ardc_v1_to_jsonld.xsl";
 
 	private static final String targetSchemaID = "ardc-igsn-desc-1.0-jsonld";
 
