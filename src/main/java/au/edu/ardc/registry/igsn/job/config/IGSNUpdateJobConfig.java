@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.retry.backoff.BackOffPolicy;
-import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.web.client.HttpServerErrorException;
 
 @Configuration
@@ -65,19 +64,15 @@ public class IGSNUpdateJobConfig {
 
 	@Bean
 	public Step chunkUpdatePayload() {
-		return stepBuilderFactory.get("chunkUpdatePayload").tasklet(payloadChunkerTasklet2()).build();
-	}
-
-	@Bean
-	public PayloadChunkerTasklet payloadChunkerTasklet2() {
-		return new PayloadChunkerTasklet().setSchemaService(schemaService);
+		return stepBuilderFactory.get("chunkUpdatePayload")
+				.tasklet(new PayloadChunkerTasklet(schemaService, igsnRequestService)).build();
 	}
 
 	@Bean
 	public Step update() {
-		return stepBuilderFactory.get("update").<String, Resource>chunk(1).reader(new PayloadContentReader())
-				.processor(new UpdateRecordProcessor(schemaService, identifierService, recordService,
-						igsnVersionService, urlService))
+		return stepBuilderFactory.get("update").<Resource, Resource>chunk(1)
+				.reader(new PayloadContentReader(igsnRequestService)).processor(new UpdateRecordProcessor(schemaService,
+						identifierService, recordService, igsnVersionService, urlService))
 				.writer(new NoOpItemWriter<>()).build();
 	}
 

@@ -2,13 +2,13 @@ package au.edu.ardc.registry.igsn.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
-import au.edu.ardc.registry.common.repository.VersionRepository;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
@@ -16,6 +16,7 @@ import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import org.jetbrains.annotations.NotNull;
@@ -29,36 +30,39 @@ import java.util.Date;
 
 public class MintIGSNProcessor implements ItemProcessor<String, String> {
 
-	private SchemaService schemaService;
+	private final SchemaService schemaService;
 
-	private KeycloakService kcService;
+	private final KeycloakService kcService;
 
-	private IdentifierService identifierService;
+	private final IdentifierService identifierService;
 
-	private RecordService recordService;
+	private final IGSNVersionService igsnVersionService;
 
-	private IGSNVersionService igsnVersionService;
-
-	private URLService urlService;
-
-	private String supportedSchema = SchemaService.ARDCv1;
-
-	private Version existingRegistrationMDVersion;
+	private final IGSNRequestService igsnRequestService;
 
 	private IGSNAllocation allocation;
 
 	private String landingPage;
 
 	public MintIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
-			IdentifierService identifierService, RecordService recordService, IGSNVersionService igsnVersionService,
-			URLService urlService) {
+							 IdentifierService identifierService, IGSNVersionService igsnVersionService,
+							 IGSNRequestService igsnRequestService) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
 		this.identifierService = identifierService;
-		this.recordService = recordService;
 		this.igsnVersionService = igsnVersionService;
-		this.urlService = urlService;
+		this.igsnRequestService = igsnRequestService;
+	}
 
+	@BeforeStep
+	public void beforeStep(final StepExecution stepExecution) throws Exception {
+		JobParameters jobParameters = stepExecution.getJobParameters();
+		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(IGSNServiceRequestID);
+
+		// obtain allocation details for use with minting
+		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
+		this.allocation = (IGSNAllocation) kcService.getAllocationByResourceID(allocationID);
 	}
 
 	@Override
@@ -70,22 +74,13 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		identifier.setStatus(Identifier.Status.ACCESSIBLE);
 		identifierService.update(identifier);
 		return result;
-
-	}
-
-	@BeforeStep
-	public void beforeStep(final StepExecution stepExecution) throws Exception {
-		JobParameters jobParameters = stepExecution.getJobParameters();
-		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
-		String allocationID = jobParameters.getString("allocationID");
-		allocation = (IGSNAllocation) kcService.getAllocationByResourceID(allocationID);
-
 	}
 
 	private byte[] addRegistrationMetadata(Identifier identifier)
 			throws TransformerNotFoundException, NotFoundException, ContentProviderNotFoundException {
 
 		Record record = identifier.getRecord();
+		String supportedSchema = SchemaService.ARDCv1;
 		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
 		ARDCv1ToRegistrationMetadataTransformer transformer = null;
 
