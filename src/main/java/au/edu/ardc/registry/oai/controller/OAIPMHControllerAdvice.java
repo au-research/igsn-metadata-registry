@@ -26,7 +26,7 @@ public class OAIPMHControllerAdvice {
 
 	@ExceptionHandler(value = { BadArgumentException.class, BadResumptionTokenException.class,
 			CannotDisseminateFormatException.class, IdDoesNotExistException.class, NoRecordsMatchException.class,
-			NoSetHierarchy.class, NoMetadataFormats.class, BadVerbException.class })
+			NoSetHierarchyException.class, NoMetadataFormats.class, BadVerbException.class })
 	public ResponseEntity<Object> handleOAIException(OAIException ex, HttpServletRequest request, Locale locale)
 			throws JsonProcessingException {
 

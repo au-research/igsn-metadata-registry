@@ -73,7 +73,6 @@ public class IdentifierService {
 		return repository.existsById(UUID.fromString(id));
 	}
 
-
 	public Identifier save(Identifier newIdentifier) {
 		return repository.saveAndFlush(newIdentifier);
 	}

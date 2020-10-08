@@ -62,6 +62,12 @@ public class OAIPMHService {
 	public OAIResponse identify() {
 		IdentifyFragment identify = new IdentifyFragment();
 		identify.setRepositoryName(applicationProperties.getName());
+		identify.setBaseURL(applicationProperties.getUrl());
+		identify.setProtocolVersion("2.0");
+		identify.setAdminEmail(applicationProperties.getContactEmail());
+		identify.setEarliestDatestamp(recordService.findEarliest());
+		identify.setDeletedRecord("transient");
+		identify.setGranularity("yyyy-MM-ddTHH:mm:ssZ");
 		return new OAIIdentifyResponse(identify);
 	}
 
@@ -250,23 +256,6 @@ public class OAIPMHService {
 	 * @param inputDate the date to be converted
 	 * @return Date
 	 */
-	// public Date convertDate(String inputDate){
-
-	// try {
-	// if(inputDate. indexOf('T')>0){
-	// LocalDateTime parsedDate = LocalDateTime.parse(inputDate,
-	// DateTimeFormatter.ISO_DATE_TIME);
-	// return java.sql.Timestamp.valueOf(parsedDate);
-	// }else{
-	// LocalDateTime parsedDate = LocalDate.parse(inputDate,
-	// DateTimeFormatter.ISO_DATE).atStartOfDay();
-	// return java.sql.Timestamp.valueOf(parsedDate);
-	// }
-	// }
-	// catch(Exception e){
-	// return null;
-	// }
-	// }
 	public Date convertDate(String inputDate) {
 
 		try {

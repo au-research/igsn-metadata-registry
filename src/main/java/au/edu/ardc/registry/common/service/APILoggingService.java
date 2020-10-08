@@ -173,8 +173,8 @@ public class APILoggingService {
 	/**
 	 * Determine the ECS field event.action based on the current request
 	 *
-	 * By default, returns "api". If there's an {@link Request} in the request,
-	 * the action will be in the associated {@link IGSNEventType}
+	 * By default, returns "api". If there's an {@link Request} in the request, the action
+	 * will be in the associated {@link IGSNEventType}
 	 * @see <a href=
 	 * "https://www.elastic.co/guide/en/ecs/current/ecs-event.html">ecs-event</a>
 	 * @param request the current {@link HttpServletRequest}

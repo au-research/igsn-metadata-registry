@@ -3,6 +3,7 @@ package au.edu.ardc.registry.oai.controller;
 import au.edu.ardc.registry.common.config.ApplicationProperties;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.oai.exception.BadVerbException;
+import au.edu.ardc.registry.oai.exception.NoSetHierarchyException;
 import au.edu.ardc.registry.oai.model.*;
 import au.edu.ardc.registry.oai.response.*;
 import au.edu.ardc.registry.common.service.RecordService;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
 
 @Controller
 @RequestMapping(value = "/api/services/oai-pmh", produces = MediaType.APPLICATION_XML_VALUE)
@@ -73,6 +73,8 @@ public class OAIPMHController {
 		case LISTMETADATAFORMATS:
 			response = oaipmhService.listMetadataFormats();
 			break;
+		case LISTSETS:
+			throw new NoSetHierarchyException();
 		}
 
 		response.setRequest(requestFragment);

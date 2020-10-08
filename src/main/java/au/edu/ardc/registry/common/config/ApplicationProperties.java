@@ -9,6 +9,8 @@ public class ApplicationProperties {
 
 	private String portalUrl;
 
+	private String url;
+
 	private String name;
 
 	private String description;
@@ -17,12 +19,22 @@ public class ApplicationProperties {
 
 	private String dataPath;
 
+	private String email;
+
 	public String getPortalUrl() {
 		return portalUrl;
 	}
 
 	public void setPortalUrl(String portalUrl) {
 		this.portalUrl = portalUrl;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 	public String getName() {
@@ -55,6 +67,14 @@ public class ApplicationProperties {
 
 	public void setDataPath(String dataPath) {
 		this.dataPath = dataPath;
+	}
+
+	public String getContactEmail() {
+		return email;
+	}
+
+	public void setContactEmail(String contactEmail) {
+		this.email = contactEmail;
 	}
 
 }

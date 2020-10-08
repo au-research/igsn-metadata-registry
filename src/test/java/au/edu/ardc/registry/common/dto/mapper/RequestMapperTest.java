@@ -16,17 +16,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = { RequestMapper.class, ModelMapper.class })
 class RequestMapperTest {
 
-    @Autowired
-    RequestMapper requestMapper;
+	@Autowired
+	RequestMapper requestMapper;
 
-    @Test
-    void convertToEntity() {
-        // given a dto, convert to a request retains data
-        RequestDTO dto = new RequestDTO();
-        dto.setType("igsn-import");
+	@Test
+	void convertToEntity() {
+		// given a dto, convert to a request retains data
+		RequestDTO dto = new RequestDTO();
+		dto.setType("igsn-import");
 
-        Request actual =  requestMapper.getConverter().reverse().convert(dto);
+		Request actual = requestMapper.getConverter().reverse().convert(dto);
 
-        assertThat(actual.getType()).isEqualTo("igsn-import");
-    }
+		assertThat(actual.getType()).isEqualTo("igsn-import");
+	}
+
 }

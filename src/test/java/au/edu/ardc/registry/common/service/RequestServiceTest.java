@@ -42,8 +42,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @EnableConfigurationProperties(value = ApplicationProperties.class)
-@ContextConfiguration(classes = { RequestService.class, ApplicationProperties.class, RequestMapper.class,
-		ModelMapper.class})
+@ContextConfiguration(
+		classes = { RequestService.class, ApplicationProperties.class, RequestMapper.class, ModelMapper.class })
 @TestPropertySource("classpath:application.properties")
 class RequestServiceTest {
 

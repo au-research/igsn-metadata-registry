@@ -78,8 +78,9 @@ public class IdentifierResourceController {
 	@ApiResponse(responseCode = "404", description = "Identifier is not found")
 	@ApiResponse(responseCode = "200", description = "Identifier is found",
 			content = @Content(schema = @Schema(implementation = Identifier.class)))
-	public ResponseEntity<IdentifierDTO> show(@Parameter(required = true, description = "the id of the identifier (uuid)",
-			schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
+	public ResponseEntity<IdentifierDTO> show(
+			@Parameter(required = true, description = "the id of the identifier (uuid)",
+					schema = @Schema(implementation = UUID.class)) @PathVariable String id) {
 		Identifier identifier = service.findById(id);
 		if (identifier == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Identifier " + id + " is not found");
