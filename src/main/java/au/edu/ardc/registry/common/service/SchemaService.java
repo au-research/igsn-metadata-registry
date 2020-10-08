@@ -44,6 +44,8 @@ public class SchemaService {
 
 	public static final String AGNv1 = "agn-igsn-desc-1.0";
 
+	public static final String OAIDC = "oai-dc";
+
 	private static Schema schema;
 
 	protected final String schemaConfigLocation = "schemas/schemas.json";
