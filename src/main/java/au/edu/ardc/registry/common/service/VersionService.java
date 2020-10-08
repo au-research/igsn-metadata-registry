@@ -125,6 +125,8 @@ public class VersionService {
 	/**
 	 * Search for all public {@link Version} that has a particular {@link Schema}
 	 * @param schema {@link String}
+	 * @param from {@link Date}
+	 * @param until {@link Date}
 	 * @param pageable {@link Pageable}
 	 * @return a @{@link Page} of {@link Version}
 	 */
