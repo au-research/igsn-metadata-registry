@@ -14,7 +14,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,46 +26,47 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/api/services/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "Version Resource API")
+@Tag(name = "IGSN Mint API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class IGSNServiceMintController {
 
-	@Autowired
-	IGSNRequestService igsnRequestService;
+	final IGSNRequestService igsnRequestService;
 
-	@Autowired
-	RequestService requestService;
+	final RequestService requestService;
 
-	@Autowired
-	SchemaService schemaService;
+	final SchemaService schemaService;
 
-	@Autowired
-	ValidationService validationService;
+	final ValidationService validationService;
 
-	@Autowired
-	RecordService recordService;
+	final VersionService versionService;
 
-	@Autowired
-	VersionService versionService;
+	final IdentifierService identifierService;
 
-	@Autowired
-	IdentifierService identifierService;
+	final JobLauncher standardJobLauncher;
 
-	@Autowired
-	@Qualifier("standardJobLauncher")
-	JobLauncher standardJobLauncher;
+	final JobLauncher asyncJobLauncher;
 
-	@Autowired
-	@Qualifier("asyncJobLauncher")
-	JobLauncher asyncJobLauncher;
+	final Job igsnImportJob;
 
-	@Autowired
-	@Qualifier("IGSNImportJob")
-	Job igsnImportJob;
+	private final KeycloakService kcService;
 
-	@Autowired
-	private KeycloakService kcService;
+	public IGSNServiceMintController(IGSNRequestService igsnRequestService, RequestService requestService,
+			SchemaService schemaService, ValidationService validationService, VersionService versionService,
+			IdentifierService identifierService, @Qualifier("standardJobLauncher") JobLauncher standardJobLauncher,
+			@Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher, @Qualifier("IGSNImportJob") Job igsnImportJob,
+			KeycloakService kcService) {
+		this.igsnRequestService = igsnRequestService;
+		this.requestService = requestService;
+		this.schemaService = schemaService;
+		this.validationService = validationService;
+		this.versionService = versionService;
+		this.identifierService = identifierService;
+		this.standardJobLauncher = standardJobLauncher;
+		this.asyncJobLauncher = asyncJobLauncher;
+		this.igsnImportJob = igsnImportJob;
+		this.kcService = kcService;
+	}
 
 	/**
 	 * @param request the entire http request object
@@ -116,9 +116,12 @@ public class IGSNServiceMintController {
 		else {
 			asyncJobLauncher.run(igsnImportJob, jobParameters);
 		}
-
 		igsnRequest.setStatus(Request.Status.ACCEPTED);
+		igsnRequestService.save(igsnRequest);
+
+		// store the Request into the HttpServletRequest for logging at APILogging
 		request.setAttribute(String.valueOf(Request.class), igsnRequest);
+
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(igsnRequest);
 	}
 
