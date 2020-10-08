@@ -106,6 +106,14 @@ public class RecordService {
 	}
 
 	/**
+	 * Find the earliest modifedAt date
+	 * @return Date
+	 */
+	public Date findEarliest() {
+		return repository.findEarliest();
+	}
+
+	/**
 	 * Tell if a record exists by id todo handle soft delete
 	 * @param id String uuid
 	 * @return if the uuid correlate to an existing record

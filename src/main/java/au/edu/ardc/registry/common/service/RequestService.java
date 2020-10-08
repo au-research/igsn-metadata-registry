@@ -45,7 +45,8 @@ public class RequestService {
 
 	private Map<String, Logger> loggers;
 
-	public RequestService(RequestRepository requestRepository, ApplicationProperties applicationProperties, RequestMapper requestMapper) {
+	public RequestService(RequestRepository requestRepository, ApplicationProperties applicationProperties,
+			RequestMapper requestMapper) {
 		this.requestRepository = requestRepository;
 		this.applicationProperties = applicationProperties;
 		this.requestMapper = requestMapper;
@@ -173,8 +174,8 @@ public class RequestService {
 	}
 
 	/**
-	 * Close the logger by {@link Request}
-	 * Use to remove all appenders from the Logger instance and reduce memory footprint
+	 * Close the logger by {@link Request} Use to remove all appenders from the Logger
+	 * instance and reduce memory footprint
 	 * @param request the {@link Request}
 	 */
 	public void closeLoggerFor(Request request) {
@@ -234,7 +235,7 @@ public class RequestService {
 		}
 
 		// updates these allowed fields
-		entity.setType(dto.getType() != null ? dto.getType(): entity.getType());
+		entity.setType(dto.getType() != null ? dto.getType() : entity.getType());
 		entity.setStatus(dto.getStatus() != null ? Request.Status.valueOf(dto.getStatus()) : entity.getStatus());
 
 		entity.setUpdatedAt(new Date());
@@ -243,6 +244,5 @@ public class RequestService {
 	}
 
 	// todo delete
-
 
 }

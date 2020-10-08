@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,5 +33,8 @@ public interface RecordRepository extends JpaRepository<Record, String>, JpaSpec
 	Page<Record> findById(UUID id, Pageable pageable);
 
 	Page<Record> findAllByTitleNull(Pageable pageable);
+
+	@Query(value = "SELECT MIN(modifiedAt) FROM Record")
+	Date findEarliest();
 
 }

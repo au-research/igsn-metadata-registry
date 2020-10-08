@@ -53,4 +53,5 @@ public class IdentifierMapper {
 	public Converter<Identifier, IdentifierDTO> getConverter() {
 		return this.converter;
 	}
+
 }

@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.oai.exception;
 
-public class NoSetHierarchy extends OAIException {
+public class NoSetHierarchyException extends OAIException {
 
-	public NoSetHierarchy() {
+	public NoSetHierarchyException() {
 		super();
 	}
 
