@@ -46,7 +46,7 @@
         </Root>
 
         <!-- LOG "au.edu.ardc.registry*" at INFO level -->
-        <!--        <Logger name="au.edu.ardc.registry" level="info"/>-->
+                <Logger name="au.edu.ardc.registry" level="debug"/>
 
         <Logger name="au.edu.ardc.registry.common.service.APILoggingService" level="info">
             <AppenderRef ref="API"/>
