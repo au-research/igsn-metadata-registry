@@ -23,6 +23,8 @@ public class ARDCv1ToOAIDCTransformer implements Transformer {
 
         Version resultVersion = new Version();
         resultVersion.setSchema(targetSchemaID);
+        resultVersion.setCurrent(true);
+        resultVersion.setRecord(version.getRecord());
         resultVersion.setContent(resultDocument.getBytes());
 
         return resultVersion;

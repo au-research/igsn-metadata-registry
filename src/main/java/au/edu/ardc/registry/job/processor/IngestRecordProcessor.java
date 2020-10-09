@@ -1,15 +1,15 @@
 package au.edu.ardc.registry.job.processor;
 
-import au.edu.ardc.registry.common.entity.Identifier;
-import au.edu.ardc.registry.common.entity.Record;
-import au.edu.ardc.registry.common.entity.URL;
-import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.entity.*;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
@@ -22,17 +22,17 @@ import java.util.UUID;
 
 public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> {
 
-	private SchemaService schemaService;
+	private final IGSNRequestService igsnRequestService;
 
-	private KeycloakService kcService;
+	private final SchemaService schemaService;
 
-	private IdentifierService identifierService;
+	private final IdentifierService identifierService;
 
-	private RecordService recordService;
+	private final RecordService recordService;
 
-	private IGSNVersionService igsnVersionService;
+	private final IGSNVersionService igsnVersionService;
 
-	private URLService urlService;
+	private final URLService urlService;
 
 	private String creatorID;
 
@@ -45,46 +45,56 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 	private Schema schema;
 
 	public IngestRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
-			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
+			RecordService recordService, IGSNVersionService versionService, URLService urlService,
+			IGSNRequestService igsnRequestService) {
 
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.igsnVersionService = versionService;
 		this.urlService = urlService;
 		this.schemaService = schemaService;
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@BeforeStep
 	public void beforeStep(final StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		this.creatorID = jobParameters.getString("creatorID");
-		this.outputFilePath = jobParameters.getString("filePath");
-		this.allocationID = jobParameters.getString("allocationID");
-		this.ownerType = jobParameters.getString("ownerType");
+		String requestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(requestID);
+
+		this.creatorID = request.getAttribute(Attribute.CREATOR_ID);
+		this.outputFilePath = request.getAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH);
+		this.allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
+		this.ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 	}
 
 	@Override
-	public Resource process(Resource item) throws Exception {
-		processContent(item);
-		return null;
-	}
-
-	private void processContent(Resource item) throws IOException, ContentProviderNotFoundException {
+	public Resource process(@NotNull Resource item) throws IOException, ContentProviderNotFoundException {
+		// read the content of the item Resource
 		String content = Helpers.readFile(item.getFile().getPath());
+
+		// build the providers
 		schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
-		String identifierValue = identifierProvider.get(content);
-		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
-				Metadata.LandingPage);
-		String landingPage = landingPageProvider.get(content);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
+		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
+				Metadata.LandingPage);
+
+		// obtain the necessary information from the providers
+		String identifierValue = identifierProvider.get(content);
+		String landingPage = landingPageProvider.get(content);
+
+		// add new Record, Identifier, URL and Version
 		Record record = addRecord(visibilityProvider.get(content));
 		addIdentifier(identifierValue, record);
 		addURL(landingPage, record);
 		addVersion(content, record);
+
+		// append identifierValue to the outputFile path for use in next step
 		Helpers.appendToFile(outputFilePath, identifierValue);
+		return null;
 	}
 
 	private Record addRecord(boolean visible) {

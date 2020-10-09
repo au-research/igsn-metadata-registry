@@ -7,6 +7,7 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.job.processor.RecordTitleProcessor;
 import au.edu.ardc.registry.job.processor.RecordTransformLDProcessor;
+import au.edu.ardc.registry.job.processor.RecordTransformOAIDCProcessor;
 import au.edu.ardc.registry.job.reader.RecordReader;
 import au.edu.ardc.registry.job.writer.NoOpItemWriter;
 import org.springframework.batch.core.Job;
@@ -43,7 +44,11 @@ public class ProcessRecordJobConfig {
 
 	@Bean(name = "ProcessRecordJob")
 	public Job ProcessRecordJob() {
-		return jobBuilderFactory.get("ProcessRecordJob").flow(processTitles()).next(processLDTransforms()).end()
+		return jobBuilderFactory.get("ProcessRecordJob")
+				.flow(processTitles())
+				.next(processLDTransforms())
+				.next(processOAIDCTransform())
+				.end()
 				.build();
 	}
 
@@ -65,6 +70,14 @@ public class ProcessRecordJobConfig {
 				.processor(new RecordTransformLDProcessor(versionService, recordService, schemaService))
 				.writer(new NoOpItemWriter<>()).faultTolerant().retryLimit(3)
 				.retry(DeadlockLoserDataAccessException.class).build();
+	}
+
+	@Bean
+	public Step processOAIDCTransform() {
+		return stepBuilderFactory.get("Process OAI-DC Transform").<Record, Record>chunk(10)
+				.reader(new RecordReader(recordRepository))
+				.processor(new RecordTransformOAIDCProcessor(versionService, schemaService, recordService))
+				.writer(new NoOpItemWriter<>()).build();
 	}
 
 	@Bean

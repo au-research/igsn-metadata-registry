@@ -1,13 +1,13 @@
 package au.edu.ardc.registry.igsn.job.reader;
 
+import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.MultiResourceItemReader;
-import org.springframework.batch.item.xml.StaxEventItemReader;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -15,37 +15,38 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.stream.StreamSupport;
-import static java.util.Spliterator.ORDERED;
+
 import static java.nio.file.Files.newDirectoryStream;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
 @Component
 @StepScope
-public class PayloadContentReader extends MultiResourceItemReader {
+public class PayloadContentReader extends MultiResourceItemReader<Resource> {
 
 	private String chunkContentsDir;
 
-	public PayloadContentReader() {
+	final IGSNRequestService igsnRequestService;
+
+	public PayloadContentReader(IGSNRequestService igsnRequestService) {
 		super();
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@BeforeStep
 	public void beforeStep(StepExecution stepExecution) throws IOException {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		chunkContentsDir = jobParameters.getString("chunkContentsDir");
+		String requestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(requestID);
+		chunkContentsDir = request.getAttribute(Attribute.CHUNKED_PAYLOAD_PATH);
 		init();
 	}
 
 	void init() throws IOException {
-		this.setName("PayloadContentReader");
+		setName("PayloadContentReader");
 		ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 		Resource[] resources = resourcePatternResolver.getResources("file:" + chunkContentsDir + File.separator + "*");
-		super.setResources(resources);
-		super.setDelegate(new ResourcePassthroughReader());
+		setResources(resources);
+		setDelegate(new ResourcePassthroughReader());
 	}
 
 }

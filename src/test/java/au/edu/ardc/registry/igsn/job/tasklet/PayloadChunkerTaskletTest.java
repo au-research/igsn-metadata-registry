@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.igsn.job.tasklet;
 
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.common.entity.Request;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
@@ -78,16 +80,16 @@ class PayloadChunkerTaskletTest {
 		String payLoadContentPath = dataPath + File.separator + "payload.xml";
 		Helpers.writeFile(payLoadContentPath, xml);
 
+		request.setAttribute(Attribute.DATA_PATH, dataPath)
+				.setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath)
+				.setAttribute(Attribute.CHUNKED_PAYLOAD_PATH, dataPath + File.separator + "chunks")
+				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
+
+		when(igsnRequestService.findById(request.getId().toString())).thenReturn(request);
+
 		// @formatter:off
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("IGSNServiceRequestID", UUID.randomUUID().toString())
-				.addString("creatorID", UUID.randomUUID().toString())
-				.addString("payLoadContentFile", payLoadContentPath)
-				.addString("allocationID", UUID.randomUUID().toString())
-				.addString("ownerType", "User")
-				.addString("chunkContentsDir", dataPath + File.separator + "chunks")
-				.addString("filePath", dataPath + File.separator + "igsn_list.txt")
-				.addString("dataPath", dataPath)
+				.addString("IGSNServiceRequestID", request.getId().toString())
 				.toJobParameters();
 		// @formatter:on
 

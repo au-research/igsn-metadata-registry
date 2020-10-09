@@ -20,7 +20,7 @@ public class IGSNItemReader extends FlatFileItemReader<String> {
 
 	private String filePath;
 
-	private IGSNRequestService igsnRequestService;
+	private final IGSNRequestService igsnRequestService;
 
 	public IGSNItemReader(IGSNRequestService igsnRequestService) {
 		super();

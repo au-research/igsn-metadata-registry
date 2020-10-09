@@ -1,7 +1,12 @@
 package au.edu.ardc.registry.igsn.validator;
 
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.service.IdentifierService;
+import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.service.ValidationService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.exception.*;
+
 import java.io.IOException;
 
 /**
@@ -19,11 +24,42 @@ public class PayloadValidator {
 
 	private final VersionContentValidator versionContentValidator;
 
+	/**
+	 * Constructor when the various validators are already defined elsewhere
+	 *
+	 * @param contentValidator {@link ContentValidator}
+	 * @param versionContentValidator {@link VersionContentValidator}
+	 * @param userAccessValidator {@link UserAccessValidator}
+	 */
 	public PayloadValidator(ContentValidator contentValidator, VersionContentValidator versionContentValidator,
 			UserAccessValidator userAccessValidator) {
 		this.contentValidator = contentValidator;
 		this.userAccessValidator = userAccessValidator;
 		this.versionContentValidator = versionContentValidator;
+	}
+
+	/**
+	 * Constructor that builds it's own set of Validators. Since this is an instance and
+	 * not a {@link org.springframework.stereotype.Service}. All Service object. needs to be
+	 * passed in and can't be automatically injected.
+	 * @param schemaService {@link SchemaService}
+	 * @param validationService {@link ValidationService}
+	 * @param identifierService {@link IdentifierService}
+	 * @param versionService {@link VersionService}
+	 */
+	public PayloadValidator(SchemaService schemaService, ValidationService validationService,
+			IdentifierService identifierService, VersionService versionService) {
+		this.contentValidator = new ContentValidator(schemaService);
+		this.userAccessValidator = new UserAccessValidator(identifierService, validationService, schemaService);
+		this.versionContentValidator = new VersionContentValidator(identifierService, versionService, schemaService);
+	}
+
+	/**
+	 * The {@link UserAccessValidator} holds a mutable state.
+	 * @return The instance of {@link UserAccessValidator}
+	 */
+	public UserAccessValidator getUserAccessValidator() {
+		return this.userAccessValidator;
 	}
 
 	/**

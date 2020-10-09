@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,18 +60,10 @@ class IGSNServiceMintControllerIT extends KeycloakIntegrationTest {
 	@DisplayName("403 because user does not have access to this Identifier")
 	void mint_403() throws Exception {
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
-
-		String mockedServerURL = String.format("http://localhost:%s", mockMDS.getPort());
-
+		IGSNAllocation allocation = getStubAllocation();
 		User user = TestHelper.mockUser();
-		IGSNAllocation allocation = TestHelper.mockIGSNAllocation();
-		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
-		allocation.setPrefix("20.500.11812");
-		allocation.setNamespace("XXZT1");
-		allocation.setName("Mocked up test Allocation");
-		allocation.setMds_username("ANDS.IGSN");
-		allocation.setMds_url(mockedServerURL);
 		user.setAllocations(Collections.singletonList(allocation));
+
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
@@ -93,26 +84,17 @@ class IGSNServiceMintControllerIT extends KeycloakIntegrationTest {
 	void mint_202() throws Exception {
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_mintable_ardcv1.xml");
 		String identifierValue = "20.500.11812/XXZT1000023";
-
-		// getting the mocked Server URL so that we can inject it to our mocked up
-		// Allocation
-		String mockedServerURL = String.format("http://localhost:%s", mockMDS.getPort());
+		IGSNAllocation allocation = getStubAllocation();
 		User user = TestHelper.mockUser();
-		IGSNAllocation allocation = TestHelper.mockIGSNAllocation();
-		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
-		allocation.setPrefix("20.500.11812");
-		allocation.setNamespace("XXZT1");
-		allocation.setName("Mocked up test Allocation");
-		allocation.setMds_username("ANDS.IGSN");
-		allocation.setMds_url(mockedServerURL);
 		user.setAllocations(Collections.singletonList(allocation));
 
 		// the entire authentication model is mocked for this purpose
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
-		// Queue 201 returns from MDS twice, 1 for Identifier creation and 1 for Metadata
-		// Creation
+		// Queue 201 returns from MDS twice,
+		// - 1 for Identifier creation
+		// - 1 for Metadata Creation
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 
@@ -156,6 +138,23 @@ class IGSNServiceMintControllerIT extends KeycloakIntegrationTest {
 		// version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
 		// assertThat(jsonldVersion).isNotNull();
 		// assertThat(jsonldVersion.getContent()).isNotEmpty();
+	}
+
+	/**
+	 * Internal helper method to obtain a stub allocation with connection to the mocked
+	 * server
+	 * @return the {@link IGSNAllocation} with MDS URL point to the mockedServer
+	 */
+	private IGSNAllocation getStubAllocation() {
+		String mockedServerURL = String.format("http://localhost:%s", mockMDS.getPort());
+		IGSNAllocation allocation = TestHelper.mockIGSNAllocation();
+		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
+		allocation.setPrefix("20.500.11812");
+		allocation.setNamespace("XXZT1");
+		allocation.setName("Mocked up test Allocation");
+		allocation.setMds_username("ANDS.IGSN");
+		allocation.setMds_url(mockedServerURL);
+		return allocation;
 	}
 
 }
