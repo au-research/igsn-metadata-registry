@@ -29,7 +29,7 @@ public class UserAccessValidator {
 
 	private final IdentifierService identifierService;
 
-	private final String IGSNallocationType = "urn:ardc:igsn:allocation";
+	private static final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
 	private UUID allocationID;
 
