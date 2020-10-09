@@ -146,6 +146,8 @@ public class IGSNServiceUpdateController {
 		igsnRequest.setAttribute(Attribute.CREATOR_ID, user.getId().toString())
 				.setAttribute(Attribute.OWNER_TYPE, ownerType)
 				.setAttribute(Attribute.DATA_PATH, dataPath)
+				.setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath)
+				.setAttribute(Attribute.CHUNKED_PAYLOAD_PATH, dataPath + File.separator + "chunks")
 				.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(igsnRequest))
 				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
 		// @formatter:on
