@@ -18,4 +18,8 @@ public class ListMetadataFormatsFragment {
 		listMetadataFormats.add(newFormat);
 	}
 
+	public List<MetadataFormatFragment> getMetadataFormat() {
+		return this.listMetadataFormats;
+	}
+
 }

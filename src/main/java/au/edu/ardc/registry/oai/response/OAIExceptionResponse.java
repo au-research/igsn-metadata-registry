@@ -1,11 +1,7 @@
 package au.edu.ardc.registry.oai.response;
 
 import au.edu.ardc.registry.oai.model.ErrorFragment;
-import au.edu.ardc.registry.oai.model.IdentifyFragment;
-import au.edu.ardc.registry.oai.model.RequestFragment;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Date;
 
 public class OAIExceptionResponse extends OAIResponse {
 

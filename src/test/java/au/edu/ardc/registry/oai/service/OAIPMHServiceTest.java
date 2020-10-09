@@ -5,8 +5,7 @@ import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
-import au.edu.ardc.registry.oai.exception.BadArgumentException;
-import au.edu.ardc.registry.oai.exception.CannotDisseminateFormatException;
+import au.edu.ardc.registry.oai.exception.*;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
 import org.junit.Assert;
@@ -17,12 +16,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,6 +98,10 @@ class OAIPMHServiceTest {
 		Assert.assertThrows(BadArgumentException.class, () -> {
 			service.getRecord(SchemaService.ARDCv1, null);
 		});
+
+		Assert.assertThrows(IdDoesNotExistException.class, () -> {
+			service.getRecord(SchemaService.ARDCv1, "nonexistentIdentifier");
+		});
 	}
 
 	@Test
@@ -115,9 +114,32 @@ class OAIPMHServiceTest {
 			service.listRecords("nonsense", null, null, null);
 		});
 
-		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listRecords(null, null, null, null);
+		Assert.assertThrows(BadResumptionTokenException.class, () -> {
+			service.listRecords(SchemaService.ARDCv1, "garbage", null, null);
 		});
+	}
+
+	@Test
+	void listIdentifiers() {
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listIdentifiers(null, null, null, null);
+		});
+
+		Assert.assertThrows(CannotDisseminateFormatException.class, () -> {
+			service.listIdentifiers("nonsense", null, null, null);
+		});
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listIdentifiers(null, null, null, null);
+		});
+	}
+
+	@Test
+	void listSets() {
+		Assert.assertThrows(NoSetHierarchyException.class, () -> {
+			service.listSets();
+		});
+
 	}
 
 	@Test
