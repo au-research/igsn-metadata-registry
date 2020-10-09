@@ -4,6 +4,10 @@ import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.FragmentProvider;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
@@ -42,6 +46,25 @@ class VersionContentValidatorTest {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 		Version version = TestHelper.mockVersion();
 		Assert.assertTrue(versionContentValidator.isVersionNewContent("fish", version));
+	}
+
+	@Test
+	@DisplayName("IsVersionNewContent comparing hash throws VersionContentAlreadyExisted")
+	void isVersionNewContent_ContentAlreadyExisted() throws IOException {
+		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
+		Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
+
+		Version version = TestHelper.mockVersion();
+		// due to the nature of the FragmentProvider and the hash comparison, Fragment always return a slightly differnet formatted content
+		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		String original = fragmentProvider.get(validXML, 0);
+		version.setContent(original.getBytes());
+		version.setHash(VersionService.getHash(original));
+
+		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
+			versionContentValidator.isVersionNewContent(original, version);
+		});
 	}
 
 	@Test
@@ -133,24 +156,29 @@ class VersionContentValidatorTest {
 		});
 	}
 
-	// todo fix me
+	@Test
 	void isNewContent_notNewContent() throws IOException {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
+		Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 
+		// due to the nature of the FragmentProvider and the hash comparison, Fragment always return a slightly differnet formatted content
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
-		String hash = VersionService.getHash(validXML);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		String original = fragmentProvider.get(validXML, 0);
 
 		// there is already an identifier exist, bound to a Record with the same version of the same schema
 		Record record = TestHelper.mockRecord();
 		Version version = TestHelper.mockVersion(record);
-		version.setContent(validXML.getBytes());
+		version.setContent(original.getBytes());
 		version.setSchema(SchemaService.ARDCv1);
-		version.setHash(hash);
+		version.setHash(VersionService.getHash(original));
 		record.setCurrentVersions(Collections.singletonList(version));
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		Mockito.when(identifierService.findByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
 				.thenReturn(identifier);
 
-		Assertions.assertThat(versionContentValidator.isNewContent(validXML)).isFalse();
+		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
+			versionContentValidator.isNewContent(original);
+		});
 	}
 }

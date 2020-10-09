@@ -50,9 +50,7 @@ public class VersionContentValidator {
 		for (int i = 0; i < numberOfFragments; i++) {
 			String content = fProvider.get(payload, i);
 			String identifier = iProvider.get(content);
-			if (!isIdentifierNewContent(content, identifier, schema.getId())) {
-				return false;
-			}
+			isIdentifierNewContent(content, identifier, schema.getId());
 		}
 		return true;
 	}

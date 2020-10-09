@@ -46,14 +46,15 @@ class ARDCv1FragmentProviderTest {
 		assertTrue(fragCounter == 3);
 	}
 
-	// todo fix me
-	void get_fragmentOnSameDocument() throws IOException {
+	@Test
+	void get_fragmentOnSameDocumentConsistentResult() throws IOException {
 		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
 		String original = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
-		String firstFragment = fragmentProvider.get(original, 0);
+		String firstFragmentOnce = fragmentProvider.get(original, 0);
+		String firstFragmentAgain = fragmentProvider.get(original, 0);
 
-		assertThat(original).isEqualTo(firstFragment);
+		assertThat(firstFragmentOnce).isEqualTo(firstFragmentAgain);
 	}
 }
