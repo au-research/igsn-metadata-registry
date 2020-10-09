@@ -74,7 +74,8 @@ public class OAIPMHController {
 			response = oaipmhService.listMetadataFormats();
 			break;
 		case LISTSETS:
-			throw new NoSetHierarchyException();
+			response = oaipmhService.listSets();
+			break;
 		}
 
 		response.setRequest(requestFragment);

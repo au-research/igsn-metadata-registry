@@ -114,4 +114,31 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 				.xpath("/OAI-PMH/ListRecords/record/metadata/resources").exists();
 	}
 
+	@Test
+	void handle_verb_ListRecords_returnsNoRecordsMatchException() throws IOException {
+		int i = 0;
+		Date versionDate = service.convertDate("2020-09-23T09:30:25Z");
+		for (i = 0; i < 150; i++) {
+			Record record = TestHelper.mockRecord();
+			record.setModifiedAt(versionDate);
+			recordRepository.saveAndFlush(record);
+
+			Version version = TestHelper.mockVersion(record);
+			version.setCurrent(true);
+			String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+			version.setContent(validXML.getBytes());
+			version.setSchema(SchemaService.ARDCv1);
+			version.setCreatedAt(versionDate);
+			versionRepository.saveAndFlush(version);
+		}
+
+		String from = "2020-09-23T09:30:28Z";
+		String until = "2020-09-23T09:30:22Z";
+		this.webTestClient.get()
+				.uri(base_url + "?verb=ListRecords&metadataPrefix=" + SchemaService.ARDCv1 + "&from=" + from + "&until="
+						+ until)
+				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
+				.xpath("/OAI-PMH/error[@code='noRecordsMatch']").exists();
+	}
+
 }

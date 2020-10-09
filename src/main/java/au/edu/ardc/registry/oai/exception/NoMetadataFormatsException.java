@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.oai.exception;
 
-public class NoMetadataFormats extends OAIException {
+public class NoMetadataFormatsException extends OAIException {
 
-	public NoMetadataFormats() {
+	public NoMetadataFormatsException() {
 		super();
 	}
 

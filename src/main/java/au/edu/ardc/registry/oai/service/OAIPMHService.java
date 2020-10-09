@@ -199,13 +199,21 @@ public class OAIPMHService {
 		OAIListMetadataFormatsResponse response = new OAIListMetadataFormatsResponse();
 		ListMetadataFormatsFragment metadataFormatsFragment = new ListMetadataFormatsFragment();
 		List<Schema> schemas = this.getOAIProviders();
-		for (Schema schema : schemas) {
-			OAIProvider oaiProvider = (OAIProvider) MetadataProviderFactory.create(schema, Metadata.OAI);
-			metadataFormatsFragment.setMetadataFormat(oaiProvider.getPrefix(schema),
-					oaiProvider.getFormatSchema(schema), oaiProvider.getNamespace(schema));
+		try {
+			for (Schema schema : schemas) {
+				OAIProvider oaiProvider = (OAIProvider) MetadataProviderFactory.create(schema, Metadata.OAI);
+				metadataFormatsFragment.setMetadataFormat(oaiProvider.getPrefix(schema),
+						oaiProvider.getFormatSchema(schema), oaiProvider.getNamespace(schema));
+			}
+			response.setListMetadataFormatsFragment(metadataFormatsFragment);
+			return response;
+		} catch(Exception e){
+			throw new NoMetadataFormatsException();
 		}
-		response.setListMetadataFormatsFragment(metadataFormatsFragment);
-		return response;
+	}
+
+	public OAIResponse listSets(){
+		throw new NoSetHierarchyException();
 	}
 
 	/**
