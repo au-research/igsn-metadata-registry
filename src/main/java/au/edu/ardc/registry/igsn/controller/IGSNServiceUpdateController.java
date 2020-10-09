@@ -147,7 +147,7 @@ public class IGSNServiceUpdateController {
 				.setAttribute(Attribute.OWNER_TYPE, ownerType)
 				.setAttribute(Attribute.DATA_PATH, dataPath)
 				.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(igsnRequest))
-				.setAttribute(Attribute.IMPORTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
+				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
 		// @formatter:on
 
 		try {
