@@ -51,7 +51,7 @@ public class PayloadValidator {
 			IdentifierService identifierService, VersionService versionService) {
 		this.contentValidator = new ContentValidator(schemaService);
 		this.userAccessValidator = new UserAccessValidator(identifierService, validationService, schemaService);
-		this.versionContentValidator = new VersionContentValidator(identifierService, versionService, schemaService);
+		this.versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 	}
 
 	/**

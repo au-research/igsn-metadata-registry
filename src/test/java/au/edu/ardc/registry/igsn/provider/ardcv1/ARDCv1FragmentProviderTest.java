@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -44,4 +46,14 @@ class ARDCv1FragmentProviderTest {
 		assertTrue(fragCounter == 3);
 	}
 
+	// todo fix me
+	void get_fragmentOnSameDocument() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String original = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		String firstFragment = fragmentProvider.get(original, 0);
+
+		assertThat(original).isEqualTo(firstFragment);
+	}
 }

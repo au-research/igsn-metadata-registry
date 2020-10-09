@@ -16,51 +16,95 @@ import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
 
 import java.util.Optional;
 
+/**
+ * This validators validate an XML payload in the supported Schema. Used by
+ * {@link PayloadValidator}
+ */
 public class VersionContentValidator {
-
-	private final VersionService versionService;
 
 	private final IdentifierService identifierService;
 
 	private final SchemaService schemaService;
 
-	public VersionContentValidator(IdentifierService identifierService, VersionService versionService,
-			SchemaService schemaService) {
-		this.versionService = versionService;
+	public VersionContentValidator(IdentifierService identifierService, SchemaService schemaService) {
 		this.identifierService = identifierService;
 		this.schemaService = schemaService;
 	}
 
+	/**
+	 * Checks if a Payload has all new content. Calls {@link #isIdentifierNewContent}
+	 * internally for each Fragment found
+	 * @param payload String payload to check, requires a supported {@link Schema}
+	 * document
+	 * @return true if the payload (all content) is considered new and ready for ingest.
+	 * @throws VersionContentAlreadyExisted bubble up from {@link #isVersionNewContent}
+	 * @throws ContentProviderNotFoundException bubble up from {@link FragmentProvider}
+	 * and {@link IdentifierProvider}
+	 */
 	public boolean isNewContent(String payload) throws VersionContentAlreadyExisted, ContentProviderNotFoundException {
 		Schema schema = schemaService.getSchemaForContent(payload);
 		FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
 		IdentifierProvider iProvider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
-		boolean isNewContent = false;
+
 		int numberOfFragments = fProvider.getCount(payload);
 		for (int i = 0; i < numberOfFragments; i++) {
 			String content = fProvider.get(payload, i);
 			String identifier = iProvider.get(content);
-			isNewContent = this.isNewContent(content, identifier, schema.getId());
+			if (!isIdentifierNewContent(content, identifier, schema.getId())) {
+				return false;
+			}
 		}
-		return isNewContent;
+		return true;
 	}
 
-	public boolean isNewContent(String content, String identifier, String schemaID)
+	/**
+	 * Checks if a Content is new for a given Identifier and schema. Calls
+	 * {@link #isVersionNewContent(String, Version)} internally
+	 * @param content String content to compare
+	 * @param identifierValue the String value of the Identifier, only checks IGSN type
+	 * @param schemaID the String schemaID
+	 * @return true if the content is new for this Identifier
+	 * @throws VersionContentAlreadyExisted bubble up from
+	 * {@link #isVersionNewContent(String, Version)}
+	 */
+	public boolean isIdentifierNewContent(String content, String identifierValue, String schemaID)
 			throws VersionContentAlreadyExisted {
-		Identifier i = identifierService.findByValueAndType(identifier, Identifier.Type.IGSN);
-		if (i == null)
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+
+		// if the identifier doesn't exist, this is new content
+		if (identifier == null) {
 			return true;
-		Record record = i.getRecord();
+		}
+
+		// if the identifier exists, we check if the content is new by the schema of the
+		// version
+		Record record = identifier.getRecord();
 		Optional<Version> cVersion = record.getCurrentVersions().stream()
 				.filter(version -> version.getSchema().equals(schemaID)).findFirst();
-		return cVersion.map(version -> this.isNewContent(content, version, schemaID)).orElse(true);
+
+		// if there's no version of the given schema, this is new content
+		if (!cVersion.isPresent()) {
+			return true;
+		}
+
+		// check new content by version
+		Version version = cVersion.get();
+		return isVersionNewContent(content, version);
 	}
 
-	public boolean isNewContent(String content, Version version, String schemaID) throws VersionContentAlreadyExisted {
+	/**
+	 * Checks if a content is new for a given {@link Version}. Comparison is done via
+	 * VersionService.getHash
+	 * @param content the new String content
+	 * @param version the {@link Version} to check on
+	 * @return true if the Content is considered new
+	 * @throws VersionContentAlreadyExisted when the version content already existed
+	 */
+	public boolean isVersionNewContent(String content, Version version) throws VersionContentAlreadyExisted {
 		String versionHash = version.getHash();
-		String incomingHash = versionService.getHash(content);
+		String incomingHash = VersionService.getHash(content);
 		if (incomingHash.equals(versionHash)) {
-			throw new VersionContentAlreadyExisted(schemaID, versionHash);
+			throw new VersionContentAlreadyExisted(version.getSchema(), versionHash);
 		}
 		return true;
 	}
