@@ -110,7 +110,7 @@ public class UserAccessValidator {
 			Record record = existingIdentifier.getRecord();
 			this.hasAccessToRecord(record, user);
 			if (!this.hasAccessToRecord(record, user)) {
-				throw new ForbiddenOperationException("User has no access to t Record: " + record.getId());
+				throw new ForbiddenOperationException("User has no access to the Record: " + record.getId());
 			}
 			allocationID = record.getAllocationID();
 		}
@@ -146,14 +146,6 @@ public class UserAccessValidator {
 
 	public boolean hasAccessToRecord(Record record, User user) {
 		return validationService.validateRecordOwnership(record, user);
-	}
-
-	public boolean canCreate(IGSNAllocation a, User user) {
-		return validationService.validateAllocationScope(a, user, Scope.CREATE);
-	}
-
-	public boolean canUpdate(IGSNAllocation a, User user) {
-		return validationService.validateAllocationScope(a, user, Scope.UPDATE);
 	}
 
 }

@@ -3,8 +3,8 @@ package au.edu.ardc.registry.igsn.validator;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
-import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
 import org.junit.Assert;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,25 +20,34 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContentValidatorTest {
 
 	@Autowired
-	SchemaService service;
+	SchemaService schemaService;
 
 	@Test
-	public void failNoNamespace() throws IOException {
-		ContentValidator cv = new ContentValidator(service);
-		String validXML = Helpers.readFile("src/test/resources/xml/shiporder.xml");
+	@DisplayName("Validate a valid ardcv1 XML payload should return true")
+	void validateValidXML() throws IOException {
+		ContentValidator contentValidator = new ContentValidator(schemaService);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		assertTrue(contentValidator.validate(xml));
+	}
+
+	@Test
+	@DisplayName("Validate an XML with no namespace will throw ContentNotSupportedException")
+	void failNoNamespace() throws IOException {
+		ContentValidator contentValidator = new ContentValidator(schemaService);
+		String xml = Helpers.readFile("src/test/resources/xml/shiporder.xml");
 		Assert.assertThrows(ContentNotSupportedException.class, () -> {
-			boolean isValid = cv.validate(validXML);
+			contentValidator.validate(xml);
 		});
 	}
 
 	@Test
-	public void failrifcsNameSpace() throws IOException {
-		ContentValidator cv = new ContentValidator(service);
-		String validXML = Helpers.readFile("src/test/resources/xml/rifcs_sample.xml");
+	@DisplayName("Validate a rifcs unsupported XML will throw ContentNotSupportedException")
+	void failrifcsNameSpace() throws IOException {
+		ContentValidator contentValidator = new ContentValidator(schemaService);
+		String xml = Helpers.readFile("src/test/resources/xml/rifcs_sample.xml");
 		Assert.assertThrows(ContentNotSupportedException.class, () -> {
-			boolean isValid = cv.validate(validXML);
+			contentValidator.validate(xml);
 		});
-
 	}
 
 }

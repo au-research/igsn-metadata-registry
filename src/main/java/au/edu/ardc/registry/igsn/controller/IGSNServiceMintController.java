@@ -69,11 +69,14 @@ public class IGSNServiceMintController {
 	}
 
 	/**
-	 * @param request the entire http request object
+	 * Mint IGSN Service endpoint.
+	 * @param request the {@link HttpServletRequest} for this request
+	 * @param payload the required {@link RequestBody} for this request
 	 * @param ownerType (Optional) default is 'User'
 	 * @param wait (Optional) {yes, true, 1 | no false 0}return instantly and start a
 	 * background job or wait until mint is completed default is {no , false, 0}
 	 * @return an IGSN response records
+	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
 	@PostMapping("/mint")
 	public ResponseEntity<Request> mint(HttpServletRequest request, @RequestBody String payload,
