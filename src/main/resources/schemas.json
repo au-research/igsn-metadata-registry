@@ -80,7 +80,7 @@
     }
   },
   {
-    "id": "oai-dc",
+    "id": "oai_dc",
     "name": "OAI Dublin Core",
     "description": "Dublin Core for OAI-PMH",
     "type": "",
@@ -88,6 +88,9 @@
     "xml": {
       "namespace": "http://purl.org/dc/elements/1.1/",
       "schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
+    },
+    "providers": {
+      "OAI": "au.edu.ardc.registry.common.provider.OAIProvider"
     }
   }
 ]
