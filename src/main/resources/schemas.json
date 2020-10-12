@@ -16,7 +16,7 @@
     "transforms": {
       "ardc-igsn-desc-1.0-jsonld": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToJSONLDTransformer",
       "igsn-reg-1.0" : "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer",
-      "oai-dc": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToOAIDCTransformer"
+      "oai_dc": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToOAIDCTransformer"
     },
     "xml": {
       "namespace": "https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc",
