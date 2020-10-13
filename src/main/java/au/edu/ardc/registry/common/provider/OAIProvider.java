@@ -72,7 +72,7 @@ public class OAIProvider {
 
 	public static Pageable getPageable(String resumptionToken, int pageSize) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		Pageable pageable = PageRequest.of(1, pageSize);
+		Pageable pageable = PageRequest.of(0, pageSize);
 		if (resumptionToken != null) {
 			try {
 				byte[] decodedBytes = Base64.getDecoder().decode(resumptionToken);

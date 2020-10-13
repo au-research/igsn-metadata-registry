@@ -7,7 +7,9 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.oai.exception.*;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
+import au.edu.ardc.registry.oai.response.OAIListRecordsResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -152,6 +154,41 @@ class OAIPMHServiceTest {
 
 		Date newDateTime = service.convertDate(ISO8601DateTime);
 		assertThat(newDateTime).isInstanceOf(Date.class);
+	}
+
+	@Test
+	void listRecords_invalidfrom_throwsBadArgumentException() throws JsonProcessingException {
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listRecords("oai_dc",null,"2020/05/04", null );
+		});
+
+	}
+
+	@Test
+	void listRecords_invaliduntil_throwsBadArgumentException() throws JsonProcessingException {
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listRecords("oai_dc",null,null, "2020/05/04" );
+		});
+
+	}
+	@Test
+	void listIdentifiers_invalidfrom_throwsBadArgumentException() throws JsonProcessingException {
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listIdentifiers("oai_dc",null,"2020/05/04", null );
+		});
+
+	}
+
+	@Test
+	void listIdentifiers_invaliduntil_throwsBadArgumentException() throws JsonProcessingException {
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.listIdentifiers("oai_dc",null,null, "2020/05/04" );
+		});
+
 	}
 
 }

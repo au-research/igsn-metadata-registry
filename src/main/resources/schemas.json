@@ -86,7 +86,7 @@
     "type": "",
     "@type": "XMLSchema",
     "xml": {
-      "namespace": "http://purl.org/dc/elements/1.1/",
+      "namespace": "http://www.openarchives.org/OAI/2.0/oai_dc/",
       "schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
     },
     "providers": {
