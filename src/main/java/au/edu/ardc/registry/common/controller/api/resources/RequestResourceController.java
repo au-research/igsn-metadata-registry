@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.controller.api.resources;
 
+import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.dto.RecordDTO;
 import au.edu.ardc.registry.common.dto.RequestDTO;
@@ -10,10 +11,7 @@ import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
-import au.edu.ardc.registry.common.repository.specs.IdentifierSpecification;
-import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
-import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
-import au.edu.ardc.registry.common.repository.specs.SearchOperation;
+import au.edu.ardc.registry.common.repository.specs.*;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RecordService;
@@ -23,6 +21,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,6 +65,18 @@ public class RequestResourceController {
 		this.requestMapper = requestMapper;
 	}
 
+	@GetMapping(value = "/")
+	@PageableOperation
+	public ResponseEntity<Page<RequestDTO>> index(HttpServletRequest httpServletRequest, @SortDefault.SortDefaults({
+			@SortDefault(sort = "createdAt", direction = Sort.Direction.DESC) }) Pageable pageable) {
+		User user = kcService.getLoggedInUser(httpServletRequest);
+		RequestSpecification specs = new RequestSpecification();
+		specs.add(new SearchCriteria("createdBy", user.getId(), SearchOperation.EQUAL));
+		Page<Request> result = requestService.search(specs, pageable);
+		Page<RequestDTO> dtos = result.map(requestMapper.getConverter());
+		return ResponseEntity.ok(dtos);
+	}
+
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<RequestDTO> show(@PathVariable String id, HttpServletRequest httpRequest) {
 		User user = kcService.getLoggedInUser(httpRequest);
@@ -90,6 +102,7 @@ public class RequestResourceController {
 	}
 
 	@GetMapping(value = "/{id}/records")
+	@PageableOperation
 	public ResponseEntity<Page<RecordDTO>> showRecords(@PathVariable String id, HttpServletRequest httpRequest,
 			Pageable pageable) {
 		User user = kcService.getLoggedInUser(httpRequest);
@@ -104,6 +117,7 @@ public class RequestResourceController {
 	}
 
 	@GetMapping(value = "/{id}/identifiers")
+	@PageableOperation
 	public ResponseEntity<Page<IdentifierDTO>> showIdentifiers(@PathVariable String id, HttpServletRequest httpRequest,
 			Pageable pageable) {
 		User user = kcService.getLoggedInUser(httpRequest);
