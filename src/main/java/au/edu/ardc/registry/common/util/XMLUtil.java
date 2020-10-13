@@ -58,10 +58,10 @@ public class XMLUtil {
 			}
 		}
 		catch (Exception e) {
-			throw new ContentNotSupportedException("Unable to determine namespace for given Document");
+			throw new ContentNotSupportedException(e.getMessage());
 		}
 		if (nameSpace.equals("")) {
-			throw new ContentNotSupportedException("Unable to determine namespace for given Document");
+			throw new ContentNotSupportedException("Namespace unavailable");
 		}
 		return nameSpace;
 	}

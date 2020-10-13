@@ -36,27 +36,30 @@ public class APIRestControllerAdvice {
 
 	/**
 	 * Handles forbidden 403 operations
-	 * @param ex The RuntimeException that is encountered
+	 * @param ex The APIException that is encountered
 	 * @param request the HttpServeletRequest, to display the path
+	 * @param locale the injected Locale for the service
 	 * @return ResponseEntity
 	 */
 	@ExceptionHandler(value = { ForbiddenOperationException.class })
-	public ResponseEntity<Object> handleForbidden(RuntimeException ex, HttpServletRequest request) {
-		APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
-		response.setTimestamp(new Date());
-		response.setStatus(HttpStatus.FORBIDDEN.value());
-		response.setError(HttpStatus.FORBIDDEN.toString());
-		response.setPath(request.getServletPath());
+	public ResponseEntity<Object> handleForbidden(APIException ex, HttpServletRequest request, Locale locale) {
+		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
+		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.FORBIDDEN, request);
 		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 	}
 
+
+	/**
+	 * Handles forbidden 403 operations
+	 * @param ex The APIException that is encountered
+	 * @param request the HttpServeletRequest, to display the path
+	 * @param locale the injected Locale for the service
+	 * @return ResponseEntity
+	 */
 	@ExceptionHandler(value = { SchemaNotSupportedException.class, VersionContentAlreadyExisted.class })
-	public ResponseEntity<Object> handleBadArgument(RuntimeException ex, HttpServletRequest request) {
-		APIExceptionResponse response = new APIExceptionResponse(ex.getMessage());
-		response.setTimestamp(new Date());
-		response.setStatus(HttpStatus.BAD_REQUEST.value());
-		response.setError(HttpStatus.BAD_REQUEST.toString());
-		response.setPath(request.getServletPath());
+	public ResponseEntity<Object> handleBadRequest(APIException ex, HttpServletRequest request, Locale locale) {
+		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
+		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.BAD_REQUEST, request);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 

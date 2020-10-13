@@ -1,9 +1,22 @@
 package au.edu.ardc.registry.exception;
 
-public class ForbiddenOperationException extends RuntimeException {
+public class ForbiddenOperationException extends APIException {
+
+	private final String msg;
 
 	public ForbiddenOperationException(String msg) {
-		super(msg);
+		super();
+		this.msg = msg;
+	}
+
+	@Override
+	public String getMessageID() {
+		return "api.error.forbidden-operation";
+	}
+
+	@Override
+	public String[] getArgs() {
+		return new String[] { this.msg };
 	}
 
 }

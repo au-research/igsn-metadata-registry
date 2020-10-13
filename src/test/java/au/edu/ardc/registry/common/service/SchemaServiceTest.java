@@ -123,8 +123,8 @@ class SchemaServiceTest {
 
 	@Test
 	void faileToValidateDocument_3() throws Exception {
-		String expectedMassageContains = "The content of element 'resource' is not complete";
-		String msg = "";
+		String expectedMassageID = "api.error.invalid_xml_payload";
+
 		boolean isValid = false;
 		try {
 			String xml = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
@@ -132,9 +132,12 @@ class SchemaServiceTest {
 
 		}
 		catch (XMLValidationException e) {
-			msg = e.getMessage();
+			String msgID = e.getMessageID();
+			assertEquals(msgID, expectedMassageID);
+			String msg = e.getMessage();
+			assertThat(msg.contains("The content of element 'resource' is not complete"));
+
 		}
-		assertTrue(msg.contains(expectedMassageContains));
 	}
 
 	@Test
