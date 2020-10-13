@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 
-import java.util.Date;
-
 @JsonPropertyOrder({ "header", "metadata" })
 public class RecordFragment {
 
@@ -21,8 +19,8 @@ public class RecordFragment {
 	private String metadata;
 
 	public RecordFragment(Record record, String metadata) {
-		this.record = record;
-		this.metadata = metadata.replaceAll("\\<\\?xml(.+?)\\?\\>", "").trim();
+		this.setRecord(record);
+		this.setMetadata(metadata.replaceAll("\\<\\?xml(.+?)\\?\\>", "").trim());
 		this.header = new RecordHeaderFragment(record.getId().toString(), record.getModifiedAt());
 	}
 
@@ -32,10 +30,6 @@ public class RecordFragment {
 
 	public void setMetadata(String metadata) {
 		this.metadata = metadata;
-	}
-
-	public Record getRecord() {
-		return record;
 	}
 
 	public void setRecord(Record record) {

@@ -45,8 +45,8 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 	private String landingPage;
 
 	public MintIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
-							 IdentifierService identifierService, IGSNVersionService igsnVersionService,
-							 IGSNRequestService igsnRequestService) {
+			IdentifierService identifierService, IGSNVersionService igsnVersionService,
+			IGSNRequestService igsnRequestService) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
 		this.identifierService = identifierService;

@@ -44,7 +44,8 @@ public class OAIPMHController {
 			@RequestParam(required = false, defaultValue = "") String verb,
 			@RequestParam(required = false) String identifier, @RequestParam(required = false) String metadataPrefix,
 			@RequestParam(required = false) String resumptionToken, @RequestParam(required = false) String from,
-			@RequestParam(required = false) String until, @RequestParam(required = false) String set) throws IOException {
+			@RequestParam(required = false) String until, @RequestParam(required = false) String set)
+			throws IOException {
 
 		if (!oaipmhService.isValidVerb(verb))
 			throw new BadVerbException();

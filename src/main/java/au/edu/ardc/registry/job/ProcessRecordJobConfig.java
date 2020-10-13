@@ -44,12 +44,8 @@ public class ProcessRecordJobConfig {
 
 	@Bean(name = "ProcessRecordJob")
 	public Job ProcessRecordJob() {
-		return jobBuilderFactory.get("ProcessRecordJob")
-				.flow(processTitles())
-				.next(processLDTransforms())
-				.next(processOAIDCTransform())
-				.end()
-				.build();
+		return jobBuilderFactory.get("ProcessRecordJob").flow(processTitles()).next(processLDTransforms())
+				.next(processOAIDCTransform()).end().build();
 	}
 
 	@Bean

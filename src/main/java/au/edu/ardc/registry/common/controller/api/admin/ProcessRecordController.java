@@ -57,7 +57,7 @@ public class ProcessRecordController {
 				: queue.run(ProcessRecordJob, paramBuilder.toJobParameters());
 		// @formatter:on
 
-		Map<String,Object> result = new HashMap<>();
+		Map<String, Object> result = new HashMap<>();
 		result.put("id", jobExecution.getJobId());
 		result.put("jobInstance", jobExecution.getJobInstance());
 		result.put("jobParameters", jobExecution.getJobParameters());

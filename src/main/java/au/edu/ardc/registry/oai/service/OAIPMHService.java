@@ -207,12 +207,13 @@ public class OAIPMHService {
 			}
 			response.setListMetadataFormatsFragment(metadataFormatsFragment);
 			return response;
-		} catch(Exception e){
+		}
+		catch (Exception e) {
 			throw new NoMetadataFormatsException();
 		}
 	}
 
-	public OAIResponse listSets(){
+	public OAIResponse listSets() {
 		throw new NoSetHierarchyException();
 	}
 

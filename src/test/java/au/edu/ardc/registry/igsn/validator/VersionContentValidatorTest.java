@@ -55,9 +55,11 @@ class VersionContentValidatorTest {
 		Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 
 		Version version = TestHelper.mockVersion();
-		// due to the nature of the FragmentProvider and the hash comparison, Fragment always return a slightly differnet formatted content
+		// due to the nature of the FragmentProvider and the hash comparison, Fragment
+		// always return a slightly differnet formatted content
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
-		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
+				Metadata.Fragment);
 		String original = fragmentProvider.get(validXML, 0);
 		version.setContent(original.getBytes());
 		version.setHash(VersionService.getHash(original));
@@ -161,12 +163,15 @@ class VersionContentValidatorTest {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 		Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 
-		// due to the nature of the FragmentProvider and the hash comparison, Fragment always return a slightly differnet formatted content
+		// due to the nature of the FragmentProvider and the hash comparison, Fragment
+		// always return a slightly differnet formatted content
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
-		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
+				Metadata.Fragment);
 		String original = fragmentProvider.get(validXML, 0);
 
-		// there is already an identifier exist, bound to a Record with the same version of the same schema
+		// there is already an identifier exist, bound to a Record with the same version
+		// of the same schema
 		Record record = TestHelper.mockRecord();
 		Version version = TestHelper.mockVersion(record);
 		version.setContent(original.getBytes());
@@ -181,4 +186,5 @@ class VersionContentValidatorTest {
 			versionContentValidator.isNewContent(original);
 		});
 	}
+
 }

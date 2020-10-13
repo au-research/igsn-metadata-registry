@@ -139,7 +139,6 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 			versionRepository.save(version);
 		}
 
-
 		String from = "2020-09-23T09:30:28Z";
 		String until = "2020-09-23T09:30:22Z";
 		this.webTestClient.get()
@@ -149,29 +148,21 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 				.xpath("/OAI-PMH/error[@code='noRecordsMatch']").exists();
 	}
 
-
 	@Test
 	void handle_verb_ListSets_returnsNoSetHierarchyException() {
 
-		this.webTestClient.get()
-				.uri(base_url + "?verb=ListSets")
-				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
-				.xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
+		this.webTestClient.get().uri(base_url + "?verb=ListSets").exchange().expectStatus().isOk().expectBody()
+				.xpath("/OAI-PMH/error").exists().xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
 	}
 
 	@Test
 	void handle_verb_Identify_returnsAllElements() {
 
-		this.webTestClient.get()
-				.uri(base_url + "?verb=Identify")
-				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/Identify").exists()
-				.xpath("/OAI-PMH/Identify/repositoryName").exists()
-				.xpath("/OAI-PMH/Identify/baseURL").exists()
-				.xpath("/OAI-PMH/Identify/protocolVersion").exists()
-				.xpath("/OAI-PMH/Identify/adminEmail").exists()
-				.xpath("/OAI-PMH/Identify/earliestDatestamp").exists()
-				.xpath("/OAI-PMH/Identify/deletedRecord").exists()
-				.xpath("/OAI-PMH/Identify/granularity").exists();
+		this.webTestClient.get().uri(base_url + "?verb=Identify").exchange().expectStatus().isOk().expectBody()
+				.xpath("/OAI-PMH/Identify").exists().xpath("/OAI-PMH/Identify/repositoryName").exists()
+				.xpath("/OAI-PMH/Identify/baseURL").exists().xpath("/OAI-PMH/Identify/protocolVersion").exists()
+				.xpath("/OAI-PMH/Identify/adminEmail").exists().xpath("/OAI-PMH/Identify/earliestDatestamp").exists()
+				.xpath("/OAI-PMH/Identify/deletedRecord").exists().xpath("/OAI-PMH/Identify/granularity").exists();
 	}
 
 	@Test
@@ -196,8 +187,8 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		String from = "2020-09-23T09:30:23Z";
 		String until = "2020-09-23T09:30:28Z";
 		this.webTestClient.get()
-				.uri(base_url + "?verb=ListIdentifiers&metadataPrefix=" + SchemaService.OAIDC + "&from=" + from + "&until="
-						+ until)
+				.uri(base_url + "?verb=ListIdentifiers&metadataPrefix=" + SchemaService.OAIDC + "&from=" + from
+						+ "&until=" + until)
 				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
 				.xpath("/OAI-PMH/error[@code='noRecordsMatch']").exists();
 	}
@@ -224,13 +215,22 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		String from = "2020-09-23T09:30:23Z";
 		String until = "2020-09-23T09:30:28Z";
 		this.webTestClient.get()
-				.uri(base_url + "?verb=ListIdentifiers&metadataPrefix=" + SchemaService.OAIDC + "&from=" + from + "&until="
-						+ until)
+				.uri(base_url + "?verb=ListIdentifiers&metadataPrefix=" + SchemaService.OAIDC + "&from=" + from
+						+ "&until=" + until)
 				.exchange().expectStatus().isOk().expectBody().xpath("/OAI-PMH/ListIdentifiers").exists()
-				.xpath("/OAI-PMH/ListIdentifiers/header").exists()
-				.xpath("/OAI-PMH/ListIdentifiers/header/identifier").exists()
-				.xpath("/OAI-PMH/ListIdentifiers/header/datestamp").exists()
+				.xpath("/OAI-PMH/ListIdentifiers/header").exists().xpath("/OAI-PMH/ListIdentifiers/header/identifier")
+				.exists().xpath("/OAI-PMH/ListIdentifiers/header/datestamp").exists()
 				.xpath("/OAI-PMH/ListIdentifiers/resumptionToken").exists();
+	}
+
+	@Test
+	void handle_set_parameter() {
+
+		this.webTestClient.get()
+				.uri(base_url + "?verb=ListRecords&metadataPrefix=" + SchemaService.OAIDC + "&set=thisSet").exchange()
+				.expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
+				.xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
+
 	}
 
 }

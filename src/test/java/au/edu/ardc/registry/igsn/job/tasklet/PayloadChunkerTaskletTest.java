@@ -80,8 +80,7 @@ class PayloadChunkerTaskletTest {
 		String payLoadContentPath = dataPath + File.separator + "payload.xml";
 		Helpers.writeFile(payLoadContentPath, xml);
 
-		request.setAttribute(Attribute.DATA_PATH, dataPath)
-				.setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath)
+		request.setAttribute(Attribute.DATA_PATH, dataPath).setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath)
 				.setAttribute(Attribute.CHUNKED_PAYLOAD_PATH, dataPath + File.separator + "chunks")
 				.setAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH, dataPath + File.separator + "igsn_list.txt");
 

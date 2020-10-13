@@ -19,43 +19,42 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = { OAIPMHService.class, ApplicationProperties.class, SchemaService.class })
 public class ListMetadataFormatsTest {
 
-    @Autowired
-    OAIPMHService service;
+	@Autowired
+	OAIPMHService service;
 
-    @MockBean
-    VersionService versionService;
+	@MockBean
+	VersionService versionService;
 
-    @MockBean
-    RecordService recordService;
+	@MockBean
+	RecordService recordService;
 
-    @Autowired
-    ApplicationProperties applicationProperties;
+	@Autowired
+	ApplicationProperties applicationProperties;
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @Test
-    void listMetadataFormats() {
-        String metadataPrefix = "ardc-igsn-desc-1.0";
-        String schema = "https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd";
-        String metadataNamespace = "https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc";
+	@Test
+	void listMetadataFormats() {
+		String metadataPrefix = "ardc-igsn-desc-1.0";
+		String schema = "https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd";
+		String metadataNamespace = "https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc";
 
+		OAIListMetadataFormatsResponse response = (OAIListMetadataFormatsResponse) service.listMetadataFormats();
+		assertThat(response).isInstanceOf(OAIResponse.class);
 
-        OAIListMetadataFormatsResponse response = (OAIListMetadataFormatsResponse) service.listMetadataFormats();
-        assertThat(response).isInstanceOf(OAIResponse.class);
+		ListMetadataFormatsFragment listMetadataFormatsFragment = new ListMetadataFormatsFragment();
+		listMetadataFormatsFragment.setMetadataFormat(metadataPrefix, schema, metadataNamespace);
 
-        ListMetadataFormatsFragment listMetadataFormatsFragment = new ListMetadataFormatsFragment();
-        listMetadataFormatsFragment.setMetadataFormat(metadataPrefix, schema, metadataNamespace);
+		response.setListMetadataFormatsFragment(listMetadataFormatsFragment);
 
-        response.setListMetadataFormatsFragment(listMetadataFormatsFragment);
+		assertThat(response.getListMetadataFormatsFragment().getMetadataFormat()).isNotEmpty();
+		assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0).getMetadataPrefix())
+				.isEqualTo(metadataPrefix);
+		assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0).getSchema()).isEqualTo(schema);
+		assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0).getMetadataNamespace())
+				.isEqualTo(metadataNamespace);
 
-        assertThat(response.getListMetadataFormatsFragment().getMetadataFormat()).isNotEmpty();
-        assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0)
-                .getMetadataPrefix()).isEqualTo(metadataPrefix);
-        assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0)
-                .getSchema()).isEqualTo(schema);
-        assertThat(response.getListMetadataFormatsFragment().getMetadataFormat().get(0)
-                .getMetadataNamespace()).isEqualTo(metadataNamespace);
+	}
 
-    }
 }

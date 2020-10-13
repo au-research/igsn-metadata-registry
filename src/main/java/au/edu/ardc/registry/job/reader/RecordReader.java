@@ -42,7 +42,8 @@ public class RecordReader extends RepositoryItemReader<Record> {
 			List<Object> list = new ArrayList<>();
 			list.add(UUID.fromString(id));
 			this.setArguments(list);
-		} else {
+		}
+		else {
 			this.setArguments(new ArrayList<>());
 		}
 		logger.info("Setting method: {}, id: {}", method, id);

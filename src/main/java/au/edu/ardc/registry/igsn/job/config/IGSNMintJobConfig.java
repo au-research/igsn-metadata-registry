@@ -30,20 +30,28 @@ public class IGSNMintJobConfig {
 
 	@Autowired
 	public StepBuilderFactory stepBuilderFactory;
+
 	@Autowired
 	IGSNRequestService igsnRequestService;
+
 	@Autowired
 	BackOffPolicy backOffPolicy;
+
 	@Autowired
 	private SchemaService schemaService;
+
 	@Autowired
 	private KeycloakService kcService;
+
 	@Autowired
 	private IdentifierService identifierService;
+
 	@Autowired
 	private RecordService recordService;
+
 	@Autowired
 	private IGSNVersionService igsnVersionService;
+
 	@Autowired
 	private URLService urlService;
 

@@ -193,7 +193,8 @@ class UserAccessValidatorTest {
 		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
 		user.setAllocations(Collections.singletonList(allocation));
 
-		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN)).thenReturn(null);
+		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
+				.thenReturn(null);
 
 		Assert.assertThrows(ForbiddenOperationException.class, () -> {
 			userAccessValidator.canUserUpdateIGSNRecord(xml, user);

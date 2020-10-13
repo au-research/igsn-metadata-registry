@@ -37,7 +37,8 @@ public class RecordEventListener {
 
 	@Async
 	@EventListener
-	public void handleRecordUpdated(RecordUpdatedEvent event) throws JobParametersInvalidException, JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
+	public void handleRecordUpdated(RecordUpdatedEvent event) throws JobParametersInvalidException,
+			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException {
 		logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(),
 				event.getUser().getId());
 		event.getRecord().setModifiedAt(new Date());

@@ -9,24 +9,25 @@ import java.util.HashMap;
 
 public class ARDCv1ToOAIDCTransformer implements Transformer {
 
-    private static final String path = "xslt/ardc_v1_to_oai_dc.xsl";
+	private static final String path = "xslt/ardc_v1_to_oai_dc.xsl";
 
-    private static final String targetSchemaID = SchemaService.OAIDC;
+	private static final String targetSchemaID = SchemaService.OAIDC;
 
-    @Override
-    public Version transform(Version version) {
+	@Override
+	public Version transform(Version version) {
 
-        String resultDocument = XSLTransformer.transform(path, new String(version.getContent()), new HashMap<>());
+		String resultDocument = XSLTransformer.transform(path, new String(version.getContent()), new HashMap<>());
 
-        if (resultDocument == null)
-            return null;
+		if (resultDocument == null)
+			return null;
 
-        Version resultVersion = new Version();
-        resultVersion.setSchema(targetSchemaID);
-        resultVersion.setCurrent(true);
-        resultVersion.setRecord(version.getRecord());
-        resultVersion.setContent(resultDocument.getBytes());
+		Version resultVersion = new Version();
+		resultVersion.setSchema(targetSchemaID);
+		resultVersion.setCurrent(true);
+		resultVersion.setRecord(version.getRecord());
+		resultVersion.setContent(resultDocument.getBytes());
 
-        return resultVersion;
-    }
+		return resultVersion;
+	}
+
 }

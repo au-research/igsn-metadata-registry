@@ -18,26 +18,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = { OAIPMHService.class, ApplicationProperties.class, SchemaService.class })
 public class OAIIdentifyTest {
 
-    @Autowired
-    OAIPMHService service;
+	@Autowired
+	OAIPMHService service;
 
-    @MockBean
-    VersionService versionService;
+	@MockBean
+	VersionService versionService;
 
-    @MockBean
-    RecordService recordService;
+	@MockBean
+	RecordService recordService;
 
-    @Autowired
-    ApplicationProperties applicationProperties;
+	@Autowired
+	ApplicationProperties applicationProperties;
 
-    @Autowired
-    SchemaService schemaService;
+	@Autowired
+	SchemaService schemaService;
 
-    @Test
-    void identify() {
-        OAIIdentifyResponse response = (OAIIdentifyResponse) service.identify();
-        assertThat(response).isInstanceOf(OAIResponse.class);
-        assertThat(response.getIdentify().getRepositoryName()).isEqualTo(applicationProperties.getName());
-    }
+	@Test
+	void identify() {
+		OAIIdentifyResponse response = (OAIIdentifyResponse) service.identify();
+		assertThat(response).isInstanceOf(OAIResponse.class);
+		assertThat(response.getIdentify().getRepositoryName()).isEqualTo(applicationProperties.getName());
+	}
 
 }

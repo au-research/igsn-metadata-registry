@@ -25,7 +25,7 @@ class ARDCv1ToOAIDCTransformerTest {
 	SchemaService schemaService;
 
 	@Test
-    @DisplayName("Can transform between ardcv1 to oai-dc")
+	@DisplayName("Can transform between ardcv1 to oai-dc")
 	void transform() throws IOException {
 		Schema fromSchema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 		Schema toSchema = schemaService.getSchemaByID(SchemaService.OAIDC);

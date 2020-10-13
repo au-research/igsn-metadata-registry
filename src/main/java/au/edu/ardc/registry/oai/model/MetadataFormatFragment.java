@@ -21,15 +21,15 @@ public class MetadataFormatFragment {
 		this.metadataNamespace = metadataNamespace;
 	}
 
-	public String getMetadataPrefix(){
+	public String getMetadataPrefix() {
 		return this.metadataPrefix;
 	}
 
-	public String getSchema(){
+	public String getSchema() {
 		return this.schema;
 	}
 
-	public String getMetadataNamespace(){
+	public String getMetadataNamespace() {
 		return this.metadataNamespace;
 	}
 

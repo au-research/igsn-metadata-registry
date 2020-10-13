@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.oai.exception.*;
+import au.edu.ardc.registry.oai.response.OAIExceptionResponse;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
 import au.edu.ardc.registry.oai.response.OAIListRecordsResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { OAIPMHService.class, ApplicationProperties.class, SchemaService.class })
@@ -88,6 +90,25 @@ class OAIPMHServiceTest {
 	}
 
 	@Test
+	void getRecordException() {
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.getRecord(null, UUID.randomUUID().toString());
+		});
+
+		Assert.assertThrows(CannotDisseminateFormatException.class, () -> {
+			service.getRecord("nonsense", UUID.randomUUID().toString());
+		});
+
+		Assert.assertThrows(BadArgumentException.class, () -> {
+			service.getRecord(SchemaService.ARDCv1, null);
+		});
+
+		Assert.assertThrows(IdDoesNotExistException.class, () -> {
+			service.getRecord(SchemaService.ARDCv1, "nonexistentIdentifier");
+		});
+	}
+
+	@Test
 	void getRecord() {
 		Assert.assertThrows(BadArgumentException.class, () -> {
 			service.getRecord(null, UUID.randomUUID().toString());
@@ -107,18 +128,19 @@ class OAIPMHServiceTest {
 	}
 
 	@Test
-	void listRecords() {
+	void listRecords() throws JsonProcessingException {
 		Assert.assertThrows(BadArgumentException.class, () -> {
 			service.listRecords(null, null, null, null);
 		});
 
-		Assert.assertThrows(CannotDisseminateFormatException.class, () -> {
-			service.listRecords("nonsense", null, null, null);
-		});
+		try {
+			OAIResponse response = (OAIResponse) service.listRecords("nonsense", null, null, null);
+		}
+		catch (CannotDisseminateFormatException e) {
+			assertThat(e.getCode()).isEqualTo("cannotDisseminateFormat");
+			assertThat(e.getMessageID()).isEqualTo("oai.error.cannot-disseminate-format");
+		}
 
-		Assert.assertThrows(BadResumptionTokenException.class, () -> {
-			service.listRecords(SchemaService.ARDCv1, "garbage", null, null);
-		});
 	}
 
 	@Test
@@ -133,6 +155,10 @@ class OAIPMHServiceTest {
 
 		Assert.assertThrows(BadArgumentException.class, () -> {
 			service.listIdentifiers(null, null, null, null);
+		});
+
+		Assert.assertThrows(BadResumptionTokenException.class, () -> {
+			service.listIdentifiers("oai_dc", "garbage", null, null);
 		});
 	}
 
@@ -160,7 +186,7 @@ class OAIPMHServiceTest {
 	void listRecords_invalidfrom_throwsBadArgumentException() throws JsonProcessingException {
 
 		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listRecords("oai_dc",null,"2020/05/04", null );
+			service.listRecords("oai_dc", null, "2020/05/04", null);
 		});
 
 	}
@@ -169,15 +195,16 @@ class OAIPMHServiceTest {
 	void listRecords_invaliduntil_throwsBadArgumentException() throws JsonProcessingException {
 
 		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listRecords("oai_dc",null,null, "2020/05/04" );
+			service.listRecords("oai_dc", null, null, "2020/05/04");
 		});
 
 	}
+
 	@Test
 	void listIdentifiers_invalidfrom_throwsBadArgumentException() throws JsonProcessingException {
 
 		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listIdentifiers("oai_dc",null,"2020/05/04", null );
+			service.listIdentifiers("oai_dc", null, "2020/05/04", null);
 		});
 
 	}
@@ -186,9 +213,25 @@ class OAIPMHServiceTest {
 	void listIdentifiers_invaliduntil_throwsBadArgumentException() throws JsonProcessingException {
 
 		Assert.assertThrows(BadArgumentException.class, () -> {
-			service.listIdentifiers("oai_dc",null,null, "2020/05/04" );
+			service.listIdentifiers("oai_dc", null, null, "2020/05/04");
 		});
 
+	}
+
+	@Test
+	void listIdentifiers_invalidresumptionToken_throwsBadResumptionTokenException() throws JsonProcessingException {
+
+		Assert.assertThrows(BadResumptionTokenException.class, () -> {
+			service.listIdentifiers("oai_dc", "garbage", null, null);
+		});
+
+	}
+
+	@Test
+	void NoMetadataFormatsExistException() throws JsonProcessingException {
+		NoMetadataFormatsException noMetadataFormatsException = new NoMetadataFormatsException();
+		assertThat(noMetadataFormatsException.getCode()).isEqualTo("noMetadataFormats");
+		assertThat(noMetadataFormatsException.getMessageID()).isEqualTo("oai.error.no-metadata-formats");
 	}
 
 }

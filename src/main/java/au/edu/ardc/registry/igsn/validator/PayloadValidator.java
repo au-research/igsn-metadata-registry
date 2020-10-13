@@ -26,7 +26,6 @@ public class PayloadValidator {
 
 	/**
 	 * Constructor when the various validators are already defined elsewhere
-	 *
 	 * @param contentValidator {@link ContentValidator}
 	 * @param versionContentValidator {@link VersionContentValidator}
 	 * @param userAccessValidator {@link UserAccessValidator}
@@ -40,8 +39,8 @@ public class PayloadValidator {
 
 	/**
 	 * Constructor that builds it's own set of Validators. Since this is an instance and
-	 * not a {@link org.springframework.stereotype.Service}. All Service object. needs to be
-	 * passed in and can't be automatically injected.
+	 * not a {@link org.springframework.stereotype.Service}. All Service object. needs to
+	 * be passed in and can't be automatically injected.
 	 * @param schemaService {@link SchemaService}
 	 * @param validationService {@link ValidationService}
 	 * @param identifierService {@link IdentifierService}

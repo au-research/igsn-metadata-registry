@@ -51,10 +51,12 @@ class ARDCv1FragmentProviderTest {
 		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
 		String original = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 
-		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
+				Metadata.Fragment);
 		String firstFragmentOnce = fragmentProvider.get(original, 0);
 		String firstFragmentAgain = fragmentProvider.get(original, 0);
 
 		assertThat(firstFragmentOnce).isEqualTo(firstFragmentAgain);
 	}
+
 }
