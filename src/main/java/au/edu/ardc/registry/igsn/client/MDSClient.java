@@ -38,11 +38,11 @@ public class MDSClient {
 		String mds_password = allocation.getMds_password();
 		String mds_url = allocation.getMds_url();
 		if (mds_username == null)
-			throw new MDSClientConfigurationException("MDS user name is not configured");
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name);
 		if (mds_password == null)
-			throw new MDSClientConfigurationException("MDS password is not configured");
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.password);
 		if (mds_url == null)
-			throw new MDSClientConfigurationException("MDS url is not configured");
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.server_url);
 		this.web_client = WebClient.builder().filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
 				.build();
 	}

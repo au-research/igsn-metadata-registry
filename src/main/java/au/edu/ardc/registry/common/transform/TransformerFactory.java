@@ -11,9 +11,7 @@ public class TransformerFactory {
 			return Class.forName(fqn).newInstance();
 		}
 		catch (Exception e) {
-			throw new TransformerNotFoundException(
-					"Unable to transform From " + fromSchema.getId() + " To " + toSchema.getId());
+			throw new TransformerNotFoundException(fromSchema.getId(), toSchema.getId());
 		}
 	}
-
 }
