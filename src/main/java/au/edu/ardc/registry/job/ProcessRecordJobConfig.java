@@ -73,7 +73,8 @@ public class ProcessRecordJobConfig {
 		return stepBuilderFactory.get("Process OAI-DC Transform").<Record, Record>chunk(10)
 				.reader(new RecordReader(recordRepository))
 				.processor(new RecordTransformOAIDCProcessor(versionService, schemaService, recordService))
-				.writer(new NoOpItemWriter<>()).build();
+				.writer(new NoOpItemWriter<>()).faultTolerant().retryLimit(3)
+				.retry(DeadlockLoserDataAccessException.class).build();
 	}
 
 	@Bean
