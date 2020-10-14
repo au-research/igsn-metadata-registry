@@ -1,9 +1,14 @@
 package au.edu.ardc.registry.common.dto;
 
+import au.edu.ardc.registry.common.controller.api.resources.RequestResourceController;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.util.Date;
 import java.util.UUID;
 
-public class RequestDTO {
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
+public class RequestDTO extends RepresentationModel<RequestDTO> {
 
 	private UUID id;
 
@@ -25,6 +30,11 @@ public class RequestDTO {
 
 	public void setId(UUID id) {
 		this.id = id;
+		String uuid = getId().toString();
+		add(linkTo(RequestResourceController.class).slash(uuid).withSelfRel());
+		add(linkTo(RequestResourceController.class).slash(uuid).slash("logs").withRel("logs"));
+		add(linkTo(RequestResourceController.class).slash(uuid).slash("identifiers").withRel("identifiers"));
+		add(linkTo(RequestResourceController.class).slash(uuid).slash("records").withRel("records"));
 	}
 
 	public String getStatus() {
@@ -74,4 +84,5 @@ public class RequestDTO {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+
 }

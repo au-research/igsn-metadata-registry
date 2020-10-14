@@ -23,6 +23,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/api/resources/requests")
+@RequestMapping(value = "/api/resources/requests", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 @Tag(name = "Request Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
