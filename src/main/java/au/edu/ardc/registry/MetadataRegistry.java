@@ -33,7 +33,7 @@ import java.util.TimeZone;
 				flows = @OAuthFlows(password = @OAuthFlow(tokenUrl = "${keycloak-token-url}"))) })
 
 @OpenAPIDefinition(info = @Info(title = "${app.name}", description = "${app.description}",
-		contact = @Contact(name = "${app.contact.name}", email = "${app.contact.email}", url = "${app.contact.url}"),
+		contact = @Contact(name = "${app.contact-name}", email = "${app.contact-email}", url = "${app.contact-url}"),
 		license = @License(name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0.html")))
 public class MetadataRegistry {
 
