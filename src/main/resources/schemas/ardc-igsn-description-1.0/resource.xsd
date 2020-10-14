@@ -71,10 +71,14 @@
                                 </xs:annotation>
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xs:element name="alternateIdentifier" type="xs:token" maxOccurs="unbounded">
-                                            <xs:annotation>
-                                                <xs:documentation>Please include the full form of a web-resolvable identifier. For example, 'urn:lsid:ubio.org:namebank:11815', 'urn:ietf:rfc:2648'.</xs:documentation>
-                                            </xs:annotation>
+                                        <xs:element name="alternateIdentifier" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:simpleContent>
+                                                    <xs:extension base="ds:nonEmptyString">
+                                                        <xs:attribute name="alternateIdentifierType" type="ds:identifierType" use="required"/>
+                                                    </xs:extension>
+                                                </xs:simpleContent>
+                                            </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
                                 </xs:complexType>
@@ -541,6 +545,7 @@
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/LISSN"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/UPC"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/ROR"/>
+            <xs:enumeration value="local"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -607,6 +612,7 @@
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/HasDigitalRepresentation"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/IsDigitalRepresentationOf"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/HasSamplingFeature"/>
+            <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/hasAssociationWith"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/IsSamplingFeatureOf"/>
             <xs:enumeration value="http://pid.geoscience.gov.au/def/voc/ga/igsncode/collectedAsPartOf"/>
             <!--  IsDerivedFrom - indicates that the resource is created/obtained from a parent resource -->
@@ -675,7 +681,7 @@
     <xs:simpleType name="spatialRefType">
         <xs:annotation>
             <xs:documentation>The EPSG Geodetic Parameter Dataset is a structured dataset of Coordinate Reference Systems and Coordinate Transformations. EPSG codes of horizontal/vertical reference system are available at https://epsg.io/ </xs:documentation>
-            <!--  EPSG:4326 (WGS84 - World Geodetic System 1984, used in GPS), EPSG:5711 (Vertical coordinate system AHD height), EPSG:4939 (Geodetic 3D coordinate system GDA94),
+            <!--  EPSG:4326 (WGS84 - World Geodetic System 1984, used in GPS), EPSG:5711 (Vertical coordinate system AHD height), EPSG:4939 (Geodetic 3D coordinate system GDA94), 
 EPSG:4283 (Geodetic coordinate system (GDA94)), EPSG:3112 (Projected coordinate system GDA94 / Geoscience Australia Lambert), EPSG:5712 (Vertical coordinate system AHD (Tasmania) height)  -->
         </xs:annotation>
         <xs:restriction base="xs:anyURI">
