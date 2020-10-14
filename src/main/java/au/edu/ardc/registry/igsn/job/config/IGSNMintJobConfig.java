@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.job.config;
 
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.igsn.job.listener.IGSNJobListener;
 import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
@@ -59,7 +60,7 @@ public class IGSNMintJobConfig {
 	public Job IGSNImportJob() {
 		// @formatter:off
 		return jobBuilderFactory.get("IGSNImportJob").incrementer(new RunIdIncrementer())
-				.listener(new JobCompletionListener())
+				.listener(new IGSNJobListener(igsnRequestService))
 				.flow(chunkPayload())
 				.next(ingest())
 				.next(registration())

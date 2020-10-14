@@ -70,4 +70,12 @@ public class IGSNRequestService {
 		return request;
 	}
 
+	public org.apache.logging.log4j.core.Logger getLoggerFor(Request request) {
+		return requestService.getLoggerFor(request);
+	}
+
+	public void closeLoggerFor(Request request) {
+		requestService.closeLoggerFor(request);
+	}
+
 }

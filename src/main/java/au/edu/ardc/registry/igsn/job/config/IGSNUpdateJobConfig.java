@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.job.config;
 
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.igsn.job.listener.IGSNJobListener;
 import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.processor.UpdateIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
@@ -59,7 +60,7 @@ public class IGSNUpdateJobConfig {
 	@Bean
 	public Job IGSNUpdateJob() {
 		return jobBuilderFactory.get("IGSNUpdatetJob").incrementer(new RunIdIncrementer())
-				.listener(new JobCompletionListener()).flow(chunkUpdatePayload()).next(update())
+				.listener(new IGSNJobListener(igsnRequestService)).flow(chunkUpdatePayload()).next(update())
 				.next(registrationUpdate()).end().build();
 	}
 

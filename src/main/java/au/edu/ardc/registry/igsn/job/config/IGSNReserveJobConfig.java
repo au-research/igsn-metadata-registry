@@ -47,7 +47,7 @@ public class IGSNReserveJobConfig {
 
 	@Bean(name = "ReserveIGSNJob")
 	public Job ReserveIGSNJob() {
-		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService, requestService))
+		return jobBuilderFactory.get("ReserveIGSNJob").listener(new IGSNJobListener(igsnService))
 				.flow(reserveIGSN()).end().build();
 	}
 

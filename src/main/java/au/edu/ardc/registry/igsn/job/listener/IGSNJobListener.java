@@ -1,7 +1,6 @@
 package au.edu.ardc.registry.igsn.job.listener;
 
 import au.edu.ardc.registry.common.entity.Request;
-import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.apache.logging.log4j.core.Logger;
 import org.springframework.batch.core.ExitStatus;
@@ -13,29 +12,26 @@ import java.util.Date;
 
 public class IGSNJobListener extends JobExecutionListenerSupport {
 
-	IGSNRequestService igsnService;
-
-	RequestService requestService;
+	IGSNRequestService igsnRequestService;
 
 	private Logger logger;
 
-	public IGSNJobListener(IGSNRequestService igsnService, RequestService requestService) {
+	public IGSNJobListener(IGSNRequestService igsnRequestService) {
 		super();
-		this.igsnService = igsnService;
-		this.requestService = requestService;
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@Override
 	public void beforeJob(JobExecution jobExecution) {
 		Request request = getIGSNServiceRequest(jobExecution);
-		this.logger = requestService.getLoggerFor(request);
+		this.logger = igsnRequestService.getLoggerFor(request);
 		request.setStatus(Request.Status.RUNNING);
 		request.setUpdatedAt(new Date());
 
 		// todo provide more information about job here
 		request.setMessage("Job started");
 
-		igsnService.save(request);
+		igsnRequestService.save(request);
 		logger.info("Job started");
 		super.beforeJob(jobExecution);
 	}
@@ -43,7 +39,7 @@ public class IGSNJobListener extends JobExecutionListenerSupport {
 	@Override
 	public void afterJob(JobExecution jobExecution) {
 		Request request = getIGSNServiceRequest(jobExecution);
-		this.logger = requestService.getLoggerFor(request);
+		this.logger = igsnRequestService.getLoggerFor(request);
 
 		if (jobExecution.getExitStatus().equals(ExitStatus.FAILED)) {
 			request.setMessage("Job Failed");
@@ -59,15 +55,15 @@ public class IGSNJobListener extends JobExecutionListenerSupport {
 		// todo provide more information about job message
 		request.setMessage("Job Completed");
 		request.setUpdatedAt(new Date());
-		igsnService.save(request);
-		requestService.closeLoggerFor(request);
+		igsnRequestService.save(request);
+		igsnRequestService.closeLoggerFor(request);
 		super.afterJob(jobExecution);
 	}
 
 	private Request getIGSNServiceRequest(JobExecution jobExecution) {
 		JobParameters parameters = jobExecution.getJobParameters();
 		String IGSNServiceRequestID = parameters.getString("IGSNServiceRequestID");
-		return igsnService.findById(IGSNServiceRequestID);
+		return igsnRequestService.findById(IGSNServiceRequestID);
 	}
 
 }

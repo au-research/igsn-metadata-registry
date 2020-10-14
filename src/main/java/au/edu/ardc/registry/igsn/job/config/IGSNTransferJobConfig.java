@@ -41,7 +41,7 @@ public class IGSNTransferJobConfig {
 	@Bean(name = "TransferIGSNJob")
 	public Job TransferIGSNJob() {
 		return jobBuilderFactory.get("TransferIGSNJob")
-				.listener(new IGSNJobListener(igsnRequestService, requestService)).flow(transferIGSN()).end().build();
+				.listener(new IGSNJobListener(igsnRequestService)).flow(transferIGSN()).end().build();
 	}
 
 	@Bean
