@@ -16,7 +16,6 @@ import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.exception.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -200,7 +199,7 @@ public class VersionService {
 		// there's already a version with this data, schema and is current
 		String hash = getHash(version);
 		if (repository.existsBySchemaAndHashAndCurrent(version.getSchema(), hash, true)) {
-			throw new VersionContentAlreadyExisted(version.getSchema(), hash);
+			throw new VersionContentAlreadyExistsException(version.getSchema(), hash);
 		}
 
 		// todo validate version content -> schema validation

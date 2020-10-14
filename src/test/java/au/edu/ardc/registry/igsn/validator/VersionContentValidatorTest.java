@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
+import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
@@ -13,8 +14,7 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
-import au.edu.ardc.registry.exception.VersionContentAlreadyExisted;
-import org.assertj.core.api.Assertions;
+import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import org.junit.Assert;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { SchemaService.class, VersionContentValidator.class })
@@ -45,11 +46,11 @@ class VersionContentValidatorTest {
 	void isVersionNewContent() {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 		Version version = TestHelper.mockVersion();
-		Assert.assertTrue(versionContentValidator.isVersionNewContent("fish", version));
+		Assert.assertTrue(versionContentValidator.isVersionNewContent("fish", version, "iFish"));
 	}
 
 	@Test
-	@DisplayName("IsVersionNewContent comparing hash throws VersionContentAlreadyExisted")
+	@DisplayName("IsVersionNewContent comparing hash throws VersionContentAlreadyExistsException")
 	void isVersionNewContent_ContentAlreadyExisted() throws IOException {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 		Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
@@ -63,22 +64,23 @@ class VersionContentValidatorTest {
 		String original = fragmentProvider.get(validXML, 0);
 		version.setContent(original.getBytes());
 		version.setHash(VersionService.getHash(original));
-
-		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
-			versionContentValidator.isVersionNewContent(original, version);
+		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
+		String identifierValue = provider.get(validXML);
+		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> {
+			versionContentValidator.isVersionNewContent(original, version, identifierValue);
 		});
 	}
 
 	@Test
-	@DisplayName("When a version has the exact same content as the new content, throws VersionContentAlreadyExisted")
+	@DisplayName("When a version has the exact same content as the new content, throws VersionContentAlreadyExistsException")
 	void isNewContent_VersionContentAlreadyExist_throwsException() {
 		VersionContentValidator versionContentValidator = new VersionContentValidator(identifierService, schemaService);
 		Version version = TestHelper.mockVersion();
 		String oldContent = "fish";
 		version.setContent(oldContent.getBytes());
 		version.setHash(VersionService.getHash(version));
-		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
-			versionContentValidator.isVersionNewContent("fish", version);
+		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> {
+			versionContentValidator.isVersionNewContent("fish", version, "iFish");
 		});
 	}
 
@@ -182,7 +184,7 @@ class VersionContentValidatorTest {
 		Mockito.when(identifierService.findByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
 				.thenReturn(identifier);
 
-		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> {
+		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> {
 			versionContentValidator.isNewContent(original);
 		});
 	}

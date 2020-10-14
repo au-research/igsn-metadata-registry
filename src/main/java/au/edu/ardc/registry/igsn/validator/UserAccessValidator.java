@@ -18,6 +18,7 @@ import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,6 +56,7 @@ public class UserAccessValidator {
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
 		IGSNAllocation igsnAllocation = null;
+		List<String> identifierValues = new ArrayList<String>();
 		String prefix = "######";
 		String namespace = "######";
 		for (String identifierValue : identifiers) {
@@ -74,6 +76,9 @@ public class UserAccessValidator {
 				throw new ForbiddenOperationException(
 						identifierValue + " doesn't match previous Identifiers's prefix or namespace");
 			}
+			else if(identifierValues.contains(identifierValue)){
+				throw new ForbiddenOperationException("Duplicated Identifier found in payload " + identifierValue);
+			}
 			// security precaution
 			// check for existing record after user access only
 			// otherwise anyone can test for records even if it belongs to a different
@@ -83,6 +88,7 @@ public class UserAccessValidator {
 			if (existingIdentifier != null) {
 				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
 			}
+			identifierValues.add(identifierValue);
 		}
 		return true;
 	}

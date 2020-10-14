@@ -163,7 +163,7 @@ public class VersionServiceTest {
 
 		// throws ForbiddenOpereationException if repository has
 		// existsBySchemaAndHashAndCurrent
-		Assert.assertThrows(VersionContentAlreadyExisted.class, () -> versionService.create(dto, user));
+		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> versionService.create(dto, user));
 	}
 
 	@Test

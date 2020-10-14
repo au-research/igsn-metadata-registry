@@ -83,7 +83,7 @@ public class PayloadValidator {
 	 * access validator
 	 */
 	public void validateUpdatePayload(String content, User user) throws IOException, ContentNotSupportedException,
-			XMLValidationException, JSONValidationException, ForbiddenOperationException, VersionContentAlreadyExisted {
+			XMLValidationException, JSONValidationException, ForbiddenOperationException, VersionContentAlreadyExistsException {
 		// validate the entire XML or JSON content
 		contentValidator.validate(content);
 		// check if the current user has insert or update access for the records with the
