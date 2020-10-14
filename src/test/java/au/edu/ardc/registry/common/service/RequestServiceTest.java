@@ -2,8 +2,10 @@ package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.config.ApplicationProperties;
+import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RequestRepository;
 import au.edu.ardc.registry.common.repository.specs.RequestSpecification;
@@ -80,6 +82,21 @@ class RequestServiceTest {
 	}
 
 	@Test
+	@DisplayName("Find owned by ID returns correct request")
+	void findOwnedById() {
+		User user = TestHelper.mockUser();
+		Request request = TestHelper.mockRequest();
+		request.setId(UUID.randomUUID());
+		request.setCreatedBy(user.getId());
+		when(requestRepository.findById(any(UUID.class))).thenReturn(Optional.of(request));
+
+		assertThat(requestService.findOwnedById(request.getId().toString(), user)).isNotNull();
+		assertThat(requestService.findOwnedById(request.getId().toString(), user)).isInstanceOf(Request.class);
+		assertThat(requestService.findOwnedById(request.getId().toString(), user)).isSameAs(request);
+	}
+
+	@Test
+	@DisplayName("FindById returns correct Request by ID")
 	void findById() {
 		when(requestRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 		assertThat(requestService.findById(UUID.randomUUID().toString())).isNull();
@@ -104,6 +121,8 @@ class RequestServiceTest {
 		String loggerName = requestService.getLoggerNameFor(request);
 
 		Logger logger = requestService.getLoggerFor(request);
+		assertThat(logger).isInstanceOf(Logger.class);
+		assertThat(requestService.getLoggerFor(request)).isSameAs(logger);
 		Map<String, Appender> appenders = logger.getAppenders();
 		assertThat(appenders).hasSize(1);
 		assertThat(appenders.get(loggerName)).isInstanceOf(FileAppender.class);
@@ -130,4 +149,60 @@ class RequestServiceTest {
 		(new File(applicationProperties.getDataPath() + "/requests/" + request.getId())).deleteOnExit();
 	}
 
+	@Test
+	@DisplayName("Create returns new instance of Request with directory created")
+	void create() {
+		User user = TestHelper.mockUser();
+		RequestDTO dto = new RequestDTO();
+		dto.setType("Test");
+
+		Request mockSavedRequest = TestHelper.mockRequest();
+		mockSavedRequest.setId(UUID.randomUUID());
+		when(requestRepository.save(any(Request.class))).thenReturn(mockSavedRequest);
+
+		Request actual = requestService.create(dto, user);
+
+		// save is called
+		verify(requestRepository, times(1)).save(any(Request.class));
+		verify(requestRepository, times(1)).saveAndFlush(any(Request.class));
+
+		// data path attribute is set
+		assertThat(actual.getAttribute(Attribute.DATA_PATH)).isNotBlank();
+		assertThat(actual.getCreatedAt()).isNotNull();
+
+		// data path is created
+		assertThat(new File(requestService.getDataPathFor(actual))).isDirectory();
+
+		(new File(requestService.getDataPathFor(actual))).deleteOnExit();
+	}
+
+	@Test
+	@DisplayName("Update validate request ownership by createdBy")
+	void update_failByOwnership() {
+		Request request = TestHelper.mockRequest();
+		RequestDTO dto = new RequestDTO();
+		dto.setStatus("Running");
+
+		Assert.assertThrows(ForbiddenOperationException.class, () -> {
+			requestService.update(request, dto, TestHelper.mockUser());
+		});
+	}
+
+	@Test
+	@DisplayName("Update successfully sets status and type")
+	void update() {
+		User user = TestHelper.mockUser();
+		Request request = TestHelper.mockRequest();
+		request.setStatus(Request.Status.ACCEPTED);
+		request.setCreatedBy(user.getId());
+		RequestDTO dto = new RequestDTO();
+		dto.setStatus(Request.Status.RUNNING.toString());
+		dto.setType("NewType");
+
+		Request actual = requestService.update(request, dto, user);
+		verify(requestRepository, times(1)).saveAndFlush(any(Request.class));
+
+		assertThat(actual.getType()).isEqualTo("NewType");
+		assertThat(actual.getStatus()).isEqualTo(Request.Status.RUNNING);
+	}
 }
