@@ -17,6 +17,8 @@ public class RequestDTO {
 
 	private Date updatedAt;
 
+	private String message;
+
 	public UUID getId() {
 		return id;
 	}
@@ -65,4 +67,11 @@ public class RequestDTO {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
 }

@@ -101,6 +101,14 @@ public class Request {
 		return this.attributes.getOrDefault(attribute.toString(), null);
 	}
 
+	public String getMessage() {
+		return getAttribute("message");
+	}
+
+	public void setMessage(String msg) {
+		setAttribute("message", msg);
+	}
+
 	public String getType() {
 		return type;
 	}

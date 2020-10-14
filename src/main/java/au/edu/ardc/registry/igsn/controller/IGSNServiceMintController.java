@@ -11,6 +11,7 @@ import au.edu.ardc.registry.igsn.validator.PayloadValidator;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -113,13 +114,12 @@ public class IGSNServiceMintController {
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("IGSNServiceRequestID", igsnRequest.getId().toString()).toJobParameters();
 
-		if (wait) {
-			standardJobLauncher.run(igsnImportJob, jobParameters);
-		}
-		else {
-			asyncJobLauncher.run(igsnImportJob, jobParameters);
-		}
+		JobExecution jobExecution = wait ? standardJobLauncher.run(igsnImportJob, jobParameters)
+				: asyncJobLauncher.run(igsnImportJob, jobParameters);
+
 		igsnRequest.setStatus(Request.Status.ACCEPTED);
+		igsnRequest.setAttribute("JobID", String.valueOf(jobExecution.getJobId()));
+		igsnRequest.setAttribute("wait", String.valueOf(wait));
 		igsnRequestService.save(igsnRequest);
 
 		// store the Request into the HttpServletRequest for logging at APILogging

@@ -31,6 +31,10 @@ public class IGSNJobListener extends JobExecutionListenerSupport {
 		this.logger = requestService.getLoggerFor(request);
 		request.setStatus(Request.Status.RUNNING);
 		request.setUpdatedAt(new Date());
+
+		// todo provide more information about job here
+		request.setMessage("Job started");
+
 		igsnService.save(request);
 		logger.info("Job started");
 		super.beforeJob(jobExecution);
@@ -42,6 +46,7 @@ public class IGSNJobListener extends JobExecutionListenerSupport {
 		this.logger = requestService.getLoggerFor(request);
 
 		if (jobExecution.getExitStatus().equals(ExitStatus.FAILED)) {
+			request.setMessage("Job Failed");
 			logger.info("Job Failed");
 			for (Throwable exception : jobExecution.getAllFailureExceptions()) {
 				logger.error(exception.getMessage());
@@ -51,6 +56,8 @@ public class IGSNJobListener extends JobExecutionListenerSupport {
 		request.setStatus(jobExecution.getExitStatus().equals(ExitStatus.FAILED) ? Request.Status.FAILED
 				: Request.Status.COMPLETED);
 
+		// todo provide more information about job message
+		request.setMessage("Job Completed");
 		request.setUpdatedAt(new Date());
 		igsnService.save(request);
 		requestService.closeLoggerFor(request);
