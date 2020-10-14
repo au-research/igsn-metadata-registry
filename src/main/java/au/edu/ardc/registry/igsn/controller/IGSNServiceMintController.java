@@ -1,5 +1,7 @@
 package au.edu.ardc.registry.igsn.controller;
 
+import au.edu.ardc.registry.common.dto.RequestDTO;
+import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
@@ -44,6 +46,8 @@ public class IGSNServiceMintController {
 
 	final IdentifierService identifierService;
 
+	final RequestMapper requestMapper;
+
 	final JobLauncher standardJobLauncher;
 
 	final JobLauncher asyncJobLauncher;
@@ -53,16 +57,17 @@ public class IGSNServiceMintController {
 	private final KeycloakService kcService;
 
 	public IGSNServiceMintController(IGSNRequestService igsnRequestService, RequestService requestService,
-			SchemaService schemaService, ValidationService validationService, VersionService versionService,
-			IdentifierService identifierService, @Qualifier("standardJobLauncher") JobLauncher standardJobLauncher,
-			@Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher, @Qualifier("IGSNImportJob") Job igsnImportJob,
-			KeycloakService kcService) {
+									 SchemaService schemaService, ValidationService validationService, VersionService versionService,
+									 IdentifierService identifierService, RequestMapper requestMapper, @Qualifier("standardJobLauncher") JobLauncher standardJobLauncher,
+									 @Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher, @Qualifier("IGSNImportJob") Job igsnImportJob,
+									 KeycloakService kcService) {
 		this.igsnRequestService = igsnRequestService;
 		this.requestService = requestService;
 		this.schemaService = schemaService;
 		this.validationService = validationService;
 		this.versionService = versionService;
 		this.identifierService = identifierService;
+		this.requestMapper = requestMapper;
 		this.standardJobLauncher = standardJobLauncher;
 		this.asyncJobLauncher = asyncJobLauncher;
 		this.igsnImportJob = igsnImportJob;
@@ -80,9 +85,9 @@ public class IGSNServiceMintController {
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
 	@PostMapping("/mint")
-	public ResponseEntity<Request> mint(HttpServletRequest request, @RequestBody String payload,
-			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false, defaultValue = "0") boolean wait) throws Exception {
+	public ResponseEntity<RequestDTO> mint(HttpServletRequest request, @RequestBody String payload,
+										   @RequestParam(required = false, defaultValue = "User") String ownerType,
+										   @RequestParam(required = false, defaultValue = "0") boolean wait) throws Exception {
 		User user = kcService.getLoggedInUser(request);
 
 		// Validate the request
@@ -125,7 +130,8 @@ public class IGSNServiceMintController {
 		// store the Request into the HttpServletRequest for logging at APILogging
 		request.setAttribute(String.valueOf(Request.class), igsnRequest);
 
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(igsnRequest);
+		RequestDTO dto = requestMapper.getConverter().convert(igsnRequest);
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body(dto);
 	}
 
 }
