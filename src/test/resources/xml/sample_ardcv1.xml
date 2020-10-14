@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<resources xmlns="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc">
+<resources xmlns="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc">
     <resource registeredObjectType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/PhysicalSample">
         <resourceIdentifier>10273/XX0TUIAYLV</resourceIdentifier>
         <landingPage>https://demo.identifiers.ardc.edu.au/igsn/#/meta/XX0TUIAYLV</landingPage>
         <isPublic>true</isPublic>
         <resourceTitle>This Tiltle also left blank on purpose</resourceTitle>
         <alternateIdentifiers>
-            <alternateIdentifier>AltID2134</alternateIdentifier>
-            <alternateIdentifier/>
+            <alternateIdentifier alternateIdentifierType="local">AltID2134</alternateIdentifier>
         </alternateIdentifiers>
         <resourceTypes>
             <resourceType>http://vocabulary.odm2.org/specimentype/core</resourceType>

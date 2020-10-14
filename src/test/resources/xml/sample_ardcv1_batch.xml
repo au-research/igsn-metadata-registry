@@ -6,8 +6,7 @@
         <isPublic>true</isPublic>
         <resourceTitle>This Tiltle also left blank on purpose</resourceTitle>
         <alternateIdentifiers>
-            <alternateIdentifier>AltID2134</alternateIdentifier>
-            <alternateIdentifier/>
+            <alternateIdentifier alternateIdentifierType="local">AltID2134</alternateIdentifier>
         </alternateIdentifiers>
         <resourceTypes>
             <resourceType>http://vocabulary.odm2.org/specimentype/core</resourceType>
