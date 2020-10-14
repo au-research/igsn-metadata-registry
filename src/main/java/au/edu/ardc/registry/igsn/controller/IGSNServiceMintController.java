@@ -109,6 +109,7 @@ public class IGSNServiceMintController {
 		igsnRequest.setAttribute(Attribute.CREATOR_ID, user.getId().toString())
 				.setAttribute(Attribute.OWNER_TYPE, ownerType)
 				.setAttribute(Attribute.DATA_PATH, dataPath)
+				.setAttribute(Attribute.EVENT_TYPE, IGSNEventType.MINT.toString())
 				.setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath)
 				.setAttribute(Attribute.CHUNKED_PAYLOAD_PATH, dataPath + File.separator + "chunks")
 				.setAttribute(Attribute.ALLOCATION_ID, allocationID.toString())

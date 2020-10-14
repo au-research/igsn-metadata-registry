@@ -2,7 +2,9 @@ package au.edu.ardc.registry.igsn.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
@@ -16,6 +18,7 @@ import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import org.jetbrains.annotations.NotNull;
@@ -31,42 +34,30 @@ import java.util.UUID;
 
 public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 
-	private SchemaService schemaService;
+	private final SchemaService schemaService;
 
-	private KeycloakService kcService;
+	private final KeycloakService kcService;
 
-	private IdentifierService identifierService;
+	private final IdentifierService identifierService;
 
-	private RecordService recordService;
+	private final IGSNVersionService igsnVersionService;
 
-	private IGSNVersionService igsnVersionService;
-
-	private URLService urlService;
-
-	private String supportedSchema = SchemaService.ARDCv1;
-
-	private Version existingRegistrationMDVersion;
+	private final IGSNRequestService igsnRequestService;
 
 	private IGSNAllocation allocation;
 
-	private String creatorID;
-
-	private String igsnServiceRequestID;
-
-	private String allocationID;
+	private UUID creatorID;
 
 	private String landingPage;
 
-	public UpdateIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
-			IdentifierService identifierService, RecordService recordService, IGSNVersionService igsnVersionService,
-			URLService urlService) {
+ 	public UpdateIGSNProcessor(SchemaService schemaService, KeycloakService kcService,
+							   IdentifierService identifierService, IGSNVersionService igsnVersionService,
+							   IGSNRequestService igsnRequestService) {
 		this.schemaService = schemaService;
 		this.kcService = kcService;
 		this.identifierService = identifierService;
-		this.recordService = recordService;
 		this.igsnVersionService = igsnVersionService;
-		this.urlService = urlService;
-
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@Override
@@ -82,9 +73,11 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 	@BeforeStep
 	public void beforeStep(final StepExecution stepExecution) throws Exception {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		igsnServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
-		allocationID = jobParameters.getString("allocationID");
-		creatorID = jobParameters.getString("creatorID");
+		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(IGSNServiceRequestID);
+		// obtain allocation details for use with minting
+		creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
+		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		allocation = (IGSNAllocation) kcService.getAllocationByResourceID(allocationID);
 
 	}
@@ -92,6 +85,7 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 	private byte[] addRegistrationMetadata(Identifier identifier)
 			throws TransformerNotFoundException, NotFoundException, ContentProviderNotFoundException {
 		Record record = identifier.getRecord();
+		String supportedSchema = SchemaService.ARDCv1;
 		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
 		ARDCv1ToRegistrationMetadataTransformer transformer = null;
 
@@ -139,19 +133,19 @@ public class UpdateIGSNProcessor implements ItemProcessor<String, String> {
 	private void addVersion(Version version, Record record) {
 		// End current Version
 		Version currentVersions = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
-		igsnVersionService.end(currentVersions, UUID.fromString(creatorID));
+		igsnVersionService.end(currentVersions, creatorID);
 		// Add latest version
 		version.setRecord(record);
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
-		version.setCreatorID(UUID.fromString(creatorID));
+		version.setCreatorID(creatorID);
 		version.setHash(VersionService.getHash(new String(version.getContent())));
 		igsnVersionService.save(version);
 	}
 
-	private int mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {
+	private void mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {
 		MDSClient mdsClient = new MDSClient(allocation);
-		return mdsClient.mintIGSN(new String(body), identifierValue, landingPage, false);
+		mdsClient.mintIGSN(new String(body), identifierValue, landingPage, false);
 	}
 
 }

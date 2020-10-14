@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.job.config;
 
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.igsn.job.processor.MintIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.processor.UpdateIGSNProcessor;
 import au.edu.ardc.registry.igsn.job.reader.IGSNItemReader;
 import au.edu.ardc.registry.igsn.job.reader.PayloadContentReader;
@@ -70,19 +71,23 @@ public class IGSNUpdateJobConfig {
 
 	@Bean
 	public Step update() {
+		//@formatter:off
 		return stepBuilderFactory.get("update").<Resource, Resource>chunk(1)
-				.reader(new PayloadContentReader(igsnRequestService)).processor(new UpdateRecordProcessor(schemaService,
-						identifierService, recordService, igsnVersionService, urlService))
+				.reader(new PayloadContentReader(igsnRequestService))
+				.processor(new UpdateRecordProcessor(schemaService, identifierService, recordService,
+						igsnVersionService, urlService, igsnRequestService))
 				.writer(new NoOpItemWriter<>()).build();
+		//@formatter:on
 	}
 
 	@Bean
 	public Step registrationUpdate() {
 		//@formatter:off
 		return stepBuilderFactory.get("registration-update")
-				.<String, String>chunk(1).reader(new IGSNItemReader(igsnRequestService))
-				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierService, recordService,
-						igsnVersionService, urlService))
+				.<String, String>chunk(1)
+				.reader(new IGSNItemReader(igsnRequestService))
+				.processor(new UpdateIGSNProcessor(schemaService, kcService, identifierService,
+						igsnVersionService, igsnRequestService))
 				.faultTolerant()
 				.retryLimit(5)
 				.retry(HttpServerErrorException.class)

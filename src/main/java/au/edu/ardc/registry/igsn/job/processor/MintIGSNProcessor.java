@@ -27,6 +27,7 @@ import org.springframework.batch.item.ItemProcessor;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 public class MintIGSNProcessor implements ItemProcessor<String, String> {
 
@@ -41,6 +42,8 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 	private final IGSNRequestService igsnRequestService;
 
 	private IGSNAllocation allocation;
+
+	private UUID creatorID;
 
 	private String landingPage;
 
@@ -59,7 +62,7 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		JobParameters jobParameters = stepExecution.getJobParameters();
 		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
 		Request request = igsnRequestService.findById(IGSNServiceRequestID);
-
+		creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
 		// obtain allocation details for use with minting
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		this.allocation = (IGSNAllocation) kcService.getAllocationByResourceID(allocationID);
@@ -131,13 +134,13 @@ public class MintIGSNProcessor implements ItemProcessor<String, String> {
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(new String(version.getContent())));
+		version.setCreatorID(creatorID);
 		igsnVersionService.save(version);
 	}
 
-	private int mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {
-		boolean success = false;
+	private void mintIGSN(byte[] body, String identifierValue, String landingPage) throws Exception {
 		MDSClient mdsClient = new MDSClient(allocation);
-		return mdsClient.mintIGSN(new String(body), identifierValue, landingPage, false);
+		mdsClient.mintIGSN(new String(body), identifierValue, landingPage, false);
 	}
 
 }

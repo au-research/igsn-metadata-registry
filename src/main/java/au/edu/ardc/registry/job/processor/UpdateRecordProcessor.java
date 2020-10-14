@@ -2,12 +2,15 @@ package au.edu.ardc.registry.job.processor;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.entity.Version;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -21,15 +24,17 @@ import java.util.UUID;
 
 public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> {
 
-	private IdentifierService identifierService;
+	private final IGSNRequestService igsnRequestService;
 
-	private RecordService recordService;
+	private final SchemaService schemaService;
 
-	private IGSNVersionService igsnVersionService;
+	private final IdentifierService identifierService;
 
-	private URLService urlService;
+	private final RecordService recordService;
 
-	private SchemaService schemaService;
+	private final IGSNVersionService igsnVersionService;
+
+	private final URLService urlService;
 
 	private String creatorID;
 
@@ -42,22 +47,27 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 	private Schema schema;
 
 	public UpdateRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
-			RecordService recordService, IGSNVersionService versionService, URLService urlService) {
+								 RecordService recordService, IGSNVersionService versionService, URLService urlService,
+								 IGSNRequestService igsnRequestService) {
 
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.igsnVersionService = versionService;
 		this.urlService = urlService;
 		this.schemaService = schemaService;
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@BeforeStep
 	public void beforeStep(final StepExecution stepExecution) {
 		JobParameters jobParameters = stepExecution.getJobParameters();
-		creatorID = jobParameters.getString("creatorID");
-		outputFilePath = jobParameters.getString("filePath");
-		allocationID = jobParameters.getString("allocationID");
-		ownerType = jobParameters.getString("ownerType");
+		String requestID = jobParameters.getString("IGSNServiceRequestID");
+		Request request = igsnRequestService.findById(requestID);
+
+		this.creatorID = request.getAttribute(Attribute.CREATOR_ID);
+		this.outputFilePath = request.getAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH);
+		this.allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
+		this.ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 	}
 
 	@Override
