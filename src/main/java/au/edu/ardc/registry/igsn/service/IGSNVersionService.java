@@ -38,8 +38,8 @@ public class IGSNVersionService {
 		return version;
 	}
 
-	public void save(Version version) {
-		versionService.save(version);
+	public Version save(Version version) {
+		return versionService.save(version);
 	}
 
 	public Version getCurrentVersionForRecord(Record record, String supportedSchema) {

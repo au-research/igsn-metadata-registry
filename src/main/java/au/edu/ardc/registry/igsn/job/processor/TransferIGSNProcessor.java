@@ -28,7 +28,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 
 	private Request request;
 
-	private Logger logger;
+	private Logger requestLog;
 
 	public TransferIGSNProcessor(RecordRepository recordRepository, IdentifierRepository identifierRepository,
 			IGSNRequestService igsnService, RequestService requestService) {
@@ -43,7 +43,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 		JobParameters jobParameters = stepExecution.getJobParameters();
 		String IGSNServiceRequestID = jobParameters.getString("IGSNServiceRequestID");
 		this.request = igsnService.findById(IGSNServiceRequestID);
-		this.logger = requestService.getLoggerFor(request);
+		this.requestLog = requestService.getLoggerFor(request);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 		String ownerType = this.request.getAttribute(Attribute.OWNER_TYPE);
 
 		if (identifierRepository.existsByTypeAndValue(Identifier.Type.IGSN, identifierValue)) {
-			logger.error("Identifier {} of type {} does not exists", identifierValue, Identifier.Type.IGSN);
+			requestLog.error("Identifier {} of type {} does not exists", identifierValue, Identifier.Type.IGSN);
 		}
 
 		Identifier identifier = identifierRepository.findFirstByValueAndType(identifierValue, Identifier.Type.IGSN);
@@ -61,7 +61,7 @@ public class TransferIGSNProcessor implements ItemProcessor<String, String> {
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
 		record.setOwnerID(UUID.fromString(ownerID));
 		recordRepository.save(record);
-		logger.info("Updated record {} ownerType to {} and ownerID to {}", record.getId(), ownerType, ownerID);
+		requestLog.info("Updated record {} ownerType to {} and ownerID to {}", record.getId(), ownerType, ownerID);
 
 		return identifierValue;
 	}

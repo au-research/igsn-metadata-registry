@@ -9,6 +9,7 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNVersionService;
+import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -44,6 +45,8 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 
 	private Schema schema;
 
+	private Logger requestLog;
+
 	public IngestRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
 			RecordService recordService, IGSNVersionService versionService, URLService urlService,
 			IGSNRequestService igsnRequestService) {
@@ -61,15 +64,26 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		JobParameters jobParameters = stepExecution.getJobParameters();
 		String requestID = jobParameters.getString("IGSNServiceRequestID");
 		Request request = igsnRequestService.findById(requestID);
+		requestLog = igsnRequestService.getLoggerFor(request);
+
+		requestLog.info("Started Ingesting for Request: {}", requestID);
+		request.setMessage("Ingesting");
+		igsnRequestService.save(request);
 
 		this.creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		this.outputFilePath = request.getAttribute(Attribute.REQUESTED_IDENTIFIERS_PATH);
 		this.allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		this.ownerType = request.getAttribute(Attribute.OWNER_TYPE);
+
+		requestLog.debug("creatorID: {}", creatorID);
+		requestLog.debug("outputFilePath: {}", outputFilePath);
+		requestLog.debug("allocationID: {}", allocationID);
+		requestLog.debug("ownerType: {}", ownerType);
 	}
 
 	@Override
 	public Resource process(@NotNull Resource item) throws IOException, ContentProviderNotFoundException {
+		requestLog.debug("Processing: {}", item.getFile().getPath());
 		// read the content of the item Resource
 		String content = Helpers.readFile(item.getFile().getPath());
 
@@ -86,20 +100,30 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		String identifierValue = identifierProvider.get(content);
 		String landingPage = landingPageProvider.get(content);
 
+		requestLog.debug("Ingesting Identifier: {} with Landing Page: {}", identifierValue, landingPage);
+
 		// add new Record, Identifier, URL and Version
 		Record record = addRecord(visibilityProvider.get(content));
-		addIdentifier(identifierValue, record);
-		addURL(landingPage, record);
-		addVersion(content, record);
+		requestLog.debug("Added Record: {}", record.getId());
+
+		Identifier identifier = addIdentifier(identifierValue, record);
+		requestLog.debug("Added Identifier: {}", identifier.getId());
+
+		URL url = addURL(landingPage, record);
+		requestLog.debug("Added URL: {}", url.getId());
+
+		Version version = addVersion(content, record);
+		requestLog.debug("Added version: {}", version.getId());
 
 		// append identifierValue to the outputFile path for use in next step
 		Helpers.appendToFile(outputFilePath, identifierValue);
+		requestLog.info("Ingested {}", identifierValue);
+		requestLog.debug("outputFilePath: {}", outputFilePath);
 		return null;
 	}
 
 	private Record addRecord(boolean visible) {
 		// create the record
-
 		Record record = new Record();
 		record.setCreatedAt(new Date());
 		record.setOwnerID(UUID.fromString(creatorID));
@@ -110,7 +134,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		return recordService.save(record);
 	}
 
-	private void addIdentifier(String identifierValue, Record record) {
+	private Identifier addIdentifier(String identifierValue, Record record) {
 		// create the identifier
 		Identifier identifier = new Identifier();
 		identifier.setCreatedAt(new Date());
@@ -118,18 +142,18 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		identifier.setType(Identifier.Type.IGSN);
 		identifier.setValue(identifierValue);
 		identifier.setStatus(Identifier.Status.PENDING);
-		identifierService.save(identifier);
+		return identifierService.save(identifier);
 	}
 
-	private void addURL(String urlValue, Record record) {
+	private URL addURL(String urlValue, Record record) {
 		URL url = new URL();
 		url.setCreatedAt(new Date());
 		url.setRecord(record);
 		url.setUrl(urlValue);
-		urlService.create(url);
+		return urlService.create(url);
 	}
 
-	private void addVersion(String content, Record record) {
+	private Version addVersion(String content, Record record) {
 		Version version = new Version();
 		version.setRecord(record);
 		version.setSchema(schema.getId());
@@ -138,7 +162,7 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 		version.setCreatedAt(new Date());
 		version.setCurrent(true);
 		version.setHash(VersionService.getHash(content));
-		igsnVersionService.save(version);
+		return igsnVersionService.save(version);
 	}
 
 }

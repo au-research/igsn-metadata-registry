@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
+import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepContribution;
@@ -57,24 +58,48 @@ public class PayloadChunkerTasklet implements Tasklet, InitializingBean {
 		JobParameters jobParameters = chunkContext.getStepContext().getStepExecution().getJobParameters();
 		String requestID = jobParameters.getString("IGSNServiceRequestID");
 		Request request = igsnRequestService.findById(requestID);
+		Logger requestLog = igsnRequestService.getLoggerFor(request);
+
+		request.setMessage("Chunking Payload...");
+		igsnRequestService.save(request);
 
 		// obtain neccessary parameters from the Request.attributes
 		String payloadPath = request.getAttribute(Attribute.PAYLOAD_PATH);
 		String resultDirName = request.getAttribute(Attribute.CHUNKED_PAYLOAD_PATH);
-
 		String payload = Helpers.readFile(payloadPath);
 		Schema schema = schemaService.getSchemaForContent(payload);
 		String fileExtension = Helpers.getFileExtensionForContent(payload);
+
+		requestLog.info("Started chunking for request: {}", requestID);
+		requestLog.info("Started chunking for payload {}", payloadPath);
+		requestLog.info("Schema Detected: {}", schema);
+		requestLog.debug("Result Directory: {} FileExtension: {}", resultDirName, fileExtension);
+
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
 				Metadata.Fragment);
+		requestLog.debug("Created FragmentProvider with class: {}", fragmentProvider.getClass());
 		assert resultDirName != null;
 		Files.createDirectories(Paths.get(resultDirName));
-		for (int i = 0; i < fragmentProvider.getCount(payload); i++) {
+		if (!(new File(resultDirName)).isDirectory()) {
+			requestLog.error("Failed creating directory: {}", resultDirName);
+			return RepeatStatus.FINISHED;
+		}
+
+		int count = fragmentProvider.getCount(payload);
+		requestLog.info("Total fragment count: {}", count);
+
+		for (int i = 0; i < count; i++) {
 			String content = fragmentProvider.get(payload, i);
 			String outFilePath = resultDirName + File.separator + i + fileExtension;
 			Helpers.writeFile(outFilePath, content);
+			requestLog.info("Write content {} to {}", i, outFilePath);
 		}
+		requestLog.info("Completed chunking for request: {}", requestID);
 		chunkContext.setComplete();
+
+		request.setMessage("Chunking Payload Completed");
+		igsnRequestService.save(request);
+
 		return RepeatStatus.FINISHED;
 	}
 
