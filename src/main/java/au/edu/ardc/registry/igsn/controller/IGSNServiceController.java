@@ -52,6 +52,8 @@ public class IGSNServiceController {
 
 	final JobLauncher asyncJobLauncher;
 
+	final JobLauncher igsnQueueJobLauncher;
+
 	final Job igsnImportJob;
 
 	final Job IGSNUpdateJob;
@@ -68,9 +70,11 @@ public class IGSNServiceController {
 			SchemaService schemaService, ValidationService validationService, VersionService versionService,
 			IdentifierService identifierService, RequestMapper requestMapper,
 			@Qualifier("standardJobLauncher") JobLauncher standardJobLauncher,
-			@Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher, @Qualifier("IGSNImportJob") Job igsnImportJob,
-			@Qualifier("IGSNUpdateJob") Job igsnUpdateJob, KeycloakService kcService,
-			@Qualifier("ReserveIGSNJob") Job reserveIGSNJob, @Qualifier("TransferIGSNJob") Job transferIGSNJob) {
+			@Qualifier("asyncJobLauncher") JobLauncher asyncJobLauncher,
+			@Qualifier("IGSNSingleQueueJobLauncher") JobLauncher igsnQueueJobLauncher,
+			@Qualifier("IGSNImportJob") Job igsnImportJob, @Qualifier("IGSNUpdateJob") Job igsnUpdateJob,
+			KeycloakService kcService, @Qualifier("ReserveIGSNJob") Job reserveIGSNJob,
+			@Qualifier("TransferIGSNJob") Job transferIGSNJob) {
 		this.igsnRequestService = igsnRequestService;
 		this.requestService = requestService;
 		this.schemaService = schemaService;
@@ -80,6 +84,7 @@ public class IGSNServiceController {
 		this.requestMapper = requestMapper;
 		this.standardJobLauncher = standardJobLauncher;
 		this.asyncJobLauncher = asyncJobLauncher;
+		this.igsnQueueJobLauncher = igsnQueueJobLauncher;
 		this.igsnImportJob = igsnImportJob;
 		this.IGSNUpdateJob = igsnUpdateJob;
 		this.kcService = kcService;
@@ -134,7 +139,7 @@ public class IGSNServiceController {
 				.addString("IGSNServiceRequestID", igsnRequest.getId().toString()).toJobParameters();
 
 		JobExecution jobExecution = wait ? standardJobLauncher.run(igsnImportJob, jobParameters)
-				: asyncJobLauncher.run(igsnImportJob, jobParameters);
+				: igsnQueueJobLauncher.run(igsnImportJob, jobParameters);
 
 		igsnRequest.setStatus(Request.Status.ACCEPTED);
 		igsnRequest.setAttribute("JobID", String.valueOf(jobExecution.getJobId()));
@@ -195,7 +200,7 @@ public class IGSNServiceController {
 				.addString("IGSNServiceRequestID", igsnRequest.getId().toString()).toJobParameters();
 
 		JobExecution jobExecution = wait ? standardJobLauncher.run(IGSNUpdateJob, jobParameters)
-				: asyncJobLauncher.run(IGSNUpdateJob, jobParameters);
+				: igsnQueueJobLauncher.run(IGSNUpdateJob, jobParameters);
 
 		igsnRequest.setStatus(Request.Status.ACCEPTED);
 		igsnRequest.setAttribute("JobID", String.valueOf(jobExecution.getJobId()));
