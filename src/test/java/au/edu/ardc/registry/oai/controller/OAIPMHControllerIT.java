@@ -2,23 +2,35 @@ package au.edu.ardc.registry.oai.controller;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.WebIntegrationTest;
+import au.edu.ardc.registry.common.dto.mapper.IdentifierMapper;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.VersionRepository;
+import au.edu.ardc.registry.common.service.APILoggingService;
+import org.apache.logging.log4j.LogManager;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.oai.service.OAIPMHService;
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.appender.RollingFileAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
-import org.springframework.web.reactive.function.client.WebClient;
 
+
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+@Import({ APILoggingService.class, IdentifierMapper.class })
 public class OAIPMHControllerIT extends WebIntegrationTest {
 
 	@Autowired
@@ -230,6 +242,31 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 				.uri(base_url + "?verb=ListRecords&metadataPrefix=" + SchemaService.OAIDC + "&set=thisSet").exchange()
 				.expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
 				.xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
+
+	}
+
+	@Test
+	void logging_to_apiLog() throws IOException {
+
+		Logger LOG = LogManager.getLogger(APILoggingService.class);
+		org.apache.logging.log4j.core.Logger loggerImpl = (org.apache.logging.log4j.core.Logger) LOG;
+		Appender appender = loggerImpl.getAppenders().get("API");
+		String logPath = ((RollingFileAppender) appender).getFileName();
+
+		String expectedQuery = "\"query\":\"verb=ListRecords&metadataPrefix=oai_dc&set=thisSet\"";
+		String expectedResponse = "\"response\":{\"status_code\":\"200\"}";
+		String expectedEvent = "\"event\":{\"category\":\"web\",\"action\":\"api\",\"outcome\":\"success\"}";
+
+		this.webTestClient.get()
+				.uri(base_url + "?verb=ListRecords&metadataPrefix=" + SchemaService.OAIDC + "&set=thisSet").exchange()
+				.expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
+				.xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
+
+		File file=new File(logPath);
+		String log = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+		Assert.assertTrue(log.contains(expectedQuery));
+		Assert.assertTrue(log.contains(expectedResponse));
+		Assert.assertTrue(log.contains(expectedEvent));
 
 	}
 
