@@ -107,6 +107,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		for (i = 0; i < 120; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
+			record.setType("IGSN");
 			recordRepository.save(record);
 
 			Version version = TestHelper.mockVersion(record);
@@ -185,6 +186,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		for (i = 0; i < 110; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
+			record.setType("IGSN");
 			recordRepository.saveAndFlush(record);
 
 			Version version = TestHelper.mockVersion(record);
@@ -213,6 +215,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 		for (i = 0; i < 110; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
+			record.setType("IGSN");
 			recordRepository.saveAndFlush(record);
 
 			Version version = TestHelper.mockVersion(record);
