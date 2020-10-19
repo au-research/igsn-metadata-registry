@@ -132,7 +132,9 @@ public class VersionService {
 	public Page<Version> findAllCurrentVersionsOfSchema(String schema, Date from, Date until, Pageable pageable) {
 		VersionSpecification specs = new VersionSpecification();
 		specs.add(new SearchCriteria("schema", schema, SearchOperation.EQUAL));
+		specs.add(new SearchCriteria("current", 1, SearchOperation.EQUAL));
 		specs.add(new SearchCriteria("visible", true, SearchOperation.RECORD_EQUAL));
+		specs.add(new SearchCriteria("type", "IGSN", SearchOperation.RECORD_EQUAL));
 		if (from != null)
 			specs.add(new SearchCriteria("modifiedAt", from, SearchOperation.DATE_GREATER_THAN_EQUAL));
 		if (until != null)
