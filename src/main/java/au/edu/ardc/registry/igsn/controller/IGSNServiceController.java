@@ -11,6 +11,10 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.validator.PayloadValidator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.batch.core.*;
@@ -30,8 +34,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/api/services/igsn", produces = MediaType.APPLICATION_JSON_VALUE)
-@Tag(name = "IGSN Service")
+@RequestMapping(value = "/api/services/igsn", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@Tag(name = "IGSN Service", description = "API endpoints for IGSN related operations")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class IGSNServiceController {
@@ -103,6 +107,8 @@ public class IGSNServiceController {
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
 	@PostMapping("/mint")
+	@Operation(summary = "Mint a new IGSN", description="Creates a new IGSN Identifier and Metadata")
+	@ApiResponse(responseCode="201", description= "Mint request is accepted", content = @Content(schema=@Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> mint(HttpServletRequest request, @RequestBody String payload,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false, defaultValue = "0") boolean wait) throws Exception {
@@ -164,6 +170,8 @@ public class IGSNServiceController {
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
 	@PostMapping("/update")
+	@ApiResponse(responseCode="201", description= "Update request is accepted", content = @Content(schema=@Schema(implementation = RequestDTO.class)))
+	@Operation(summary = "Updates an existing IGSN metadata", description = "Updates an existing IGSN Metadata")
 	public ResponseEntity<RequestDTO> update(HttpServletRequest request, @RequestBody String payload,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false, defaultValue = "0") boolean wait) throws Exception {
@@ -215,6 +223,8 @@ public class IGSNServiceController {
 	}
 
 	@PostMapping("/reserve")
+	@Operation(summary="Reserve a set of IGSN", description="Reserved IGSN would not require metadata and will not be resolvable")
+	@ApiResponse(responseCode="200", description= "Reserve request has finished successfully", content = @Content(schema=@Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest request, @RequestParam UUID allocationID,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String IGSNList)
@@ -263,7 +273,9 @@ public class IGSNServiceController {
 	}
 
 	@PostMapping("/transfer")
-	public ResponseEntity<Request> handle(HttpServletRequest request, @RequestParam UUID ownerID,
+	@Operation(summary="Transfer a set of IGSNs to another User/DataCenter", description="Transfer the ownership of a list of IGSN Identifier to another User or DataCenter")
+	@ApiResponse(responseCode="200", description= "Transfer request has completed successfully", content = @Content(schema=@Schema(implementation = RequestDTO.class)))
+	public ResponseEntity<RequestDTO> handle(HttpServletRequest request, @RequestParam UUID ownerID,
 			@RequestParam String ownerType, @RequestBody String IGSNList) throws JobParametersInvalidException,
 			JobExecutionAlreadyRunningException, JobRestartException, JobInstanceAlreadyCompleteException, IOException {
 		User user = kcService.getLoggedInUser(request);
@@ -295,7 +307,8 @@ public class IGSNServiceController {
 		// set the IGSNServiceRequest in the request for later logging
 		request.setAttribute(String.valueOf(Request.class), IGSNRequest);
 
-		return ResponseEntity.ok().body(IGSNRequest);
+		RequestDTO dto = requestMapper.convertToDTO(IGSNRequest);
+		return ResponseEntity.ok().body(dto);
 	}
 
 }
