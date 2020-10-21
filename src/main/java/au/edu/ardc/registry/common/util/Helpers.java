@@ -46,6 +46,10 @@ public class Helpers {
 		return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 	}
 
+	public static String readFile(File file) throws IOException {
+		return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+	}
+
 	public static void writeFile(String filePath, String content) throws IOException {
 		File inputIGSNFile = new File(filePath);
 		boolean newFile = inputIGSNFile.createNewFile();

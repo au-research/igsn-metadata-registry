@@ -74,6 +74,10 @@ public class IdentifierService {
 	}
 
 	public Identifier save(Identifier newIdentifier) {
+		Identifier existingIdentifier = findByValueAndType(newIdentifier.getValue(), newIdentifier.getType());
+		if (existingIdentifier != null) {
+			throw new ForbiddenOperationException(String.format("Identifier {} with type {} already exists", newIdentifier.getValue(), newIdentifier.getType()));
+		}
 		return repository.saveAndFlush(newIdentifier);
 	}
 

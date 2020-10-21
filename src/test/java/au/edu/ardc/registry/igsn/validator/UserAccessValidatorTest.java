@@ -118,33 +118,6 @@ class UserAccessValidatorTest {
 	}
 
 	@Test
-	@DisplayName("User can create identifier but Identifier with the same value and type already exists")
-	void canUserCreateIGSNRecord_recordAlreadyExists_ForbiddenOperationException() throws IOException {
-		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,
-				schemaService);
-
-		// xml with 10273/XX0T, allocation with the same set, user associated with
-		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
-		User user = TestHelper.mockUser();
-		IGSNAllocation allocation = TestHelper.mockIGSNAllocation();
-		allocation.setPrefix("10273");
-		allocation.setNamespace("XX0T");
-		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
-		user.setAllocations(Collections.singletonList(allocation));
-
-		// identifier already exists in identifierRepository
-		Identifier mockedIdentifier = TestHelper.mockIdentifier();
-		mockedIdentifier.setValue("10273/XX0TUIAYLV");
-		mockedIdentifier.setType(Identifier.Type.IGSN);
-		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
-				.thenReturn(mockedIdentifier);
-
-		Assert.assertThrows(ForbiddenOperationException.class, () -> {
-			userAccessValidator.canUserCreateIGSNRecord(xml, user);
-		});
-	}
-
-	@Test
 	@DisplayName("Update happy path. User has access to the same prefix/namespace as the one requested in the identifier")
 	void canUserUpdateIGSNRecord_happyPath() throws IOException {
 		UserAccessValidator userAccessValidator = new UserAccessValidator(identifierService, validationService,

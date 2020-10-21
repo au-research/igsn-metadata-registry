@@ -6,6 +6,9 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.exception.*;
+import au.edu.ardc.registry.igsn.validator.ContentValidator;
+import au.edu.ardc.registry.igsn.validator.UserAccessValidator;
+import au.edu.ardc.registry.igsn.validator.VersionContentValidator;
 
 import java.io.IOException;
 

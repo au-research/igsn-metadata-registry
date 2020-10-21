@@ -37,6 +37,9 @@ public class Identifier {
 	@JoinColumn(name = "record_id", nullable = false)
 	private Record record;
 
+	@Column(columnDefinition = "BINARY(16)")
+	private UUID requestID;
+
 	/**
 	 * Empty constructor
 	 */
@@ -103,6 +106,14 @@ public class Identifier {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public UUID getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(UUID requestID) {
+		this.requestID = requestID;
 	}
 
 	public enum Type {

@@ -5,12 +5,15 @@ import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.RequestRepository;
 import au.edu.ardc.registry.common.service.RequestService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,16 +43,19 @@ public class IGSNRequestService {
 	 * Creates an IGSN Request
 	 * @param user the {@link User} that initiate the Request
 	 * @param type the Type of the Request
+	 * @param payload the Payload of the Request to store immediately
 	 * @return the {@link} Request with type IGSN
+	 * @throws IOException when creating and/or storing directory
 	 */
-	public Request createRequest(User user, IGSNEventType type) {
+	public Request createRequest(User user, String type, String payload) throws IOException {
 		// create IGSNServiceRequest
 		logger.debug("Creating IGSNServiceRequest for user: {}", user);
 		Request request = new Request();
-		request.setType(type.getAction());
+		request.setType(type);
 		request.setCreatedAt(new Date());
 		request.setUpdatedAt(new Date());
 		request.setCreatedBy(user.getId());
+		request.setStatus(Request.Status.CREATED);
 		request = repository.save(request);
 		logger.debug("Created IGSNServiceRequest: id: {}", request.getId());
 
@@ -64,6 +70,18 @@ public class IGSNRequestService {
 		}
 		catch (IOException e) {
 			logger.error("Failed creating data path {}", e.getMessage());
+		}
+
+		// log path
+		request.setAttribute(Attribute.LOG_PATH, requestService.getLoggerPathFor(request));
+
+		// insert the payload
+		if (payload != null) {
+			String dataPath = requestService.getDataPathFor(request);
+			String fileExtension = Helpers.getFileExtensionForContent(payload);
+			String payLoadContentPath = dataPath + File.separator + "payload" + fileExtension;
+			Helpers.writeFile(payLoadContentPath, payload);
+			request.setAttribute(Attribute.PAYLOAD_PATH, payLoadContentPath);
 		}
 
 		request = repository.save(request);

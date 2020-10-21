@@ -84,10 +84,10 @@ public class UserAccessValidator {
 			// otherwise anyone can test for records even if it belongs to a different
 			// namespace
 
-			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-			if (existingIdentifier != null) {
-				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
-			}
+//			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+//			if (existingIdentifier != null) {
+//				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
+//			}
 			identifierValues.add(identifierValue);
 		}
 		return true;

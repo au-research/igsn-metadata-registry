@@ -127,7 +127,7 @@ public class Request {
 
 	public enum Status {
 
-		ACCEPTED, QUEUED, RUNNING, COMPLETED, FAILED
+		CREATED, ACCEPTED, PROCESSED, RUNNING, COMPLETED, FAILED
 
 	}
 

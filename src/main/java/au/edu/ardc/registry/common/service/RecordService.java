@@ -179,6 +179,11 @@ public class RecordService {
 		return true;
 	}
 
+	public boolean delete(Record record) {
+		repository.delete(record);
+		return true;
+	}
+
 	/**
 	 * Updates a record Validates record existence Validates User ownership
 	 * @param recordDTO the dto of the record

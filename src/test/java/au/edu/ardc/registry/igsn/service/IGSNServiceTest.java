@@ -62,28 +62,4 @@ class IGSNRequestServiceTest {
 		assertThat(actual).isNull();
 	}
 
-	@Test
-	void createRequest() {
-		User user = TestHelper.mockUser();
-		Request request = new Request();
-		request.setId(UUID.randomUUID());
-
-		when(repository.save(any(Request.class))).thenReturn(request);
-
-		Request actual = service.createRequest(user, IGSNEventType.RESERVE);
-
-		verify(repository, times(2)).save(any(Request.class));
-
-		// ensure directory path is created
-		assertThat(actual).isNotNull();
-		File dataPath = new File(request.getAttribute(Attribute.DATA_PATH));
-		assertThat(request.getAttribute(Attribute.DATA_PATH)).isNotNull();
-		assertThat(dataPath.exists()).isTrue();
-		assertThat(dataPath.canRead()).isTrue();
-		assertThat(dataPath.canWrite()).isTrue();
-
-		// clean up
-		dataPath.deleteOnExit();
-	}
-
 }

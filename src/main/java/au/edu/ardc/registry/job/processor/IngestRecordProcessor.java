@@ -82,10 +82,14 @@ public class IngestRecordProcessor implements ItemProcessor<Resource, Resource> 
 	}
 
 	@Override
-	public Resource process(@NotNull Resource item) throws IOException, ContentProviderNotFoundException {
-		requestLog.debug("Processing: {}", item.getFile().getPath());
+	public Resource process(Resource item) throws IOException, ContentProviderNotFoundException {
+		requestLog.debug("Item: {}", item);
+		requestLog.debug("GetFile: {}", item.getFile());
+		requestLog.debug("GetPath: {}", item.getFile().getPath());
+		requestLog.debug("GetAbsolutePath: {}", item.getFile().getAbsolutePath());
+		requestLog.debug("Processing: {}", item.getFile().getAbsolutePath());
 		// read the content of the item Resource
-		String content = Helpers.readFile(item.getFile().getPath());
+		String content = Helpers.readFile(item.getFile().getAbsolutePath());
 
 		// build the providers
 		schema = schemaService.getSchemaForContent(content);
