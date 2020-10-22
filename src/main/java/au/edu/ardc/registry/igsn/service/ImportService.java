@@ -46,9 +46,9 @@ public class ImportService {
 	 * @param file the {@link File} points to the payload or the chunked payload
 	 * @param request the {@link Request} where additional details will be extracted from
 	 * @return the {@link Identifier}
-	 * @throws Exception when failing to read file or any other operation
+	 * @throws IOException when failing to read file or any other operation
 	 */
-	public Identifier importRequest(File file, Request request) throws Exception {
+	public Identifier importRequest(File file, Request request) throws IOException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 
 		// read the content of the item Resource
