@@ -6,7 +6,16 @@ import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 public class TestHelper {
@@ -214,6 +223,33 @@ public class TestHelper {
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(UUID.randomUUID());
 		return request;
+	}
+
+	public static Logger getConsoleLogger(String loggerName, Level level) {
+		// get the current Logging context and Configuration
+		LoggerContext context = (LoggerContext) LogManager.getContext(true);
+		org.apache.logging.log4j.core.config.Configuration configuration = context.getConfiguration();
+		LoggerConfig loggerConfig = new LoggerConfig(loggerName, level, false);
+
+		// build a PatternLayout to be used with logging
+		String pattern = "[%d{ISO8601}][%-5p][%c{2}] %m%n";
+		PatternLayout.Builder builder = PatternLayout.newBuilder().withPattern(pattern)
+				.withCharset(Charset.defaultCharset()).withAlwaysWriteExceptions(false).withNoConsoleNoAnsi(false);
+		PatternLayout layout = builder.build();
+
+		// build the appender and add them to the loggerConfig
+		Appender appender = ConsoleAppender.newBuilder().setName(loggerName).setLayout(layout)
+				.setConfiguration(configuration).withImmediateFlush(true).withBufferSize(8192).build();
+		appender.start();
+
+		loggerConfig.addAppender(appender, level, null);
+
+		// add a new logger with the provided config
+		configuration.addLogger(loggerName, loggerConfig);
+
+		// update all the loggers to make sure this logger by name is available everywhere
+		context.updateLoggers();
+		return context.getLogger(loggerName);
 	}
 
 }
