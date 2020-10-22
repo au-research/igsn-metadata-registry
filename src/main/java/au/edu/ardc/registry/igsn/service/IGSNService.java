@@ -9,7 +9,6 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
@@ -24,7 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -57,26 +59,21 @@ public class IGSNService {
 
 	private Map<UUID, LinkedBlockingQueue<IGSNTask>> importQueue = new HashMap<>();
 
-	private Set<String> identifierLock = new HashSet<>();
-
 	@Autowired
 	private ImportService importService;
 
 	@PostConstruct
 	public void init() {
+		// intialsize
 		importQueue = new HashMap<>();
-		identifierLock = new HashSet<>();
 		syncQueue = new LinkedBlockingQueue<>();
 
+		// start a worker to work on the syncQueue
 		new Thread(new IGSNTaskWorker(syncQueue, this)).start();
 	}
 
 	public Map<UUID, LinkedBlockingQueue<IGSNTask>> getImportQueue() {
 		return importQueue;
-	}
-
-	public Set<String> getIdentifierLock() {
-		return identifierLock;
 	}
 
 	public BlockingQueue<IGSNTask> getSyncQueue() {
@@ -101,45 +98,52 @@ public class IGSNService {
 		Request request = igsnRequestService.findById(String.valueOf(task.getRequestID()));
 		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
 		switch (task.getType()) {
-			case IGSNTask.TASK_IMPORT:
-				logger.info("Executing import task {}", task);
-				try {
-					Identifier identifier = importService.importRequest(task.getContentFile(),
-							igsnRequestService.findById(String.valueOf(task.getRequestID())));
-					if (identifier != null) {
-						getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
-					}
-				} catch (IOException e) {
-					// todo log the exception in the request log
-					logger.error(e.getMessage());
+		case IGSNTask.TASK_IMPORT:
+			logger.info("Executing import task {}", task);
+			try {
+				Identifier identifier = importService.importRequest(task.getContentFile(),
+						igsnRequestService.findById(String.valueOf(task.getRequestID())));
+				if (identifier != null) {
+					getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
 				}
-				logger.info("Finished import task {}", task);
-				break;
-			case IGSNTask.TASK_UPDATE:
-				logger.debug("Executing update task {}", task);
-				try {
-					Identifier identifier = importService.updateRequest(task.getContentFile(), request);
-					if (identifier != null) {
-						logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-						getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
-					}
-				} catch (IOException e) {
-					// todo log the exception in the request log
-					logger.error(e.getMessage());
-				} catch (VersionContentAlreadyExistsException e) {
-					requestLogger.warn(e.getMessage());
-					logger.warn(e.getMessage());
+			}
+			catch (IOException e) {
+				// todo log the exception in the request log
+				logger.error(e.getMessage());
+			}
+			logger.info("Finished import task {}", task);
+			break;
+		case IGSNTask.TASK_UPDATE:
+			logger.debug("Executing update task {}", task);
+			try {
+				Identifier identifier = importService.updateRequest(task.getContentFile(), request);
+				if (identifier != null) {
+					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
+					getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
 				}
-				logger.debug("Finished update task {}", task);
-				break;
-			case IGSNTask.TASK_SYNC:
-				logger.info("SYNC TASK {}", task);
-				Thread.sleep(5000);
-				logger.info("Finish SYNC TASK {}", task);
-				break;
+			}
+			catch (IOException e) {
+				// todo log the exception in the request log
+				logger.error(e.getMessage());
+			}
+			catch (VersionContentAlreadyExistsException e) {
+				requestLogger.warn(e.getMessage());
+				logger.warn(e.getMessage());
+			}
+			logger.debug("Finished update task {}", task);
+			break;
+		case IGSNTask.TASK_SYNC:
+			logger.info("SYNC TASK {}", task);
+			Thread.sleep(5000);
+			logger.info("Finish SYNC TASK {}", task);
+			break;
 		}
 	}
 
+	/**
+	 * Chunk and Queue the Request. Specifically used for bulk requests.
+	 * @param request the {@link Request} to chunk and queue if necessary.
+	 */
 	@Async
 	public void processMintOrUpdate(Request request) {
 

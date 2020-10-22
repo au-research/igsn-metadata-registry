@@ -10,7 +10,7 @@ public class IGSNTaskWorker implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(IGSNTaskWorker.class);
 
-	private BlockingQueue<IGSNTask> queue;
+	public BlockingQueue<IGSNTask> queue;
 
 	private final IGSNService igsnService;
 
@@ -19,22 +19,29 @@ public class IGSNTaskWorker implements Runnable {
 		this.igsnService = igsnService;
 	}
 
+	/**
+	* Run the {@link IGSNTask} that is in the provided {@link BlockingQueue}
+	 */
 	@Override
 	public void run() {
 		logger.info("Started worker thread {}", Thread.currentThread().getId());
 		try {
 			while (true) {
-				logger.info("Try to do a job");
 				IGSNTask task = queue.take();
+				logger.debug("Running Task: {}", task);
+
+				// poison pill method of killing the thread, by feeding it DONE
 				if (task.getType().equals("DONE")) {
 					logger.info("DONE message received, shutting down thread {}", Thread.currentThread().getId());
 					break;
 				}
+
+				// execute the IGSNTask and then move on to the next
 				igsnService.executeTask(task);
-				logger.info("Finish doing a job");
 			}
 		}
 		catch (InterruptedException e) {
+			logger.error("Worker Thread {} is Interrupted. Reason: {}", Thread.currentThread().getId(), e.getMessage());
 			Thread.currentThread().interrupt();
 		}
 	}

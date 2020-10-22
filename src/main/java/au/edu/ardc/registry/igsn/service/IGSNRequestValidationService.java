@@ -15,7 +15,9 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Service for validating IGSN Requests Mainly
+ */
 @Service
 public class IGSNRequestValidationService {
 
@@ -45,12 +50,25 @@ public class IGSNRequestValidationService {
 		this.validationService = validationService;
 	}
 
-	public void validate(Request request, User user) throws IOException {
+	/**
+	 * Validates a Request. Will not throw Exception
+	 * @param request the {@link Request} that is pre-populated with required Attributes
+	 * and Payload
+	 * @param user the {@link User} that initiate this Request
+	 * @throws IOException when the payload is not readable
+	 * @throws ForbiddenOperationException when the Operation is not allowed due to validation logic
+	 * @throws XMLValidationException when the payload content failed XML Validation
+	 * @throws ContentNotSupportedException when the payload content type is not supported
+	 */
+	public void validate(Request request, User user)
+			throws IOException, ForbiddenOperationException, XMLValidationException, ContentNotSupportedException {
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
 		String content = Helpers.readFile(file);
 
 		// todo validate reserve, transfer, bulk-reserve, bulk-transfer
+
+		// todo single-mint, check for
 
 		// validate well-formed and schema validation for all requests
 		schemaService.validate(content);

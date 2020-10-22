@@ -8,37 +8,47 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import org.apache.logging.log4j.core.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class ImportService {
 
-	@Autowired
-	private IdentifierService identifierService;
+	private final IdentifierService identifierService;
 
-	@Autowired
-	private RecordService recordService;
+	private final RecordService recordService;
 
-	@Autowired
-	private IGSNVersionService igsnVersionService;
+	private final IGSNVersionService igsnVersionService;
 
-	@Autowired
-	private URLService urlService;
+	private final URLService urlService;
 
-	@Autowired
-	private SchemaService schemaService;
+	private final SchemaService schemaService;
 
-	@Autowired
-	private IGSNRequestService igsnRequestService;
+	private final IGSNRequestService igsnRequestService;
 
-	public Identifier importRequest(File file, Request request) throws IOException {
+	public ImportService(IdentifierService identifierService, RecordService recordService,
+			IGSNVersionService igsnVersionService, URLService urlService, SchemaService schemaService,
+			IGSNRequestService igsnRequestService) {
+		this.identifierService = identifierService;
+		this.recordService = recordService;
+		this.igsnVersionService = igsnVersionService;
+		this.urlService = urlService;
+		this.schemaService = schemaService;
+		this.igsnRequestService = igsnRequestService;
+	}
+
+	/**
+	 * Import (Ingest) a File for a Request
+	 * @param file the {@link File} points to the payload or the chunked payload
+	 * @param request the {@link Request} where additional details will be extracted from
+	 * @return the {@link Identifier}
+	 * @throws Exception when failing to read file or any other operation
+	 */
+	public Identifier importRequest(File file, Request request) throws Exception {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 
 		// read the content of the item Resource
@@ -67,7 +77,7 @@ public class ImportService {
 		// add new Record, Identifier, URL and Version
 		Record record = new Record();
 		record.setCreatedAt(request.getCreatedAt());
-        record.setModifiedAt(request.getCreatedAt());
+		record.setModifiedAt(request.getCreatedAt());
 		record.setOwnerID(UUID.fromString(creatorID));
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
 		record.setVisible(visibilityProvider.get(content));
@@ -120,21 +130,31 @@ public class ImportService {
 		return identifier;
 	}
 
-	public Identifier updateRequest(File file, Request request) throws IOException, VersionContentAlreadyExistsException {
+	/**
+	 * Update an existing IGSN Record. The workflow is different from {@link #importRequest(File, Request)}
+	 * @param file the {@link File} that contains the new updated version
+	 * @param request the {@link Request} that contains all additional parameters
+	 * @return the IGSN {@link Identifier} that is updated
+	 * @throws IOException when reading the file
+	 * @throws VersionContentAlreadyExistsException when the exact same version is updated
+	 */
+	public Identifier updateRequest(File file, Request request)
+			throws IOException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
+		requestLog.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
+
 		String content = Helpers.readFile(file);
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
-
-        Schema schema = schemaService.getSchemaForContent(content);
+		Schema schema = schemaService.getSchemaForContent(content);
 
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
-        String identifierValue = identifierProvider.get(content);
+		String identifierValue = identifierProvider.get(content);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
 
-        Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-        Record record = identifier.getRecord();
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		Record record = identifier.getRecord();
 		Optional<Version> cVersion = record.getCurrentVersions().stream()
 				.filter(version -> version.getSchema().equals(schema.getId())).findFirst();
 		if (cVersion.isPresent()) {
@@ -142,34 +162,39 @@ public class ImportService {
 			String versionHash = version.getHash();
 			String incomingHash = VersionService.getHash(content);
 			if (incomingHash.equals(versionHash)) {
+				requestLog.warn("Previous version already contain the same content. Skipping");
 				throw new VersionContentAlreadyExistsException(identifierValue, version.getSchema());
 			}
 		}
 
-        // update the record
-        record.setVisible(visibilityProvider.get(content));
-        record.setModifierID(UUID.fromString(creatorID));
-        record.setModifiedAt(request.getCreatedAt());
-        recordService.save(record);
+		// update the record
+		record.setVisible(visibilityProvider.get(content));
+		record.setModifierID(UUID.fromString(creatorID));
+		record.setModifiedAt(request.getCreatedAt());
+		recordService.save(record);
+		requestLog.debug("Updated record {}", record.getId());
 
-        // end current version for the given schema
-        Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, schema.getId());
-        igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
+		// end current version for the given schema
+		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, schema.getId());
+		igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
+		requestLog.debug("Ended previous version of the schema {}", schema.getId());
 
-        // create new current version
-        Version version = new Version();
-        version.setRecord(record);
-        version.setSchema(schema.getId());
-        version.setContent(content.getBytes());
-        version.setCreatorID(UUID.fromString(creatorID));
-        version.setCreatedAt(request.getCreatedAt());
-        version.setCurrent(true);
-        version.setHash(VersionService.getHash(content));
-        igsnVersionService.save(version);
+		// create new current version
+		Version version = new Version();
+		version.setRecord(record);
+		version.setSchema(schema.getId());
+		version.setContent(content.getBytes());
+		version.setCreatorID(UUID.fromString(creatorID));
+		version.setCreatedAt(request.getCreatedAt());
+		version.setCurrent(true);
+		version.setHash(VersionService.getHash(content));
+		igsnVersionService.save(version);
+		requestLog.debug("Created new version {}", version.getId());
 
-        // todo end all version and set latest version to current
+		// todo end all version and set latest version to current
 
-        return identifier;
+		requestLog.info("Updated identifier {} with a new version", identifier.getValue());
+		return identifier;
 	}
 
 }
