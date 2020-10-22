@@ -81,7 +81,7 @@ public class MDSClientIT extends IntegrationTest {
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 
 		try {
-			response_code = mc.mintIGSN(metacontent, identifier, landingPage, true);
+			response_code = mc.mintIGSN(metacontent, identifier, landingPage);
 		}
 		catch (Exception e) {
 			System.out.print(e.getMessage());

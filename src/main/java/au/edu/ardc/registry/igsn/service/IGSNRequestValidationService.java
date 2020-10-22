@@ -116,7 +116,8 @@ public class IGSNRequestValidationService {
 					String.format("Record already exist with Identifier %s", firstIdentifier));
 		}
 
-		// if it's a single mint, check if the Identifier is already being queued to be imported
+		// if it's a single mint, check if the Identifier is already being queued to be
+		// imported
 		if (type.equals(IGSNService.EVENT_MINT)
 				&& igsnService.hasIGSNTaskQueued(allocation.getId(), IGSNTask.TASK_IMPORT, firstIdentifier)) {
 			throw new ForbiddenOperationException(

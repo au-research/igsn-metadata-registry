@@ -47,8 +47,8 @@ public class UpdateRecordProcessor implements ItemProcessor<Resource, Resource> 
 	private Schema schema;
 
 	public UpdateRecordProcessor(SchemaService schemaService, IdentifierService identifierService,
-								 RecordService recordService, IGSNVersionService versionService, URLService urlService,
-								 IGSNRequestService igsnRequestService) {
+			RecordService recordService, IGSNVersionService versionService, URLService urlService,
+			IGSNRequestService igsnRequestService) {
 
 		this.identifierService = identifierService;
 		this.recordService = recordService;

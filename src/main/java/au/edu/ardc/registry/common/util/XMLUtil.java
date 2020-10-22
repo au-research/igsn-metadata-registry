@@ -8,6 +8,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+//import org.xmlunit.builder.Input;
+
+//import org.xmlunit.diff.ComparisonControllers;
+//import org.xmlunit.diff.DefaultNodeMatcher;
+//import org.xmlunit.diff.Diff;
+//import org.xmlunit.diff.ElementSelectors;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,6 +71,11 @@ public class XMLUtil {
 			throw new ContentNotSupportedException("Namespace unavailable");
 		}
 		return nameSpace;
+	}
+
+	public static boolean compareRegistrationMetadata(byte[] currentContent, byte[] newContent) {
+		boolean different = true;
+		return different;
 	}
 
 }

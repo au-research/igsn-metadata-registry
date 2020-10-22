@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.provider.Metadata;
 public class ContentProviderNotFoundException extends APIException {
 
 	private final String schema;
+
 	private final String metadata;
 
 	public ContentProviderNotFoundException(Schema schema, Metadata metadata) {

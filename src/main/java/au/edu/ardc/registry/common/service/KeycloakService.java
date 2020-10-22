@@ -239,10 +239,17 @@ public class KeycloakService {
 	}
 
 	@Cacheable("allocations")
-	public Allocation getAllocationByResourceID(String id) throws Exception {
+	public Allocation getAllocationByResourceID(String id) {
 		// todo cache
 		logger.debug("Obtaining Allocation for resourceID: " + id);
-		AuthzClient authzClient = getAuthzClient();
+		AuthzClient authzClient = null;
+		try {
+			authzClient = getAuthzClient();
+		}
+		catch (Exception e) {
+			logger.debug("Client not Authenticated: " + id);
+			return null;
+		}
 		ResourceRepresentation resource = authzClient.protection().resource().findById(id);
 		logger.debug(String.format("Obtained ResourceRepresentation id:%s %s: ", resource.getId(), resource.getId()));
 		Allocation allocation = null;

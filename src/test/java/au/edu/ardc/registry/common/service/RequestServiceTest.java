@@ -205,4 +205,5 @@ class RequestServiceTest {
 		assertThat(actual.getType()).isEqualTo("NewType");
 		assertThat(actual.getStatus()).isEqualTo(Request.Status.RUNNING);
 	}
+
 }

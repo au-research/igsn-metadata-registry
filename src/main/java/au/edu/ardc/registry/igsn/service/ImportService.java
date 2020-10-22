@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import org.apache.logging.log4j.core.Logger;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,7 @@ public class ImportService {
 	 * @return the {@link Identifier}
 	 * @throws IOException when failing to read file or any other operation
 	 */
-	public Identifier importRequest(File file, Request request) throws IOException {
+	public Identifier importRequest(File file, Request request) throws IOException, ForbiddenOperationException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 
 		// read the content of the item Resource
@@ -105,13 +106,6 @@ public class ImportService {
 		}
 		requestLog.debug("Added Identifier: {}", identifier.getId());
 
-		URL url = new URL();
-		url.setRecord(record);
-		url.setUrl(landingPage);
-		url.setCreatedAt(request.getCreatedAt());
-		urlService.create(url);
-		requestLog.debug("Added URL: {}", url.getId());
-
 		Version version = new Version();
 		version.setRecord(record);
 		version.setSchema(schema.getId());
@@ -131,15 +125,15 @@ public class ImportService {
 	}
 
 	/**
-	 * Update an existing IGSN Record. The workflow is different from {@link #importRequest(File, Request)}
+	 * Update an existing IGSN Record. The workflow is different from
+	 * {@link #importRequest(File, Request)}
 	 * @param file the {@link File} that contains the new updated version
 	 * @param request the {@link Request} that contains all additional parameters
 	 * @return the IGSN {@link Identifier} that is updated
 	 * @throws IOException when reading the file
 	 * @throws VersionContentAlreadyExistsException when the exact same version is updated
 	 */
-	public Identifier updateRequest(File file, Request request)
-			throws IOException {
+	public Identifier updateRequest(File file, Request request) throws IOException, ForbiddenOperationException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 		requestLog.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
 
@@ -154,7 +148,16 @@ public class ImportService {
 				Metadata.Visibility);
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+
+		if (identifier == null) {
+			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+					identifierValue, Identifier.Type.IGSN));
+		}
 		Record record = identifier.getRecord();
+		if (record == null) {
+			throw new ForbiddenOperationException(
+					String.format("Record with Identifier %s doesn't exist", identifierValue));
+		}
 		Optional<Version> cVersion = record.getCurrentVersions().stream()
 				.filter(version -> version.getSchema().equals(schema.getId())).findFirst();
 		if (cVersion.isPresent()) {

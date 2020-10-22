@@ -76,7 +76,7 @@ public class UserAccessValidator {
 				throw new ForbiddenOperationException(
 						identifierValue + " doesn't match previous Identifiers's prefix or namespace");
 			}
-			else if(identifierValues.contains(identifierValue)){
+			else if (identifierValues.contains(identifierValue)) {
 				throw new ForbiddenOperationException("Duplicated Identifier found in payload " + identifierValue);
 			}
 			// security precaution
@@ -84,10 +84,13 @@ public class UserAccessValidator {
 			// otherwise anyone can test for records even if it belongs to a different
 			// namespace
 
-//			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-//			if (existingIdentifier != null) {
-//				throw new ForbiddenOperationException("Record already exists with identifier: " + identifierValue);
-//			}
+			// Identifier existingIdentifier =
+			// identifierService.findByValueAndType(identifierValue,
+			// Identifier.Type.IGSN);
+			// if (existingIdentifier != null) {
+			// throw new ForbiddenOperationException("Record already exists with
+			// identifier: " + identifierValue);
+			// }
 			identifierValues.add(identifierValue);
 		}
 		return true;

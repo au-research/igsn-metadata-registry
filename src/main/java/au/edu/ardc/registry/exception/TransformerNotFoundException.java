@@ -3,6 +3,7 @@ package au.edu.ardc.registry.exception;
 public class TransformerNotFoundException extends APIException {
 
 	private final String fromSchema;
+
 	private final String toSchema;
 
 	public TransformerNotFoundException(String fromSchema, String toSchema) {
@@ -19,7 +20,7 @@ public class TransformerNotFoundException extends APIException {
 
 	@Override
 	public String[] getArgs() {
-		return new String[] { this.fromSchema, this.toSchema};
+		return new String[] { this.fromSchema, this.toSchema };
 	}
 
 }

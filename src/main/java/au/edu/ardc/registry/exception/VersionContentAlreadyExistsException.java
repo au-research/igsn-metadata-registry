@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 public class VersionContentAlreadyExistsException extends APIException {
 
 	private final String identifierValue;
+
 	private final String schema;
 
 	public VersionContentAlreadyExistsException(String identifierValue, String schema) {
@@ -15,7 +16,8 @@ public class VersionContentAlreadyExistsException extends APIException {
 
 	@Override
 	public String getMessage() {
-		return String.format("Given version content already exists for Record %s with schema: %s", identifierValue, schema);
+		return String.format("Given version content already exists for Record %s with schema: %s", identifierValue,
+				schema);
 	}
 
 	@Override
@@ -25,9 +27,7 @@ public class VersionContentAlreadyExistsException extends APIException {
 
 	@Override
 	public String[] getArgs() {
-		return new String[] {this.identifierValue,  this.schema};
+		return new String[] { this.identifierValue, this.schema };
 	}
-
-
 
 }

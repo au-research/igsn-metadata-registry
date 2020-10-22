@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -265,7 +264,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 				.expectStatus().isOk().expectBody().xpath("/OAI-PMH/error").exists()
 				.xpath("/OAI-PMH/error[@code='noSetHierarchy']").exists();
 
-		File file=new File(logPath);
+		File file = new File(logPath);
 		String log = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
 		Assert.assertTrue(log.contains(expectedQuery));
 		Assert.assertTrue(log.contains(expectedResponse));

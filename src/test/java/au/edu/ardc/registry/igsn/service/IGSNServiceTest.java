@@ -43,6 +43,9 @@ class IGSNServiceTest {
 	@MockBean
 	ImportService importService;
 
+	@MockBean
+	IGSNRegistrationService igsnRegistrationService;
+
 	@BeforeEach
 	void beforeEach() {
 		igsnService.init();
@@ -104,16 +107,16 @@ class IGSNServiceTest {
 	@DisplayName("Get IGSNAllocation gives null when user has the wrong allocation")
 	void getIGSNAllocationForContent_mismatchUser_null() throws IOException {
 
-	    // given XML has 10273/XX0TUIAYLV
-        String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		// given XML has 10273/XX0TUIAYLV
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
 
-        // given user that has allocation 20.500.11812/XXAA
-        User user = TestHelper.mockUser();
-        Allocation allocation = TestHelper.mockIGSNAllocation();
-        allocation.setScopes(Arrays.asList(Scope.CREATE));
-        user.setAllocations(Arrays.asList(allocation));
+		// given user that has allocation 20.500.11812/XXAA
+		User user = TestHelper.mockUser();
+		Allocation allocation = TestHelper.mockIGSNAllocation();
+		allocation.setScopes(Arrays.asList(Scope.CREATE));
+		user.setAllocations(Arrays.asList(allocation));
 
-        assertThat(igsnService.getIGSNAllocationForContent(xml, user, Scope.CREATE)).isEqualTo(null);
+		assertThat(igsnService.getIGSNAllocationForContent(xml, user, Scope.CREATE)).isEqualTo(null);
 	}
 
 	@Test
@@ -135,4 +138,5 @@ class IGSNServiceTest {
 		assertThat(igsnService.getIGSNAllocationForContent(xml, user, Scope.CREATE)).isInstanceOf(IGSNAllocation.class);
 		assertThat(igsnService.getIGSNAllocationForContent(xml, user, Scope.UPDATE)).isInstanceOf(IGSNAllocation.class);
 	}
+
 }

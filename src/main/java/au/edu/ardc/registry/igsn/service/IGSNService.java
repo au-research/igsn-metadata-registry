@@ -9,6 +9,7 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
@@ -65,6 +66,9 @@ public class IGSNService {
 
 	@Autowired
 	private IGSNApplicationConfig igsnApplicationConfig;
+
+	@Autowired
+	private IGSNRegistrationService igsnRegistrationService;
 
 	@PostConstruct
 	public void init() {
@@ -147,10 +151,21 @@ public class IGSNService {
 				requestLogger.warn(e.getMessage());
 				logger.warn(e.getMessage());
 			}
+			catch (ForbiddenOperationException e) {
+				requestLogger.error(e.getMessage());
+				logger.warn(e.getMessage());
+			}
 			logger.debug("Finished update task {}", task);
 			break;
 		case IGSNTask.TASK_SYNC:
 			logger.info("SYNC TASK {}", task);
+			try {
+				logger.info("Syncing Identifier {}", task.getIdentifierValue());
+				igsnRegistrationService.registerIdentifier(task.getIdentifierValue(), request);
+			}
+			catch (Exception e) {
+				logger.error(e.getMessage());
+			}
 			logger.info("Finish SYNC TASK {}", task);
 			break;
 		}
