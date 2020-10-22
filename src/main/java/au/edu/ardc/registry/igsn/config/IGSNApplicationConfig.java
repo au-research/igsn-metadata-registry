@@ -16,4 +16,5 @@ public class IGSNApplicationConfig {
 	public void setDisableAutomaticQueueWorkerInit(boolean disableAutomaticQueueWorkerInit) {
 		this.disableAutomaticQueueWorkerInit = disableAutomaticQueueWorkerInit;
 	}
+
 }

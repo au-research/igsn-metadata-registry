@@ -83,7 +83,8 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
-		this.webTestClient.post().uri(mintEndpoint).header("Authorization", getBasicAuthenticationHeader(username, password))
+		this.webTestClient.post().uri(mintEndpoint)
+				.header("Authorization", getBasicAuthenticationHeader(username, password))
 				.body(Mono.just(validXML), String.class).exchange().expectStatus().isForbidden();
 	}
 
@@ -166,7 +167,8 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
-		this.webTestClient.post().uri(updateEndpoint).header("Authorization", getBasicAuthenticationHeader(username, password))
+		this.webTestClient.post().uri(updateEndpoint)
+				.header("Authorization", getBasicAuthenticationHeader(username, password))
 				.body(Mono.just(validXML), String.class).exchange().expectStatus().isForbidden();
 	}
 
@@ -181,10 +183,10 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
-		this.webTestClient.post().uri(updateEndpoint).header("Authorization", getBasicAuthenticationHeader(username, password))
+		this.webTestClient.post().uri(updateEndpoint)
+				.header("Authorization", getBasicAuthenticationHeader(username, password))
 				.body(Mono.just(invalidXML), String.class).exchange().expectStatus().isBadRequest();
 	}
-
 
 	@Test
 	@DisplayName("400 when content not supported")
@@ -197,7 +199,8 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
 		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
 
-		this.webTestClient.post().uri(updateEndpoint).header("Authorization", getBasicAuthenticationHeader(username, password))
+		this.webTestClient.post().uri(updateEndpoint)
+				.header("Authorization", getBasicAuthenticationHeader(username, password))
 				.body(Mono.just(invalidXML), String.class).exchange().expectStatus().isBadRequest();
 	}
 

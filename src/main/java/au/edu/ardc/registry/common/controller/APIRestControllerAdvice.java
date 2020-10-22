@@ -48,7 +48,6 @@ public class APIRestControllerAdvice {
 		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 	}
 
-
 	/**
 	 * Handles forbidden 403 operations
 	 * @param ex The APIException that is encountered

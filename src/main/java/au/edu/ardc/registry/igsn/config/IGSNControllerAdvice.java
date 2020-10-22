@@ -19,7 +19,6 @@ public class IGSNControllerAdvice {
 	@Autowired
 	MessageSource messageSource;
 
-
 	/**
 	 * Handles Record Not Found
 	 * @param ex The APIException that is encountered
@@ -56,8 +55,9 @@ public class IGSNControllerAdvice {
 	 * @param locale the injected Locale for the service
 	 * @return ResponseEntity
 	 */
-	@ExceptionHandler(value = {  ContentNotSupportedException.class, ContentProviderNotFoundException.class })
-	public ResponseEntity<Object> handleContentNotSupported(APIException ex, HttpServletRequest request, Locale locale) {
+	@ExceptionHandler(value = { ContentNotSupportedException.class, ContentProviderNotFoundException.class })
+	public ResponseEntity<Object> handleContentNotSupported(APIException ex, HttpServletRequest request,
+			Locale locale) {
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.BAD_REQUEST, request);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);

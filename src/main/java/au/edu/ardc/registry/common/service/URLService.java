@@ -45,6 +45,16 @@ public class URLService {
 	}
 
 	/**
+	 * Find a url by id
+	 * @param record the Record URL
+	 * @return the URL if it exists, null if not
+	 */
+	public URL findByRecord(Record record) {
+		Optional<URL> opt = repository.findByRecord(record);
+		return opt.orElse(null);
+	}
+
+	/**
 	 * Tell if a URL exists by id
 	 * @param id the uuid of the URL
 	 * @return if the uuid correlate to an existing url

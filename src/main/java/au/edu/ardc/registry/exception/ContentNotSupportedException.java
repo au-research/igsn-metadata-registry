@@ -19,5 +19,4 @@ public class ContentNotSupportedException extends APIException {
 		return new String[] { this.msg };
 	}
 
-
 }

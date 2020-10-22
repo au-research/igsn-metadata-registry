@@ -10,4 +10,5 @@ public enum Attribute {
 
 	// job type
 	EVENT_TYPE
+
 }

@@ -20,7 +20,7 @@ public class IGSNTaskWorker implements Runnable {
 	}
 
 	/**
-	* Run the {@link IGSNTask} that is in the provided {@link BlockingQueue}
+	 * Run the {@link IGSNTask} that is in the provided {@link BlockingQueue}
 	 */
 	@Override
 	public void run() {

@@ -34,7 +34,8 @@ import java.io.IOException;
 import java.net.URI;
 
 @RestController
-@RequestMapping(value = "/api/resources/requests", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(value = "/api/resources/requests",
+		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 @Tag(name = "Request Resource API")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
