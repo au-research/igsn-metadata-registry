@@ -25,19 +25,16 @@ public class ImportService {
 
 	private final IGSNVersionService igsnVersionService;
 
-	private final URLService urlService;
-
 	private final SchemaService schemaService;
 
 	private final IGSNRequestService igsnRequestService;
 
 	public ImportService(IdentifierService identifierService, RecordService recordService,
-			IGSNVersionService igsnVersionService, URLService urlService, SchemaService schemaService,
+			IGSNVersionService igsnVersionService, SchemaService schemaService,
 			IGSNRequestService igsnRequestService) {
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.igsnVersionService = igsnVersionService;
-		this.urlService = urlService;
 		this.schemaService = schemaService;
 		this.igsnRequestService = igsnRequestService;
 	}

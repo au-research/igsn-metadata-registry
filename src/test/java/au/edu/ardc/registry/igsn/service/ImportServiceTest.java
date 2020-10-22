@@ -66,7 +66,6 @@ class ImportServiceTest {
 		// 1 of each are created
 		verify(recordService, times(1)).save(any(Record.class));
 		verify(identifierService, times(1)).save(any(Identifier.class));
-		verify(urlService, times(1)).create(any(URL.class));
 		verify(igsnVersionService, times(1)).save(any(Version.class));
 	}
 
