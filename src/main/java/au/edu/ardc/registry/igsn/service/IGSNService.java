@@ -97,7 +97,9 @@ public class IGSNService {
 		importQueue.put(allocationID, queue);
 
 		// start a new thread of an IGSNTaskWorker to follow this
-		new Thread(new IGSNTaskWorker(queue, this)).start();
+		if (!igsnApplicationConfig.isDisableAutomaticQueueWorkerInit()) {
+			new Thread(new IGSNTaskWorker(queue, this)).start();
+		}
 
 		return importQueue.get(allocationID);
 	}
@@ -118,7 +120,8 @@ public class IGSNService {
 				Identifier identifier = importService.importRequest(task.getContentFile(),
 						igsnRequestService.findById(String.valueOf(task.getRequestID())));
 				if (identifier != null) {
-					getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
+					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
+					getSyncQueue().add(syncTask);
 				}
 			}
 			catch (IOException e) {
