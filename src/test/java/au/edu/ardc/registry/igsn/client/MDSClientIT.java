@@ -79,9 +79,10 @@ public class MDSClientIT extends IntegrationTest {
 		String landingPage = "http://somewhere.com/landing/" + identifier;
 
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
-
+		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		try {
-			response_code = mc.mintIGSN(metacontent, identifier, landingPage);
+			response_code = mc.createOrUpdateIdentifier(identifier, landingPage);
+			response_code = mc.addMetadata(metacontent);
 		}
 		catch (Exception e) {
 			System.out.print(e.getMessage());
