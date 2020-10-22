@@ -23,6 +23,9 @@ public class IGSNTask {
 
 	private File contentFile;
 
+	public IGSNTask() {
+	}
+
 	public IGSNTask(String type, String identifierValue, UUID requestID) {
 		this.type = type;
 		this.identifierValue = identifierValue;

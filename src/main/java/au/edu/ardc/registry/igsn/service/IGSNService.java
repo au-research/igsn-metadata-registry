@@ -94,7 +94,13 @@ public class IGSNService {
 		return importQueue.get(allocationID);
 	}
 
-	public void executeTask(IGSNTask task) throws InterruptedException {
+	/**
+	 * Execute an IGSNTask. This method is executed manually by single operation (mint,
+	 * update,..) as well as executed automatically by {@link IGSNTaskWorker#run()}.
+	 * Exceptions should be caught here and logs properly
+	 * @param task the {@link IGSNTask} to execute
+	 */
+	public void executeTask(IGSNTask task) {
 		Request request = igsnRequestService.findById(String.valueOf(task.getRequestID()));
 		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
 		switch (task.getType()) {
@@ -134,10 +140,29 @@ public class IGSNService {
 			break;
 		case IGSNTask.TASK_SYNC:
 			logger.info("SYNC TASK {}", task);
-			Thread.sleep(5000);
 			logger.info("Finish SYNC TASK {}", task);
 			break;
 		}
+	}
+
+	/**
+	 * Check if a certain type of task is already in the queue. Uses
+	 * {@link IGSNTask#equals(Object)} for comparison
+	 * @param allocationID the {@link UUID} of the Allocation that we'll check in
+	 * @param taskType the String taskType
+	 * @param identifierValue the Identifier Value
+	 * @return true if the same IGSNTask acting on the same Identifier is found
+	 */
+	public boolean hasIGSNTaskQueued(UUID allocationID, String taskType, String identifierValue) {
+		IGSNTask task = new IGSNTask();
+		task.setIdentifierValue(identifierValue);
+		task.setType(taskType);
+
+		if (taskType.equals(IGSNTask.TASK_SYNC)) {
+			return getSyncQueue().contains(task);
+		}
+
+		return getImportQueueForAllocation(allocationID).contains(task);
 	}
 
 	/**
@@ -147,6 +172,7 @@ public class IGSNService {
 	@Async
 	public void processMintOrUpdate(Request request) {
 
+		// determine IGSNTask.type depends on the request.getType
 		String taskType = IGSNTask.TASK_IMPORT;
 		if (request.getType().equals(IGSNService.EVENT_UPDATE)
 				|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE)) {
@@ -174,20 +200,31 @@ public class IGSNService {
 			Schema schema = schemaService.getSchemaForContent(payload);
 			String fileExtension = Helpers.getFileExtensionForContent(payload);
 
+			// create required provider
 			FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
 					Metadata.Fragment);
-			Files.createDirectories(Paths.get(chunkedPayloadPath));
+			IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
+					Metadata.Identifier);
+
 			// todo check if chunkedPayloadPath is created properly
+			Files.createDirectories(Paths.get(chunkedPayloadPath));
+			requestLogger.debug("Created chunked directory at {}", chunkedPayloadPath);
 
 			int count = fragmentProvider.getCount(payload);
+			requestLogger.debug("Found {} fragments in payload", count);
 			for (int i = 0; i < count; i++) {
 				String content = fragmentProvider.get(payload, i);
 				String outFilePath = chunkedPayloadPath + File.separator + i + fileExtension;
 				Helpers.writeFile(outFilePath, content);
+				requestLogger.debug("Written payload {} to {}", i, outFilePath);
 
 				// queue the job
 				IGSNTask task = new IGSNTask(taskType, new File(outFilePath), request.getId());
+				task.setIdentifierValue(identifierProvider.get(content));
+
 				getImportQueueForAllocation(allocationID).add(task);
+				requestLogger.debug("Queued task {}", task);
+				logger.info("Queued task {}", task);
 			}
 
 			request.setStatus(Request.Status.PROCESSED);
@@ -198,11 +235,25 @@ public class IGSNService {
 		}
 	}
 
+	/**
+	 * Return the {@link IGSNAllocation}. The Allocation is extracted with first
+	 * Identifier in the Content with {@link IdentifierProvider} and the User's Allocation
+	 * @param content the XML String content to extract data from.
+	 * @param user the {@link User} in the Request, with all of their Allocation and Scope
+	 * @param scope the {@link Scope} to check with, usually Scope.Create or Scope.Update
+	 * @return the {@link IGSNAllocation} that the User has the scoped access for
+	 */
 	public IGSNAllocation getIGSNAllocationForContent(String content, User user, Scope scope) {
+
+		// obtain the first Identifier
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
 		String firstIdentifier = identifiers.get(0);
+
+		// for each IGSN typed Allocation that the User has access to, find the Allocation
+		// that has the prefix and namespace matches this first Identifier
+		// todo refactor with Java8 Streaming API for performance
 		List<Allocation> allocations = user.getAllocationsByType(IGSNallocationType);
 		for (Allocation allocation : allocations) {
 			IGSNAllocation ia = (IGSNAllocation) allocation;

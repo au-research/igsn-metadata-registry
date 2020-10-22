@@ -19,6 +19,7 @@ import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import au.edu.ardc.registry.igsn.model.IGSNTask;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -56,12 +57,12 @@ public class IGSNRequestValidationService {
 	 * and Payload
 	 * @param user the {@link User} that initiate this Request
 	 * @throws IOException when the payload is not readable
-	 * @throws ForbiddenOperationException when the Operation is not allowed due to validation logic
+	 * @throws ForbiddenOperationException when the Operation is not allowed due to
+	 * validation logic
 	 * @throws XMLValidationException when the payload content failed XML Validation
 	 * @throws ContentNotSupportedException when the payload content type is not supported
 	 */
-	public void validate(Request request, User user)
-			throws IOException, ForbiddenOperationException, XMLValidationException, ContentNotSupportedException {
+	public void validate(Request request, User user) throws IOException {
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
 		String content = Helpers.readFile(file);
@@ -113,6 +114,13 @@ public class IGSNRequestValidationService {
 		if (existingIdentifier != null && type.equals(IGSNService.EVENT_MINT)) {
 			throw new ForbiddenOperationException(
 					String.format("Record already exist with Identifier %s", firstIdentifier));
+		}
+
+		// if it's a single mint, check if the Identifier is already being queued to be imported
+		if (type.equals(IGSNService.EVENT_MINT)
+				&& igsnService.hasIGSNTaskQueued(allocation.getId(), IGSNTask.TASK_IMPORT, firstIdentifier)) {
+			throw new ForbiddenOperationException(
+					String.format("Identifier %s is already queued to be minted", firstIdentifier));
 		}
 
 		// if it's a single update, check if the identifier doesn't exist and if the user
