@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
+import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import org.slf4j.Logger;
@@ -62,14 +63,21 @@ public class IGSNService {
 	@Autowired
 	private ImportService importService;
 
+	@Autowired
+	private IGSNApplicationConfig igsnApplicationConfig;
+
 	@PostConstruct
 	public void init() {
 		// intialsize
 		importQueue = new HashMap<>();
 		syncQueue = new LinkedBlockingQueue<>();
+		logger.debug("Initialized IGSNService ImportQueue and SyncQueue");
 
 		// start a worker to work on the syncQueue
-		new Thread(new IGSNTaskWorker(syncQueue, this)).start();
+		if (!igsnApplicationConfig.isDisableAutomaticQueueWorkerInit()) {
+			new Thread(new IGSNTaskWorker(syncQueue, this)).start();
+			logger.debug("Initialized Worker Thread for SyncQueue");
+		}
 	}
 
 	public Map<UUID, LinkedBlockingQueue<IGSNTask>> getImportQueue() {
