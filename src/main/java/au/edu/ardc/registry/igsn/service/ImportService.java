@@ -132,6 +132,7 @@ public class ImportService {
 	 */
 	public Identifier updateRequest(File file, Request request)
 			throws IOException, ForbiddenOperationException, VersionIsOlderThanCurrentException {
+
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 		requestLog.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
 
@@ -179,14 +180,14 @@ public class ImportService {
 
 		// end current version for the given schema if it was created before this version
 		boolean isThisCurrent = true;
-		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())) {
-			requestLog.debug(
-					"Given version content is older than current version for "
-							+ "Identifier {} current Date: {}, Incoming Date : {}",
-					identifierValue, currentVersion.getCreatedAt(), request.getCreatedAt());
+
+		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())){
+			requestLog.debug("Given version content is older than current version for " +
+							"Identifier {} current Date: {}, Incoming Date : {}", identifierValue,
+					currentVersion.getCreatedAt(), request.getCreatedAt());
 			isThisCurrent = false;
 		}
-		else if (currentVersion != null) {
+		else if(currentVersion != null){
 			igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
 		}
 
@@ -205,11 +206,11 @@ public class ImportService {
 		if (!isThisCurrent) {
 			// if not the current version don't return the Identifier to avoid
 			// registration metadata being updated
+
 			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
 					request.getCreatedAt());
 		}
 		requestLog.info("Updated identifier {} with a new version", identifier.getValue());
 		return identifier;
 	}
-
 }

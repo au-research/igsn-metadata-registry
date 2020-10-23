@@ -162,6 +162,7 @@ public class IGSNService {
 				logger.warn(e.getMessage());
 			}
 			catch (VersionIsOlderThanCurrentException e) {
+
 				logger.warn(e.getMessage());
 			}
 			catch (ForbiddenOperationException e) {
