@@ -17,45 +17,46 @@ import java.util.stream.Stream;
 
 @Service
 public class RecordProcessingService {
-    private static final Logger logger = LoggerFactory.getLogger(RecordProcessingService.class);
 
-    private ThreadPoolExecutor processQueue;
+	private static final Logger logger = LoggerFactory.getLogger(RecordProcessingService.class);
 
-    @Autowired
-    private VersionService versionService;
+	private ThreadPoolExecutor processQueue;
 
-    @Autowired
-    private RecordService recordService;
+	@Autowired
+	private VersionService versionService;
 
-    @Autowired
-    private SchemaService schemaService;
+	@Autowired
+	private RecordService recordService;
 
-    @Autowired
-    private RecordRepository recordRepository;
+	@Autowired
+	private SchemaService schemaService;
 
-    @Autowired
-    private EntityManager entityManager;
+	@Autowired
+	private RecordRepository recordRepository;
 
-    @PostConstruct
-    public void init() {
-        processQueue = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-    }
+	@Autowired
+	private EntityManager entityManager;
 
-    public void queueRecord(Record record) {
-        logger.info("Queueing record: {}", record.getId());
-        processQueue.execute(new ProcessRecordTask(record, versionService, recordService, schemaService));
-    }
+	@PostConstruct
+	public void init() {
+		processQueue = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+	}
 
-    @Transactional(readOnly = true)
-    public void queueAllRecords() {
-        logger.info("Queueing All Records");
-        Stream<Record> bookStream = recordRepository.getAll();
+	public void queueRecord(Record record) {
+		logger.info("Queueing record: {}", record.getId());
+		processQueue.execute(new ProcessRecordTask(record, versionService, recordService, schemaService));
+	}
 
-        bookStream.forEach(record -> {
-            logger.info("Queueing record: {}", record.getId());
-            processQueue.execute(new ProcessRecordTask(record, versionService, recordService, schemaService));
-            entityManager.detach(record);
-        });
-    }
+	@Transactional(readOnly = true)
+	public void queueAllRecords() {
+		logger.info("Queueing All Records");
+		Stream<Record> bookStream = recordRepository.getAll();
+
+		bookStream.forEach(record -> {
+			logger.info("Queueing record: {}", record.getId());
+			processQueue.execute(new ProcessRecordTask(record, versionService, recordService, schemaService));
+			entityManager.detach(record);
+		});
+	}
 
 }

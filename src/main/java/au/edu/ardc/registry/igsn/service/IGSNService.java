@@ -161,7 +161,7 @@ public class IGSNService {
 				requestLogger.warn(e.getMessage());
 				logger.warn(e.getMessage());
 			}
-			catch (VersionIsOlderThanCurrentException e){
+			catch (VersionIsOlderThanCurrentException e) {
 				logger.warn(e.getMessage());
 			}
 			catch (ForbiddenOperationException e) {

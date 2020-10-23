@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.XMLUtil;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
@@ -20,7 +21,6 @@ import org.apache.logging.log4j.core.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import java.time.Instant;
 
@@ -49,6 +49,11 @@ public class IGSNRegistrationService {
 
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(IGSNRegistrationService.class);
 
+	/**
+	 * @param identifierValue {@link Identifier}'s Value as String
+	 * @param request the {@link Request} this identifier is created/updated by
+	 * @throws Exception if registering or updating fails throws
+	 */
 	public void registerIdentifier(String identifierValue, Request request) throws Exception {
 		logger.info("Registering Identifier " + identifierValue);
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
@@ -60,7 +65,14 @@ public class IGSNRegistrationService {
 
 		IGSNAllocation allocation = (IGSNAllocation) keycloakService.getAllocationByResourceID(allocationID);
 
+		// obtain the Identifier
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+
+		if (identifier == null) {
+			requestLog.error("Failed to obtain Identifier : {} with Type: {}", identifierValue, Identifier.Type.IGSN);
+			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+					identifierValue, Identifier.Type.IGSN));
+		}
 
 		// obtain record
 		Record record = identifier.getRecord();
@@ -109,7 +121,8 @@ public class IGSNRegistrationService {
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
 		logger.info("Updating Version" + landingPage);
-		boolean hasRegistrationMetadataChanged = addVersion(registrationMetadataVersion, record, request);
+		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
+				request);
 		// update the registration Metadata at MDS
 		if (hasRegistrationMetadataChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
@@ -121,12 +134,13 @@ public class IGSNRegistrationService {
 	}
 
 	/**
-	 * Helper method to persist a {@link Version}
+	 * Helper method to add a registration Metadata version and set it to current
 	 * @param version the {@link Version} to persist
 	 * @param record the {@link Record} to link with
+	 * @param request the {@link Request} that created the update
 	 * @return boolean true if new version was added
 	 */
-	private boolean addVersion(Version version, Record record, Request request) {
+	private boolean addRegistrationMetadataVersion(Version version, Record record, Request request) {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 		UUID creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
 		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
@@ -138,6 +152,8 @@ public class IGSNRegistrationService {
 			}
 			byte[] currentContent = currentVersion.getContent();
 			byte[] newContent = version.getContent();
+			// TODO: it's always true until we come up with the best wat to compare what
+			// we mean by different
 			different = XMLUtil.compareRegistrationMetadata(currentVersion.getContent(), version.getContent());
 			if (different) {
 				igsnVersionService.end(currentVersion, creatorID);

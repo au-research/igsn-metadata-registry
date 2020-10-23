@@ -42,9 +42,8 @@ public class ProcessRecordTask implements Runnable {
 	}
 
 	/**
-	 * Process Title.
-	 * Only process ardcv1 titles at the moment. Should be refactored to handle other schemas
-	 * todo refactor to some service class (probably)
+	 * Process Title. Only process ardcv1 titles at the moment. Should be refactored to
+	 * handle other schemas todo refactor to some service class (probably)
 	 * @since 1.0
 	 * @param record the {@link Record} to process the title
 	 */

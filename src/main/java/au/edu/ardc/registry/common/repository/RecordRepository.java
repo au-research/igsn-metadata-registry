@@ -44,11 +44,8 @@ public interface RecordRepository extends JpaRepository<Record, String>, JpaSpec
 	@Query(value = "SELECT MIN(modifiedAt) FROM Record")
 	Date findEarliest();
 
-	@QueryHints(value = {
-			@QueryHint(name = HINT_FETCH_SIZE, value = "" + Integer.MIN_VALUE),
-			@QueryHint(name = HINT_CACHEABLE, value = "false"),
-			@QueryHint(name = READ_ONLY, value = "true")
-	})
+	@QueryHints(value = { @QueryHint(name = HINT_FETCH_SIZE, value = "" + Integer.MIN_VALUE),
+			@QueryHint(name = HINT_CACHEABLE, value = "false"), @QueryHint(name = READ_ONLY, value = "true") })
 	@Query("select record from Record record")
 	Stream<Record> getAll();
 

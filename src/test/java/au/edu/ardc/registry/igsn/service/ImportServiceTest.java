@@ -154,7 +154,7 @@ class ImportServiceTest {
 	}
 
 	@Test
-	@DisplayName("Update similar content already exists throws VersionIsOlderThanCurrentException")
+	@DisplayName("Update with an older version throws VersionIsOlderThanCurrentException")
 	void updateRequest_previousVersionNewer_throwsException() throws IOException {
 		when(igsnRequestService.getLoggerFor(any(Request.class)))
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
