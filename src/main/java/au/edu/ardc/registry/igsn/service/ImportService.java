@@ -8,6 +8,7 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
+import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import org.apache.logging.log4j.core.Logger;
 import org.springframework.stereotype.Service;
 
@@ -130,7 +131,8 @@ public class ImportService {
 	 * @throws IOException when reading the file
 	 * @throws VersionContentAlreadyExistsException when the exact same version is updated
 	 */
-	public Identifier updateRequest(File file, Request request) throws IOException, ForbiddenOperationException {
+	public Identifier updateRequest(File file, Request request) throws IOException, ForbiddenOperationException,
+			VersionIsOlderThanCurrentException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 		requestLog.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
 
@@ -155,15 +157,16 @@ public class ImportService {
 			throw new ForbiddenOperationException(
 					String.format("Record with Identifier %s doesn't exist", identifierValue));
 		}
+		Version currentVersion = null;
 		Optional<Version> cVersion = record.getCurrentVersions().stream()
 				.filter(version -> version.getSchema().equals(schema.getId())).findFirst();
 		if (cVersion.isPresent()) {
-			Version version = cVersion.get();
-			String versionHash = version.getHash();
+			currentVersion = cVersion.get();
+			String versionHash = currentVersion.getHash();
 			String incomingHash = VersionService.getHash(content);
 			if (incomingHash.equals(versionHash)) {
 				requestLog.warn("Previous version already contain the same content. Skipping");
-				throw new VersionContentAlreadyExistsException(identifierValue, version.getSchema());
+				throw new VersionContentAlreadyExistsException(identifierValue, currentVersion.getSchema());
 			}
 		}
 
@@ -174,27 +177,36 @@ public class ImportService {
 		recordService.save(record);
 		requestLog.debug("Updated record {}", record.getId());
 
-		// end current version for the given schema
-		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, schema.getId());
-		igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
-		requestLog.debug("Ended previous version of the schema {}", schema.getId());
+		// end current version for the given schema if it was created before this version
+		boolean isThisCurrent = true;
+		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())){
+			requestLog.debug("Given version content is older than current version for " +
+							"Identifier {} current Date: {}, Incoming Date : {}", identifierValue,
+					currentVersion.getCreatedAt(), request.getCreatedAt());
+			isThisCurrent = false;
+		}
+		else if(currentVersion != null){
+			igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
+		}
 
-		// create new current version
+		// create new version even if it's not the current on
 		Version version = new Version();
 		version.setRecord(record);
 		version.setSchema(schema.getId());
 		version.setContent(content.getBytes());
 		version.setCreatorID(UUID.fromString(creatorID));
 		version.setCreatedAt(request.getCreatedAt());
-		version.setCurrent(true);
+		version.setCurrent(isThisCurrent);
 		version.setHash(VersionService.getHash(content));
 		igsnVersionService.save(version);
-		requestLog.debug("Created new version {}", version.getId());
+		requestLog.debug("Created a version {}", version.getId());
 
-		// todo end all version and set latest version to current
-
+		if(!isThisCurrent){
+			// if not the current version don't return the Identifier to avoid registration metadata being updated
+			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
+					request.getCreatedAt());
+		}
 		requestLog.info("Updated identifier {} with a new version", identifier.getValue());
 		return identifier;
 	}
-
 }

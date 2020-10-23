@@ -7,6 +7,7 @@ import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
+import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +20,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,6 +108,7 @@ class ImportServiceTest {
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version version = TestHelper.mockVersion(record);
 		version.setSchema(SchemaService.ARDCv1);
+		version.setCreatedAt(new Date());
 		record.setCurrentVersions(Collections.singletonList(version));
 
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
@@ -143,6 +149,36 @@ class ImportServiceTest {
 
 		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> {
 			importService.updateRequest(new File("src/test/resources/xml/sample_ardcv1.xml"), request);
+		});
+
+	}
+
+	@Test
+	@DisplayName("Update similar content already exists throws VersionIsOlderThanCurrentException")
+	void updateRequest_previousVersionNewer_throwsException() throws IOException {
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+
+		// given an existing Identifier and an existing Record
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		identifier.setValue("10273/XX0TUIAYLV");
+		Version oldVersion = TestHelper.mockVersion(record);
+		oldVersion.setSchema(SchemaService.ARDCv1);
+		oldVersion.setHash(VersionService.getHash(Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml")));
+		Calendar calendar = Calendar.getInstance();
+		// make the current version 7 days newer
+		calendar.add(Calendar.DATE, 7);
+		oldVersion.setCreatedAt(calendar.getTime());
+		record.setCurrentVersions(Collections.singletonList(oldVersion));
+
+		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
+
+		Request request = TestHelper.mockRequest();
+		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+
+		Assert.assertThrows(VersionIsOlderThanCurrentException.class, () -> {
+			importService.updateRequest(new File("src/test/resources/xml/older_sample_ardcv1.xml"), request);
 		});
 
 	}

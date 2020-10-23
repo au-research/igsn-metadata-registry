@@ -12,6 +12,7 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
+import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
@@ -158,6 +159,9 @@ public class IGSNService {
 			}
 			catch (VersionContentAlreadyExistsException e) {
 				requestLogger.warn(e.getMessage());
+				logger.warn(e.getMessage());
+			}
+			catch (VersionIsOlderThanCurrentException e){
 				logger.warn(e.getMessage());
 			}
 			catch (ForbiddenOperationException e) {
