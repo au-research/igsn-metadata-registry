@@ -39,20 +39,6 @@ public class BatchConfig {
 		return jobLauncher;
 	}
 
-	@Bean(name = "queueJobLauncher")
-	public JobLauncher queueJobLauncher() throws Exception {
-		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-		taskExecutor.setCorePoolSize(4);
-		taskExecutor.setMaxPoolSize(10);
-		taskExecutor.afterPropertiesSet();
-
-		SimpleJobLauncher launcher = new SimpleJobLauncher();
-		launcher.setJobRepository(jobRepository);
-		launcher.setTaskExecutor(taskExecutor);
-		launcher.afterPropertiesSet();
-		return launcher;
-	}
-
 	@Bean(name = "asyncTaskExecutor")
 	public TaskExecutor asyncTaskExecutor() {
 		SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor("IGSNRegistryAsyncTaskExecutor");

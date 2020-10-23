@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.*;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
@@ -17,6 +18,7 @@ import au.edu.ardc.registry.igsn.model.IGSNTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +71,9 @@ public class IGSNService {
 
 	@Autowired
 	private IGSNRegistrationService igsnRegistrationService;
+
+	@Autowired
+	ApplicationEventPublisher applicationEventPublisher;
 
 	@PostConstruct
 	public void init() {
@@ -124,6 +129,8 @@ public class IGSNService {
 				Identifier identifier = importService.importRequest(task.getContentFile(),
 						igsnRequestService.findById(String.valueOf(task.getRequestID())));
 				if (identifier != null) {
+					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
+					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
 					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
 					getSyncQueue().add(syncTask);
 				}
@@ -139,8 +146,10 @@ public class IGSNService {
 			try {
 				Identifier identifier = importService.updateRequest(task.getContentFile(), request);
 				if (identifier != null) {
+					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-					getSyncQueue().add(new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID()));
+					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
+					getSyncQueue().add(syncTask);
 				}
 			}
 			catch (IOException e) {

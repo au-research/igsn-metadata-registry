@@ -7,7 +7,11 @@ public class RecordUpdatedEvent {
 
 	private final Record record;
 
-	private final User user;
+	private User user;
+
+	public RecordUpdatedEvent(Record record) {
+		this.record = record;
+	}
 
 	public RecordUpdatedEvent(Record record, User user) {
 		this.record = record;

@@ -12,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
 
+/**
+ * todo refactor Tests into RecordProcesssingTask.processTransform and remove this class
+ */
 public class RecordTransformLDProcessor implements ItemProcessor<Record, Record> {
 
 	protected final String defaultSchema = SchemaService.ARDCv1;
@@ -22,7 +25,7 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 
 	private final SchemaService schemaService;
 
-	Logger log = LoggerFactory.getLogger(RecordTitleProcessor.class);
+	Logger log = LoggerFactory.getLogger(RecordTransformLDProcessor.class);
 
 	public RecordTransformLDProcessor(VersionService versionService, RecordService recordService,
 			SchemaService schemaService) {

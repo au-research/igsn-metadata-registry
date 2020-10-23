@@ -6,12 +6,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.QueryHint;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import static org.hibernate.annotations.QueryHints.READ_ONLY;
+import static org.hibernate.jpa.QueryHints.HINT_CACHEABLE;
+import static org.hibernate.jpa.QueryHints.HINT_FETCH_SIZE;
 
 @Repository
 public interface RecordRepository extends JpaRepository<Record, String>, JpaSpecificationExecutor<Record> {
@@ -36,5 +43,13 @@ public interface RecordRepository extends JpaRepository<Record, String>, JpaSpec
 
 	@Query(value = "SELECT MIN(modifiedAt) FROM Record")
 	Date findEarliest();
+
+	@QueryHints(value = {
+			@QueryHint(name = HINT_FETCH_SIZE, value = "" + Integer.MIN_VALUE),
+			@QueryHint(name = HINT_CACHEABLE, value = "false"),
+			@QueryHint(name = READ_ONLY, value = "true")
+	})
+	@Query("select record from Record record")
+	Stream<Record> getAll();
 
 }

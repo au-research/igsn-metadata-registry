@@ -17,6 +17,9 @@ import org.springframework.batch.item.ItemProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+* todo refactor Tests into RecordProcesssingTask.processTitle and remove this class
+*/
 public class RecordTitleProcessor implements ItemProcessor<Record, Record> {
 
 	protected final String defaultSchema = SchemaService.ARDCv1;
