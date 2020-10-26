@@ -52,59 +52,6 @@ class IGSNServiceTest {
 	}
 
 	@Test
-	@DisplayName("Upon start up, the IGSNService should have the following queue setup")
-	void init() {
-		assertThat(igsnService.getSyncQueue()).isInstanceOf(BlockingQueue.class);
-		assertThat(igsnService.getSyncQueue()).hasSize(0);
-		assertThat(igsnService.getImportQueue()).isInstanceOf(Map.class);
-	}
-
-	@Test
-	@DisplayName("Execute an Import Task will trigger importService.importRequest")
-	void executeTask_ImportTask() throws IOException {
-
-		// importService.importRequest returns a valid Identifier
-		when(importService.importRequest(any(), any())).thenReturn(TestHelper.mockIdentifier());
-
-		igsnService.executeTask(new IGSNTask(IGSNTask.TASK_IMPORT, "20.200.122/XX123435", UUID.randomUUID()));
-
-		// importService.importRequest is called
-		verify(importService, times(1)).importRequest(any(), any());
-		verify(importService, times(0)).updateRequest(any(), any());
-	}
-
-	@Test
-	@DisplayName("Execute an Import Task will trigger importService.importRequest")
-	void executeTask_UpdateTask() throws IOException {
-
-		// importService.importRequest returns a valid Identifier
-		when(importService.updateRequest(any(), any())).thenReturn(TestHelper.mockIdentifier());
-
-		igsnService.executeTask(new IGSNTask(IGSNTask.TASK_UPDATE, "20.200.122/XX123435", UUID.randomUUID()));
-
-		// importService.importRequest is called
-		verify(importService, times(1)).updateRequest(any(), any());
-		// verify(importService, times(0)).importRequest(any(), any());
-
-	}
-
-	@Test
-	void hasIGSNTaskQueued_ImportQueue() {
-		UUID allocationID = UUID.randomUUID();
-
-		// given an empty queue
-		assertThat(igsnService.hasIGSNTaskQueued(allocationID, IGSNTask.TASK_IMPORT, "identifierValue")).isFalse();
-
-		// queue a task
-		IGSNTask task = new IGSNTask(IGSNTask.TASK_IMPORT, new File("/tmp"), UUID.randomUUID());
-		task.setIdentifierValue("identifierValue");
-		igsnService.getImportQueueForAllocation(allocationID).add(task);
-
-		// task of that type in queue is now available
-		assertThat(igsnService.hasIGSNTaskQueued(allocationID, IGSNTask.TASK_IMPORT, "identifierValue")).isTrue();
-	}
-
-	@Test
 	@DisplayName("Get IGSNAllocation gives null when user has the wrong allocation")
 	void getIGSNAllocationForContent_mismatchUser_null() throws IOException {
 

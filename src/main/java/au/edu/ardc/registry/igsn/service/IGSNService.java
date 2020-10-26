@@ -1,9 +1,7 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.common.entity.Identifier;
-import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
-import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.*;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
@@ -11,13 +9,11 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.RecordNotFoundException;
-import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
-import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
-import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
+import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
+import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
+import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 public class IGSNService {
@@ -56,7 +50,7 @@ public class IGSNService {
 
 	private static final Logger logger = LoggerFactory.getLogger(IGSNService.class);
 
-	LinkedBlockingQueue<IGSNTask> syncQueue = new LinkedBlockingQueue<>();
+	ThreadPoolExecutor syncIGSNExecutor;
 
 	@Autowired
 	SchemaService schemaService;
@@ -64,155 +58,61 @@ public class IGSNService {
 	@Autowired
 	IGSNRequestService igsnRequestService;
 
-	private Map<UUID, LinkedBlockingQueue<IGSNTask>> importQueue = new HashMap<>();
+	@Autowired
+	ApplicationEventPublisher applicationEventPublisher;
+
+	private Map<UUID, ThreadPoolExecutor> importExecutors = new HashMap<>();
 
 	@Autowired
 	private ImportService importService;
 
 	@Autowired
-	private IGSNApplicationConfig igsnApplicationConfig;
-
-	@Autowired
 	private IGSNRegistrationService igsnRegistrationService;
-
-	@Autowired
-	ApplicationEventPublisher applicationEventPublisher;
 
 	@PostConstruct
 	public void init() {
-		// intialsize
-		importQueue = new HashMap<>();
-		syncQueue = new LinkedBlockingQueue<>();
-		logger.debug("Initialized IGSNService ImportQueue and SyncQueue");
-
-		// start a worker to work on the syncQueue
-		if (!igsnApplicationConfig.isDisableAutomaticQueueWorkerInit()) {
-			new Thread(new IGSNTaskWorker(syncQueue, this)).start();
-			logger.debug("Initialized Worker Thread for SyncQueue");
-		}
+		importExecutors = new HashMap<>();
 	}
 
-	public Map<UUID, LinkedBlockingQueue<IGSNTask>> getImportQueue() {
-		return importQueue;
-	}
-
-	public BlockingQueue<IGSNTask> getSyncQueue() {
-		return syncQueue;
-	}
-
-	public BlockingQueue<IGSNTask> getImportQueueForAllocation(UUID allocationID) {
-		if (importQueue.containsKey(allocationID)) {
-			return importQueue.get(allocationID);
+	public void queueSync(Identifier identifier, Request request) {
+		if (syncIGSNExecutor == null) {
+			syncIGSNExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 		}
 
-		LinkedBlockingQueue<IGSNTask> queue = new LinkedBlockingQueue<>();
-		importQueue.put(allocationID, queue);
-
-		// start a new thread of an IGSNTaskWorker to follow this
-		if (!igsnApplicationConfig.isDisableAutomaticQueueWorkerInit()) {
-			new Thread(new IGSNTaskWorker(queue, this)).start();
-		}
-
-		return importQueue.get(allocationID);
+		syncIGSNExecutor.execute(new SyncIGSNTask(identifier, request, igsnRegistrationService));
 	}
 
-	/**
-	 * Execute an IGSNTask. This method is executed manually by single operation (mint,
-	 * update,..) as well as executed automatically by {@link IGSNTaskWorker#run()}.
-	 * Exceptions should be caught here and logs properly
-	 * @param task the {@link IGSNTask} to execute
-	 */
-	public void executeTask(IGSNTask task) {
-		Request request = igsnRequestService.findById(String.valueOf(task.getRequestID()));
-		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
-		switch (task.getType()) {
-		case IGSNTask.TASK_IMPORT:
-			logger.info("Executing import task {}", task);
-			try {
-				Identifier identifier = importService.importRequest(task.getContentFile(),
-						igsnRequestService.findById(String.valueOf(task.getRequestID())));
-				if (identifier != null) {
-					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
-					getSyncQueue().add(syncTask);
-				}
-			}
-			catch (IOException e) {
-				// todo log the exception in the request log
-				logger.error(e.getMessage());
-			}catch (ForbiddenOperationException e) {
-				requestLogger.error(e.getMessage());
-				logger.warn(e.getMessage());
-			}
-			logger.info("Finished import task {}", task);
-			break;
-		case IGSNTask.TASK_UPDATE:
-			logger.debug("Executing update task {}", task);
-			try {
-				Identifier identifier = importService.updateRequest(task.getContentFile(), request);
-				if (identifier != null) {
-					Record record = identifier.getRecord();
-					if(record == null){
-						throw new ForbiddenOperationException(
-								String.format("Record with Identifier %s doesn't exist", identifier.getValue()));
-					}
-					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
-					getSyncQueue().add(syncTask);
-				}
-			}
-			catch (IOException e) {
-				// todo log the exception in the request log
-				logger.error(e.getMessage());
-			}
-			catch (VersionContentAlreadyExistsException e) {
-				requestLogger.warn(e.getMessage());
-				logger.warn(e.getMessage());
-			}
-			catch (VersionIsOlderThanCurrentException e) {
-
-				logger.warn(e.getMessage());
-			}
-			catch (ForbiddenOperationException e) {
-				requestLogger.error(e.getMessage());
-				logger.warn(e.getMessage());
-			}
-			catch (Exception e) {
-				requestLogger.error(e.getMessage());
-				logger.warn("GENERAL EXCEPTION:"  + e.getMessage());
-			}
-			logger.debug("Finished update task {}", task);
-			break;
-		case IGSNTask.TASK_SYNC:
-			logger.info("SYNC TASK {}", task);
-			try {
-				logger.info("Syncing Identifier {}", task.getIdentifierValue());
-				igsnRegistrationService.registerIdentifier(task.getIdentifierValue(), request);
-			}
-			catch (IOException e) {
-				// todo log the exception in the request log
-				logger.error(e.getMessage());
-			}
-			catch (VersionContentAlreadyExistsException e) {
-				requestLogger.warn(e.getMessage());
-				logger.warn(e.getMessage());
-			}
-			catch (VersionIsOlderThanCurrentException e) {
-				logger.warn(e.getMessage());
-			}
-			catch (ForbiddenOperationException e) {
-				requestLogger.error(e.getMessage());
-				logger.warn(e.getMessage());
-			}
-			catch (Exception e) {
-				requestLogger.error(e.getMessage());
-				logger.warn("GENERAL EXCEPTION:"  + e.getMessage());
-			}
-			logger.info("Finish SYNC TASK {}", task);
-			break;
+	public void queueImport(UUID allocationID, String identifierValue, File file, Request request) {
+		if (!importExecutors.containsKey(allocationID)) {
+			importExecutors.put(allocationID, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
 		}
+
+		importExecutors.get(allocationID)
+				.execute(new ImportIGSNTask(identifierValue, file, request, importService, applicationEventPublisher));
+	}
+
+	public void queueUpdate(UUID allocationID, String identifierValue, File file, Request request) {
+		if (!importExecutors.containsKey(allocationID)) {
+			importExecutors.put(allocationID, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+		}
+
+		importExecutors.get(allocationID)
+				.execute(new UpdateIGSNTask(identifierValue, file, request, importService, applicationEventPublisher));
+	}
+
+	// todo check if there's any additional tasks in the request and init finalize if
+	// there's none
+
+	public void finalizeRequest(Request request) {
+		// todo check if this request require an
+		// importExecutors.get(allocationID).shutdown()
+		request.setStatus(Request.Status.COMPLETED);
+		igsnRequestService.save(request);
+	}
+
+	public void shutdownSync() {
+		syncIGSNExecutor.shutdown();
+		syncIGSNExecutor = null;
 	}
 
 	/**
@@ -224,15 +124,29 @@ public class IGSNService {
 	 * @return true if the same IGSNTask acting on the same Identifier is found
 	 */
 	public boolean hasIGSNTaskQueued(UUID allocationID, String taskType, String identifierValue) {
-		IGSNTask task = new IGSNTask();
-		task.setIdentifierValue(identifierValue);
-		task.setType(taskType);
 
-		if (taskType.equals(IGSNTask.TASK_SYNC)) {
-			return getSyncQueue().contains(task);
+		// early return if there's no queue setup
+		if (!importExecutors.containsKey(allocationID)) {
+			return false;
 		}
 
-		return getImportQueueForAllocation(allocationID).contains(task);
+		// early return if there's a queue but nothing in it
+		if (importExecutors.get(allocationID).getTaskCount() == 0) {
+			return false;
+		}
+
+		// check the queue content for import task with identical identifierValue
+		BlockingQueue<Runnable> queue = importExecutors.get(allocationID).getQueue();
+		return Arrays.stream(queue.toArray()).anyMatch(runnable -> {
+			try {
+				ImportIGSNTask task = (ImportIGSNTask) runnable;
+				return task.getIdentifierValue().equals(identifierValue);
+			}
+			catch (Exception e) {
+				logger.error(e.getMessage());
+				return false;
+			}
+		});
 	}
 
 	/**
@@ -241,13 +155,6 @@ public class IGSNService {
 	 */
 	@Async
 	public void processMintOrUpdate(Request request) {
-
-		// determine IGSNTask.type depends on the request.getType
-		String taskType = IGSNTask.TASK_IMPORT;
-		if (request.getType().equals(IGSNService.EVENT_UPDATE)
-				|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE)) {
-			taskType = IGSNTask.TASK_UPDATE;
-		}
 
 		String payloadPath = request.getAttribute(Attribute.PAYLOAD_PATH);
 		String dataPath = request.getAttribute(Attribute.DATA_PATH);
@@ -289,12 +196,18 @@ public class IGSNService {
 				requestLogger.debug("Written payload {} to {}", i, outFilePath);
 
 				// queue the job
-				IGSNTask task = new IGSNTask(taskType, new File(outFilePath), request.getId());
-				task.setIdentifierValue(identifierProvider.get(content));
+				String identifierValue = identifierProvider.get(content);
+				String taskType = IGSNTask.TASK_IMPORT;
+				if (request.getType().equals(IGSNService.EVENT_MINT)
+						|| request.getType().equals(IGSNService.EVENT_BULK_MINT)) {
+					queueImport(allocationID, identifierValue, new File(outFilePath), request);
+				}
+				else if (request.getType().equals(IGSNService.EVENT_UPDATE)
+						|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE)) {
+					queueUpdate(allocationID, identifierValue, new File(outFilePath), request);
+				}
 
-				getImportQueueForAllocation(allocationID).add(task);
-				requestLogger.debug("Queued task {}", task);
-				logger.info("Queued task {}", task);
+				logger.info("Queued task {} for Identifier: {}", taskType, identifierValue);
 			}
 
 			request.setStatus(Request.Status.PROCESSED);

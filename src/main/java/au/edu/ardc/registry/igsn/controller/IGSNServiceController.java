@@ -6,15 +6,19 @@ import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.provider.FragmentProvider;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
-import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.igsn.entity.IGSNEventType;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
-import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestValidationService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
+import au.edu.ardc.registry.igsn.service.ImportService;
+import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
+import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +27,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -55,15 +60,26 @@ public class IGSNServiceController {
 
 	private final IGSNRequestValidationService igsnRequestValidationService;
 
+	private final ApplicationEventPublisher applicationEventPublisher;
+
+	private final ImportService importService;
+
+	private final SchemaService schemaService;
+
 	public IGSNServiceController(IGSNRequestService igsnRequestService, RequestService requestService,
 			RequestMapper requestMapper, KeycloakService kcService,
-			IGSNRequestValidationService igsnRequestValidationService, IGSNService igsnService) {
+			IGSNRequestValidationService igsnRequestValidationService, IGSNService igsnService,
+			ApplicationEventPublisher applicationEventPublisher, ImportService importService,
+			SchemaService schemaService) {
 		this.igsnRequestService = igsnRequestService;
 		this.requestService = requestService;
 		this.requestMapper = requestMapper;
 		this.kcService = kcService;
 		this.igsnRequestValidationService = igsnRequestValidationService;
 		this.igsnService = igsnService;
+		this.applicationEventPublisher = applicationEventPublisher;
+		this.importService = importService;
+		this.schemaService = schemaService;
 	}
 
 	// @GetMapping("/test")
@@ -144,10 +160,15 @@ public class IGSNServiceController {
 
 		// run
 		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
-		IGSNTask importTask = new IGSNTask(IGSNTask.TASK_IMPORT, new File(payLoadContentPath), request.getId());
-		igsnService.executeTask(importTask);
-		request.setStatus(Request.Status.COMPLETED);
-		igsnRequestService.save(request);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
+				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
+		String identifierValue = fragmentProvider.get(payload, 0);
+		ImportIGSNTask task = new ImportIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
+				applicationEventPublisher);
+		task.run();
+
+		// finish request
+		igsnService.finalizeRequest(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(dto);
@@ -185,10 +206,15 @@ public class IGSNServiceController {
 
 		// run
 		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
-		IGSNTask importTask = new IGSNTask(IGSNTask.TASK_UPDATE, new File(payLoadContentPath), request.getId());
-		igsnService.executeTask(importTask);
-		request.setStatus(Request.Status.COMPLETED);
-		igsnRequestService.save(request);
+		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
+				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
+		String identifierValue = fragmentProvider.get(payload, 0);
+		UpdateIGSNTask task = new UpdateIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
+				applicationEventPublisher);
+		task.run();
+
+		// finish
+		igsnService.finalizeRequest(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(dto);
