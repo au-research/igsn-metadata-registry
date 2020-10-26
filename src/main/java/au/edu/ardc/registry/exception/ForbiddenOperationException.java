@@ -15,6 +15,11 @@ public class ForbiddenOperationException extends APIException {
 	}
 
 	@Override
+	public String getMessage(){
+		return this.msg;
+	}
+
+	@Override
 	public String[] getArgs() {
 		return new String[] { this.msg };
 	}

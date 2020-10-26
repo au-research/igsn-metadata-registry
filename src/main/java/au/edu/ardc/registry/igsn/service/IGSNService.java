@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.common.entity.Identifier;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.*;
@@ -11,6 +12,7 @@ import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
@@ -139,6 +141,9 @@ public class IGSNService {
 			catch (IOException e) {
 				// todo log the exception in the request log
 				logger.error(e.getMessage());
+			}catch (ForbiddenOperationException e) {
+				requestLogger.error(e.getMessage());
+				logger.warn(e.getMessage());
 			}
 			logger.info("Finished import task {}", task);
 			break;
@@ -147,6 +152,11 @@ public class IGSNService {
 			try {
 				Identifier identifier = importService.updateRequest(task.getContentFile(), request);
 				if (identifier != null) {
+					Record record = identifier.getRecord();
+					if(record == null){
+						throw new ForbiddenOperationException(
+								String.format("Record with Identifier %s doesn't exist", identifier.getValue()));
+					}
 					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 					logger.info("Queue a sync task for identifier: {}", identifier.getValue());
 					IGSNTask syncTask = new IGSNTask(IGSNTask.TASK_SYNC, identifier.getValue(), task.getRequestID());
@@ -169,6 +179,10 @@ public class IGSNService {
 				requestLogger.error(e.getMessage());
 				logger.warn(e.getMessage());
 			}
+			catch (Exception e) {
+				requestLogger.error(e.getMessage());
+				logger.warn("GENERAL EXCEPTION:"  + e.getMessage());
+			}
 			logger.debug("Finished update task {}", task);
 			break;
 		case IGSNTask.TASK_SYNC:
@@ -177,8 +191,24 @@ public class IGSNService {
 				logger.info("Syncing Identifier {}", task.getIdentifierValue());
 				igsnRegistrationService.registerIdentifier(task.getIdentifierValue(), request);
 			}
-			catch (Exception e) {
+			catch (IOException e) {
+				// todo log the exception in the request log
 				logger.error(e.getMessage());
+			}
+			catch (VersionContentAlreadyExistsException e) {
+				requestLogger.warn(e.getMessage());
+				logger.warn(e.getMessage());
+			}
+			catch (VersionIsOlderThanCurrentException e) {
+				logger.warn(e.getMessage());
+			}
+			catch (ForbiddenOperationException e) {
+				requestLogger.error(e.getMessage());
+				logger.warn(e.getMessage());
+			}
+			catch (Exception e) {
+				requestLogger.error(e.getMessage());
+				logger.warn("GENERAL EXCEPTION:"  + e.getMessage());
 			}
 			logger.info("Finish SYNC TASK {}", task);
 			break;

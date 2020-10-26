@@ -68,6 +68,22 @@ public class ImportService {
 
 		// obtain the necessary information from the providers
 		String identifierValue = identifierProvider.get(content);
+
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		// if the request is being re-played don't create mew record, url identifier and version
+		// but do test to make sure they are all created and contains the correct value
+		if (identifier != null) {
+
+			if(identifier.getRequestID() != request.getId()){
+				requestLog.debug("Identifier: {} already exists", identifierValue);
+				throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s does exist",
+						identifierValue, Identifier.Type.IGSN));
+			}
+			// run an update instead
+			requestLog.debug("Identifier: {} already exists attempting to refresh content", identifierValue);
+			return updateRequest(file, request);
+		}
+
 		String landingPage = landingPageProvider.get(content);
 
 		requestLog.debug("Ingesting Identifier: {} with Landing Page: {}", identifierValue, landingPage);
@@ -85,7 +101,7 @@ public class ImportService {
 		recordService.save(record);
 		requestLog.debug("Added Record: {}", record.getId());
 
-		Identifier identifier = new Identifier();
+		identifier = new Identifier();
 		identifier.setCreatedAt(request.getCreatedAt());
 		identifier.setRecord(record);
 		identifier.setType(Identifier.Type.IGSN);

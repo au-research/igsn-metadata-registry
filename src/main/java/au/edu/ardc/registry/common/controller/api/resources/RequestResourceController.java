@@ -17,6 +17,7 @@ import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.igsn.service.IGSNService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
@@ -152,6 +153,19 @@ public class RequestResourceController {
 		RequestDTO dto = requestMapper.getConverter().convert(updatedRequest);
 		return ResponseEntity.accepted().body(dto);
 	}
+
+	@PostMapping(value = "/{id}")
+	public ResponseEntity<RequestDTO> rerun(@PathVariable String id, @RequestBody RequestDTO requestDTO,
+											 HttpServletRequest httpServletRequest) {
+		User user = kcService.getLoggedInUser(httpServletRequest);
+		Request request = requestService.findOwnedById(id, user);
+		IGSNService igsnService = new IGSNService();
+		igsnService.processMintOrUpdate(request);
+
+		RequestDTO dto = requestMapper.getConverter().convert(request);
+		return ResponseEntity.accepted().body(dto);
+	}
+
 
 	@PostMapping(value = "{id}/logs")
 	public ResponseEntity<String> appendLog(@PathVariable String id, @RequestBody String message,

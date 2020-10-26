@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.event;
 
+import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.RecordProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +20,11 @@ public class RecordEventListener {
 	@Async
 	@EventListener
 	public void handleRecordUpdated(RecordUpdatedEvent event) {
-		logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(),
-				event.getUser().getId());
+		String userId = "SYSTEM";
+		if(event.getUser() != null){
+			userId = event.getUser().getId().toString();
+		}
+		logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(), userId);
 
 		recordProcessingService.queueRecord(event.getRecord());
 	}
