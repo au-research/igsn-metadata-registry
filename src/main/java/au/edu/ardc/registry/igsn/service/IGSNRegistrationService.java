@@ -15,15 +15,20 @@ import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.exception.TransformerNotFoundException;
 import au.edu.ardc.registry.igsn.client.MDSClient;
+import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
 import org.apache.logging.log4j.core.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 
+import java.util.TimeZone;
 import java.util.UUID;
 
 @Service
@@ -115,8 +120,13 @@ public class IGSNRegistrationService {
 
 		ARDCv1ToRegistrationMetadataTransformer transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory
 				.create(fromSchema, toSchema);
-		String utcDateTimeStr = Instant.now().toString();
-		transformer.setParam("eventType", "registered").setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
+
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		df.setTimeZone(tz);
+		String utcDateTimeStr = df.format(request.getCreatedAt());
+		String eventType = getEventType(request.getType());
+		transformer.setParam("eventType", eventType).setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
 				allocation.getMds_username());
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
@@ -140,35 +150,35 @@ public class IGSNRegistrationService {
 	 * @param request the {@link Request} that created the update
 	 * @return boolean true if new version was added
 	 */
-	private boolean addRegistrationMetadataVersion(Version version, Record record, Request request) {
+	private boolean addRegistrationMetadataVersion(@NotNull Version version, Record record, Request request) {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
 		UUID creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
 		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
-		boolean different = true;
+
 		logger.info("Updating Version" + version.getContent().toString());
 		if (currentVersion != null) {
-			if (currentVersion.getRequestID() != null && currentVersion.getRequestID().equals(request.getId())) {
+			// the version is later than the current request (shouldn't happen unless requests are re-run
+			if(currentVersion.getCreatedAt().after(request.getCreatedAt())){
+				logger.info("Current Version is newer" + version.getContent().toString());
 				return false;
 			}
-			byte[] currentContent = currentVersion.getContent();
-			byte[] newContent = version.getContent();
-			// TODO: it's always true until we come up with the best wat to compare what
-			// we mean by different
-			different = XMLUtil.compareRegistrationMetadata(currentVersion.getContent(), version.getContent());
-			if (different) {
-				igsnVersionService.end(currentVersion, creatorID);
+			// the current version was created by the same request
+			if (currentVersion.getRequestID() != null && currentVersion.getRequestID().equals(request.getId())) {
+				logger.info("Current Version already the same" + version.getContent().toString());
+				return false;
 			}
+			// there is current version then end it now
+			igsnVersionService.end(currentVersion, creatorID);
 		}
-		if (different) {
-			version.setRecord(record);
-			version.setCreatedAt(request.getCreatedAt());
-			version.setCurrent(true);
-			version.setHash(VersionService.getHash(new String(version.getContent())));
-			version.setCreatorID(creatorID);
-			version.setRequestID(request.getId());
-			igsnVersionService.save(version);
-		}
-		return different;
+		// if we got this far a new version will be added
+		version.setRecord(record);
+		version.setCreatedAt(request.getCreatedAt());
+		version.setCurrent(true);
+		version.setCreatorID(creatorID);
+		version.setRequestID(request.getId());
+		igsnVersionService.save(version);
+
+		return true;
 	}
 
 	/**
@@ -200,6 +210,16 @@ public class IGSNRegistrationService {
 			urlService.update(url);
 			return true;
 		}
+	}
+
+	private String getEventType(String eventType){
+		if(eventType.toLowerCase().contains("update")){
+			return "updated";
+		}
+		if(eventType.toLowerCase().contains("mint")){
+			return "registered";
+		}
+		return "updated";
 	}
 
 }

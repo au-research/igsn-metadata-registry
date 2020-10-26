@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.transform.ardcv1;
 
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 		Version resultVersion = new Version();
 		resultVersion.setSchema(targetSchemaID);
 		resultVersion.setContent(resultDocument.getBytes());
-
+		resultVersion.setHash(VersionService.getHash(new String(resultDocument.getBytes())));
 		return resultVersion;
 	}
 

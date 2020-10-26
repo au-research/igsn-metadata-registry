@@ -219,6 +219,7 @@ public class TestHelper {
 
 	public static Request mockRequest() {
 		Request request = new Request();
+		request.setId(UUID.randomUUID());
 		request.setStatus(Request.Status.ACCEPTED);
 		request.setCreatedAt(new Date());
 		request.setCreatedBy(UUID.randomUUID());
