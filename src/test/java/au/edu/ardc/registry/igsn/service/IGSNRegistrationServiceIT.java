@@ -228,7 +228,7 @@ class IGSNRegistrationServiceIT {
 
 		Version version = TestHelper.mockVersion(record);
 		version.setSchema(SchemaService.ARDCv1);
-		String content = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		String content = Helpers.readFile("src/test/resources/xml/sample_ardcv1_destroyed.xml");
 		version.setContent(content.getBytes());
 		version.setHash(VersionService.getHash(content));
 		version.setCreatedAt(request.getCreatedAt());
@@ -250,8 +250,8 @@ class IGSNRegistrationServiceIT {
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
-		String utcDateTimeStr = df.format(request.getCreatedAt());
-		transformer.setParam("eventType", "registered").setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
+		String utcDateTimeStr = df.format(version.getCreatedAt());
+		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
 				allocation.getMds_username());
 
 		Version regVersion = transformer.transform(version);

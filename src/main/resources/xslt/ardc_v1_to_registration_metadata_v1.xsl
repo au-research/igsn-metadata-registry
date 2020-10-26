@@ -6,7 +6,6 @@
 	<xsl:param name="registrantName" select="'registrantName'"/>
 	<xsl:param name="nameIdentifier" select="'nameIdentifier'"/>
 	<xsl:param name="nameIdentifierScheme" select="'nameIdentifierScheme'"/>
-	<xsl:param name="eventType" select="'updated'"/>
 	<xsl:param name="timeStamp" select="'2018-06-06T13:45:45.5654'"/>
 	<!--
     XSLT transformation to create registration metadata v1.1 from an IGSN CSIRO v3.0 record
@@ -42,15 +41,7 @@
 
 			<!-- registered, submitted updated deprecated destroyed -->
 			<xsl:element name="log" xmlns="http://igsn.org/schema/kernel-v.1.0">
-				<!--xsl:apply-templates select="igsn:logDate"/-->
-				<xsl:element name="logElement" xmlns="http://igsn.org/schema/kernel-v.1.0">
-					<xsl:attribute name="event">
-						<xsl:value-of select="$eventType"/>
-					</xsl:attribute>
-					<xsl:attribute name="timeStamp">
-						<xsl:value-of select="$timeStamp"/>
-					</xsl:attribute>
-				</xsl:element>
+				<xsl:apply-templates select="igsn:logDate"/>
 			</xsl:element>
 
 		</sample>
@@ -126,7 +117,7 @@
 				<xsl:value-of select="@eventType"/>
 			</xsl:attribute>
 			<xsl:attribute name="timeStamp">
-				<xsl:value-of select="."/>
+				<xsl:value-of select="$timeStamp"/>
 			</xsl:attribute>
 		</xsl:element>
 	</xsl:template>

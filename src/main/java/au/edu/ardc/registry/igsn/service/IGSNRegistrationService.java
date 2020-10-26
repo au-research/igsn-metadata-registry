@@ -124,9 +124,8 @@ public class IGSNRegistrationService {
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
-		String utcDateTimeStr = df.format(request.getCreatedAt());
-		String eventType = getEventType(request.getType());
-		transformer.setParam("eventType", eventType).setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
+		String utcDateTimeStr = df.format(supportedVersion.getCreatedAt());
+		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
 				allocation.getMds_username());
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
@@ -210,29 +209,6 @@ public class IGSNRegistrationService {
 			urlService.update(url);
 			return true;
 		}
-	}
-
-	/**
-	 * a very crude method to map between igsnservice events to registration metadata event
-	 * @param eventType an IGSN Service event Type
-	 * @return String supported reg 1.0 1.1 event types
-	 * https://github.com/IGSN/metadata/blob/master/registration/1.0/include/igsn-eventType-v1.0.xsd
-	 * <xs:enumeration value="submitted"/><!-- Date of the initial registration. -->
-	 * <xs:enumeration value="registered"/><!-- The object is registered. -->
-	 * <xs:enumeration value="updated"/><!-- Date of the last metadata update. -->
-	 * <xs:enumeration value="deprecated"/>
-	 * <!--The object description is deprecated. The entry is no longer relevant, e.g. due to duplicate registration.-->
-	 * <xs:enumeration value="destroyed"/><!-- The object is destroyed. -->
-	 *
-	 */
-	private String getEventType(String eventType){
-		if(eventType.toLowerCase().contains("update")){
-			return "updated";
-		}
-		if(eventType.toLowerCase().contains("mint")){
-			return "registered";
-		}
-		return "updated";
 	}
 
 }
