@@ -61,7 +61,7 @@ public class IdentifierService {
 	}
 
 	public Identifier findByValueAndType(String value, Identifier.Type type) {
-		return repository.findFirstByValueAndType(value, type);
+		return repository.findFirstByValueIgnoreCaseAndType(value, type);
 	}
 
 	/**

@@ -266,7 +266,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		String targetOwnerType = String.valueOf(Record.OwnerType.DataCenter);
 		String targetOwnerID = UUID.randomUUID().toString();
 
-		String requestBody = "12073/XXAA123456\n12073/XXAB123456";
+		String requestBody = "12073/XXAAabcDEFG\n12073/XXABabcdEFG";
 		this.webTestClient.post()
 				.uri(uriBuilder -> uriBuilder.path(transferEndpoint).queryParam("ownerID", targetOwnerID)
 						.queryParam("ownerType", targetOwnerType).build())
@@ -274,7 +274,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 				.body(Mono.just(requestBody), String.class).exchange().expectStatus().isOk().expectBody()
 				.jsonPath("$.id").exists().jsonPath("$.status").exists();
 
-		Identifier identifier = identifierRepository.findFirstByValueAndType("12073/XXAA123456", Identifier.Type.IGSN);
+		Identifier identifier = identifierRepository.findFirstByValueIgnoreCaseAndType("12073/XXAAABCDefg", Identifier.Type.IGSN);
 		assertThat(identifier.getRecord().getOwnerID()).isEqualTo(UUID.fromString(targetOwnerID));
 		assertThat(identifier.getRecord().getOwnerType()).isEqualTo(Record.OwnerType.valueOf(targetOwnerType));
 	}

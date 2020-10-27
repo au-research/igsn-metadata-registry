@@ -16,7 +16,7 @@ public interface IdentifierRepository extends JpaRepository<Identifier, String>,
 
 	boolean existsById(UUID id);
 
-	Identifier findFirstByValueAndType(String value, Identifier.Type type);
+	Identifier findFirstByValueIgnoreCaseAndType(String value, Identifier.Type type);
 
 	Identifier findFirstByRecordAndType(Record record, Identifier.Type type);
 

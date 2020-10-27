@@ -144,7 +144,7 @@ class UserAccessValidatorTest {
 		mockedIdentifier.setValue("10273/XX0TUIAYLV");
 		mockedIdentifier.setType(Identifier.Type.IGSN);
 		mockedIdentifier.setRecord(mockRecord);
-		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
+		Mockito.when(identifierRepository.findFirstByValueIgnoreCaseAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
 				.thenReturn(mockedIdentifier);
 
 		Assert.assertTrue(userAccessValidator.canUserUpdateIGSNRecord(xml, user));
@@ -166,7 +166,7 @@ class UserAccessValidatorTest {
 		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
 		user.setAllocations(Collections.singletonList(allocation));
 
-		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
+		Mockito.when(identifierRepository.findFirstByValueIgnoreCaseAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
 				.thenReturn(null);
 
 		Assert.assertThrows(ForbiddenOperationException.class, () -> {
@@ -201,7 +201,7 @@ class UserAccessValidatorTest {
 		mockedIdentifier.setValue("10273/XX0TUIAYLV");
 		mockedIdentifier.setType(Identifier.Type.IGSN);
 		mockedIdentifier.setRecord(mockRecord);
-		Mockito.when(identifierRepository.findFirstByValueAndType("10273/XX0TUIAYLV", Identifier.Type.IGSN))
+		Mockito.when(identifierRepository.findFirstByValueIgnoreCaseAndType("10273/XX0tuiAYlv", Identifier.Type.IGSN))
 				.thenReturn(mockedIdentifier);
 
 		Assert.assertThrows(ForbiddenOperationException.class, () -> {
