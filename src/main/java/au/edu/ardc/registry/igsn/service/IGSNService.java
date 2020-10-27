@@ -79,7 +79,7 @@ public class IGSNService {
 			syncIGSNExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 		}
 
-		syncIGSNExecutor.execute(new SyncIGSNTask(identifier, request, igsnRegistrationService));
+		syncIGSNExecutor.execute(new SyncIGSNTask(identifier, request, igsnRegistrationService, applicationEventPublisher));
 	}
 
 	public void queueImport(UUID allocationID, String identifierValue, File file, Request request) {
@@ -103,9 +103,38 @@ public class IGSNService {
 	// todo check if there's any additional tasks in the request and init finalize if
 	// there's none
 
+	/**
+	 * a request is considered finished if there are no tasks in the importQueue for that allocationID, and no more syncTask for that request
+	 * @param request the {@link Request} in question
+	 * @return true if the request is considered finished
+	 */
+	public boolean isRequestFinished(Request request) {
+		//
+		UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
+
+		boolean hasTasksInImportQueue;
+		boolean hasTasksInSyncQueue;
+
+		// it has task in importqueue if there are still more tasks to do
+		hasTasksInImportQueue = importExecutors.containsKey(allocationID) || importExecutors.get(allocationID).getTaskCount() > 0;
+
+		// it has tasks in sync queue if there's any SyncIGSNTask with a request ID matching
+		hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
+			SyncIGSNTask task = (SyncIGSNTask) runnable;
+			return task.getRequest().getId().equals(request.getId());
+		});
+
+		// request is finished when it doesn't have task in import queue or sync queue
+		return !hasTasksInImportQueue && !hasTasksInSyncQueue;
+	}
+
+	public void checkRequest(Request request) {
+		if (isRequestFinished(request)) {
+			finalizeRequest(request);
+		}
+	}
+
 	public void finalizeRequest(Request request) {
-		// todo check if this request require an
-		// importExecutors.get(allocationID).shutdown()
 		request.setStatus(Request.Status.COMPLETED);
 		igsnRequestService.save(request);
 	}
