@@ -37,7 +37,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 			e.printStackTrace();
 		}
 
-		return identifierValue;
+		return identifierValue.toUpperCase();
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		try {
 			NodeList l = XMLUtil.getXPath(content, xpath);
 			for (int i = 0; i < l.getLength(); i++) {
-				identifiers.add(l.item(i).getFirstChild().getNodeValue());
+				identifiers.add(l.item(i).getFirstChild().getNodeValue().toUpperCase());
 			}
 		}
 		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
