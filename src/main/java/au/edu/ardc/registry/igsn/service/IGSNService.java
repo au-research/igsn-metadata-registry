@@ -130,13 +130,20 @@ public class IGSNService {
 
 	public void checkRequest(Request request) {
 		if (isRequestFinished(request)) {
+			// finalize the request
 			finalizeRequest(request);
+
+			// shutdown the import Queue (& de-reference) to prevent importExecutors from running
+			UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
+			importExecutors.get(allocationID).shutdown();
+			importExecutors.remove(allocationID);
 		}
 	}
 
 	public void finalizeRequest(Request request) {
 		request.setStatus(Request.Status.COMPLETED);
 		igsnRequestService.save(request);
+		igsnRequestService.closeLoggerFor(request);
 	}
 
 	public void shutdownSync() {

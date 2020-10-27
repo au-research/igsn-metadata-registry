@@ -229,4 +229,77 @@ public class ImportService {
 		requestLog.info("Updated identifier {} with a new version", identifier.getValue());
 		return identifier;
 	}
+
+	public Identifier reserveIGSNIdentifier(String identifierValue, Request request) {
+
+		Logger requestLog = igsnRequestService.getLoggerFor(request);
+
+		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
+		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
+		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
+				? request.getAttribute(Attribute.OWNER_TYPE) : "User";
+
+		// validate existing User
+		Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (existingIdentifier == null) {
+			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+					identifierValue, Identifier.Type.IGSN));
+		}
+
+		// create and persist new Identifier with status=RESERVED
+		Record record = new Record();
+		record.setCreatedAt(request.getCreatedAt());
+		record.setModifiedAt(request.getCreatedAt());
+		record.setOwnerID(UUID.fromString(creatorID));
+		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
+		record.setVisible(false);
+		record.setAllocationID(UUID.fromString(allocationID));
+		record.setCreatorID(UUID.fromString(creatorID));
+		record.setRequestID(request.getId());
+		recordService.save(record);
+		requestLog.debug("Added Record: {}", record.getId());
+
+		Identifier identifier = new Identifier();
+		identifier.setValue(identifierValue);
+		identifier.setType(Identifier.Type.IGSN);
+		identifier.setCreatedAt(request.getCreatedAt());
+		identifier.setRequestID(request.getId());
+		identifier.setStatus(Identifier.Status.RESERVED);
+		identifier.setRecord(record);
+
+		try {
+			identifierService.save(identifier);
+		}
+		catch (Exception e) {
+			requestLog.error(e.getMessage());
+			requestLog.error("Failed creating Identifier: {}", identifierValue);
+			requestLog.error("Deleting created record: {}", record.getId());
+			recordService.delete(record);
+			return null;
+		}
+
+		requestLog.info("Reserved identifier: {}", identifier.getValue());
+		return identifier;
+	}
+
+	public Identifier transferIdentifier(String identifierValue, Request request) {
+		Logger requestLog = igsnRequestService.getLoggerFor(request);
+
+		String ownerID = request.getAttribute(Attribute.OWNER_ID);
+		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
+
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (identifier == null) {
+			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+					identifierValue, Identifier.Type.IGSN));
+		}
+
+		Record record = identifier.getRecord();
+		record.setOwnerID(UUID.fromString(ownerID));
+		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
+		recordService.save(record);
+
+		requestLog.info("Transfered ownership of identifier {} to {}:{}", identifier.getValue(), ownerType, ownerID);
+		return identifier;
+	}
 }

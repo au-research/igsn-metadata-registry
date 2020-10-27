@@ -18,6 +18,8 @@ import au.edu.ardc.registry.igsn.service.IGSNRequestValidationService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.ImportService;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
+import au.edu.ardc.registry.igsn.task.ReserveIGSNTask;
+import au.edu.ardc.registry.igsn.task.TransferIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -251,12 +253,34 @@ public class IGSNServiceController {
 			description = "Reserved IGSN would not require metadata and will not be resolvable")
 	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<?> reserve(HttpServletRequest httpServletRequest, @RequestParam UUID allocationID,
+	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest, @RequestParam UUID allocationID,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false) String ownerID, @RequestBody String IGSNList) {
+			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
-		// todo
-		return ResponseEntity.badRequest().body("Not Implemented");
+		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
+
+		// todo validate the request
+		request.setStatus(Request.Status.ACCEPTED);
+		igsnRequestService.save(request);
+
+		// process
+		// todo obtain allocationID from payload instead
+		request.setAttribute(Attribute.ALLOCATION_ID, allocationID.toString());
+		request.setStatus(Request.Status.PROCESSED);
+		igsnRequestService.save(request);
+
+		// run
+		// todo handle this better (validate each line)
+		String[] lines = payload.split("\\r?\\n");
+		for (String identifierValue : lines) {
+			ReserveIGSNTask task = new ReserveIGSNTask(identifierValue, request, importService);
+			task.run();
+		}
+
+		igsnService.finalizeRequest(request);
+
+		RequestDTO dto = requestMapper.getConverter().convert(request);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/transfer")
@@ -264,11 +288,34 @@ public class IGSNServiceController {
 			description = "Transfer the ownership of a list of IGSN Identifier to another User or DataCenter")
 	@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<?> handle(HttpServletRequest httpServletRequest, @RequestParam UUID ownerID,
-			@RequestParam String ownerType, @RequestBody String IGSNList) {
+	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @RequestParam UUID ownerID,
+			@RequestParam String ownerType, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
-		// todo
-		return ResponseEntity.badRequest().body("Not Implemented");
+
+		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
+
+		// todo validate
+		request.setStatus(Request.Status.ACCEPTED);
+		igsnRequestService.save(request);
+
+		// process
+		request.setAttribute(Attribute.OWNER_ID, ownerID.toString());
+		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		request.setStatus(Request.Status.PROCESSED);
+		igsnRequestService.save(request);
+
+		// run
+		// todo handle this better (validate each line)
+		String[] lines = payload.split("\\r?\\n");
+		for (String identifierValue : lines) {
+			TransferIGSNTask task = new TransferIGSNTask(identifierValue, request, importService);
+			task.run();
+		}
+
+		igsnService.finalizeRequest(request);
+
+		RequestDTO dto = requestMapper.getConverter().convert(request);
+		return ResponseEntity.ok().body(dto);
 	}
 
 }
