@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/resources/requests",
@@ -56,9 +57,11 @@ public class RequestResourceController {
 
 	final RequestMapper requestMapper;
 
+	final IGSNService igsnService;
+
 	public RequestResourceController(KeycloakService kcService, RequestService requestService,
 			RecordService recordService, RecordMapper recordMapper, IdentifierService identifierService,
-			IdentifierMapper identifierMapper, RequestMapper requestMapper) {
+			IdentifierMapper identifierMapper, RequestMapper requestMapper, IGSNService igsnService) {
 		this.kcService = kcService;
 		this.requestService = requestService;
 		this.recordService = recordService;
@@ -66,6 +69,7 @@ public class RequestResourceController {
 		this.identifierService = identifierService;
 		this.identifierMapper = identifierMapper;
 		this.requestMapper = requestMapper;
+		this.igsnService = igsnService;
 	}
 
 	@GetMapping(value = "/")
@@ -144,28 +148,24 @@ public class RequestResourceController {
 	}
 
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<RequestDTO> update(@PathVariable String id, @RequestBody RequestDTO requestDTO,
+	public ResponseEntity<RequestDTO> update(@PathVariable String id,
+											 @RequestHeader(value="status", required = false, defaultValue = "") String status,
+											 @RequestBody Optional<RequestDTO> requestDTO,
 			HttpServletRequest httpServletRequest) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = requestService.findById(id);
-		Request updatedRequest = requestService.update(request, requestDTO, user);
+		RequestDTO dto = null;
+		if(status.equals("RESTART") && request.getType().startsWith("igsn")){
+			igsnService.processMintOrUpdate(request);
+			dto = requestMapper.getConverter().convert(request);
+		}
+		else if(requestDTO.isPresent()) {
+			Request updatedRequest = requestService.update(request, requestDTO.get(), user);
+			dto = requestMapper.getConverter().convert(updatedRequest);
+		}
 
-		RequestDTO dto = requestMapper.getConverter().convert(updatedRequest);
 		return ResponseEntity.accepted().body(dto);
 	}
-
-	@PostMapping(value = "/{id}")
-	public ResponseEntity<RequestDTO> rerun(@PathVariable String id, @RequestBody RequestDTO requestDTO,
-											 HttpServletRequest httpServletRequest) {
-		User user = kcService.getLoggedInUser(httpServletRequest);
-		Request request = requestService.findOwnedById(id, user);
-		IGSNService igsnService = new IGSNService();
-		igsnService.processMintOrUpdate(request);
-
-		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.accepted().body(dto);
-	}
-
 
 	@PostMapping(value = "{id}/logs")
 	public ResponseEntity<String> appendLog(@PathVariable String id, @RequestBody String message,
