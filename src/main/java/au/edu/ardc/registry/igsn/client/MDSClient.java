@@ -48,27 +48,6 @@ public class MDSClient {
 	}
 
 	/**
-	 * @param registrationMetadata XML String of the registration metadata
-	 * @param identifier the IGSN Identifier
-	 * @param landingPage the URL of the landing page of the IGSN
-	 * @return the response code (201 CREATED)
-	 * @throws Exception If response code is not 201 containing the response body if
-	 * present
-	 */
-	public int mintIGSN(String registrationMetadata, String identifier, String landingPage) throws Exception {
-		int response_code;
-		try {
-			response_code = createOrUpdateIdentifier(identifier, landingPage);
-			if (response_code == 201)
-				response_code = addMetadata(registrationMetadata);
-		}
-		catch (HttpServerErrorException e) {
-			throw e;
-		}
-		return response_code;
-	}
-
-	/**
 	 *
 	 * DELETE URI: https://doidb.wdc-terra.org/igsn/metadata/{igsn} where {igsn} is a
 	 * specific IGSN. This request marks a dataset as 'inactive'. To activate it again,
@@ -80,19 +59,20 @@ public class MDSClient {
 	 */
 	public int deactivateIGSN(String identifier) throws Exception {
 		String service_url = "metadata/" + identifier;
+		int response_code = 0;
 		try {
 			ClientResponse response = this.webClient.delete().uri(service_url).exchange().block();
-			if (response != null && response.rawStatusCode() == 200) {
-				return response.rawStatusCode();
+			if (response != null) {
+				response_code = response.statusCode().value();
+				if (response_code != 200) {
+					throw new Exception(response.bodyToMono(String.class).block());
+				}
+				response.releaseBody();
 			}
-			else if (response != null) {
-				throw new Exception(response.bodyToMono(String.class).block());
-			}
-		}
-		catch (Exception e) {
+		}catch (Exception e){
 			throw e;
 		}
-		return 0;
+		return response_code;
 	}
 
 	/**
@@ -110,14 +90,18 @@ public class MDSClient {
 		String mint_content = "igsn=" + identifier;
 		mint_content += "\n";
 		mint_content += "url=" + landingPage;
-
-		ClientResponse response = this.webClient.post().uri(service_url).contentType(MediaType.TEXT_PLAIN)
-				.body(BodyInserters.fromPublisher(Mono.just(mint_content), String.class)).exchange().block();
-		if (response != null) {
-			response_code = response.statusCode().value();
-			if (response_code != 201) {
-				throw new Exception(response.bodyToMono(String.class).block());
+		try{
+			ClientResponse response = this.webClient.post().uri(service_url).contentType(MediaType.TEXT_PLAIN)
+					.body(BodyInserters.fromPublisher(Mono.just(mint_content), String.class)).exchange().block();
+			if (response != null) {
+				response_code = response.statusCode().value();
+				if (response_code != 201) {
+					throw new Exception(response.bodyToMono(String.class).block());
+				}
+				response.releaseBody();
 			}
+		}catch (Exception e){
+			throw e;
 		}
 		return response_code;
 	}
@@ -132,19 +116,22 @@ public class MDSClient {
 	public int addMetadata(String registrationMetadata) throws Exception {
 
 		String service_url = "metadata";
+		int response_code = 0;
 		try {
 			ClientResponse response = this.webClient.post().uri(service_url).contentType(MediaType.APPLICATION_XML)
 					.body(BodyInserters.fromPublisher(Mono.just(registrationMetadata), String.class)).exchange()
 					.block();
-			if (response != null && response.rawStatusCode() == 201) {
-				return response.rawStatusCode();
+			if (response != null) {
+				response_code = response.statusCode().value();
+				if (response_code != 201) {
+					throw new Exception(response.bodyToMono(String.class).block());
+				}
+				response.releaseBody();
 			}
-			assert response != null;
-			throw new Exception(response.bodyToMono(String.class).block());
-		}
-		catch (Exception e) {
+		}catch (Exception e){
 			throw e;
 		}
+		return response_code;
 	}
 
 	/**

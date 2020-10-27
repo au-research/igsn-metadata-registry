@@ -105,8 +105,8 @@ public class IGSNRegistrationService {
 
 		if (hasLandingPageChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
-			mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
-			requestLog.debug("Landing Page updated {}", landingPage);
+			int response_code = mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
+			requestLog.debug("Landing Page updated {}, response code: {}", landingPage, response_code);
 			logger.info("Landing Page updated " + landingPage);
 		}
 
@@ -135,8 +135,8 @@ public class IGSNRegistrationService {
 		// update the registration Metadata at MDS
 		if (hasRegistrationMetadataChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
-			mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
-			requestLog.debug("Created and Updated registrationMetadataVersion successfully");
+			int response_code = mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
+			requestLog.debug("Created and Updated registrationMetadataVersion successfully response code: {}", response_code);
 			logger.info("Created and Updated registrationMetadataVersion successfully " + identifierValue);
 		}
 
