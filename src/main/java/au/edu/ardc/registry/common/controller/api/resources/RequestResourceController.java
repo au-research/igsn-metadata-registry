@@ -20,6 +20,9 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.james.mime4j.field.datetime.DateTime;
+import org.apache.logging.log4j.core.Logger;
+import org.keycloak.common.util.Time;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,9 +33,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -149,13 +152,39 @@ public class RequestResourceController {
 
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<RequestDTO> update(@PathVariable String id,
-											 @RequestHeader(value="status", required = false, defaultValue = "") String status,
+											 @RequestParam(name = "status", required = false) String status,
 											 @RequestBody Optional<RequestDTO> requestDTO,
 			HttpServletRequest httpServletRequest) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = requestService.findById(id);
 		RequestDTO dto = null;
+		Logger requestLog = requestService.getLoggerFor(request);
+		Date date = new Date();
+		// archive log at log.millieseconds
+		// empty the log file
+		// set request status to RESTARTED
+		// re-run the request
 		if(status.equals("RESTART") && request.getType().startsWith("igsn")){
+			try {
+				requestLog.info("Restarted Request at: " + date);
+				String logPath = requestService.getLoggerPathFor(request);
+				File logFile = new File(logPath);
+				File acrhived = new File(logFile.getParentFile().getPath() + File.separator + "logs." + date.getTime());
+				InputStream is = new FileInputStream(logFile);
+				OutputStream os = new FileOutputStream(acrhived);
+				byte[] buffer = new byte[1024];
+				int length;
+				while ((length = is.read(buffer)) > 0) {
+					os.write(buffer, 0, length);
+				}
+				PrintWriter pw = new PrintWriter(logFile);
+				pw.close();
+				requestLog.info("Restarting Request at: " + date);
+			}catch(Exception e){
+
+				requestLog.info("Couldn't archive existing logs");
+			}
+			request.setStatus(Request.Status.RESTARTED);
 			igsnService.processMintOrUpdate(request);
 			dto = requestMapper.getConverter().convert(request);
 		}
