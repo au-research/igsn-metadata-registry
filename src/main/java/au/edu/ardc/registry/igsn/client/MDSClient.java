@@ -69,7 +69,8 @@ public class MDSClient {
 				}
 				response.releaseBody();
 			}
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw e;
 		}
 		return response_code;
@@ -90,7 +91,7 @@ public class MDSClient {
 		String mint_content = "igsn=" + identifier;
 		mint_content += "\n";
 		mint_content += "url=" + landingPage;
-		try{
+		try {
 			ClientResponse response = this.webClient.post().uri(service_url).contentType(MediaType.TEXT_PLAIN)
 					.body(BodyInserters.fromPublisher(Mono.just(mint_content), String.class)).exchange().block();
 			if (response != null) {
@@ -100,7 +101,8 @@ public class MDSClient {
 				}
 				response.releaseBody();
 			}
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw e;
 		}
 		return response_code;
@@ -128,7 +130,8 @@ public class MDSClient {
 				}
 				response.releaseBody();
 			}
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			throw e;
 		}
 		return response_code;

@@ -253,4 +253,28 @@ public class TestHelper {
 		return context.getLogger(loggerName);
 	}
 
+	/**
+	 * Mock an embargo given a record
+	 * @param record the record that the embargo will belong to
+	 * @return a Embargo
+	 */
+	public static Embargo mockEmbargo(Record record) {
+		Embargo embargo = new Embargo();
+		embargo.setEmbargoEnd(new Date());
+		embargo.setRecord(record);
+		return embargo;
+	}
+
+	/**
+	 * Mock a version
+	 * @return an Identifier with a mocked up record
+	 */
+	public static Embargo mockEmbargo() {
+		Record record = mockRecord();
+		Embargo embargo = new Embargo();
+		embargo.setEmbargoEnd(new Date());
+		embargo.setRecord(record);
+		return embargo;
+	}
+
 }

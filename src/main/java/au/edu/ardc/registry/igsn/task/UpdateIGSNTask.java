@@ -63,7 +63,7 @@ public class UpdateIGSNTask implements Runnable {
 			logger.warn(e.getMessage());
 		}
 		catch (Exception e) {
-			logger.warn("GENERAL EXCEPTION:"  + e.getMessage());
+			logger.warn("GENERAL EXCEPTION:" + e.getMessage());
 		}
 	}
 
@@ -74,4 +74,5 @@ public class UpdateIGSNTask implements Runnable {
 	public void setIdentifierValue(String identifierValue) {
 		this.identifierValue = identifierValue;
 	}
+
 }

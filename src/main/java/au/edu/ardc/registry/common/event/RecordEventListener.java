@@ -21,7 +21,7 @@ public class RecordEventListener {
 	@EventListener
 	public void handleRecordUpdated(RecordUpdatedEvent event) {
 		String userId = "SYSTEM";
-		if(event.getUser() != null){
+		if (event.getUser() != null) {
 			userId = event.getUser().getId().toString();
 		}
 		logger.debug("Event RecordUpdatedEvent raised with record {} and user {}", event.getRecord().getId(), userId);

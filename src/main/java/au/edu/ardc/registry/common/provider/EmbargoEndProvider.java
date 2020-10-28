@@ -2,7 +2,8 @@ package au.edu.ardc.registry.common.provider;
 
 import java.util.Date;
 
-public interface EmbargoProvider {
+public interface EmbargoEndProvider {
 
-    Date get(String content);
+	Date get(String content);
+
 }

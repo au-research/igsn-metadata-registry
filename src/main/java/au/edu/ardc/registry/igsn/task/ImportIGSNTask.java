@@ -13,52 +13,56 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.io.File;
 import java.io.IOException;
 
-public class ImportIGSNTask implements Runnable{
+public class ImportIGSNTask implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImportIGSNTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(ImportIGSNTask.class);
 
-    private File file;
+	private File file;
 
-    private Request request;
+	private Request request;
 
-    ApplicationEventPublisher applicationEventPublisher;
+	ApplicationEventPublisher applicationEventPublisher;
 
-    ImportService importService;
+	ImportService importService;
 
-    private String identifierValue;
+	private String identifierValue;
 
-    public ImportIGSNTask(String identifierValue, File file, Request request, ImportService importService, ApplicationEventPublisher applicationEventPublisher) {
-        this.identifierValue = identifierValue;
-        this.file = file;
-        this.request = request;
-        this.importService = importService;
-        this.applicationEventPublisher = applicationEventPublisher;
-    }
+	public ImportIGSNTask(String identifierValue, File file, Request request, ImportService importService,
+			ApplicationEventPublisher applicationEventPublisher) {
+		this.identifierValue = identifierValue;
+		this.file = file;
+		this.request = request;
+		this.importService = importService;
+		this.applicationEventPublisher = applicationEventPublisher;
+	}
 
-    @Override
-    public void run() {
-        try {
-            logger.info("Processing import file: {}", file.getAbsoluteFile());
-            Identifier identifier = importService.importRequest(file, request);
-            if (identifier != null) {
-                applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-                applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
-            }
-            logger.info("Processed import file: {}", file.getAbsoluteFile());
-        } catch (IOException e) {
-            // todo log the exception in the request log
-            logger.error(e.getMessage());
-        }catch (ForbiddenOperationException e) {
-            logger.warn(e.getMessage());
-        }
+	@Override
+	public void run() {
+		try {
+			logger.info("Processing import file: {}", file.getAbsoluteFile());
+			Identifier identifier = importService.importRequest(file, request);
+			if (identifier != null) {
+				applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
+				applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
+			}
+			logger.info("Processed import file: {}", file.getAbsoluteFile());
+		}
+		catch (IOException e) {
+			// todo log the exception in the request log
+			logger.error(e.getMessage());
+		}
+		catch (ForbiddenOperationException e) {
+			logger.warn(e.getMessage());
+		}
 
-    }
+	}
 
-    public String getIdentifierValue() {
-        return identifierValue;
-    }
+	public String getIdentifierValue() {
+		return identifierValue;
+	}
 
-    public void setIdentifierValue(String identifierValue) {
-        this.identifierValue = identifierValue;
-    }
+	public void setIdentifierValue(String identifierValue) {
+		this.identifierValue = identifierValue;
+	}
+
 }

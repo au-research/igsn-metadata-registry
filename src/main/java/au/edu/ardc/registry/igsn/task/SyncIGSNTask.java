@@ -25,14 +25,13 @@ public class SyncIGSNTask implements Runnable {
 
 	private final ApplicationEventPublisher applicationEventPublisher;
 
-	public SyncIGSNTask(Identifier identifier, Request request, IGSNRegistrationService igsnRegistrationService, ApplicationEventPublisher applicationEventPublisher) {
+	public SyncIGSNTask(Identifier identifier, Request request, IGSNRegistrationService igsnRegistrationService,
+			ApplicationEventPublisher applicationEventPublisher) {
 		this.identifier = identifier;
 		this.request = request;
 		this.igsnRegistrationService = igsnRegistrationService;
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
-
-
 
 	@Override
 	public void run() {

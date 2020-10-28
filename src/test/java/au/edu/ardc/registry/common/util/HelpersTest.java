@@ -59,5 +59,4 @@ public class HelpersTest {
 		assertThat(newDateTime).isInstanceOf(Date.class);
 	}
 
-
 }

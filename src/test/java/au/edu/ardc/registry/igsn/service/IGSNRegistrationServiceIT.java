@@ -240,8 +240,6 @@ class IGSNRegistrationServiceIT {
 		when(urlService.findByRecord(any(Record.class))).thenReturn(url);
 		when(keycloakService.getAllocationByResourceID(any())).thenReturn(allocation);
 
-
-
 		Schema fromSchema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 		Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
 
@@ -251,8 +249,7 @@ class IGSNRegistrationServiceIT {
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
 		String utcDateTimeStr = df.format(version.getCreatedAt());
-		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
-				allocation.getMds_username());
+		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName", allocation.getMds_username());
 
 		Version regVersion = transformer.transform(version);
 		regVersion.setCreatedAt(request.getCreatedAt());
@@ -264,7 +261,5 @@ class IGSNRegistrationServiceIT {
 		igsnRegistrationService.registerIdentifier(identifierValue, request);
 
 	}
-
-
 
 }

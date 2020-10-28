@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 @Service
 public class RecordProcessingService {
+
 	private static final Logger logger = LoggerFactory.getLogger(RecordProcessingService.class);
 
 	private ThreadPoolExecutor processQueue;

@@ -152,9 +152,8 @@ public class RequestResourceController {
 
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<RequestDTO> update(@PathVariable String id,
-											 @RequestParam(name = "status", required = false) String status,
-											 @RequestBody Optional<RequestDTO> requestDTO,
-			HttpServletRequest httpServletRequest) {
+			@RequestParam(name = "status", required = false) String status,
+			@RequestBody Optional<RequestDTO> requestDTO, HttpServletRequest httpServletRequest) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = requestService.findById(id);
 		RequestDTO dto = null;
@@ -164,7 +163,7 @@ public class RequestResourceController {
 		// empty the log file
 		// set request status to RESTARTED
 		// re-run the request
-		if(status.equals("RESTART") && request.getType().startsWith("igsn")){
+		if (status.equals("RESTART") && request.getType().startsWith("igsn")) {
 			try {
 				requestLog.info("Restarted Request at: " + date);
 				String logPath = requestService.getLoggerPathFor(request);
@@ -180,7 +179,8 @@ public class RequestResourceController {
 				PrintWriter pw = new PrintWriter(logFile);
 				pw.close();
 				requestLog.info("Restarting Request at: " + date);
-			}catch(Exception e){
+			}
+			catch (Exception e) {
 
 				requestLog.info("Couldn't archive existing logs");
 			}
@@ -188,7 +188,7 @@ public class RequestResourceController {
 			igsnService.processMintOrUpdate(request);
 			dto = requestMapper.getConverter().convert(request);
 		}
-		else if(requestDTO.isPresent()) {
+		else if (requestDTO.isPresent()) {
 			Request updatedRequest = requestService.update(request, requestDTO.get(), user);
 			dto = requestMapper.getConverter().convert(updatedRequest);
 		}

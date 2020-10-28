@@ -16,22 +16,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class IGSNEventListener {
 
-    Logger logger = LoggerFactory.getLogger(RecordEventListener.class);
+	Logger logger = LoggerFactory.getLogger(RecordEventListener.class);
 
-    @Autowired
-    IGSNService igsnService;
+	@Autowired
+	IGSNService igsnService;
 
-    @EventListener
-    public void handleIGSNUpdatedEvent(IGSNUpdatedEvent event) {
-        logger.debug("Event handleIGSNUpdatedEvent raised with identifier {} for request {}", event.getIdentifier().getValue(), event.getRequest().getId());
+	@EventListener
+	public void handleIGSNUpdatedEvent(IGSNUpdatedEvent event) {
+		logger.debug("Event handleIGSNUpdatedEvent raised with identifier {} for request {}",
+				event.getIdentifier().getValue(), event.getRequest().getId());
 
-        igsnService.queueSync(event.getIdentifier(), event.getRequest());
-    }
+		igsnService.queueSync(event.getIdentifier(), event.getRequest());
+	}
 
-    @EventListener
-    public void handleIGSNSyncedEvent(IGSNSyncedEvent event) {
-        logger.debug("Event IGSNSyncedEvent raised with identifier {} for request {}", event.getIdentifier().getValue(), event.getRequest().getId());
+	@EventListener
+	public void handleIGSNSyncedEvent(IGSNSyncedEvent event) {
+		logger.debug("Event IGSNSyncedEvent raised with identifier {} for request {}", event.getIdentifier().getValue(),
+				event.getRequest().getId());
 
-        igsnService.checkRequest(event.getRequest());
-    }
+		igsnService.checkRequest(event.getRequest());
+	}
+
 }

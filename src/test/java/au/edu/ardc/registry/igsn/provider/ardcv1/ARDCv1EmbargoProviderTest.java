@@ -1,0 +1,61 @@
+package au.edu.ardc.registry.igsn.provider.ardcv1;
+
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.EmbargoEndProvider;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.util.Helpers;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.IOException;
+import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = { SchemaService.class })
+public class ARDCv1EmbargoProviderTest {
+
+	@Autowired
+	SchemaService service;
+
+	@Test
+	@DisplayName("Get embargoEnd of a ARDCV1 record")
+	void extractEmbargoEndFromARDCV1() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_embargoEnd.xml");
+
+		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
+		Date embargoEnd = provider.get(xml);
+		assertEquals(embargoEnd, Helpers.convertDate("2020-09-07"));
+	}
+
+	@Test
+	@DisplayName("Attempt to get embargoEnd of a ARDCV1 record with no embargoEnd attribute")
+	void extractEmbargoEndFromARDCV1NoEmbargoEnd() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+
+		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
+		Date embargoEnd = provider.get(xml);
+		assertEquals(embargoEnd, null);
+	}
+
+	@Test
+	@DisplayName("Attempt to get embargoEnd of a ARDCV1 with invalid xml")
+	void extractEmbargoEndFromARDCV1Invalid() throws IOException {
+		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
+		String xml = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
+
+		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
+		Date embargoEnd = provider.get(xml);
+		assertEquals(embargoEnd, null);
+	}
+
+}

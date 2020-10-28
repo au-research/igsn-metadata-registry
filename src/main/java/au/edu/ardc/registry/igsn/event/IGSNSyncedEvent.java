@@ -4,28 +4,30 @@ import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 
 public class IGSNSyncedEvent {
-    private Identifier identifier;
 
-    private Request request;
+	private Identifier identifier;
 
-    public IGSNSyncedEvent(Identifier identifier, Request request) {
-        this.identifier = identifier;
-        this.request = request;
-    }
+	private Request request;
 
-    public Identifier getIdentifier() {
-        return identifier;
-    }
+	public IGSNSyncedEvent(Identifier identifier, Request request) {
+		this.identifier = identifier;
+		this.request = request;
+	}
 
-    public void setIdentifier(Identifier identifier) {
-        this.identifier = identifier;
-    }
+	public Identifier getIdentifier() {
+		return identifier;
+	}
 
-    public Request getRequest() {
-        return request;
-    }
+	public void setIdentifier(Identifier identifier) {
+		this.identifier = identifier;
+	}
 
-    public void setRequest(Request request) {
-        this.request = request;
-    }
+	public Request getRequest() {
+		return request;
+	}
+
+	public void setRequest(Request request) {
+		this.request = request;
+	}
+
 }

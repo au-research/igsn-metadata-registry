@@ -10,26 +10,27 @@ import java.util.List;
 @Service
 public class EmbargoService {
 
-    private final EmbargoRepository repository;
+	private final EmbargoRepository repository;
 
-    public EmbargoService(EmbargoRepository repository) {
-        this.repository = repository;
-    }
+	public EmbargoService(EmbargoRepository repository) {
+		this.repository = repository;
+	}
 
-    /**
-     * Return List of embargos that have reached their embargoEnd date
-     */
-    public List<Embargo> findAllEmbargoToEnd(){
-        Date now = new Date();
-        List<Embargo> embargos = repository.findAllByEmbargoEndLessThanEqual(now);
-        return embargos;
-    }
+	/**
+	 * Return List of embargo that have reached their embargoEnd date
+	 */
+	public List<Embargo> findAllEmbargoToEnd() {
+		Date now = new Date();
+		List<Embargo> embargos = repository.findAllByEmbargoEndLessThanEqual(now);
+		return embargos;
+	}
 
-    /**
-     * Permanently delete the embargo
-     * @param id the uuid of the Embargo
-     */
-    public void delete(String id) {
-        repository.deleteById(id);
-    }
+	/**
+	 * Permanently delete the embargo
+	 * @param id the uuid of the Embargo
+	 */
+	public void delete(String id) {
+		repository.deleteById(id);
+	}
+
 }

@@ -25,7 +25,7 @@ public class ProcessTitleTask implements Runnable {
 	private final SchemaService schemaService;
 
 	public ProcessTitleTask(Record record, VersionService versionService, RecordService recordService,
-							SchemaService schemaService) {
+			SchemaService schemaService) {
 		this.record = record;
 		this.versionService = versionService;
 		this.recordService = recordService;

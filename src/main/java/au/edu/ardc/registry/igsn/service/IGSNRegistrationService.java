@@ -125,8 +125,7 @@ public class IGSNRegistrationService {
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
 		String utcDateTimeStr = df.format(supportedVersion.getCreatedAt());
-		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName",
-				allocation.getMds_username());
+		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName", allocation.getMds_username());
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
 		logger.info("Updating Version" + landingPage);
@@ -136,7 +135,8 @@ public class IGSNRegistrationService {
 		if (hasRegistrationMetadataChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			int response_code = mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
-			requestLog.debug("Created and Updated registrationMetadataVersion successfully response code: {}", response_code);
+			requestLog.debug("Created and Updated registrationMetadataVersion successfully response code: {}",
+					response_code);
 			logger.info("Created and Updated registrationMetadataVersion successfully " + identifierValue);
 		}
 
@@ -156,8 +156,9 @@ public class IGSNRegistrationService {
 
 		logger.info("Updating Version" + version.getContent().toString());
 		if (currentVersion != null) {
-			// the version is later than the current request (shouldn't happen unless requests are re-run
-			if(currentVersion.getCreatedAt().after(request.getCreatedAt())){
+			// the version is later than the current request (shouldn't happen unless
+			// requests are re-run
+			if (currentVersion.getCreatedAt().after(request.getCreatedAt())) {
 				logger.info("Current Version is newer" + version.getContent().toString());
 				return false;
 			}

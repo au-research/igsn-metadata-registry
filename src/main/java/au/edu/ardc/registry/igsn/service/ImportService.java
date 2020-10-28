@@ -66,17 +66,18 @@ public class ImportService {
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
 
-		//to do - add EmbargoProvider and if valid, then add a new Embargo
+		// to do - add EmbargoProvider and if valid, then add a new Embargo
 
 		// obtain the necessary information from the providers
 		String identifierValue = identifierProvider.get(content);
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-		// if the request is being re-played don't create mew record, url identifier and version
+		// if the request is being re-played don't create mew record, url identifier and
+		// version
 		// but do test to make sure they are all created and contains the correct value
 		if (identifier != null) {
 
-			if(identifier.getRequestID() != request.getId()){
+			if (identifier.getRequestID() != request.getId()) {
 				requestLog.debug("Identifier: {} already exists", identifierValue);
 				throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s does exist",
 						identifierValue, Identifier.Type.IGSN));
@@ -199,13 +200,14 @@ public class ImportService {
 		// end current version for the given schema if it was created before this version
 		boolean isThisCurrent = true;
 
-		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())){
-			requestLog.debug("Given version content is older than current version for " +
-							"Identifier {} current Date: {}, Incoming Date : {}", identifierValue,
-					currentVersion.getCreatedAt(), request.getCreatedAt());
+		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())) {
+			requestLog.debug(
+					"Given version content is older than current version for "
+							+ "Identifier {} current Date: {}, Incoming Date : {}",
+					identifierValue, currentVersion.getCreatedAt(), request.getCreatedAt());
 			isThisCurrent = false;
 		}
-		else if(currentVersion != null){
+		else if (currentVersion != null) {
 			igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
 		}
 
@@ -304,4 +306,5 @@ public class ImportService {
 		requestLog.info("Transfered ownership of identifier {} to {}:{}", identifier.getValue(), ownerType, ownerID);
 		return identifier;
 	}
+
 }
