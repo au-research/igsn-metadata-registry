@@ -102,7 +102,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 	@Test
 	void handle_verb_ListRecords_returnsRecords() throws IOException {
 		int i = 0;
-		Date versionDate = service.convertDate("2020-09-23T09:30:25Z");
+		Date versionDate = Helpers.convertDate("2020-09-23T09:30:25Z");
 		for (i = 0; i < 120; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
@@ -136,7 +136,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 	@Test
 	void handle_verb_ListRecords_returnsNoRecordsMatchException() throws IOException {
 		int i = 0;
-		Date versionDate = service.convertDate("2020-09-23T09:30:25Z");
+		Date versionDate = Helpers.convertDate("2020-09-23T09:30:25Z");
 		for (i = 0; i < 150; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
@@ -181,7 +181,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 	void handle_verb_ListIdentifiers_returnsNoRecordsMatchException() throws IOException {
 
 		int i = 0;
-		Date versionDate = service.convertDate("2020-09-23T09:30:25Z");
+		Date versionDate = Helpers.convertDate("2020-09-23T09:30:25Z");
 		for (i = 0; i < 110; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);
@@ -210,7 +210,7 @@ public class OAIPMHControllerIT extends WebIntegrationTest {
 	void handle_verb_ListIdentifiers_returnsIdentifiers() throws IOException {
 
 		int i = 0;
-		Date versionDate = service.convertDate("2020-09-23T09:30:25Z");
+		Date versionDate = Helpers.convertDate("2020-09-23T09:30:25Z");
 		for (i = 0; i < 110; i++) {
 			Record record = TestHelper.mockRecord();
 			record.setModifiedAt(versionDate);

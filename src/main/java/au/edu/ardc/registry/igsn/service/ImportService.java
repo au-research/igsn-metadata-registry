@@ -66,6 +66,8 @@ public class ImportService {
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
 
+		//to do - add EmbargoProvider and if valid, then add a new Embargo
+
 		// obtain the necessary information from the providers
 		String identifierValue = identifierProvider.get(content);
 

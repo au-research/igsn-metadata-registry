@@ -1,7 +1,5 @@
 package au.edu.ardc.registry.common.util;
 
-import au.edu.ardc.registry.common.model.schema.JSONValidator;
-import au.edu.ardc.registry.common.model.schema.XMLValidator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
@@ -19,6 +17,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class Helpers {
 
@@ -106,6 +107,33 @@ public class Helpers {
 
 	public static String probeContentType(File file) throws IOException {
 		return new Tika().detect(file);
+	}
+
+	/**
+	 * Converts the supplied ISO 8601
+	 * @param inputDate the date to be converted
+	 * @return Date
+	 */
+	public static Date convertDate(String inputDate) {
+
+		try {
+			if (inputDate.indexOf('T') > 0) {
+				DateTimeFormatter formatters = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				LocalDateTime parsedDate = LocalDateTime.parse(inputDate, formatters);
+				Date out = Date.from(
+						Instant.from(parsedDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC)));
+				return out;
+			}
+			else {
+				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
+				Date out = Date.from(
+						Instant.from(parsedDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC)));
+				return out;
+			}
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 }

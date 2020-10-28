@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.provider.OAIProvider;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.oai.exception.*;
 import au.edu.ardc.registry.oai.model.*;
 import au.edu.ardc.registry.oai.response.*;
@@ -105,11 +106,11 @@ public class OAIPMHService {
 			throw new CannotDisseminateFormatException();
 		}
 
-		Date fromDate = convertDate(from);
+		Date fromDate = Helpers.convertDate(from);
 		if (fromDate == null && from != null)
 			throw new BadArgumentException();
 
-		Date untilDate = convertDate(until);
+		Date untilDate = Helpers.convertDate(until);
 		if (untilDate == null && until != null)
 			throw new BadArgumentException();
 
@@ -156,11 +157,11 @@ public class OAIPMHService {
 			throw new CannotDisseminateFormatException();
 		}
 
-		Date fromDate = convertDate(from);
+		Date fromDate = Helpers.convertDate(from);
 		if (fromDate == null && from != null)
 			throw new BadArgumentException();
 
-		Date untilDate = convertDate(until);
+		Date untilDate = Helpers.convertDate(until);
 		if (untilDate == null && until != null)
 			throw new BadArgumentException();
 
@@ -258,33 +259,6 @@ public class OAIPMHService {
 				return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Converts the supplied ISO 8601
-	 * @param inputDate the date to be converted
-	 * @return Date
-	 */
-	public Date convertDate(String inputDate) {
-
-		try {
-			if (inputDate.indexOf('T') > 0) {
-				DateTimeFormatter formatters = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-				LocalDateTime parsedDate = LocalDateTime.parse(inputDate, formatters);
-				Date out = Date.from(
-						Instant.from(parsedDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC)));
-				return out;
-			}
-			else {
-				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
-				Date out = Date.from(
-						Instant.from(parsedDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC)));
-				return out;
-			}
-		}
-		catch (Exception e) {
-			return null;
-		}
 	}
 
 }

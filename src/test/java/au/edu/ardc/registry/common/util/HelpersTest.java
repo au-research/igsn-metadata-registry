@@ -1,8 +1,11 @@
 package au.edu.ardc.registry.common.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
+import java.util.Date;
+
 import org.junit.jupiter.api.Test;
 
 public class HelpersTest {
@@ -43,5 +46,18 @@ public class HelpersTest {
 			System.out.println(e.getMessage());
 		}
 	}
+
+	@Test
+	void convertDate() {
+		String ISO8601Date = "2011-12-03";
+		String ISO8601DateTime = "2020-09-27T12:56:47Z";
+
+		Date newDate = Helpers.convertDate(ISO8601Date);
+		assertThat(newDate).isInstanceOf(Date.class);
+
+		Date newDateTime = Helpers.convertDate(ISO8601DateTime);
+		assertThat(newDateTime).isInstanceOf(Date.class);
+	}
+
 
 }

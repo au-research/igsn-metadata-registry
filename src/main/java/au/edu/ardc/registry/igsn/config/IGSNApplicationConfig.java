@@ -2,8 +2,10 @@ package au.edu.ardc.registry.igsn.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
+@EnableScheduling
 @ConfigurationProperties(prefix = "app.igsn")
 public class IGSNApplicationConfig {
 

@@ -6,9 +6,7 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.oai.exception.*;
-import au.edu.ardc.registry.oai.response.OAIExceptionResponse;
 import au.edu.ardc.registry.oai.response.OAIIdentifyResponse;
-import au.edu.ardc.registry.oai.response.OAIListRecordsResponse;
 import au.edu.ardc.registry.oai.response.OAIResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.Assert;
@@ -19,12 +17,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { OAIPMHService.class, ApplicationProperties.class, SchemaService.class })
@@ -168,18 +164,6 @@ class OAIPMHServiceTest {
 			service.listSets();
 		});
 
-	}
-
-	@Test
-	void convertDate() {
-		String ISO8601Date = "2011-12-03";
-		String ISO8601DateTime = "2020-09-27T12:56:47Z";
-
-		Date newDate = service.convertDate(ISO8601Date);
-		assertThat(newDate).isInstanceOf(Date.class);
-
-		Date newDateTime = service.convertDate(ISO8601DateTime);
-		assertThat(newDateTime).isInstanceOf(Date.class);
 	}
 
 	@Test
