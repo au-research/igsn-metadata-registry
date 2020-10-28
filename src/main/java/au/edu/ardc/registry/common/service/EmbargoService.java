@@ -21,8 +21,7 @@ public class EmbargoService {
 	 */
 	public List<Embargo> findAllEmbargoToEnd() {
 		Date now = new Date();
-		List<Embargo> embargos = repository.findAllByEmbargoEndLessThanEqual(now);
-		return embargos;
+		return repository.findAllByEmbargoEndLessThanEqual(now);
 	}
 
 	/**

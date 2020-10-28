@@ -5,6 +5,7 @@ import java.util.*;
 
 import javax.annotation.PostConstruct;
 
+import au.edu.ardc.registry.common.model.schema.*;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.JSONValidationException;
 import au.edu.ardc.registry.exception.XMLValidationException;
@@ -16,11 +17,6 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.model.schema.SchemaValidator;
-import au.edu.ardc.registry.common.model.schema.SchemaValidatorFactory;
-import au.edu.ardc.registry.common.model.schema.XMLSchema;
-import au.edu.ardc.registry.common.model.schema.XMLValidator;
-import au.edu.ardc.registry.common.model.schema.JSONValidator;
 import au.edu.ardc.registry.common.util.Helpers;
 
 import au.edu.ardc.registry.common.util.XMLUtil;
@@ -45,6 +41,8 @@ public class SchemaService {
 	public static final String AGNv1 = "agn-igsn-desc-1.0";
 
 	public static final String OAIDC = "oai_dc";
+
+	public static final String plainText = "plain_text_igsn_list";
 
 	private static Schema schema;
 
@@ -174,6 +172,10 @@ public class SchemaService {
 				XMLSchema schema = this.getXMLSchemaByNameSpace(nameSpace);
 				return validator.validate(schema, payload);
 			}
+			else if (validator != null && validator.getClass().equals(PlainTextValidator.class)) {
+				// we don't have a schema for CSV or plain text just yet
+				return validator.validate(null, payload);
+			}
 			else if (validator != null && validator.getClass().equals(JSONValidator.class)) {
 				// TODO get json validation working
 				throw new JSONValidationException("JSON Validation is not yetSupported");
@@ -194,11 +196,16 @@ public class SchemaService {
 	 * @throws ContentNotSupportedException validation exception
 	 */
 	public Schema getSchemaForContent(String payload) throws ContentNotSupportedException {
+
 		try {
 			SchemaValidator validator = SchemaValidatorFactory.getValidator(payload);
 			if (validator.getClass().equals(XMLValidator.class)) {
 				String nameSpace = XMLUtil.getNamespaceURI(payload);
 				return this.getXMLSchemaByNameSpace(nameSpace);
+			}
+			else if (validator.getClass().equals(PlainTextValidator.class)) {
+				String nameSpace = XMLUtil.getNamespaceURI(payload);
+				return this.getSchemaByID(SchemaService.plainText);
 			}
 			else if (validator.getClass().equals(JSONValidator.class)) {
 				throw new ContentNotSupportedException("JSON content import is not yet supported");

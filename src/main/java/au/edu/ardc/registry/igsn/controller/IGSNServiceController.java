@@ -84,26 +84,10 @@ public class IGSNServiceController {
 		this.schemaService = schemaService;
 	}
 
-	// @GetMapping("/test")
-	// public ResponseEntity<?> test() throws InterruptedException {
-	// logger.info("Start test1");
-	// igsnService.populateJobs();
-	// logger.info("After test1");
-	//
-	// return ResponseEntity.ok("done");
-	// }
-	//
-	// @GetMapping("/test2")
-	// public ResponseEntity<?> test2() {
-	// return ResponseEntity.ok(igsnService.getImportQueue());
-	// }
-	//
-	// @GetMapping("/test3")
-	// public ResponseEntity<?> test3() {
-	// return ResponseEntity.ok(igsnService.getIdentifierLock());
-	// }
-
 	@PostMapping("/bulk-mint")
+	@Operation(summary = "Bulk mint IGSN", description = "Mint a batch of IGSN identifier with metadata")
+	@ApiResponse(responseCode = "202", description = "Bulk mint request is accepted",
+			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
@@ -126,7 +110,7 @@ public class IGSNServiceController {
 		igsnService.processMintOrUpdate(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.ok(dto);
+		return ResponseEntity.accepted().body(dto);
 	}
 
 	/**
@@ -223,6 +207,9 @@ public class IGSNServiceController {
 	}
 
 	@PostMapping("/bulk-update")
+	@Operation(summary = "Bulk update IGSN", description = "Update a batch of IGSN identifier with metadata")
+	@ApiResponse(responseCode = "202", description = "Bulk update request is accepted",
+			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> bulkUpdate(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
 		User user = kcService.getLoggedInUser(httpServletRequest);
@@ -245,7 +232,7 @@ public class IGSNServiceController {
 		igsnService.processMintOrUpdate(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(dto);
+		return ResponseEntity.accepted().body(dto);
 	}
 
 	@PostMapping("/reserve")
@@ -260,6 +247,7 @@ public class IGSNServiceController {
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
 
 		// todo validate the request
+		igsnRequestValidationService.validate(request, user);
 		request.setStatus(Request.Status.ACCEPTED);
 		igsnRequestService.save(request);
 

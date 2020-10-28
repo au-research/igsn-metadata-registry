@@ -55,10 +55,14 @@ public class UserAccessValidator {
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
-		IGSNAllocation igsnAllocation = null;
-		List<String> identifierValues = new ArrayList<String>();
+		return canUserCreateIGSNIdentifier(identifiers, user);
+	}
+
+	public boolean canUserCreateIGSNIdentifier(List<String> identifiers, User user) throws ForbiddenOperationException{
 		String prefix = "######";
 		String namespace = "######";
+		IGSNAllocation igsnAllocation = null;
+		List<String> identifierValues = new ArrayList<String>();
 		for (String identifierValue : identifiers) {
 			if (igsnAllocation == null) {
 				// get the first record and make sure all other records has the same
@@ -79,22 +83,12 @@ public class UserAccessValidator {
 			else if (identifierValues.contains(identifierValue)) {
 				throw new ForbiddenOperationException("Duplicated Identifier found in payload " + identifierValue);
 			}
-			// security precaution
-			// check for existing record after user access only
-			// otherwise anyone can test for records even if it belongs to a different
-			// namespace
-
-			// Identifier existingIdentifier =
-			// identifierService.findByValueAndType(identifierValue,
-			// Identifier.Type.IGSN);
-			// if (existingIdentifier != null) {
-			// throw new ForbiddenOperationException("Record already exists with
-			// identifier: " + identifierValue);
-			// }
 			identifierValues.add(identifierValue);
 		}
+
 		return true;
 	}
+
 
 	/**
 	 * Tests for each IGSN Identifier in the content finds the records in the registry
@@ -111,20 +105,28 @@ public class UserAccessValidator {
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
+		return canUserUpdateIGSNIdentifier(identifiers, user);
+	}
+
+	public boolean canUserUpdateIGSNIdentifier(List<String> identifiers, User user) throws ForbiddenOperationException{
 		for (String identifierValue : identifiers) {
 			Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 			if (existingIdentifier == null) {
-				throw new ForbiddenOperationException("Record doesn't exists with identifier: " + identifierValue);
+				throw new ForbiddenOperationException("Identifier doesn't exists with value: " + identifierValue);
 			}
 			Record record = existingIdentifier.getRecord();
-			this.hasAccessToRecord(record, user);
-			if (!this.hasAccessToRecord(record, user)) {
+			if(record == null){
+				throw new ForbiddenOperationException("Record doesn't exists for identifier: " + identifierValue);
+			}
+			if (!hasAccessToRecord(record, user)) {
 				throw new ForbiddenOperationException("User has no access to the Record: " + record.getId());
 			}
 			allocationID = record.getAllocationID();
 		}
 		return true;
 	}
+
+
 
 	/**
 	 * Finds the allocation that User has access to to operate with the given Identifier

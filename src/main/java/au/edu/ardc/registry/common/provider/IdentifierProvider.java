@@ -8,6 +8,8 @@ public interface IdentifierProvider {
 
 	String get(String content);
 
+	String get(String content, int position);
+
 	List<String> getAll(String content);
 
 }

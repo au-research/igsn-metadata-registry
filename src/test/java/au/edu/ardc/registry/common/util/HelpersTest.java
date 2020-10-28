@@ -59,4 +59,16 @@ public class HelpersTest {
 		assertThat(newDateTime).isInstanceOf(Date.class);
 	}
 
+
+    @Test
+	public void getContentType_text() {
+		try {
+			String content_type = Helpers.probeContentType(new File("src/test/resources/data/igsn.txt"));
+			assertEquals(new String("text/plain"), content_type);
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
 }

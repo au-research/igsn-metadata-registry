@@ -19,11 +19,14 @@ public class SchemaValidatorFactory {
 	}
 
 	public static SchemaValidator getValidator(String content) throws IOException {
-		if (Helpers.probeContentType(content) == "application/xml") {
+		if (Helpers.probeContentType(content).equals("application/xml")) {
 			return new XMLValidator();
 		}
-		else if (Helpers.probeContentType(content) == "application/json") {
+		else if (Helpers.probeContentType(content).equals("application/json")) {
 			return new JSONValidator();
+		}
+		else if (Helpers.probeContentType(content).equals("text/plain")) {
+			return new PlainTextValidator();
 		}
 		return null;
 	}
