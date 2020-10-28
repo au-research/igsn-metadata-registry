@@ -92,5 +92,15 @@
     "providers": {
       "OAI": "au.edu.ardc.registry.common.provider.OAIProvider"
     }
+  },
+  {
+    "id": "plain_text_igsn_list",
+    "name": "Text File containing list of Identifiers",
+    "description": "Text File containing list of Identifiers",
+    "type": "",
+    "@type": "TextSchema",
+    "providers": {
+      "Identifier": "au.edu.ardc.registry.common.provider.text.LineContentProvider"
+    }
   }
 ]

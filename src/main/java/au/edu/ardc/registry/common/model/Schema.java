@@ -2,6 +2,7 @@ package au.edu.ardc.registry.common.model;
 
 import au.edu.ardc.registry.common.model.schema.JSONSchema;
 import au.edu.ardc.registry.common.model.schema.XMLSchema;
+import au.edu.ardc.registry.common.model.schema.TextSchema;
 import au.edu.ardc.registry.common.provider.Metadata;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -12,7 +13,8 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({ @JsonSubTypes.Type(value = XMLSchema.class, name = "XMLSchema"),
-		@JsonSubTypes.Type(value = JSONSchema.class, name = "JSONSchema") })
+		@JsonSubTypes.Type(value = JSONSchema.class, name = "JSONSchema"),
+		@JsonSubTypes.Type(value = TextSchema.class, name = "TextSchema")})
 public class Schema {
 
 	private String id;

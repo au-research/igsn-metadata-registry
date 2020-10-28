@@ -40,6 +40,25 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		return identifierValue.toUpperCase();
 	}
 
+	@Override
+	public String get(String content, int position) {
+		String identifierValue = "";
+		if(position < 0) return null;
+		String xpath = "/resources/resource/resourceIdentifier";
+		try {
+			NodeList l = XMLUtil.getXPath(content, xpath);
+			if (l.getLength() > position) {
+				identifierValue = l.item(position).getFirstChild().getNodeValue();
+			}
+		}
+		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return identifierValue.toUpperCase();
+	}
+
 	/**
 	 * @param content XML String of the ARDCv1 Resource(s) document
 	 * @return a List is identifier values in the given document

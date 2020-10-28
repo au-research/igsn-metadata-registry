@@ -247,6 +247,7 @@ public class IGSNServiceController {
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
 
 		// todo validate the request
+		igsnRequestValidationService.validate(request, user);
 		request.setStatus(Request.Status.ACCEPTED);
 		igsnRequestService.save(request);
 

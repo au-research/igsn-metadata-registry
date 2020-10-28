@@ -240,8 +240,7 @@ public class OAIPMHService {
 	 */
 	public Boolean isOAIProvider(Schema schema) {
 		try {
-			schema.getProviders().containsKey(Metadata.OAI);
-			return true;
+			return schema.getProviders().containsKey(Metadata.OAI);
 		}
 		catch (Exception e) {
 			return false;

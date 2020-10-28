@@ -103,6 +103,14 @@ class SchemaServiceTest {
 		assertTrue(isValid);
 
 	}
+
+
+	@Test
+	void validate_text_file_with_igsn_list() throws Exception{
+		String texfile = Helpers.readFile("src/test/resources/data/igsn.txt");
+		boolean isValid = service.validate(texfile);
+		assertTrue(isValid);
+	}
 	// TODO find a better json validator that actually works
 	// @Test
 	// void validate_validAGNv1_true(){

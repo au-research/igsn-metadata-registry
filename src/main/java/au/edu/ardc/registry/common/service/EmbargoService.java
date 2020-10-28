@@ -17,8 +17,10 @@ public class EmbargoService {
     }
 
     /**
-     * Return List of embargos that have reached their embargoEnd date
-     */
+     * findAllEmbargoToEnd
+     *
+	 * @return List of {@link Embargo} that have reached their embargoEnd date
+	 */
     public List<Embargo> findAllEmbargoToEnd(){
         Date now = new Date();
         List<Embargo> embargos = repository.findAllByEmbargoEndLessThanEqual(now);
