@@ -165,7 +165,7 @@ public class IGSNRegistrationService {
 				|| request.getType().equals(IGSNService.EVENT_UPDATE)
 				|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE))) {
 			identifier.setStatus(Identifier.Status.ACCESSIBLE);
-			identifierService.save(identifier);
+			identifierService.update(identifier);
 		}
 
 
