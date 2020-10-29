@@ -56,6 +56,8 @@ public class ImportService {
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
 				? request.getAttribute(Attribute.OWNER_TYPE) : "User";
+		String ownerID = request.getAttribute(Attribute.OWNER_ID) != null
+				? request.getAttribute(Attribute.OWNER_ID) : creatorID;
 
 		// build the providers
 		Schema schema = schemaService.getSchemaForContent(content);
@@ -95,7 +97,7 @@ public class ImportService {
 		Record record = new Record();
 		record.setCreatedAt(request.getCreatedAt());
 		record.setModifiedAt(request.getCreatedAt());
-		record.setOwnerID(UUID.fromString(creatorID));
+		record.setOwnerID(UUID.fromString(ownerID));
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
 		record.setVisible(visibilityProvider.get(content));
 		record.setAllocationID(UUID.fromString(allocationID));

@@ -88,12 +88,19 @@ public class IGSNServiceController {
 	@Operation(summary = "Bulk mint IGSN", description = "Mint a batch of IGSN identifier with metadata")
 	@ApiResponse(responseCode = "202", description = "Bulk mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload)
+	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload, @RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
 			throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_BULK_MINT, payload);
+		if (ownerType != null) {
+			request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		}
+
+		if (ownerID != null) {
+			request.setAttribute(Attribute.OWNER_ID, ownerID);
+		}
 
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);
@@ -117,6 +124,8 @@ public class IGSNServiceController {
 	 * Mint IGSN Service endpoint.
 	 * @param httpServletRequest the {@link HttpServletRequest} for this request
 	 * @param payload the required {@link RequestBody} for this request background job or
+	 * @param ownerID (optional) the UUID of the owner of the newly minted record
+	 * @param ownerType (User or Datacenter) the Type of the owner
 	 * wait until mint is completed default is {no , false, 0}
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
@@ -125,12 +134,19 @@ public class IGSNServiceController {
 	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata")
 	@ApiResponse(responseCode = "201", description = "Mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload)
+	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload, @RequestParam(required=false) String ownerID, @RequestParam(required=false) String ownerType)
 			throws Exception {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_MINT, payload);
+		if (ownerType != null) {
+			request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		}
+
+		if (ownerID != null) {
+			request.setAttribute(Attribute.OWNER_ID, ownerID);
+		}
 
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);

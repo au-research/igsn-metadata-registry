@@ -67,6 +67,8 @@ public class IGSNRequestValidationService {
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
 		String content = Helpers.readFile(file);
 
+		// todo validate request.attributes.ownerType, request.attributes.ownerID
+
 		// todo validate reserve, transfer, bulk-reserve, bulk-transfer
 
 		// todo single-mint, check for
