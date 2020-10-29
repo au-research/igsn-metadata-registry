@@ -91,6 +91,13 @@ public class IGSNRequestValidationService {
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
 
+		if(identifiers.isEmpty()){
+			throw new ContentNotSupportedException("Unable to fetch Identifiers for given content");
+		}else if(identifiers.size() > 1 &&
+				(type.equals(IGSNService.EVENT_MINT) || type.equals(IGSNService.EVENT_UPDATE))){
+			throw new ContentNotSupportedException(String.format("Only single resource is allowed for %s service", type));
+		}
+
 		// if it's bulk, all identifiers has to be the same
 		// no mix allocation
 		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)) {
