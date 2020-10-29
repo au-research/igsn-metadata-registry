@@ -2,6 +2,7 @@ package au.edu.ardc.registry.igsn.controller;
 
 import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
+import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Scope;
@@ -9,6 +10,7 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.service.SchemaService;
@@ -27,6 +29,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -68,11 +71,13 @@ public class IGSNServiceController {
 
 	private final SchemaService schemaService;
 
+	private final IdentifierService identifierService;
+
 	public IGSNServiceController(IGSNRequestService igsnRequestService, RequestService requestService,
 			RequestMapper requestMapper, KeycloakService kcService,
 			IGSNRequestValidationService igsnRequestValidationService, IGSNService igsnService,
 			ApplicationEventPublisher applicationEventPublisher, ImportService importService,
-			SchemaService schemaService) {
+			SchemaService schemaService, IdentifierService identifierService) {
 		this.igsnRequestService = igsnRequestService;
 		this.requestService = requestService;
 		this.requestMapper = requestMapper;
@@ -82,13 +87,15 @@ public class IGSNServiceController {
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.importService = importService;
 		this.schemaService = schemaService;
+		this.identifierService = identifierService;
 	}
 
 	@PostMapping("/bulk-mint")
 	@Operation(summary = "Bulk mint IGSN", description = "Mint a batch of IGSN identifier with metadata")
 	@ApiResponse(responseCode = "202", description = "Bulk mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload, @RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
+	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload,
+			@RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
 			throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
@@ -125,8 +132,8 @@ public class IGSNServiceController {
 	 * @param httpServletRequest the {@link HttpServletRequest} for this request
 	 * @param payload the required {@link RequestBody} for this request background job or
 	 * @param ownerID (optional) the UUID of the owner of the newly minted record
-	 * @param ownerType (User or Datacenter) the Type of the owner
-	 * wait until mint is completed default is {no , false, 0}
+	 * @param ownerType (User or Datacenter) the Type of the owner wait until mint is
+	 * completed default is {no , false, 0}
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
@@ -134,7 +141,8 @@ public class IGSNServiceController {
 	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata")
 	@ApiResponse(responseCode = "201", description = "Mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload, @RequestParam(required=false) String ownerID, @RequestParam(required=false) String ownerType)
+	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload,
+			@RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
 			throws Exception {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
@@ -320,6 +328,23 @@ public class IGSNServiceController {
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.ok().body(dto);
+	}
+
+	@GetMapping("/generate-igsn")
+	public ResponseEntity<?> generateIGSN(HttpServletRequest httpServletRequest) {
+		User user = kcService.getLoggedInUser(httpServletRequest);
+
+		// currently only support generation of IGSN belongs to the first Allocation
+		IGSNAllocation allocation = (IGSNAllocation) user.getAllocationsByType(IGSNService.IGSNallocationType).get(0);
+
+		// generate unique IGSN Value
+		String igsnValue;
+		do {
+			igsnValue = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),
+					RandomStringUtils.randomAlphanumeric(6)).toUpperCase();
+		} while (identifierService.findByValueAndType(igsnValue, Identifier.Type.IGSN) != null);
+
+		return ResponseEntity.ok().body(igsnValue);
 	}
 
 }

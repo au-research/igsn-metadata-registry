@@ -46,7 +46,7 @@ public class IGSNService {
 
 	public static final String EVENT_TRANSFER = "igsn.transfer";
 
-	private static final String IGSNallocationType = "urn:ardc:igsn:allocation";
+	public static final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
 	private static final Logger logger = LoggerFactory.getLogger(IGSNService.class);
 
