@@ -44,7 +44,7 @@ public class IGSNRequestService {
 	 * @param user the {@link User} that initiate the Request
 	 * @param type the Type of the Request
 	 * @param payload the Payload of the Request to store immediately
-	 * @return the {@link} Request with type IGSN
+	 * @return the {@link Request} with type IGSN
 	 * @throws IOException when creating and/or storing directory
 	 */
 	public Request createRequest(User user, String type, String payload) throws IOException {

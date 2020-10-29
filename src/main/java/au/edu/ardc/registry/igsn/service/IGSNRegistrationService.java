@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -62,6 +63,22 @@ public class IGSNRegistrationService {
 	public void registerIdentifier(String identifierValue, Request request) throws Exception {
 		logger.info("Registering Identifier " + identifierValue);
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
+
+		String igsnMsg = "";
+		String metadataMsg = "";
+		if (request.getType().equals(IGSNService.EVENT_MINT)
+				|| request.getType().equals(IGSNService.EVENT_BULK_MINT)) {
+			igsnMsg = "minted";
+			metadataMsg = "created";
+		}
+		else if (request.getType().equals(IGSNService.EVENT_UPDATE)
+				|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE)) {
+			igsnMsg = "updated";
+			metadataMsg = "updated";
+		}
+
+
+
 
 		String supportedSchema = SchemaService.ARDCv1;
 		Schema fromSchema = schemaService.getSchemaByID(supportedSchema);
@@ -105,9 +122,10 @@ public class IGSNRegistrationService {
 
 		if (hasLandingPageChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
-			int response_code = mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
-			requestLog.debug("Landing Page updated {}, response code: {}", landingPage, response_code);
-			logger.info("Landing Page updated " + landingPage);
+			mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
+			requestLog.debug("Successfully {} Identifier {} with Landing Page {}", igsnMsg, identifierValue, landingPage);
+			logger.info(String.format("Successfully %s Identifier %s with Landing Page %s", igsnMsg, identifierValue, landingPage));
+
 		}
 
 		// transform to registration metadata
@@ -134,11 +152,22 @@ public class IGSNRegistrationService {
 		// update the registration Metadata at MDS
 		if (hasRegistrationMetadataChanged) {
 			MDSClient mdsClient = new MDSClient(allocation);
-			int response_code = mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
-			requestLog.debug("Created and Updated registrationMetadataVersion successfully response code: {}",
-					response_code);
-			logger.info("Created and Updated registrationMetadataVersion successfully " + identifierValue);
+			mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
+			requestLog.debug("Successfully {} Registration Metadata for Identifier {}", metadataMsg, identifierValue);
+			logger.info(String.format("Successfully %s Registration Metadata for Identifier %s", metadataMsg, identifierValue));
 		}
+
+		// if the Identifier is PENDING OR RESERVED
+		// we set it to be ACCESSIBLE after MINT or UPDATE request
+		if (!identifier.getStatus().equals(Identifier.Status.ACCESSIBLE) &&
+				(request.getType().equals(IGSNService.EVENT_MINT)
+				|| request.getType().equals(IGSNService.EVENT_BULK_MINT)
+				|| request.getType().equals(IGSNService.EVENT_UPDATE)
+				|| request.getType().equals(IGSNService.EVENT_BULK_UPDATE))) {
+			identifier.setStatus(Identifier.Status.ACCESSIBLE);
+			identifierService.save(identifier);
+		}
+
 
 	}
 

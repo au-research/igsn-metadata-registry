@@ -37,6 +37,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -86,6 +87,7 @@ class IGSNRegistrationServiceIT {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 		Request request = TestHelper.mockRequest();
 		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setType(IGSNService.EVENT_MINT);
 		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 		String identifierValue = "10273/XX0TUIAYLV";
@@ -100,6 +102,7 @@ class IGSNRegistrationServiceIT {
 		when(igsnRequestService.getLoggerFor(any(Request.class)))
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 		Request request = TestHelper.mockRequest();
+		request.setType(IGSNService.EVENT_UPDATE);
 		request.setAttribute(Attribute.OWNER_TYPE, "User");
 		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
@@ -137,6 +140,7 @@ class IGSNRegistrationServiceIT {
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setType(Identifier.Type.IGSN);
+		identifier.setStatus(Identifier.Status.PENDING);
 		identifier.setValue(identifierValue);
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
@@ -154,6 +158,8 @@ class IGSNRegistrationServiceIT {
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		igsnRegistrationService.registerIdentifier(identifierValue, request);
+		Identifier createdIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		assertEquals(Identifier.Status.ACCESSIBLE, createdIdentifier.getStatus());
 
 	}
 
@@ -175,10 +181,12 @@ class IGSNRegistrationServiceIT {
 		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 		request.setType(IGSNService.EVENT_UPDATE);
+
 		String identifierValue = "10273/XX0TUIAYLV";
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setType(Identifier.Type.IGSN);
+		identifier.setStatus(Identifier.Status.RESERVED);
 		identifier.setValue(identifierValue);
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
@@ -198,6 +206,10 @@ class IGSNRegistrationServiceIT {
 
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		igsnRegistrationService.registerIdentifier(identifierValue, request);
+		Identifier createdIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+
+		assertEquals(Identifier.Status.ACCESSIBLE, createdIdentifier.getStatus());
+
 
 	}
 
