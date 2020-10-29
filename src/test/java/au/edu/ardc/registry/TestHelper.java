@@ -271,7 +271,7 @@ public class TestHelper {
 	 */
 	public static Embargo mockEmbargo() {
 		Record record = mockRecord();
-		Embargo embargo = new Embargo();
+		Embargo embargo = new Embargo(UUID.randomUUID());
 		embargo.setEmbargoEnd(new Date());
 		embargo.setRecord(record);
 		return embargo;

@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentProviderNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,14 +49,14 @@ public class ARDCv1EmbargoProviderTest {
 	}
 
 	@Test
-	@DisplayName("Attempt to get embargoEnd of a ARDCV1 with invalid xml")
+	@DisplayName("Attempt to get embargoEnd of a oai_dc")
 	void extractEmbargoEndFromARDCV1Invalid() throws IOException {
-		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-		String xml = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
-
-		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
-		Date embargoEnd = provider.get(xml);
-		assertEquals(embargoEnd, null);
+		Schema schema = service.getSchemaByID(SchemaService.OAIDC);
+		try {
+			EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
+		} catch (ContentProviderNotFoundException ex){
+			assertEquals(ex.getMessageID(),"api.error.content_not_supported");
+		}
 	}
 
 }

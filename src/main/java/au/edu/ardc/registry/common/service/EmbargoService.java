@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.common.service;
 
 import au.edu.ardc.registry.common.entity.Embargo;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,22 @@ public class EmbargoService {
 
 	/**
 	 * Return List of embargo that have reached their embargoEnd date
+	 * @return The Lists of Embargo to end
 	 */
-	public List<Embargo> findAllEmbargoToEnd() {
-		Date now = new Date();
-		return repository.findAllByEmbargoEndLessThanEqual(now);
+	public List<Embargo> findAllEmbargoToEnd(Date date) {
+		return repository.findAllByEmbargoEndLessThanEqual(date);
+	}
+
+	/**
+	 * Return List of embargo that have reached their embargoEnd date
+	 * @Param List of embargo to end
+	 */
+	public void endEmbargoList(List<Embargo> embargoList) {
+		for(Embargo endEmbargo: embargoList) {
+			Record record = endEmbargo.getRecord();
+			record.setVisible(true);
+			delete(endEmbargo.getId().toString());
+		}
 	}
 
 	/**
