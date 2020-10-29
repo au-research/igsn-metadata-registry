@@ -19,7 +19,7 @@ public class EmbargoService {
 
 	/**
 	 * Return List of embargo that have reached their embargoEnd date
-	 * @param Date to compare the embargoEnd to
+	 * @param date to compare the embargoEnd to
 	 * @return The Lists of Embargo to end
 	 */
 	public List<Embargo> findAllEmbargoToEnd(Date date) {
@@ -28,7 +28,7 @@ public class EmbargoService {
 
 	/**
 	 * Return List of embargo that have reached their embargoEnd date
-	 * @param List of embargo to end
+	 * @param embargoList of embargo to end
 	 */
 	public void endEmbargoList(List<Embargo> embargoList) {
 		for(Embargo endEmbargo: embargoList) {
