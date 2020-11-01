@@ -80,7 +80,7 @@ public class IGSNService {
 		}
 
 		syncIGSNExecutor
-				.execute(new SyncIGSNTask(identifier, request, igsnRegistrationService, applicationEventPublisher));
+				.execute(new SyncIGSNTask(identifier, request, igsnRegistrationService, applicationEventPublisher, igsnRequestService));
 	}
 
 	public void queueImport(UUID allocationID, String identifierValue, File file, Request request) {
@@ -89,7 +89,7 @@ public class IGSNService {
 		}
 
 		importExecutors.get(allocationID)
-				.execute(new ImportIGSNTask(identifierValue, file, request, importService, applicationEventPublisher));
+				.execute(new ImportIGSNTask(identifierValue, file, request, importService, applicationEventPublisher, igsnRequestService));
 	}
 
 	public void queueUpdate(UUID allocationID, String identifierValue, File file, Request request) {
@@ -98,7 +98,7 @@ public class IGSNService {
 		}
 
 		importExecutors.get(allocationID)
-				.execute(new UpdateIGSNTask(identifierValue, file, request, importService, applicationEventPublisher));
+				.execute(new UpdateIGSNTask(identifierValue, file, request, importService, applicationEventPublisher, igsnRequestService));
 	}
 
 	// todo check if there's any additional tasks in the request and init finalize if

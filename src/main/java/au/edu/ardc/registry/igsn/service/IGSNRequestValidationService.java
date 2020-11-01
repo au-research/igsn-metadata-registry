@@ -115,6 +115,10 @@ public class IGSNRequestValidationService {
 			return;
 		}
 
+		// BULK VALIDATION ENDS HERE
+
+		// SINGLE MINT OR UPDATE CONTINUES HERE
+
 		// get the first one, and start validating singles
 		String firstIdentifier = identifiers.get(0);
 		Identifier existingIdentifier = identifierService.findByValueAndType(firstIdentifier, Identifier.Type.IGSN);

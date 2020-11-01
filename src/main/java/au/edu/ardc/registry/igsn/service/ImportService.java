@@ -9,7 +9,9 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
+import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
 import org.apache.logging.log4j.core.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 @Service
 public class ImportService {
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ImportService.class);
 
 	private final IdentifierService identifierService;
 
@@ -80,7 +83,7 @@ public class ImportService {
 		if (identifier != null) {
 
 			if (identifier.getRequestID() != request.getId()) {
-				requestLog.debug("Identifier: {} already exists", identifierValue);
+				requestLog.warn("Identifier: {} already exists", identifierValue);
 				throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s does exist",
 						identifierValue, Identifier.Type.IGSN));
 			}
@@ -119,6 +122,7 @@ public class ImportService {
 		catch (Exception e) {
 			requestLog.error("Failed creating Identifier: {}", identifierValue);
 			requestLog.error("Deleting created record: {}", record.getId());
+			logger.error(String.format("Failed creating Identifier: %s", identifierValue));
 			recordService.delete(record);
 			return null;
 		}
@@ -154,8 +158,7 @@ public class ImportService {
 	public Identifier updateRequest(File file, Request request)
 			throws IOException, ForbiddenOperationException, VersionIsOlderThanCurrentException {
 
-		Logger requestLog = igsnRequestService.getLoggerFor(request);
-		requestLog.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
+		logger.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
 
 		String content = Helpers.readFile(file);
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
@@ -187,7 +190,7 @@ public class ImportService {
 			String versionHash = currentVersion.getHash();
 			String incomingHash = VersionService.getHash(content);
 			if (incomingHash.equals(versionHash)) {
-				requestLog.warn("Previous version already contain the same content. Skipping");
+				logger.warn("Previous version already contain the same content. Skipping");
 				throw new VersionContentAlreadyExistsException(identifierValue, currentVersion.getSchema());
 			}
 		}
@@ -197,13 +200,13 @@ public class ImportService {
 		record.setModifierID(UUID.fromString(creatorID));
 		record.setModifiedAt(request.getCreatedAt());
 		recordService.save(record);
-		requestLog.debug("Updated record {}", record.getId());
+		logger.debug("Updated record {}", record.getId());
 
 		// end current version for the given schema if it was created before this version
 		boolean isThisCurrent = true;
 
 		if (currentVersion != null && currentVersion.getCreatedAt().after(request.getCreatedAt())) {
-			requestLog.debug(
+			logger.debug(
 					"Given version content is older than current version for "
 							+ "Identifier {} current Date: {}, Incoming Date : {}",
 					identifierValue, currentVersion.getCreatedAt(), request.getCreatedAt());
@@ -223,7 +226,7 @@ public class ImportService {
 		version.setCurrent(isThisCurrent);
 		version.setHash(VersionService.getHash(content));
 		igsnVersionService.save(version);
-		requestLog.debug("Created a version {}", version.getId());
+		logger.debug("Created a version {}", version.getId());
 
 		if (!isThisCurrent) {
 			// if not the current version don't return the Identifier to avoid
@@ -232,14 +235,11 @@ public class ImportService {
 			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
 					request.getCreatedAt());
 		}
-		requestLog.info("Updated identifier {} with a new version", identifier.getValue());
+		logger.info("Updated identifier {} with a new version", identifier.getValue());
 		return identifier;
 	}
 
 	public Identifier reserveIGSNIdentifier(String identifierValue, Request request) {
-
-		Logger requestLog = igsnRequestService.getLoggerFor(request);
-
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
@@ -263,7 +263,7 @@ public class ImportService {
 		record.setCreatorID(UUID.fromString(creatorID));
 		record.setRequestID(request.getId());
 		recordService.save(record);
-		requestLog.debug("Added Record: {}", record.getId());
+		logger.debug("Added Record: {}", record.getId());
 
 		Identifier identifier = new Identifier();
 		identifier.setValue(identifierValue);
@@ -277,20 +277,18 @@ public class ImportService {
 			identifierService.save(identifier);
 		}
 		catch (Exception e) {
-			requestLog.error(e.getMessage());
-			requestLog.error("Failed creating Identifier: {}", identifierValue);
-			requestLog.error("Deleting created record: {}", record.getId());
+			logger.error(e.getMessage());
+			logger.error("Failed creating Identifier: {}", identifierValue);
+			logger.error("Deleting created record: {}", record.getId());
 			recordService.delete(record);
 			return null;
 		}
 
-		requestLog.info("Reserved identifier: {}", identifier.getValue());
+		logger.info("Reserved identifier: {}", identifier.getValue());
 		return identifier;
 	}
 
 	public Identifier transferIdentifier(String identifierValue, Request request) {
-		Logger requestLog = igsnRequestService.getLoggerFor(request);
-
 		String ownerID = request.getAttribute(Attribute.OWNER_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 
@@ -305,7 +303,7 @@ public class ImportService {
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
 		recordService.save(record);
 
-		requestLog.info("Transfered ownership of identifier {} to {}:{}", identifier.getValue(), ownerType, ownerID);
+		logger.info("Transfered ownership of identifier {} to {}:{}", identifier.getValue(), ownerType, ownerID);
 		return identifier;
 	}
 

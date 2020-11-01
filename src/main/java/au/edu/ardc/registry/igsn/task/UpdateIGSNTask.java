@@ -7,6 +7,7 @@ import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
+import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.ImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,45 +26,54 @@ public class UpdateIGSNTask implements Runnable {
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
+	private IGSNRequestService igsnRequestService;
+
 	private ImportService importService;
 
 	private String identifierValue;
 
 	public UpdateIGSNTask(String identifierValue, File file, Request request, ImportService importService,
-			ApplicationEventPublisher applicationEventPublisher) {
+			ApplicationEventPublisher applicationEventPublisher, IGSNRequestService igsnRequestService) {
 		this.identifierValue = identifierValue;
 		this.file = file;
 		this.request = request;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.importService = importService;
+		this.igsnRequestService = igsnRequestService;
 	}
 
 	@Override
 	public void run() {
+		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
 			Identifier identifier = importService.updateRequest(file, request);
+			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
 			if (identifier != null) {
 				applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 				applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
-
 				logger.info("Queue a sync task for identifier: {}", identifier.getValue());
 			}
 		}
 		catch (IOException e) {
 			// todo log the exception in the request log
+			requestLog.warn(e.getMessage());
 			logger.error(e.getMessage());
 		}
 		catch (VersionContentAlreadyExistsException e) {
+			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 		}
 		catch (VersionIsOlderThanCurrentException e) {
+			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 		}
 		catch (ForbiddenOperationException e) {
+			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 		}
 		catch (Exception e) {
-			logger.warn("GENERAL EXCEPTION:" + e.getMessage());
+			requestLog.warn(e.getMessage());
+			logger.warn(e.getMessage());
 		}
 	}
 

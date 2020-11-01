@@ -23,14 +23,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -71,6 +72,45 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 	static void tearDown() throws IOException {
 		mockMDS.shutdown();
 	}
+
+	public class RunnableWebTestClient implements Runnable {
+		private volatile int respons_code;
+		private volatile String validXML;
+		private volatile String name;
+		private volatile WebTestClient webTestClient;
+
+		public RunnableWebTestClient(String validXML, String name, WebTestClient webTestClient){
+			this.validXML = validXML;
+			this.name = name;
+			this.webTestClient = webTestClient;
+		}
+
+		@Override
+		public void run() {
+			System.out.print("CALLING " + name);
+			try {
+			this.webTestClient.post()
+					.uri(uriBuilder -> uriBuilder.path(mintEndpoint)
+							.build())
+					.header("Authorization", getBasicAuthenticationHeader(username, password))
+					.body(Mono.just(validXML), String.class)
+					.exchange().expectStatus().isForbidden();
+					System.out.print("FAILED " + name);
+				this.respons_code = 403;
+			}catch (AssertionError error){
+				System.out.print("MINTED " + name);
+				this.respons_code = 201;
+			}
+		}
+
+
+		public int getResponseCode() {
+			return this.respons_code;
+		}
+	}
+
+
+
 
 	@Test
 	@DisplayName("403 because user does not have access to this Identifier")
@@ -125,6 +165,74 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 				.exchange()
 				.expectStatus().isCreated();
 		// @formatter:on
+
+		// the identifier is created
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		assertThat(identifier).isNotNull();
+		assertThat(identifier).isInstanceOf(Identifier.class);
+
+		// the record is created and is visible, correct ownership
+		Record record = identifier.getRecord();
+		assertThat(record).isInstanceOf(Record.class);
+		assertThat(record.getOwnerID()).isEqualTo(user.getId());
+		assertThat(record.getOwnerType()).isEqualTo(Record.OwnerType.User);
+		assertThat(record.isVisible()).isTrue();
+
+		// versions are also created
+		List<Version> currentVersions = record.getCurrentVersions();
+		assertThat(currentVersions).hasSizeGreaterThan(0);
+
+		// ardcv1 version is created
+		Version ardcv1Version = record.getCurrentVersions().stream()
+				.filter(version -> version.getSchema().equals(SchemaService.ARDCv1)).findAny().orElse(null);
+		assertThat(ardcv1Version).isNotNull();
+		assertThat(ardcv1Version.getContent()).isNotEmpty();
+
+		// json-ld is also created
+		// Version jsonldVersion = record.getCurrentVersions().stream()
+		// .filter(version ->
+		// version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
+		// assertThat(jsonldVersion).isNotNull();
+		// assertThat(jsonldVersion.getContent()).isNotEmpty();
+	}
+
+	@Test
+	void  simultaneous_mint_one_should_fail_one_should_create_record() throws Exception {
+		String validXML = Helpers.readFile("src/test/resources/xml/sample_mintable_ardcv1.xml");
+		String identifierValue = "20.500.11812/XXZT1000023";
+		IGSNAllocation allocation = getStubAllocation();
+		User user = TestHelper.mockUser();
+		user.setAllocations(Collections.singletonList(allocation));
+
+		// the entire authentication model is mocked for this purpose
+		when(kcService.getLoggedInUser(any(HttpServletRequest.class))).thenReturn(user);
+		when(kcService.getAllocationByResourceID(anyString())).thenReturn(allocation);
+
+		// Queue 201 returns from MDS twice,
+		// - 1 for Identifier creation
+		// - 1 for Metadata Creation
+		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
+		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
+		RunnableWebTestClient runnableWebTestClient1 = new RunnableWebTestClient(validXML, "FIRST", this.webTestClient);
+		RunnableWebTestClient runnableWebTestClient2 = new RunnableWebTestClient(validXML, "SECOND", this.webTestClient);
+		Thread thread1 = new Thread(runnableWebTestClient1);
+		Thread thread2 = new Thread(runnableWebTestClient2);
+		thread1.start();
+		thread2.start();
+		thread1.join();
+		thread2.join();
+		List<Integer> responses = new ArrayList<Integer>();
+		// sometimes the first mints sometimes the second
+		responses.add(runnableWebTestClient1.getResponseCode());
+		responses.add(runnableWebTestClient2.getResponseCode());
+		assertThat(responses.contains(201));
+		assertThat(responses.contains(403));
+
+
+
+
+
+
 
 		// the identifier is created
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);

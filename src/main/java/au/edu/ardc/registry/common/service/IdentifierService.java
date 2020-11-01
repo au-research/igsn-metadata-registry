@@ -13,8 +13,10 @@ import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.LockModeType;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +75,7 @@ public class IdentifierService {
 		return repository.existsById(UUID.fromString(id));
 	}
 
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	public Identifier save(Identifier newIdentifier) {
 		Identifier existingIdentifier = findByValueAndType(newIdentifier.getValue(), newIdentifier.getType());
 		if (existingIdentifier != null) {
@@ -82,6 +85,7 @@ public class IdentifierService {
 		return repository.saveAndFlush(newIdentifier);
 	}
 
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	public Identifier create(IdentifierDTO dto, User user) {
 		Identifier identifier = mapper.convertToEntity(dto);
 
@@ -118,6 +122,7 @@ public class IdentifierService {
 	 * @param identifier to be updated
 	 * @return The identifier that has updated
 	 */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	public Identifier update(Identifier identifier) {
 		identifier.setUpdatedAt(new Date());
 		repository.save(identifier);

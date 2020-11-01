@@ -174,7 +174,7 @@ public class IGSNServiceController {
 				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
 		String identifierValue = fragmentProvider.get(payload, 0);
 		ImportIGSNTask task = new ImportIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
-				applicationEventPublisher);
+				applicationEventPublisher, igsnRequestService);
 		task.run();
 
 		// finish request
@@ -220,7 +220,7 @@ public class IGSNServiceController {
 				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
 		String identifierValue = fragmentProvider.get(payload, 0);
 		UpdateIGSNTask task = new UpdateIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
-				applicationEventPublisher);
+				applicationEventPublisher,igsnRequestService);
 		task.run();
 
 		// finish
