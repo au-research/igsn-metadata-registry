@@ -21,4 +21,5 @@ public interface EmbargoRepository extends JpaRepository<Embargo, String> {
 	@Query(value = "SELECT e FROM Embargo e WHERE e.embargoEnd <= ?1")
 	List<Embargo> findAllByEmbargoEndLessThanEqual(Date date);
 
+	void deleteById(UUID id);
 }
