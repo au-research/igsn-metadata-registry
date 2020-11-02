@@ -9,6 +9,7 @@ import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
+import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.ImportService;
@@ -19,8 +20,9 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
-public class UpdateIGSNTask implements Runnable {
+public class UpdateIGSNTask extends IGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateIGSNTask.class);
 
@@ -89,6 +91,10 @@ public class UpdateIGSNTask implements Runnable {
 
 	public String getIdentifierValue() {
 		return identifierValue;
+	}
+
+	public UUID getRequestID() {
+		return request.getId();
 	}
 
 	public void setIdentifierValue(String identifierValue) {

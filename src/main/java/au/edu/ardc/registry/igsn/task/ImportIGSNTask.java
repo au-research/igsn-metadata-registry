@@ -9,6 +9,7 @@ import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
+import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.ImportService;
@@ -19,8 +20,9 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
-public class ImportIGSNTask implements Runnable {
+public class ImportIGSNTask extends IGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportIGSNTask.class);
 
@@ -97,6 +99,10 @@ public class ImportIGSNTask implements Runnable {
 
 	public String getIdentifierValue() {
 		return identifierValue;
+	}
+
+	public UUID getRequestID() {
+		return request.getId();
 	}
 
 	public void setIdentifierValue(String identifierValue) {

@@ -9,6 +9,7 @@ import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.event.IGSNSyncedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
+import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRegistrationService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.slf4j.Logger;
@@ -16,8 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
+import java.util.UUID;
 
-public class SyncIGSNTask implements Runnable {
+public class SyncIGSNTask extends IGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(SyncIGSNTask.class);
 
@@ -90,6 +92,10 @@ public class SyncIGSNTask implements Runnable {
 
 	public Request getRequest() {
 		return request;
+	}
+
+	public UUID getRequestID() {
+		return request.getId();
 	}
 
 }

@@ -1,11 +1,14 @@
 package au.edu.ardc.registry.igsn.task;
 
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.ImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReserveIGSNTask implements Runnable {
+import java.util.UUID;
+
+public class ReserveIGSNTask extends IGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReserveIGSNTask.class);
 
@@ -30,6 +33,10 @@ public class ReserveIGSNTask implements Runnable {
 		catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+	}
+
+	public UUID getRequestID() {
+		return request.getId();
 	}
 
 }
