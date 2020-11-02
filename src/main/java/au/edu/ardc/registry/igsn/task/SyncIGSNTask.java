@@ -45,10 +45,10 @@ public class SyncIGSNTask implements Runnable {
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
 			logger.info("Synced Identifier:{} request: {}", identifier.getValue(), request.getId());
 			requestLog.info(String.format("Synced Identifier: %s", identifier.getValue()));
-			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
-			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
+			//applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
+			//logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
 		}
-		catch (IOException e) {
+		catch (IOException | NotFoundException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
 			logger.error(e.getMessage());
@@ -64,12 +64,7 @@ public class SyncIGSNTask implements Runnable {
 		catch (ForbiddenOperationException e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
-		}
-		catch (NotFoundException e) {
-			requestLog.warn(e.getMessage());
-			logger.error(e.getMessage());
-		}
-		catch (Exception e){
+		} catch (Exception e){
 			requestLog.warn(e.getMessage());
 			logger.error(e.getClass() + e.getMessage());
 		}

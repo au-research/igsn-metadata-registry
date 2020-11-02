@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.task.ProcessTitleTask;
 import au.edu.ardc.registry.common.task.TransformJSONLDTask;
 import au.edu.ardc.registry.common.task.TransformOAIDCTask;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class RecordProcessingService {
 		processQueue = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
 	}
 
-	public void queueRecord(Record record) {
+	public void queueRecord(@NotNull Record record) {
 		logger.info("Queueing record: {}", record.getId());
 
 		processQueue.execute(new ProcessTitleTask(record, versionService, recordService, schemaService));

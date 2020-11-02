@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -264,9 +265,9 @@ public class IGSNServiceController {
 			description = "Reserved IGSN would not require metadata and will not be resolvable")
 	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest, @RequestParam UUID allocationID,
-			@RequestParam(required = false, defaultValue = "User") String ownerType,
-			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
+	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest, @NotNull @RequestParam UUID allocationID,
+											  @RequestParam(required = false, defaultValue = "User") String ownerType,
+											  @RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
 
@@ -300,8 +301,8 @@ public class IGSNServiceController {
 			description = "Transfer the ownership of a list of IGSN Identifier to another User or DataCenter")
 	@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @RequestParam UUID ownerID,
-			@RequestParam String ownerType, @RequestBody String payload) throws IOException {
+	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @NotNull @RequestParam UUID ownerID,
+											 @RequestParam String ownerType, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);

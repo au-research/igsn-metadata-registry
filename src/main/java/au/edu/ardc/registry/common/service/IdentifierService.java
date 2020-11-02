@@ -11,6 +11,7 @@ import au.edu.ardc.registry.common.repository.IdentifierRepository;
 import au.edu.ardc.registry.common.repository.specs.IdentifierSpecification;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
@@ -76,7 +77,7 @@ public class IdentifierService {
 	}
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	public Identifier save(Identifier newIdentifier) {
+	public Identifier save(@NotNull Identifier newIdentifier) {
 		Identifier existingIdentifier = findByValueAndType(newIdentifier.getValue(), newIdentifier.getType());
 		if (existingIdentifier != null) {
 			throw new ForbiddenOperationException(String.format("Identifier %s with type %s already exists",
@@ -123,7 +124,7 @@ public class IdentifierService {
 	 * @return The identifier that has updated
 	 */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	public Identifier update(Identifier identifier) {
+	public Identifier update(@NotNull Identifier identifier) {
 		identifier.setUpdatedAt(new Date());
 		repository.save(identifier);
 		return identifier;

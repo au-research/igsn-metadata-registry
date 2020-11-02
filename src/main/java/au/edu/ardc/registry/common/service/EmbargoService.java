@@ -3,6 +3,7 @@ package au.edu.ardc.registry.common.service;
 import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,7 +31,7 @@ public class EmbargoService {
 	 * Return List of embargo that have reached their embargoEnd date
 	 * @param embargoList of embargo to end
 	 */
-	public void endEmbargoList(List<Embargo> embargoList) {
+	public void endEmbargoList(@NotNull List<Embargo> embargoList) {
 		for(Embargo endEmbargo: embargoList) {
 			Record record = endEmbargo.getRecord();
 			record.setVisible(true);

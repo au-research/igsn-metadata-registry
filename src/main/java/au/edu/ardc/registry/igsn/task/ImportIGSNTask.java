@@ -21,9 +21,9 @@ public class ImportIGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImportIGSNTask.class);
 
-	private File file;
+	private final File file;
 
-	private Request request;
+	private final Request request;
 
 	ApplicationEventPublisher applicationEventPublisher;
 
@@ -52,6 +52,15 @@ public class ImportIGSNTask implements Runnable {
 			if (identifier != null) {
 				applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 				applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
+
+			}
+			if(request.getType().equals(IGSNService.EVENT_MINT)) {
+				if(identifier != null){
+					request.setMessage(String.format("Successfully created Identifier %s", identifier.getValue()));
+				}else{
+					request.setMessage("Error creating Identifier");
+				}
+
 			}
 			logger.info("Processed import file: {}", file.getAbsoluteFile());
 		}
@@ -63,6 +72,7 @@ public class ImportIGSNTask implements Runnable {
 		catch (ForbiddenOperationException e) {
 			if(request.getType().equals(IGSNService.EVENT_MINT))
 			{
+				request.setMessage(e.getMessage());
 				requestLog.error(e.getMessage());
 				throw new ForbiddenOperationException(e.getMessage());
 			}

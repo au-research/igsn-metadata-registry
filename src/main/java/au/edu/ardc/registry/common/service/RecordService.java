@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.RecordNotFoundException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -190,7 +191,7 @@ public class RecordService {
 	 * @param user User model
 	 * @return RecordDTO
 	 */
-	public Record update(RecordDTO recordDTO, User user) {
+	public Record update(@NotNull RecordDTO recordDTO, User user) {
 		if (!exists(recordDTO.getId().toString())) {
 			throw new RecordNotFoundException(recordDTO.getId().toString());
 		}

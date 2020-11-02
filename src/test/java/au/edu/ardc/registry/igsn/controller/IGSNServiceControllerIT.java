@@ -73,21 +73,18 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		mockMDS.shutdown();
 	}
 
-	public class RunnableWebTestClient implements Runnable {
+	private class RunnableWebTestClient implements Runnable {
 		private volatile int respons_code;
-		private volatile String validXML;
-		private volatile String name;
-		private volatile WebTestClient webTestClient;
+		private final String validXML;
+		private final WebTestClient webTestClient;
 
-		public RunnableWebTestClient(String validXML, String name, WebTestClient webTestClient){
+		public RunnableWebTestClient(String validXML, WebTestClient webTestClient){
 			this.validXML = validXML;
-			this.name = name;
 			this.webTestClient = webTestClient;
 		}
 
 		@Override
 		public void run() {
-			System.out.print("CALLING " + name);
 			try {
 			this.webTestClient.post()
 					.uri(uriBuilder -> uriBuilder.path(mintEndpoint)
@@ -95,21 +92,16 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 					.header("Authorization", getBasicAuthenticationHeader(username, password))
 					.body(Mono.just(validXML), String.class)
 					.exchange().expectStatus().isForbidden();
-					System.out.print("FAILED " + name);
 				this.respons_code = 403;
 			}catch (AssertionError error){
-				System.out.print("MINTED " + name);
 				this.respons_code = 201;
 			}
 		}
-
 
 		public int getResponseCode() {
 			return this.respons_code;
 		}
 	}
-
-
 
 
 	@Test
@@ -211,28 +203,24 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		// Queue 201 returns from MDS twice,
 		// - 1 for Identifier creation
 		// - 1 for Metadata Creation
+		List<Integer> responses = new ArrayList<Integer>();
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
 		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
-		RunnableWebTestClient runnableWebTestClient1 = new RunnableWebTestClient(validXML, "FIRST", this.webTestClient);
-		RunnableWebTestClient runnableWebTestClient2 = new RunnableWebTestClient(validXML, "SECOND", this.webTestClient);
+		RunnableWebTestClient runnableWebTestClient1 = new RunnableWebTestClient(validXML, this.webTestClient);
+		RunnableWebTestClient runnableWebTestClient2 = new RunnableWebTestClient(validXML, this.webTestClient);
 		Thread thread1 = new Thread(runnableWebTestClient1);
 		Thread thread2 = new Thread(runnableWebTestClient2);
 		thread1.start();
 		thread2.start();
 		thread1.join();
-		thread2.join();
-		List<Integer> responses = new ArrayList<Integer>();
-		// sometimes the first mints sometimes the second
 		responses.add(runnableWebTestClient1.getResponseCode());
+		thread2.join();
 		responses.add(runnableWebTestClient2.getResponseCode());
+		// sometimes the first mints sometimes the second
+
+
 		assertThat(responses.contains(201));
 		assertThat(responses.contains(403));
-
-
-
-
-
-
 
 		// the identifier is created
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);

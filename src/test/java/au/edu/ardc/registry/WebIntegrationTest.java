@@ -41,10 +41,16 @@ public abstract class WebIntegrationTest extends IntegrationTest {
 
 	@AfterEach
 	void cleanUp() {
-		urlRepository.deleteAll();
-		versionRepository.deleteAll();
-		identifierRepository.deleteAll();
-		recordRepository.deleteAll();
+		try {
+			urlRepository.deleteAll();
+			versionRepository.deleteAll();
+			identifierRepository.deleteAll();
+			recordRepository.deleteAll();
+		}
+		catch(Exception e)
+		{
+			System.out.print(e.getMessage());
+		}
 	}
 
 }

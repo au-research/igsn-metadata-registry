@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -66,7 +67,7 @@ public class KeycloakService {
 	 * @param request the current HttpServletRequest
 	 * @return AccessToken access token
 	 */
-	public AccessToken getAccessToken(HttpServletRequest request) {
+	public AccessToken getAccessToken(@NotNull HttpServletRequest request) {
 		logger.debug("Obtaining AccessToken.class for current request");
 		KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) (request
 				.getAttribute(KeycloakSecurityContext.class.getName()));
@@ -86,7 +87,7 @@ public class KeycloakService {
 	 * @param request the current HttpServletRequest
 	 * @return String access token
 	 */
-	public String getPlainAccessToken(HttpServletRequest request) {
+	public String getPlainAccessToken(@NotNull HttpServletRequest request) {
 		logger.debug("Obtaining PlainAccessToken for current request");
 		KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) (request
 				.getAttribute(KeycloakSecurityContext.class.getName()));
@@ -146,7 +147,7 @@ public class KeycloakService {
 		}
 	}
 
-	public User getLoggedInUser(HttpServletRequest request) {
+	public User getLoggedInUser(@NotNull HttpServletRequest request) {
 
 		// if the user is already available in the request, take it from there
 		User existing = (User) request.getAttribute(String.valueOf(User.class));
@@ -285,6 +286,7 @@ public class KeycloakService {
 		return keycloak;
 	}
 
+	@NotNull
 	private AuthzClient getAuthzClient() throws Exception {
 		Configuration configuration = new Configuration();
 		configuration.setAuthServerUrl(kcAuthServerURL);

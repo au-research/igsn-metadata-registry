@@ -9,6 +9,7 @@ import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.service.VersionService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class IGSNVersionService {
 	 * @param userID the userID of the {@link User} to end it with
 	 * @return the ended {@link Version}
 	 */
-	public Version end(Version version, UUID userID) {
+	public Version end(@NotNull Version version, UUID userID) {
 		version.setEndedAt(new Date());
 		version.setCurrent(false);
 		version.setEndedBy(userID);

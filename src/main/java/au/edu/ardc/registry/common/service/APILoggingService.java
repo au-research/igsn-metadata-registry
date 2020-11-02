@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.ObjectMessage;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.RequestDispatcher;
@@ -180,7 +181,7 @@ public class APILoggingService {
 	 * @param request the current {@link HttpServletRequest}
 	 * @return the String representation of the event.action value
 	 */
-	private String determineEventAction(HttpServletRequest request) {
+	private String determineEventAction(@NotNull HttpServletRequest request) {
 
 		// default action would be api
 		String action = "api";
