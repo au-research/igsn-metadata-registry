@@ -15,6 +15,7 @@ import au.edu.ardc.registry.common.repository.specs.SearchOperation;
 import au.edu.ardc.registry.common.repository.specs.VersionSpecification;
 import au.edu.ardc.registry.exception.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,7 +57,8 @@ public class VersionService {
 	 * @param version the {@link Version} to obtain the hash from
 	 * @return the hash of the version's content
 	 */
-	public static String getHash(Version version) {
+	@NotNull
+	public static String getHash(@NotNull Version version) {
 		return getHash(new String(version.getContent()));
 	}
 
@@ -65,6 +67,7 @@ public class VersionService {
 	 * @param content the String to get the hash from
 	 * @return the hash of that string
 	 */
+	@NotNull
 	public static String getHash(String content) {
 		return DigestUtils.sha1Hex(content);
 	}
@@ -77,7 +80,7 @@ public class VersionService {
 	 * @param user the {@link User} to end it with
 	 * @return the ended {@link Version}
 	 */
-	public Version end(Version version, User user) {
+	public Version end(@NotNull Version version, @NotNull User user) {
 		version.setEndedAt(new Date());
 		version.setCurrent(false);
 		version.setEndedBy(user.getId());
@@ -166,7 +169,7 @@ public class VersionService {
 	 * @param version a {@link Version} to persist
 	 * @return the persisted {@link Version}
 	 */
-	public Version save(Version version) {
+	public Version save(@NotNull Version version) {
 		if (version.getCreatedAt() == null) {
 			version.setCreatedAt(new Date());
 		}

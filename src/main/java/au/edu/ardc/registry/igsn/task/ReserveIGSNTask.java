@@ -9,9 +9,9 @@ public class ReserveIGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReserveIGSNTask.class);
 
-	private String identifierValue;
+	private final String identifierValue;
 
-	private Request request;
+	private final Request request;
 
 	private final ImportService importService;
 

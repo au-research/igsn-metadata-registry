@@ -9,9 +9,9 @@ public class TransferIGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(TransferIGSNTask.class);
 
-	private String identifierValue;
+	private final String identifierValue;
 
-	private Request request;
+	private final Request request;
 
 	private final ImportService importService;
 

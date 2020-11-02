@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class ValidationService {
 	 * @param user The User with populated DataCenters
 	 * @return true if the user owns the record
 	 */
-	public boolean validateRecordOwnership(Record record, User user) {
+	public boolean validateRecordOwnership(@NotNull Record record, @NotNull User user) {
 		logger.debug(String.format("validateRecordOwnership for Record %s and User %s", record.getId(), user.getId()));
 
 		// elevated permission the user has ImportScope
@@ -59,7 +60,7 @@ public class ValidationService {
 	 * @param scope The Scope that we're checking
 	 * @return true if the user has access to that scope for the allocation
 	 */
-	public boolean validateAllocationScope(Allocation allocation, User user, Scope scope) {
+	public boolean validateAllocationScope(@NotNull Allocation allocation, @NotNull User user, @NotNull Scope scope) {
 		logger.debug(String.format("validateAllocationScope for User: %s Allocation %s Scope %s", user.getId(),
 				allocation.getId(), scope.getValue()));
 		UUID allocationID = allocation.getId();

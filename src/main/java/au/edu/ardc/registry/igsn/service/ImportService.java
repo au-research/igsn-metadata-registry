@@ -11,6 +11,7 @@ import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
 import org.apache.logging.log4j.core.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
@@ -155,7 +156,7 @@ public class ImportService {
 	 * @throws IOException when reading the file
 	 * @throws VersionContentAlreadyExistsException when the exact same version is updated
 	 */
-	public Identifier updateRequest(File file, Request request)
+	public Identifier updateRequest(@NotNull File file, Request request)
 			throws IOException, ForbiddenOperationException, VersionIsOlderThanCurrentException {
 
 		logger.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
@@ -239,7 +240,7 @@ public class ImportService {
 		return identifier;
 	}
 
-	public Identifier reserveIGSNIdentifier(String identifierValue, Request request) {
+	public Identifier reserveIGSNIdentifier(String identifierValue, @NotNull Request request) {
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
@@ -288,7 +289,7 @@ public class ImportService {
 		return identifier;
 	}
 
-	public Identifier transferIdentifier(String identifierValue, Request request) {
+	public Identifier transferIdentifier(String identifierValue, @NotNull Request request) {
 		String ownerID = request.getAttribute(Attribute.OWNER_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 

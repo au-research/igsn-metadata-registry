@@ -10,6 +10,7 @@ import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.URLRepository;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -115,7 +116,7 @@ public class URLService {
 	 * @return The url that has updated
 	 */
 
-	public URL update(URL url) {
+	public URL update(@NotNull URL url) {
 		url.setUpdatedAt(new Date());
 		repository.save(url);
 		return url;

@@ -14,6 +14,7 @@ import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
 import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,7 @@ public class IGSNService {
 	 * @param request the {@link Request} in question
 	 * @return true if the request is considered finished
 	 */
-	public boolean isRequestFinished(Request request) {
+	public boolean isRequestFinished(@NotNull Request request) {
 		//
 		UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
 
@@ -145,7 +146,7 @@ public class IGSNService {
 		}
 	}
 
-	public void finalizeRequest(Request request) {
+	public void finalizeRequest(@NotNull Request request) {
 		request.setStatus(Request.Status.COMPLETED);
 		igsnRequestService.save(request);
 		igsnRequestService.closeLoggerFor(request);
@@ -195,7 +196,7 @@ public class IGSNService {
 	 * @param request the {@link Request} to chunk and queue if necessary.
 	 */
 	@Async
-	public void processMintOrUpdate(Request request) {
+	public void processMintOrUpdate(@NotNull Request request) {
 
 		String payloadPath = request.getAttribute(Attribute.PAYLOAD_PATH);
 		String dataPath = request.getAttribute(Attribute.DATA_PATH);
@@ -267,7 +268,7 @@ public class IGSNService {
 	 * @param scope the {@link Scope} to check with, usually Scope.Create or Scope.Update
 	 * @return the {@link IGSNAllocation} that the User has the scoped access for
 	 */
-	public IGSNAllocation getIGSNAllocationForContent(String content, User user, Scope scope) {
+	public IGSNAllocation getIGSNAllocationForContent(String content, @NotNull User user, Scope scope) {
 
 		// obtain the first Identifier
 		Schema schema = schemaService.getSchemaForContent(content);

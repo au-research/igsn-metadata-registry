@@ -20,6 +20,7 @@ import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -62,7 +63,7 @@ public class IGSNRequestValidationService {
 	 * @throws XMLValidationException when the payload content failed XML Validation
 	 * @throws ContentNotSupportedException when the payload content type is not supported
 	 */
-	public void validate(Request request, User user) throws IOException {
+	public void validate(@NotNull Request request, User user) throws IOException {
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
 		String content = Helpers.readFile(file);

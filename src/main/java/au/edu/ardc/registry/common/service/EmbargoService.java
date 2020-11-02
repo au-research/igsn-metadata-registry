@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

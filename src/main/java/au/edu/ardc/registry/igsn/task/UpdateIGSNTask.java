@@ -20,15 +20,15 @@ public class UpdateIGSNTask implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateIGSNTask.class);
 
-	private File file;
+	private final File file;
 
-	private Request request;
+	private final Request request;
 
-	private ApplicationEventPublisher applicationEventPublisher;
+	private final ApplicationEventPublisher applicationEventPublisher;
 
-	private IGSNRequestService igsnRequestService;
+	private final IGSNRequestService igsnRequestService;
 
-	private ImportService importService;
+	private final ImportService importService;
 
 	private String identifierValue;
 
@@ -48,30 +48,15 @@ public class UpdateIGSNTask implements Runnable {
 		try {
 			Identifier identifier = importService.updateRequest(file, request);
 			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
-			if (identifier != null) {
-				applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-				applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
-				logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-			}
+			applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
+			applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
+			logger.info("Queue a sync task for identifier: {}", identifier.getValue());
 		}
 		catch (IOException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
 			logger.error(e.getMessage());
-		}
-		catch (VersionContentAlreadyExistsException e) {
-			requestLog.warn(e.getMessage());
-			logger.warn(e.getMessage());
-		}
-		catch (VersionIsOlderThanCurrentException e) {
-			requestLog.warn(e.getMessage());
-			logger.warn(e.getMessage());
-		}
-		catch (ForbiddenOperationException e) {
-			requestLog.warn(e.getMessage());
-			logger.warn(e.getMessage());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 		}
