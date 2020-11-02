@@ -9,7 +9,6 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
-import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
 import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,13 +34,16 @@ public class ImportService {
 
 	private final IGSNRequestService igsnRequestService;
 
+	private final EmbargoService embargoService;
+
 	public ImportService(IdentifierService identifierService, RecordService recordService,
-			IGSNVersionService igsnVersionService, SchemaService schemaService, IGSNRequestService igsnRequestService) {
+						 IGSNVersionService igsnVersionService, SchemaService schemaService, IGSNRequestService igsnRequestService, EmbargoService embargoService) {
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.igsnVersionService = igsnVersionService;
 		this.schemaService = schemaService;
 		this.igsnRequestService = igsnRequestService;
+		this.embargoService = embargoService;
 	}
 
 	/**
@@ -71,11 +74,14 @@ public class ImportService {
 				Metadata.Visibility);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
 				Metadata.LandingPage);
+		EmbargoEndProvider embargoEnd = (EmbargoEndProvider) MetadataProviderFactory.create(schema,
+				Metadata.EmbargoEnd);
 
-		// to do - add EmbargoProvider and if valid, then add a new Embargo
+
 
 		// obtain the necessary information from the providers
 		String identifierValue = identifierProvider.get(content);
+		Date embargoDate = embargoEnd.get(content);
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		// if the request is being re-played don't create mew record, url identifier and
@@ -141,6 +147,14 @@ public class ImportService {
 		igsnVersionService.save(version);
 		requestLog.debug("Added version: {}", version.getId());
 
+		if(embargoDate != null){
+			Embargo embargo = new Embargo();
+			embargo.setRecord(record);
+			embargo.setEmbargoEnd(embargoDate);
+			embargoService.save(embargo);
+			requestLog.debug("Added embargo: {} {}", embargo.getId(),embargoDate);
+		}
+
 		// append identifierValue to the outputFile path for use in next step
 		requestLog.info("Ingested {}", identifierValue);
 
@@ -170,6 +184,8 @@ public class ImportService {
 		String identifierValue = identifierProvider.get(content);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
+		EmbargoEndProvider embargoEnd = (EmbargoEndProvider) MetadataProviderFactory.create(schema,
+				Metadata.EmbargoEnd);
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 
@@ -236,6 +252,21 @@ public class ImportService {
 			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
 					request.getCreatedAt());
 		}
+
+		Date embargoDate= embargoEnd.get(content);
+		if(embargoDate != null){
+			//see if an embargo exists for this record
+			Embargo embargo = embargoService.findByRecord(record);
+			if(embargo != null){
+				embargo.setEmbargoEnd(embargoDate);
+			}else{
+				embargo = new Embargo();
+				embargo.setRecord(record);
+				embargo.setEmbargoEnd(embargoDate);
+			}
+			embargoService.save(embargo);
+		}
+
 		logger.info("Updated identifier {} with a new version", identifier.getValue());
 		return identifier;
 	}

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -48,6 +49,25 @@ public class EmbargoService {
 	 */
 	public void delete(UUID id) {
 		repository.deleteById(id);
+	}
+
+	/**
+	 * Permanently delete the embargo
+	 * @param record the record of the Embargo to search for
+	 * @return Optional Embargo
+	 */
+	public Embargo findByRecord(Record record) {
+		Optional<Embargo> embargo =  repository.findByRecord(record);
+		return embargo.orElse(null);
+	}
+
+	/**
+	 * Saves and persist a {@link Embargo}. Generates the UUID for the record
+	 * @param embargo The {@link Embargo} to save and flush
+	 * @return The {@link Embargo} persisted
+	 */
+	public Embargo save(Embargo embargo) {
+		return repository.saveAndFlush(embargo);
 	}
 
 }

@@ -7,6 +7,7 @@ import au.edu.ardc.registry.common.repository.EmbargoRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,6 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 public class EmbargoServiceTest {
@@ -60,5 +64,12 @@ public class EmbargoServiceTest {
 		Mockito.when(embargoRepository.findAllByEmbargoEndLessThanEqual(newDate)).thenReturn(embargoMock);
 		List<Embargo> embargos = embargoService.findAllEmbargoToEnd(newDate);
 		assertThat(embargos.size()).isEqualTo(10);
+	}
+
+	@Test
+	@DisplayName("Saving embargo calls repository.saveAndFlush")
+	void save() {
+		embargoService.save(TestHelper.mockEmbargo());
+		verify(embargoRepository, times(1)).saveAndFlush(any(Embargo.class));
 	}
 }

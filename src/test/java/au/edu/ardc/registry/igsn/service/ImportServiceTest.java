@@ -53,6 +53,9 @@ class ImportServiceTest {
 	@MockBean
 	URLService urlService;
 
+	@MockBean
+	EmbargoService embargoService;
+
 	@Test
 	@DisplayName("Import valid payload and valid request")
 	void importRequest_validCreation() throws IOException {
@@ -182,5 +185,60 @@ class ImportServiceTest {
 		});
 
 	}
+
+	@Test
+	@DisplayName("Import valid payload with embargo and valid request")
+	void importRequest_validCreation_withEmbargo() throws IOException {
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+
+		Request request = TestHelper.mockRequest();
+		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
+
+		// when importRequest a valid payload and a valid request
+		Identifier result = importService.importRequest(new File("src/test/resources/xml/sample_ardcv1_embargoEnd.xml"), request);
+
+		assertThat(result).isInstanceOf(Identifier.class);
+
+		// 1 of each are created
+		verify(recordService, times(1)).save(any(Record.class));
+		verify(identifierService, times(1)).save(any(Identifier.class));
+		verify(igsnVersionService, times(1)).save(any(Version.class));
+		verify(embargoService, times(1)).save(any(Embargo.class));
+	}
+
+	@Test
+	@DisplayName("Update valid payload with embargo calls the right save method")
+	void updateRequestEmbargo() throws IOException {
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+
+		// given an existing Identifier and an existing Record
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		identifier.setValue("10273/XX0TUIAYLV");
+		Version version = TestHelper.mockVersion(record);
+		version.setSchema(SchemaService.ARDCv1);
+		version.setCreatedAt(new Date());
+		record.setCurrentVersions(Collections.singletonList(version));
+
+		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
+
+		Request request = TestHelper.mockRequest();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
+
+		// when importRequest a valid payload and a valid request
+		Identifier result = importService.updateRequest(new File("src/test/resources/xml/sample_ardcv1_embargoEnd.xml"), request);
+
+		assertThat(result).isInstanceOf(Identifier.class);
+
+		verify(recordService, times(1)).save(any(Record.class));
+		verify(igsnVersionService, times(1)).save(any(Version.class));
+		verify(embargoService, times(1)).save(any(Embargo.class));
+	}
+
 
 }
