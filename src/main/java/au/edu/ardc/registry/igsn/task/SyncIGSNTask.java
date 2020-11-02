@@ -2,11 +2,13 @@ package au.edu.ardc.registry.igsn.task;
 
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.event.IGSNSyncedEvent;
+import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
 import au.edu.ardc.registry.igsn.service.IGSNRegistrationService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import org.slf4j.Logger;
@@ -44,28 +46,44 @@ public class SyncIGSNTask implements Runnable {
 		try {
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
 			logger.info("Synced Identifier:{} request: {}", identifier.getValue(), request.getId());
+			request.incrementAttributeValue(Attribute.NUM_OF_IGSN_REGISTERED);
 			requestLog.info(String.format("Synced Identifier: %s", identifier.getValue()));
-			//applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
-			//logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
+			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
+			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
 		}
 		catch (IOException | NotFoundException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getMessage());
 		}
 		catch (VersionContentAlreadyExistsException e) {
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
 		}
 		catch (VersionIsOlderThanCurrentException e) {
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
 		}
 		catch (ForbiddenOperationException e) {
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
 		} catch (Exception e){
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getClass() + e.getMessage());
 		}
 	}

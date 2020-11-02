@@ -118,19 +118,27 @@ public class IGSNService {
 		boolean hasTasksInImportQueue;
 		boolean hasTasksInSyncQueue;
 
-		// it has task in importqueue if there are still more tasks to do
-		hasTasksInImportQueue = importExecutors.containsKey(allocationID)
-				|| importExecutors.get(allocationID).getTaskCount() > 0;
+		boolean isEmpty = importExecutors.get(allocationID).getQueue().isEmpty();
 
+		// it has task in importqueue if there are still more tasks to do
+		//hasTasksInImportQueue = importExecutors.containsKey(allocationID)
+		//		|| importExecutors.get(allocationID).getTaskCount() > 0;
+
+		if(!isEmpty)
+			return false;
 		// it has tasks in sync queue if there's any SyncIGSNTask with a request ID
 		// matching
-		hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
-			SyncIGSNTask task = (SyncIGSNTask) runnable;
-			return task.getRequest().getId().equals(request.getId());
-		});
-
+		try {
+			hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
+				SyncIGSNTask task = (SyncIGSNTask) runnable;
+				return task.getRequest().getId().equals(request.getId());
+			});
+			return !hasTasksInSyncQueue;
+		}catch(Exception e) {
+			return true;
+		}
 		// request is finished when it doesn't have task in import queue or sync queue
-		return !hasTasksInImportQueue && !hasTasksInSyncQueue;
+
 	}
 
 	public void checkRequest(Request request) {
@@ -143,11 +151,38 @@ public class IGSNService {
 			UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
 			importExecutors.get(allocationID).shutdown();
 			importExecutors.remove(allocationID);
+		}else{
+			updateRequest(request);
 		}
 	}
 
+	public void updateRequest(Request request){
+		int numReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+		int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
+		int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
+		int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
+		int numError = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
+		String message = String.format("Received: %s, Created: %s, Updated :%s, Registered: %s, Number of Error(s): %s" ,
+				numReceived, numCreated, numUpdated, numRegistered, numError);
+		request.setMessage(message);
+		igsnRequestService.save(request);
+	}
+
 	public void finalizeRequest(@NotNull Request request) {
-		request.setStatus(Request.Status.COMPLETED);
+		int numReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+		int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
+		int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
+		int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
+		int numError = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
+		if((numCreated + numUpdated + numRegistered) > 0){
+			request.setStatus(Request.Status.COMPLETED);
+		}
+		else{
+			request.setStatus(Request.Status.FAILED);
+		}
+		String message = String.format("Received: %s, Created: %s, Updated :%s, Registered: %s, Number of Error(s): %s" ,
+				numReceived, numCreated, numUpdated, numRegistered, numError);
+		request.setMessage(message);
 		igsnRequestService.save(request);
 		igsnRequestService.closeLoggerFor(request);
 	}
@@ -202,7 +237,7 @@ public class IGSNService {
 		String dataPath = request.getAttribute(Attribute.DATA_PATH);
 		String chunkedPayloadPath = dataPath + File.separator + "chunks";
 		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
-
+		request.setStatus(Request.Status.RUNNING);
 		// read the payload
 		String payload = "";
 		try {
@@ -233,6 +268,7 @@ public class IGSNService {
 			requestLogger.debug("Found {} fragments in payload", count);
 			for (int i = 0; i < count; i++) {
 				String content = fragmentProvider.get(payload, i);
+				request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_RECEIVED);
 				String outFilePath = chunkedPayloadPath + File.separator + i + fileExtension;
 				Helpers.writeFile(outFilePath, content);
 				requestLogger.debug("Written payload {} to {}", i, outFilePath);
@@ -251,8 +287,6 @@ public class IGSNService {
 
 				logger.info("Queued task {} for Identifier: {}", taskType, identifierValue);
 			}
-
-			request.setStatus(Request.Status.PROCESSED);
 			igsnRequestService.save(request);
 		}
 		catch (IOException e) {

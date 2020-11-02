@@ -97,6 +97,17 @@ public class Request {
 		return this;
 	}
 
+	public Request setAttribute(Attribute key, int value) {
+		this.attributes.put(key.toString(), String.valueOf(value));
+		return this;
+	}
+
+	public void incrementAttributeValue(Attribute key){
+		String currentValue = this.attributes.getOrDefault(key.toString(), "0");
+		Integer numValue = new Integer(currentValue);
+		this.attributes.put(key.toString(), String.valueOf(numValue + 1));
+	}
+
 	public String getAttribute(Attribute attribute) {
 		return this.attributes.getOrDefault(attribute.toString(), null);
 	}

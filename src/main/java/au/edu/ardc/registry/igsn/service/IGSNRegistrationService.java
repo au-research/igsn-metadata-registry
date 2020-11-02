@@ -157,6 +157,13 @@ public class IGSNRegistrationService {
 			logger.info(String.format("Successfully %s Registration Metadata for Identifier %s", metadataMsg, identifierValue));
 		}
 
+		// if it's a single event then the request is completed
+		if (request.getType().equals(IGSNService.EVENT_MINT) || request.getType().equals(IGSNService.EVENT_UPDATE)) {
+			request.setStatus(Request.Status.COMPLETED);
+		}
+
+
+
 		// if the Identifier is PENDING OR RESERVED
 		// we set it to be ACCESSIBLE after MINT or UPDATE request
 		if (!identifier.getStatus().equals(Identifier.Status.ACCESSIBLE) &&

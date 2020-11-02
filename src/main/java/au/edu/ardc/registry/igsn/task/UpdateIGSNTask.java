@@ -3,14 +3,18 @@ package au.edu.ardc.registry.igsn.task;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
+import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
+import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.ImportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
@@ -32,6 +36,8 @@ public class UpdateIGSNTask implements Runnable {
 
 	private String identifierValue;
 
+	private IGSNService igsnService;
+
 	public UpdateIGSNTask(String identifierValue, File file, Request request, ImportService importService,
 			ApplicationEventPublisher applicationEventPublisher, IGSNRequestService igsnRequestService) {
 		this.identifierValue = identifierValue;
@@ -47,6 +53,7 @@ public class UpdateIGSNTask implements Runnable {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
 			Identifier identifier = importService.updateRequest(file, request);
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_UPDATED);
 			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
 			applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 			applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
@@ -55,9 +62,27 @@ public class UpdateIGSNTask implements Runnable {
 		catch (IOException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getMessage());
-		} catch (Exception e) {
+		}catch(ForbiddenOperationException e){
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			logger.warn(e.getMessage());
+		}catch(VersionIsOlderThanCurrentException e){
+			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			logger.warn(e.getMessage());
+		}catch(VersionContentAlreadyExistsException e){
+			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			Thread.currentThread().interrupt();
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
 		}
 	}

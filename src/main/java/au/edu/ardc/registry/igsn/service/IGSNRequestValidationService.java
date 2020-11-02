@@ -86,6 +86,7 @@ public class IGSNRequestValidationService {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(content, user, scope);
 		if (allocation == null) {
 			// todo language
+			request.setStatus(Request.Status.FAILED);
 			throw new ForbiddenOperationException("You don't have access to this resource");
 		}
 
@@ -95,9 +96,11 @@ public class IGSNRequestValidationService {
 		List<String> identifiers = provider.getAll(content);
 
 		if(identifiers.isEmpty()){
+			request.setStatus(Request.Status.FAILED);
 			throw new ContentNotSupportedException("Unable to fetch Identifiers for given content");
 		}else if(identifiers.size() > 1 &&
 				(type.equals(IGSNService.EVENT_MINT) || type.equals(IGSNService.EVENT_UPDATE))){
+			request.setStatus(Request.Status.FAILED);
 			throw new ContentNotSupportedException(String.format("Only single resource is allowed for %s service", type));
 		}
 
@@ -109,6 +112,7 @@ public class IGSNRequestValidationService {
 			for (String identifier : identifiers) {
 				if (!identifier.startsWith(prefix + "/" + namespace)) {
 					// todo language
+					request.setStatus(Request.Status.FAILED);
 					throw new ForbiddenOperationException(
 							identifier + " doesn't match previous Identifiers's prefix or namespace");
 				}
@@ -126,6 +130,7 @@ public class IGSNRequestValidationService {
 
 		// if it's single mint, check if the identifier already exist
 		if (existingIdentifier != null && type.equals(IGSNService.EVENT_MINT)) {
+			request.setStatus(Request.Status.FAILED);
 			throw new ForbiddenOperationException(
 					String.format("Record already exist with Identifier %s", firstIdentifier));
 		}
@@ -134,6 +139,7 @@ public class IGSNRequestValidationService {
 		// imported
 		if (type.equals(IGSNService.EVENT_MINT)
 				&& igsnService.hasIGSNTaskQueued(allocation.getId(), IGSNTask.TASK_IMPORT, firstIdentifier)) {
+			request.setStatus(Request.Status.FAILED);
 			throw new ForbiddenOperationException(
 					String.format("Identifier %s is already queued to be minted", firstIdentifier));
 		}
@@ -142,12 +148,14 @@ public class IGSNRequestValidationService {
 		// owns it
 		if (type.equals(IGSNService.EVENT_UPDATE)) {
 			if (existingIdentifier == null) {
+				request.setStatus(Request.Status.FAILED);
 				throw new ForbiddenOperationException(
 						String.format("Record doesn't exist with Identifier %s", firstIdentifier));
 			}
 			else {
 				Record record = existingIdentifier.getRecord();
 				if (!validationService.validateRecordOwnership(record, user)) {
+					request.setStatus(Request.Status.FAILED);
 					throw new ForbiddenOperationException("User has no access to the Record: " + record.getId());
 				}
 			}

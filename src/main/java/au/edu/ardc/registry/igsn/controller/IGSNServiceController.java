@@ -119,6 +119,7 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
+		request.setStatus(Request.Status.PROCESSED);
 		igsnRequestService.save(request);
 
 		// process the request (async)
@@ -171,6 +172,7 @@ public class IGSNServiceController {
 
 		// run
 		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
+		request.setStatus(Request.Status.RUNNING);
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
 				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
 		String identifierValue = fragmentProvider.get(payload, 0);
@@ -217,6 +219,7 @@ public class IGSNServiceController {
 
 		// run
 		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
+		request.setStatus(Request.Status.RUNNING);
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
 				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
 		String identifierValue = fragmentProvider.get(payload, 0);

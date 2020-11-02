@@ -59,6 +59,12 @@ public class IGSNRequestService {
 		request = repository.save(request);
 		logger.debug("Created IGSNServiceRequest: id: {}", request.getId());
 
+		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, 0);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_CREATED, 0);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_UPDATED, 0);
+		request.setAttribute(Attribute.NUM_OF_IGSN_REGISTERED, 0);
+		request.setAttribute(Attribute.NUM_OF_ERROR, 0);
+
 		// create request directory
 		try {
 			logger.debug("Creating data path");
