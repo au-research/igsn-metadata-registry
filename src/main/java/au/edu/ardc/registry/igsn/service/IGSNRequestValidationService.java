@@ -63,10 +63,21 @@ public class IGSNRequestValidationService {
 	 * @throws XMLValidationException when the payload content failed XML Validation
 	 * @throws ContentNotSupportedException when the payload content type is not supported
 	 */
-	public void validate(@NotNull Request request, User user) throws IOException {
+	public void validate(@NotNull Request request, User user) throws IOException ,ContentNotSupportedException{
+
+		// check for file size before anything else
+        long fiveMB = 5 * 1024 * 1024;
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
+
+		Helpers.checkFileSize(request.getAttribute(Attribute.PAYLOAD_PATH), fiveMB);
+
+
 		String content = Helpers.readFile(file);
+
+		// limit content size
+
+
 
 		// todo validate request.attributes.ownerType, request.attributes.ownerID
 

@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.util;
 
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.Tika;
@@ -45,6 +46,15 @@ public class Helpers {
 	public static String readFile(String path) throws IOException {
 		File file = new File(path);
 		return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+	}
+
+	public static void checkFileSize(String path, long maxSize) throws IOException, ContentNotSupportedException {
+		long byteSize = Files.size(Paths.get(path));
+		long kiloBytes = byteSize / 1024;
+		long maxKiloBytes = maxSize /1024 ;
+		if(byteSize > maxSize){
+			throw new ContentNotSupportedException(String.format("payload content size %d kB is larger than allowed %d kB", kiloBytes, maxKiloBytes ));
+		}
 	}
 
 	public static String readFile(File file) throws IOException {
@@ -135,5 +145,4 @@ public class Helpers {
 			return null;
 		}
 	}
-
 }
