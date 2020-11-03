@@ -49,9 +49,9 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
-			logger.info("Synced Identifier:{} request: {}", identifier.getValue(), request.getId());
+			logger.info("Registered / Updated MDS record for:{} request: {}", identifier.getValue(), request.getId());
 			request.incrementAttributeValue(Attribute.NUM_OF_IGSN_REGISTERED);
-			requestLog.info(String.format("Synced Identifier: %s", identifier.getValue()));
+			requestLog.info(String.format("Registered / Updated MDS record for: %s", identifier.getValue()));
 			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
 			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
 		}

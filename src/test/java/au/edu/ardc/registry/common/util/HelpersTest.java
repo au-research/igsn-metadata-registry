@@ -74,11 +74,28 @@ public class HelpersTest {
 	}
 
 	@Test
-	public void test_large_file_size(){
+	public void testCheckFileSize(){
 		long fiveMB = 5 * 1024 * 1024;
 		Assert.assertThrows(ContentNotSupportedException.class, () -> {
 			Helpers.checkFileSize("src/test/resources/xml/large_9_mb_payload.xml", fiveMB);
 		});
+	}
+
+    @Test
+	void testGetLine() {
+		String multiLinePayload = "hello\nI'm a multilined\nmessage";
+		String singleLinePayload = "hello I'm a multilined message";
+		String result = Helpers.getLine(multiLinePayload, 2);
+		assertThat(result.equals("message"));
+		result = Helpers.getLine(multiLinePayload, -1);
+		assertThat(result == null);
+		result = Helpers.getLine(multiLinePayload, 11);
+		assertThat(result == null);
+
+		result = Helpers.getLine(singleLinePayload, 0);
+		assertThat(result.equals(singleLinePayload));
+		result = Helpers.getLine(singleLinePayload, 1);
+		assertThat(result == null);
 	}
 
 }

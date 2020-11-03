@@ -90,12 +90,12 @@ public class ImportService {
 		if (identifier != null) {
 
 			if (identifier.getRequestID() != request.getId()) {
-				requestLog.warn("Identifier: {} already exists", identifierValue);
+				logger.error("Identifier: {} already exists", identifierValue);
 				throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s does exist",
 						identifierValue, Identifier.Type.IGSN));
 			}
 			// run an update instead
-			requestLog.debug("Identifier: {} already exists attempting to refresh content", identifierValue);
+			requestLog.info("Identifier: {} already exists attempting to refresh content", identifierValue);
 			return updateRequest(file, request);
 		}
 

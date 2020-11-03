@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.james.mime4j.field.datetime.DateTime;
 import org.apache.logging.log4j.core.Logger;
 import org.keycloak.common.util.Time;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -201,7 +202,7 @@ public class RequestResourceController {
 			HttpServletRequest httpRequest) throws IOException {
 		User user = kcService.getLoggedInUser(httpRequest);
 		Request request = requestService.findOwnedById(id, user);
-
+		message = Helpers.getLine(message, 0);
 		requestService.getLoggerFor(request).info(message);
 		requestService.closeLoggerFor(request);
 
