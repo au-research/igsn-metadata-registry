@@ -22,7 +22,6 @@ public class ARDCv1EmbargoEndProvider implements EmbargoEndProvider {
 			NodeList nodeList = XMLUtil.getXPath(content, "//isPublic");
 			Element resourceEmbargoEndNode = (Element) nodeList.item(0);
 			String embargoEndText = resourceEmbargoEndNode.getAttribute("embargoEnd");
-			System.out.println(embargoEndText);
 			result = (Helpers.convertDate(embargoEndText));
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -30,5 +29,4 @@ public class ARDCv1EmbargoEndProvider implements EmbargoEndProvider {
 		}
 		return result;
 	}
-
 }

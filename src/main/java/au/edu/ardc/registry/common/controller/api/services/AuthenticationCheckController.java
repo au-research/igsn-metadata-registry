@@ -1,40 +1,43 @@
 package au.edu.ardc.registry.common.controller.api.services;
 
+import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.service.EmbargoService;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.NotFoundException;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.ValidationService;
+import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.igsn.exception.IGSNNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/api/services/auth-check")
 public class AuthenticationCheckController {
 
 	IdentifierService identifierService;
 
 	ValidationService validationService;
 
+	EmbargoService embargoService;
+
 	KeycloakService kcService;
 
 	public AuthenticationCheckController(IdentifierService identifierService, ValidationService validationService,
-			KeycloakService kcService) {
+			KeycloakService kcService, EmbargoService embargoService) {
 		this.identifierService = identifierService;
 		this.validationService = validationService;
 		this.kcService = kcService;
+		this.embargoService = embargoService;
 	}
 
-	@GetMapping("")
+	@GetMapping("/api/services/auth-check")
 	public ResponseEntity<?> validateOwnership(@RequestParam(name = "identifier") String identifierValue,
 			HttpServletRequest request) {
 		User user = kcService.getLoggedInUser(request);
@@ -50,6 +53,36 @@ public class AuthenticationCheckController {
 		}
 
 		return ResponseEntity.ok().body(true);
+	}
+
+	@GetMapping("/api/services/isPublic")
+	public ResponseEntity<?> isPublic(@RequestParam(name = "identifier") String identifierValue
+											   ) {
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (identifier == null) {
+			throw new IGSNNotFoundException(identifierValue);
+		}
+		Record record = identifier.getRecord();
+		if(!record.isVisible()) {
+			throw new ForbiddenOperationException(
+					String.format("Record is private %s", record.getId()));
+		}
+		return ResponseEntity.ok().body(true);
+	}
+
+	@GetMapping("/api/services/hasEmbargo")
+	public ResponseEntity<?> hasEmbargo(@RequestParam(name = "identifier") String identifierValue,
+												  HttpServletRequest request) {
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (identifier == null) {
+			throw new IGSNNotFoundException(identifierValue);
+		}
+		Record record = identifier.getRecord();
+		Embargo embargo = embargoService.findByRecord(record);
+		if (embargo == null){
+			throw new RecordNotFoundException(record.getId().toString());
+		}
+		return ResponseEntity.ok().body(embargo.getEmbargoEnd().toString());
 	}
 
 }
