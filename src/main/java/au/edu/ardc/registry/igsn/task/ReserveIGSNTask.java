@@ -20,6 +20,8 @@ public class ReserveIGSNTask extends IGSNTask implements Runnable {
 
 	public ReserveIGSNTask(String identifierValue, Request request, ImportService importService) {
 		this.identifierValue = identifierValue;
+		super.setIdentifierValue(identifierValue);
+		super.setRequestID(request.getId());
 		this.request = request;
 		this.importService = importService;
 	}

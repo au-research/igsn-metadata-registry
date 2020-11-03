@@ -43,6 +43,8 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 	public UpdateIGSNTask(String identifierValue, File file, Request request, ImportService importService,
 			ApplicationEventPublisher applicationEventPublisher, IGSNRequestService igsnRequestService) {
 		this.identifierValue = identifierValue;
+		super.setIdentifierValue(identifierValue);
+		super.setRequestID(request.getId());
 		this.file = file;
 		this.request = request;
 		this.applicationEventPublisher = applicationEventPublisher;

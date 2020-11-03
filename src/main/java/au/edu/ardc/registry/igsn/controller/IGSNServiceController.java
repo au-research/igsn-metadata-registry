@@ -168,6 +168,7 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		request.setStatus(Request.Status.PROCESSED);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
 		// run
@@ -215,6 +216,7 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		request.setStatus(Request.Status.PROCESSED);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
 		// run

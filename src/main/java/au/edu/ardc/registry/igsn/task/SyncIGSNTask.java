@@ -37,6 +37,8 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			ApplicationEventPublisher applicationEventPublisher, IGSNRequestService igsnRequestService) {
 		this.identifier = identifier;
 		this.request = request;
+		super.setIdentifierValue(identifier.getValue());
+		super.setRequestID(request.getId());
 		this.igsnRegistrationService = igsnRegistrationService;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.igsnRequestService = igsnRequestService;

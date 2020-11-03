@@ -152,10 +152,10 @@ public class IGSNService {
 			}
 
 			boolean hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
-				SyncIGSNTask task = (SyncIGSNTask) runnable;
+				IGSNTask task = (IGSNTask) runnable;
 				return task.getRequestID().equals(request.getId());
 			});
-			return !hasTasksInSyncQueue;
+			return hasTasksInSyncQueue;
 		}catch(Exception e) {
 			return false;
 		}
@@ -180,13 +180,29 @@ public class IGSNService {
 		if (isRequestStillRunning(allocationID, request)) {
 			updateRequest(request);
 		}else{
-			// finalize the request
-			finalizeRequest(request);
-
-			// shutdown the import Queue (& de-reference) to prevent importExecutors from
-			// running
-			importExecutors.get(allocationID).shutdown();
-			importExecutors.remove(allocationID);
+			// nothing in the Queues !! BUT
+			// sometimes queues are empty because some records in the payload had errors
+			// check if the created count and updated count plus error count is less than received records counter
+			// if so the request is most likely still being processed but with a lots of errors
+			int nReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+			int nErrors = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
+			int nCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
+			int nUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
+			if(nReceived > (nCreated + nUpdated + nErrors))
+			{
+				updateRequest(request);
+			}
+			else {
+				// finalize the request
+				finalizeRequest(request);
+				// Also if no other Requests are running using this Allocation
+				// shutdown the import Queue (& de-reference) to prevent importExecutors from
+				// running
+				if(importExecutors.get(allocationID).getQueue().isEmpty()){
+					importExecutors.get(allocationID).shutdown();
+					importExecutors.remove(allocationID);
+				}
+			}
 		}
 	}
 
@@ -299,10 +315,10 @@ public class IGSNService {
 			requestLogger.debug("Created chunked directory at {}", chunkedPayloadPath);
 
 			int count = fragmentProvider.getCount(payload);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, count);
 			requestLogger.debug("Found {} fragments in payload", count);
 			for (int i = 0; i < count; i++) {
 				String content = fragmentProvider.get(payload, i);
-				request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_RECEIVED);
 				String outFilePath = chunkedPayloadPath + File.separator + i + fileExtension;
 				Helpers.writeFile(outFilePath, content);
 				requestLogger.debug("Written payload {} to {}", i, outFilePath);

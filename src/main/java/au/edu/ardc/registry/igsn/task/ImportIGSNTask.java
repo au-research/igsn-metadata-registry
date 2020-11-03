@@ -44,6 +44,8 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 		this.identifierValue = identifierValue;
 		this.file = file;
 		this.request = request;
+		super.setIdentifierValue(identifierValue);
+		super.setRequestID(request.getId());
 		this.importService = importService;
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.igsnRequestService = igsnRequestService;
