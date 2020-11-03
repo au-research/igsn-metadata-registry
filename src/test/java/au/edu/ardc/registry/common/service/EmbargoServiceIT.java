@@ -1,12 +1,12 @@
 package au.edu.ardc.registry.common.service;
 
-
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
 import au.edu.ardc.registry.common.repository.RecordRepository;
 import au.edu.ardc.registry.common.util.Helpers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-public class EmbargoServiceIT {
+public class EmbargoServiceIT{
 
     @Autowired
     EmbargoService embargoService;
@@ -31,6 +31,18 @@ public class EmbargoServiceIT {
     @Autowired
     EmbargoRepository embargoRepository;
 
+    @AfterEach
+    void cleanUp() {
+        try {
+            embargoRepository.deleteAll();
+            recordRepository.deleteAll();
+
+        }
+        catch(Exception e)
+        {
+            System.out.print(e.getMessage());
+        }
+    }
     @Test
     void endAllEmbargoEnd() {
 
@@ -42,10 +54,8 @@ public class EmbargoServiceIT {
             Record record = TestHelper.mockRecord();
             record.setVisible(false);
             recordRepository.saveAndFlush(record);
-            Embargo embargo = TestHelper.mockEmbargo();
-            embargo.setRecord(record);
+            Embargo embargo = TestHelper.mockEmbargo(record);
             embargo.setEmbargoEnd(embargoEnd);
-            embargo.setRecord(record);
             embargoRepository.saveAndFlush(embargo);
          }
 
@@ -53,10 +63,8 @@ public class EmbargoServiceIT {
             Record record = TestHelper.mockRecord();
             record.setVisible(false);
             recordRepository.saveAndFlush(record);
-            Embargo embargo = TestHelper.mockEmbargo();
-            embargo.setRecord(record);
+            Embargo embargo = TestHelper.mockEmbargo(record);
             embargo.setEmbargoEnd(embargoEnd2);
-            embargo.setRecord(record);
             embargoRepository.saveAndFlush(embargo);
         }
 

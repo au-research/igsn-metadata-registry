@@ -1,9 +1,6 @@
 package au.edu.ardc.registry;
 
-import au.edu.ardc.registry.common.repository.IdentifierRepository;
-import au.edu.ardc.registry.common.repository.RecordRepository;
-import au.edu.ardc.registry.common.repository.URLRepository;
-import au.edu.ardc.registry.common.repository.VersionRepository;
+import au.edu.ardc.registry.common.repository.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +32,9 @@ public abstract class WebIntegrationTest extends IntegrationTest {
 	@Autowired
 	private URLRepository urlRepository;
 
+	@Autowired
+	private EmbargoRepository embargoRepository;
+
 	public String getBasicAuthenticationHeader(String username, String password) {
 		return "Basic " + DatatypeConverter.printBase64Binary((username + ":" + password).getBytes());
 	}
@@ -45,7 +45,9 @@ public abstract class WebIntegrationTest extends IntegrationTest {
 			urlRepository.deleteAll();
 			versionRepository.deleteAll();
 			identifierRepository.deleteAll();
+			embargoRepository.deleteAll();
 			recordRepository.deleteAll();
+
 		}
 		catch(Exception e)
 		{
