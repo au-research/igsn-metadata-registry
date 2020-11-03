@@ -111,48 +111,82 @@ public class IGSNService {
 	 * @param request the {@link Request} in question
 	 * @return true if the request is considered finished
 	 */
-	public boolean isRequestFinished(@NotNull Request request) {
+	public boolean isImportInQueue(UUID allocationID , @NotNull Request request) {
 		//
-		UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
 
-		boolean hasTasksInImportQueue;
-		boolean hasTasksInSyncQueue;
 
-		boolean isEmpty = importExecutors.get(allocationID).getQueue().isEmpty();
-
-		// it has task in importqueue if there are still more tasks to do
-		//hasTasksInImportQueue = importExecutors.containsKey(allocationID)
-		//		|| importExecutors.get(allocationID).getTaskCount() > 0;
-
-		if(!isEmpty)
+		// early return if there's no queue setup
+		if (!importExecutors.containsKey(allocationID)) {
 			return false;
-		// it has tasks in sync queue if there's any SyncIGSNTask with a request ID
-		// matching
-		try {
-			hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
-				SyncIGSNTask task = (SyncIGSNTask) runnable;
-				return task.getRequest().getId().equals(request.getId());
-			});
-			return !hasTasksInSyncQueue;
-		}catch(Exception e) {
-			return true;
 		}
-		// request is finished when it doesn't have task in import queue or sync queue
+
+		// early return if there's a queue but nothing in it
+		if (importExecutors.get(allocationID).getQueue().isEmpty()) {
+			return false;
+		}
+
+		// it has tasks in importqueue queue if there's any IGSNTask with a request ID
+		// matching
+
+		BlockingQueue<Runnable> queue = importExecutors.get(allocationID).getQueue();
+		return Arrays.stream(queue.toArray()).anyMatch(runnable -> {
+			try {
+				IGSNTask task = (IGSNTask) runnable;
+				return task.getRequestID().equals(request.getId());
+			}
+			catch (Exception e) {
+				logger.error(e.getMessage());
+				return false;
+			}
+		});
 
 	}
 
+
+	public boolean isSyncInQueue(Request request){
+		// it has tasks in sync queue if there's any SyncIGSNTask with a request ID
+		// matching
+		try {
+			if(syncIGSNExecutor.getQueue().isEmpty()){
+				return false;
+			}
+
+			boolean hasTasksInSyncQueue = syncIGSNExecutor.getQueue().stream().anyMatch(runnable -> {
+				SyncIGSNTask task = (SyncIGSNTask) runnable;
+				return task.getRequestID().equals(request.getId());
+			});
+			return !hasTasksInSyncQueue;
+		}catch(Exception e) {
+			return false;
+		}
+	}
+
+	/**
+	 * @param allocationID the allocation ID in this request
+	 * @param request the Request
+	 * @return boolean true if there are still runnings tasks for this request in any of the queues
+	 */
+	public boolean isRequestStillRunning(UUID allocationID , @NotNull Request request){
+		boolean isImportinQueue = isImportInQueue(allocationID, request);
+		boolean isSyncinQueue = isSyncInQueue(request);
+		return isImportinQueue || isSyncinQueue;
+	}
+
+	/** check if request needs to be COMPLETED or just updated
+	 * @param request the Request that has tasks in the queues
+	 */
 	public void checkRequest(Request request) {
-		if (isRequestFinished(request)) {
+		UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
+		if (isRequestStillRunning(allocationID, request)) {
+			updateRequest(request);
+		}else{
 			// finalize the request
 			finalizeRequest(request);
 
 			// shutdown the import Queue (& de-reference) to prevent importExecutors from
 			// running
-			UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
 			importExecutors.get(allocationID).shutdown();
 			importExecutors.remove(allocationID);
-		}else{
-			updateRequest(request);
 		}
 	}
 

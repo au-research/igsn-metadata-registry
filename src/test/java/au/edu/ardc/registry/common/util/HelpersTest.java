@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.util.Date;
 
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 public class HelpersTest {
@@ -69,6 +71,14 @@ public class HelpersTest {
 		catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+	}
+
+	@Test
+	public void test_large_file_size(){
+		long fiveMB = 5 * 1024 * 1024;
+		Assert.assertThrows(ContentNotSupportedException.class, () -> {
+			Helpers.checkFileSize("src/test/resources/xml/large_9_mb_payload.xml", fiveMB);
+		});
 	}
 
 }
