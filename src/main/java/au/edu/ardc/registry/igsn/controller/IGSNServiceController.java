@@ -119,12 +119,12 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
-		request.setStatus(Request.Status.PROCESSED);
+
 		igsnRequestService.save(request);
 
 		// process the request (async)
 		igsnService.processMintOrUpdate(request);
-
+		request.setStatus(Request.Status.QUEUED);
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.accepted().body(dto);
 	}
@@ -167,7 +167,6 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
-		request.setStatus(Request.Status.PROCESSED);
 		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
@@ -215,7 +214,6 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
-		request.setStatus(Request.Status.PROCESSED);
 		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
@@ -256,11 +254,10 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
-		request.setStatus(Request.Status.PROCESSED);
 		igsnRequestService.save(request);
 
 		igsnService.processMintOrUpdate(request);
-
+		request.setStatus(Request.Status.QUEUED);
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.accepted().body(dto);
 	}
@@ -284,7 +281,7 @@ public class IGSNServiceController {
 		// process
 		// todo obtain allocationID from payload instead
 		request.setAttribute(Attribute.ALLOCATION_ID, allocationID.toString());
-		request.setStatus(Request.Status.PROCESSED);
+		request.setStatus(Request.Status.QUEUED);
 		igsnRequestService.save(request);
 
 		// run
@@ -319,7 +316,7 @@ public class IGSNServiceController {
 		// process
 		request.setAttribute(Attribute.OWNER_ID, ownerID.toString());
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
-		request.setStatus(Request.Status.PROCESSED);
+		request.setStatus(Request.Status.QUEUED);
 		igsnRequestService.save(request);
 
 		// run
