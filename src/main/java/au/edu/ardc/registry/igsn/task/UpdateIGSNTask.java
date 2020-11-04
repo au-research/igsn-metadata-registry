@@ -60,34 +60,34 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_UPDATED);
 			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
 			applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-			applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
 			logger.info("Queue a sync task for identifier: {}", identifier.getValue());
+			applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
 		}
 		catch (IOException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(ForbiddenOperationException e){
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(VersionIsOlderThanCurrentException e){
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(VersionContentAlreadyExistsException e){
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 	}
 

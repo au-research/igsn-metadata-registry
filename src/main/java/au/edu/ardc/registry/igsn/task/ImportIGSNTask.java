@@ -78,8 +78,8 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			// todo log the exception in the request log
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			requestLog.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (ForbiddenOperationException e) {
 			if(request.getType().equals(IGSNService.EVENT_MINT))
@@ -91,10 +91,10 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 				Thread t = Thread.currentThread();
 				t.getUncaughtExceptionHandler().uncaughtException(t, e);
 			}
-			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			requestLog.error(e.getMessage());
 			logger.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 
 	}

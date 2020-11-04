@@ -57,43 +57,44 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			logger.info("{} MDS record for:{} request: {}", tMsg, identifier.getValue(), request.getId());
 			request.incrementAttributeValue(Attribute.NUM_OF_IGSN_REGISTERED);
 			requestLog.info(String.format("%s MDS record for: %s", tMsg, identifier.getValue()));
-			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
 			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
+			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
+
 		}
 		catch (IOException | NotFoundException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (VersionContentAlreadyExistsException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (VersionIsOlderThanCurrentException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (ForbiddenOperationException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.warn(e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		} catch (Exception e){
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 			logger.error(e.getClass() + e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 	}
 
