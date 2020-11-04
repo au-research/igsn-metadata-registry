@@ -12,6 +12,7 @@ import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRegistrationService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
+import au.edu.ardc.registry.igsn.service.IGSNService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,9 +50,13 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
-			logger.info("Registered / Updated MDS record for:{} request: {}", identifier.getValue(), request.getId());
+			String tMsg = "Registered";
+			if(request.getType().equals(IGSNService.EVENT_BULK_UPDATE) || request.getType().equals(IGSNService.EVENT_UPDATE)){
+				tMsg = "Updated";
+			}
+			logger.info("{} MDS record for:{} request: {}", tMsg, identifier.getValue(), request.getId());
 			request.incrementAttributeValue(Attribute.NUM_OF_IGSN_REGISTERED);
-			requestLog.info(String.format("Registered / Updated MDS record for: %s", identifier.getValue()));
+			requestLog.info(String.format("%s MDS record for: %s", tMsg, identifier.getValue()));
 			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
 			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
 		}

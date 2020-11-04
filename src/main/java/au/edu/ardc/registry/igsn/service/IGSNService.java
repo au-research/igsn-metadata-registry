@@ -198,7 +198,8 @@ public class IGSNService {
 				// Also if no other Requests are running using this Allocation
 				// shutdown the import Queue (& de-reference) to prevent importExecutors from
 				// running
-				if(importExecutors.get(allocationID).getQueue().isEmpty()){
+				if(importExecutors.containsKey(allocationID) &&
+						importExecutors.get(allocationID).getQueue().isEmpty()){
 					importExecutors.get(allocationID).shutdown();
 					importExecutors.remove(allocationID);
 				}
