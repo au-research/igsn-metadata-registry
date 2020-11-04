@@ -88,6 +88,22 @@ public class Helpers {
 	}
 
 	/**
+	 * @param payload A String containing multiple lines of text
+	 * @param pos the position of the row from text to be returned
+	 * @return String a line of text at the given position otherwise null
+	 */
+	public static String getLine(String payload, int pos){
+		if(pos < 0){
+			return null;
+		}
+		String[] lines = payload.split(System.lineSeparator());
+		if(lines.length > pos){
+			return lines[pos];
+		}
+		return null;
+	}
+
+	/**
 	 * @param content a String content of a file
 	 * @return the file extension for the file eg .xml or .json if can not be found a
 	 * ".bin" extension is 'assumed'

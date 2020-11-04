@@ -20,6 +20,8 @@ public class TransferIGSNTask extends IGSNTask implements Runnable {
 
 	public TransferIGSNTask(String identifierValue, Request request, ImportService importService) {
 		this.identifierValue = identifierValue;
+		super.setIdentifierValue(identifierValue);
+		super.setRequestID(request.getId());
 		this.request = request;
 		this.importService = importService;
 	}
