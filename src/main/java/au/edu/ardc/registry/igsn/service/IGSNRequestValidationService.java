@@ -115,7 +115,7 @@ public class IGSNRequestValidationService {
 			// todo language
 			request.setStatus(Request.Status.FAILED);
 			String firstIdentifier = identifiers.get(0);
-			throw new ForbiddenOperationException(String.format("You don't have access to this resource %s", firstIdentifier));
+			throw new ForbiddenOperationException(String.format("User has no access to the given Identifier: %s", firstIdentifier));
 		}
 
 
