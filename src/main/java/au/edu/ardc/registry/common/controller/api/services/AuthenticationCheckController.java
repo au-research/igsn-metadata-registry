@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.service.EmbargoService;
+import au.edu.ardc.registry.exception.EmbargoNotFoundException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.IdentifierService;
@@ -80,7 +81,7 @@ public class AuthenticationCheckController {
 		Record record = identifier.getRecord();
 		Embargo embargo = embargoService.findByRecord(record);
 		if (embargo == null){
-			throw new RecordNotFoundException(record.getId().toString());
+			throw new EmbargoNotFoundException(record.getId().toString());
 		}
 		return ResponseEntity.ok().body(embargo.getEmbargoEnd().toString());
 	}
