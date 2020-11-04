@@ -77,8 +77,8 @@ public class UserAccessValidator {
 				namespace = igsnAllocation.getNamespace();
 			}
 			else if (!identifierValue.startsWith(prefix + "/" + namespace)) {
-				throw new ForbiddenOperationException(
-						identifierValue + " doesn't match previous Identifiers's prefix or namespace");
+				throw new ForbiddenOperationException(String.format("Mixed allocations are not supported. %s " +
+						"doesn't match the prefix or namespace of the previous identifier. ", identifierValue));
 			}
 			else if (identifierValues.contains(identifierValue)) {
 				throw new ForbiddenOperationException("Duplicated Identifier found in payload " + identifierValue);

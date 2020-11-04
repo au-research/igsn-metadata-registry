@@ -354,13 +354,23 @@ public class IGSNService {
 	 * @return the {@link IGSNAllocation} that the User has the scoped access for
 	 */
 	public IGSNAllocation getIGSNAllocationForContent(String content, @NotNull User user, Scope scope) {
-
 		// obtain the first Identifier
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
 		String firstIdentifier = identifiers.get(0);
+		return getIGSNAllocationForIdentifier(firstIdentifier, user, scope);
+	}
 
+	/**
+	 * Return the {@link IGSNAllocation}. The Allocation is extracted with first
+	 * Identifier in the Content with {@link IdentifierProvider} and the User's Allocation
+	 * @param identifiervalue the XML String content to extract data from.
+	 * @param user the {@link User} in the Request, with all of their Allocation and Scope
+	 * @param scope the {@link Scope} to check with, usually Scope.Create or Scope.Update
+	 * @return the {@link IGSNAllocation} that the User has the scoped access for
+	 */
+	public IGSNAllocation getIGSNAllocationForIdentifier(String identifiervalue, @NotNull User user, Scope scope) {
 		// for each IGSN typed Allocation that the User has access to, find the Allocation
 		// that has the prefix and namespace matches this first Identifier
 		// todo refactor with Java8 Streaming API for performance
@@ -369,11 +379,12 @@ public class IGSNService {
 			IGSNAllocation ia = (IGSNAllocation) allocation;
 			String prefix = ia.getPrefix();
 			String namespace = ia.getNamespace();
-			if (firstIdentifier.startsWith(prefix + "/" + namespace) && ia.getScopes().contains(scope)) {
+			if (identifiervalue.startsWith(prefix + "/" + namespace) && ia.getScopes().contains(scope)) {
 				return ia;
 			}
 		}
 		return null;
 	}
+
 
 }

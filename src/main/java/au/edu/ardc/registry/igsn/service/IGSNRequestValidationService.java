@@ -94,12 +94,6 @@ public class IGSNRequestValidationService {
 		if (type.equals(IGSNService.EVENT_BULK_MINT) || (type.equals(IGSNService.EVENT_MINT))) {
 			scope = Scope.CREATE;
 		}
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(content, user, scope);
-		if (allocation == null) {
-			// todo language
-			request.setStatus(Request.Status.FAILED);
-			throw new ForbiddenOperationException("You don't have access to this resource");
-		}
 
 		// get the first identifier and find existingIdentifier
 		Schema schema = schemaService.getSchemaForContent(content);
@@ -115,17 +109,30 @@ public class IGSNRequestValidationService {
 			throw new ContentNotSupportedException(String.format("Only single resource is allowed for %s service", type));
 		}
 
+		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(content, user, scope);
+
+		if (allocation == null) {
+			// todo language
+			request.setStatus(Request.Status.FAILED);
+			String firstIdentifier = identifiers.get(0);
+			throw new ForbiddenOperationException(String.format("You don't have access to this resource %s", firstIdentifier));
+		}
+
+
+
+
+
 		// if it's bulk, all identifiers has to be the same
 		// no mix allocation
 		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)) {
 			String prefix = allocation.getPrefix();
 			String namespace = allocation.getNamespace();
-			for (String identifier : identifiers) {
-				if (!identifier.startsWith(prefix + "/" + namespace)) {
+			for (String identifierValue : identifiers) {
+				if (!identifierValue.startsWith(prefix + "/" + namespace)) {
 					// todo language
 					request.setStatus(Request.Status.FAILED);
-					throw new ForbiddenOperationException(
-							identifier + " doesn't match previous Identifiers's prefix or namespace");
+					throw new ForbiddenOperationException(String.format("Mixed allocations are not supported. %s " +
+							"doesn't match the prefix or namespace of the previous identifier. ", identifierValue));
 				}
 			}
 			return;
