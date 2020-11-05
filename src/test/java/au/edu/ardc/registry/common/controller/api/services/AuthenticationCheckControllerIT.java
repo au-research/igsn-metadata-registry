@@ -140,7 +140,7 @@ class AuthenticationCheckControllerIT extends KeycloakIntegrationTest {
 	}
 
 	@Test
-	void hasNoEmbargo_404() {
+	void hasNoEmbargo_200() {
 		// given an owned record, and an identifier with no embargo
 		Record record = TestHelper.mockRecord();
 		record.setOwnerType(Record.OwnerType.User);
@@ -154,7 +154,7 @@ class AuthenticationCheckControllerIT extends KeycloakIntegrationTest {
 
 		this.webTestClient.get()
 				.uri(uriBuilder -> uriBuilder.path(baseUrl+ "hasEmbargo/").queryParam("identifier", identifier.getValue()).build())
-				.exchange().expectStatus().isNotFound();
+				.exchange().expectStatus().isOk().expectBody().equals(null);
 	}
 
 }

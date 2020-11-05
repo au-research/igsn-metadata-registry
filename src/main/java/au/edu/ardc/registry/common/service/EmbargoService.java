@@ -4,7 +4,6 @@ import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -43,12 +42,16 @@ public class EmbargoService {
 		}
 	}
 
+
 	/**
-	 * Permanently delete the embargo
-	 * @param id the uuid of the Embargo
+	 * Deletes an embargo completely from the repository
+	 * @param id the id of the embargo to be deleted
+	 * @return true if the record is deleted
 	 */
-	public void delete(UUID id) {
-		repository.deleteById(id);
+	public boolean delete(UUID id) {
+		Embargo embargo = findById(id.toString());
+		repository.delete(embargo);
+		return true;
 	}
 
 	/**
@@ -68,6 +71,17 @@ public class EmbargoService {
 	 */
 	public Embargo save(Embargo embargo) {
 		return repository.saveAndFlush(embargo);
+	}
+
+	/**
+	 * Find a embargo by id todo unit test
+	 * @param id String representation of a uuid
+	 * @return the record if it exists, null if not
+	 */
+	public Embargo findById(String id) {
+		Optional<Embargo> opt = repository.findById(UUID.fromString(id));
+
+		return opt.orElse(null);
 	}
 
 }

@@ -26,7 +26,7 @@ public class APIRestControllerAdvice {
 	 * @param locale the injected Locale for the service
 	 * @return ResponseEntity
 	 */
-	@ExceptionHandler(value = { RecordNotFoundException.class, VersionNotFoundException.class, EmbargoNotFoundException.class })
+	@ExceptionHandler(value = { RecordNotFoundException.class, VersionNotFoundException.class })
 	public ResponseEntity<Object> handleNotfound(APIException ex, HttpServletRequest request, Locale locale) {
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.NOT_FOUND, request);
