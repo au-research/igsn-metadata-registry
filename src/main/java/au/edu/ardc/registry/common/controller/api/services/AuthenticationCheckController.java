@@ -84,4 +84,14 @@ public class AuthenticationCheckController {
 		return ResponseEntity.ok().body(embargo.getEmbargoEnd().toString());
 	}
 
+	@GetMapping("/api/services/getIdentifierStatus")
+	public ResponseEntity<?> getIdentifierStatus(@RequestParam(name = "identifier") String identifierValue,
+										HttpServletRequest request) {
+		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+		if (identifier == null) {
+			throw new IGSNNotFoundException(identifierValue);
+		}
+		return ResponseEntity.ok().body(identifier.getStatus().toString());
+	}
+
 }
