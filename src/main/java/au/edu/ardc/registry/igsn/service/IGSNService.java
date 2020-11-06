@@ -16,6 +16,7 @@ import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.james.mime4j.field.datetime.DateTime;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -233,6 +234,11 @@ public class IGSNService {
 	private String getSummaryText(Request request){
 		Map<Integer, String> attributes = (HashMap) request.getAttributes();
 		String summaryText = "";
+		long runningTime = request.getUpdatedAt().getTime() - request.getCreatedAt().getTime();
+		long diffSeconds = runningTime / 1000 % 60;
+		long diffMinutes = runningTime / (60 * 1000) % 60;
+		long diffHours = runningTime / (60 * 60 * 1000);
+		summaryText += String.format("TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
 		for(Map.Entry attribute : attributes.entrySet())
 		{
 			if(attribute.getKey().toString().startsWith("NUM_OF") && attribute.getValue() != null){

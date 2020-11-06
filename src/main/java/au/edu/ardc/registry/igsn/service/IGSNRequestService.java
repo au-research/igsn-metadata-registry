@@ -36,6 +36,7 @@ public class IGSNRequestService {
 	}
 
 	public Request save(Request request) {
+		request.setUpdatedAt(new Date());
 		return repository.saveAndFlush(request);
 	}
 

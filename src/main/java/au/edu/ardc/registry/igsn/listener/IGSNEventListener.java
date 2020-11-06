@@ -30,9 +30,9 @@ public class IGSNEventListener {
 				event.getIdentifier().getValue(), event.getRequest().getId());
 		if(event.getIdentifier() != null){
 			igsnService.queueSync(event.getIdentifier(), event.getRequest());
-		}else{
-			igsnService.checkRequest(event.getRequest());
 		}
+		igsnService.checkRequest(event.getRequest());
+
 	}
 
 	@EventListener
