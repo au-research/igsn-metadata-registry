@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.UUID;
 
 public class SyncIGSNTask extends IGSNTask implements Runnable {
@@ -47,6 +48,9 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 	public void run() {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
+			if(request.getAttribute(Attribute.START_TIME_REGISTER) == null){
+				request.setAttribute(Attribute.START_TIME_REGISTER, new Date().getTime());
+			}
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
 			String tMsg = "Registered";
 			if(request.getType().equals(IGSNService.EVENT_BULK_UPDATE) || request.getType().equals(IGSNService.EVENT_UPDATE)){

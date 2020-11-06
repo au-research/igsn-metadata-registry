@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.UUID;
 
 public class ImportIGSNTask extends IGSNTask implements Runnable {
@@ -56,6 +57,11 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
 			logger.info("Processing import file: {}", file.getAbsoluteFile());
+			// only set it once
+			if(request.getAttribute(Attribute.START_TIME_IMPORT) == null){
+				request.setAttribute(Attribute.START_TIME_IMPORT, new Date().getTime());
+			}
+
 			Identifier identifier = importService.importRequest(file, request);
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_CREATED);
 			if (identifier != null) {

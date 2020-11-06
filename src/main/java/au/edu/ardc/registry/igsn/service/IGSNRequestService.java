@@ -66,7 +66,6 @@ public class IGSNRequestService {
 		request.setAttribute(Attribute.NUM_OF_IGSN_REGISTERED, 0);
 		request.setAttribute(Attribute.NUM_OF_ERROR, 0);
 
-		// create request directory
 		try {
 			logger.debug("Creating data path");
 			Path path = Paths.get(requestService.getDataPathFor(request));

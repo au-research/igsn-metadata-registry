@@ -173,7 +173,20 @@ public class IGSNService {
 	 */
 	public boolean isRequestStillRunning(UUID allocationID , @NotNull Request request){
 		boolean isImportinQueue = isImportInQueue(allocationID, request);
+		if(!isImportinQueue){
+			if(request.getAttribute(Attribute.START_TIME_IMPORT) != null){
+				request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
+			}
+			if(request.getAttribute(Attribute.START_TIME_UPDATE) != null){
+				request.setAttribute(Attribute.END_TIME_UPDATE, new Date().getTime());
+			}
+		}
 		boolean isSyncinQueue = isSyncInQueue(request);
+		if(!isSyncinQueue){
+			if(request.getAttribute(Attribute.START_TIME_REGISTER) != null){
+				request.setAttribute(Attribute.END_TIME_REGISTER, new Date().getTime());
+			}
+		}
 		return isImportinQueue || isSyncinQueue;
 	}
 
@@ -181,6 +194,7 @@ public class IGSNService {
 	 * @param request the Request that has tasks in the queues
 	 */
 	public void checkRequest(Request request) {
+		request = igsnRequestService.save(request);
 		UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
 		if (isRequestStillRunning(allocationID, request)) {
 			updateRequest(request);
@@ -238,7 +252,38 @@ public class IGSNService {
 		long diffSeconds = runningTime / 1000 % 60;
 		long diffMinutes = runningTime / (60 * 1000) % 60;
 		long diffHours = runningTime / (60 * 60 * 1000);
-		summaryText += String.format("TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		summaryText += String.format("TOTAL TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+
+		if(request.getAttribute(Attribute.START_TIME_CHUNKING) != null && request.getAttribute(Attribute.END_TIME_CHUNKING) != null){
+			runningTime = new Long(request.getAttribute(Attribute.END_TIME_CHUNKING)) - new Long(request.getAttribute(Attribute.START_TIME_CHUNKING));
+			diffSeconds = runningTime / 1000 % 60;
+			diffMinutes = runningTime / (60 * 1000) % 60;
+			diffHours = runningTime / (60 * 60 * 1000);
+			summaryText += String.format("PROCESS TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		}
+		if(request.getAttribute(Attribute.START_TIME_IMPORT) != null && request.getAttribute(Attribute.END_TIME_IMPORT) != null){
+			runningTime = new Long(request.getAttribute(Attribute.END_TIME_IMPORT)) - new Long(request.getAttribute(Attribute.START_TIME_IMPORT));
+			diffSeconds = runningTime / 1000 % 60;
+			diffMinutes = runningTime / (60 * 1000) % 60;
+			diffHours = runningTime / (60 * 60 * 1000);
+			summaryText += String.format("IMPORT TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		}
+		if(request.getAttribute(Attribute.START_TIME_UPDATE) != null && request.getAttribute(Attribute.END_TIME_UPDATE) != null){
+			runningTime = new Long(request.getAttribute(Attribute.END_TIME_UPDATE)) - new Long(request.getAttribute(Attribute.START_TIME_UPDATE));
+			diffSeconds = runningTime / 1000 % 60;
+			diffMinutes = runningTime / (60 * 1000) % 60;
+			diffHours = runningTime / (60 * 60 * 1000);
+			summaryText += String.format("UPDATE TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		}
+		if(request.getAttribute(Attribute.START_TIME_REGISTER) != null && request.getAttribute(Attribute.END_TIME_REGISTER) != null){
+			runningTime = new Long(request.getAttribute(Attribute.END_TIME_REGISTER)) - new Long(request.getAttribute(Attribute.START_TIME_REGISTER));
+			diffSeconds = runningTime / 1000 % 60;
+			diffMinutes = runningTime / (60 * 1000) % 60;
+			diffHours = runningTime / (60 * 60 * 1000);
+			summaryText += String.format("REGISTER TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		}
+
+
 		for(Map.Entry attribute : attributes.entrySet())
 		{
 			if(attribute.getKey().toString().startsWith("NUM_OF") && attribute.getValue() != null){
@@ -299,6 +344,11 @@ public class IGSNService {
 		String dataPath = request.getAttribute(Attribute.DATA_PATH);
 		String chunkedPayloadPath = dataPath + File.separator + "chunks";
 		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
+
+		request.setAttribute(Attribute.START_TIME_CHUNKING, new Date().getTime());
+
+
+
 		request.setStatus(Request.Status.RUNNING);
 		// read the payload
 		String payload = "";
@@ -354,6 +404,7 @@ public class IGSNService {
 		catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		request.setAttribute(Attribute.END_TIME_CHUNKING, new Date().getTime());
 	}
 
 	/**

@@ -26,28 +26,30 @@ public class IGSNEventListener {
 
 	@EventListener
 	public void handleIGSNUpdatedEvent(IGSNUpdatedEvent event) {
+		Request request = event.getRequest();
 		logger.debug("Event handleIGSNUpdatedEvent raised with identifier {} for request {}",
-				event.getIdentifier().getValue(), event.getRequest().getId());
+				event.getIdentifier().getValue(), request.getId());
 		if(event.getIdentifier() != null){
-			igsnService.queueSync(event.getIdentifier(), event.getRequest());
+			igsnService.queueSync(event.getIdentifier(), request);
 		}
-		igsnService.checkRequest(event.getRequest());
+		igsnService.checkRequest(request);
 
 	}
 
 	@EventListener
 	public void handleIGSNSyncedEvent(IGSNSyncedEvent event) {
+		Request request = event.getRequest();
 		logger.debug("Event IGSNSyncedEvent raised with identifier {} for request {}", event.getIdentifier().getValue(),
-				event.getRequest().getId());
-
-		igsnService.checkRequest(event.getRequest());
+				request.getId());
+		igsnService.checkRequest(request);
 	}
 
 	@EventListener
 	public void handleIGSNSErrorEvent(RequestExceptionEvent event) {
+		Request request = event.getRequest();
 		logger.debug("Event RequestExceptionEvent raised with message {} for request {}", event.getMessage(),
-				event.getRequest().getId());
-		igsnService.checkRequest(event.getRequest());
+				request.getId());
+		igsnService.checkRequest(request);
 	}
 
 }

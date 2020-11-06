@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.UUID;
 
 public class UpdateIGSNTask extends IGSNTask implements Runnable {
@@ -56,6 +57,10 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 	public void run() {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
 		try {
+			// only set it once
+			if(request.getAttribute(Attribute.START_TIME_UPDATE) == null){
+				request.setAttribute(Attribute.START_TIME_UPDATE, new Date().getTime());
+			}
 			Identifier identifier = importService.updateRequest(file, request);
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_UPDATED);
 			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
