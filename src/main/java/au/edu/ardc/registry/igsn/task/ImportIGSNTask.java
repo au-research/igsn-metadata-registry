@@ -64,6 +64,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 
 			Identifier identifier = importService.importRequest(file, request);
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_CREATED);
+			request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
 			if (identifier != null) {
 				Record record = identifier.getRecord();
 				if(record != null){

@@ -173,20 +173,7 @@ public class IGSNService {
 	 */
 	public boolean isRequestStillRunning(UUID allocationID , @NotNull Request request){
 		boolean isImportinQueue = isImportInQueue(allocationID, request);
-		if(!isImportinQueue){
-			if(request.getAttribute(Attribute.START_TIME_IMPORT) != null){
-				request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
-			}
-			if(request.getAttribute(Attribute.START_TIME_UPDATE) != null){
-				request.setAttribute(Attribute.END_TIME_UPDATE, new Date().getTime());
-			}
-		}
 		boolean isSyncinQueue = isSyncInQueue(request);
-		if(!isSyncinQueue){
-			if(request.getAttribute(Attribute.START_TIME_REGISTER) != null){
-				request.setAttribute(Attribute.END_TIME_REGISTER, new Date().getTime());
-			}
-		}
 		return isImportinQueue || isSyncinQueue;
 	}
 

@@ -63,6 +63,7 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 			}
 			Identifier identifier = importService.updateRequest(file, request);
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_UPDATED);
+			request.setAttribute(Attribute.END_TIME_UPDATE, new Date().getTime());
 			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
 			applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 			logger.info("Queue a sync task for identifier: {}", identifier.getValue());

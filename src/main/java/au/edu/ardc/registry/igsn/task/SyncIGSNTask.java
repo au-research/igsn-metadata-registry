@@ -52,6 +52,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 				request.setAttribute(Attribute.START_TIME_REGISTER, new Date().getTime());
 			}
 			igsnRegistrationService.registerIdentifier(identifier.getValue(), request);
+			request.setAttribute(Attribute.END_TIME_REGISTER, new Date().getTime());
 			String tMsg = "Registered";
 			if(request.getType().equals(IGSNService.EVENT_BULK_UPDATE) || request.getType().equals(IGSNService.EVENT_UPDATE)){
 				tMsg = "Updated";
