@@ -66,7 +66,7 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 200) {
-					throw new Exception(response.bodyToMono(String.class).block());
+					throw new MDSClientException(response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
@@ -98,7 +98,7 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 201) {
-					throw new Exception(response.bodyToMono(String.class).block());
+					throw new MDSClientException(response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
@@ -127,7 +127,7 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 201) {
-					throw new Exception(response.bodyToMono(String.class).block());
+					throw new MDSClientException(response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
@@ -176,7 +176,7 @@ public class MDSClient {
 				return response.bodyToMono(String.class).block();
 			}
 			else if (response != null) {
-				throw new Exception(response.bodyToMono(String.class).block());
+				throw new MDSClientException(response.bodyToMono(String.class).block());
 			}
 		}
 		catch (Exception e) {
