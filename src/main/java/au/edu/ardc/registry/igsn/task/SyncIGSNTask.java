@@ -3,10 +3,7 @@ package au.edu.ardc.registry.igsn.task;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.NotFoundException;
-import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
-import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
+import au.edu.ardc.registry.exception.*;
 import au.edu.ardc.registry.igsn.event.IGSNSyncedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
@@ -45,6 +42,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		this.igsnRequestService = igsnRequestService;
 	}
 
+
 	@Override
 	public void run() {
 		org.apache.logging.log4j.core.Logger requestLog = igsnRequestService.getLoggerFor(request);
@@ -61,10 +59,11 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));
 
 		}
-		catch (IOException | NotFoundException e) {
+		catch (IOException e) {
 			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
 			logger.error(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
@@ -72,6 +71,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		catch (VersionContentAlreadyExistsException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
@@ -79,6 +79,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		catch (VersionIsOlderThanCurrentException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
@@ -86,12 +87,23 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		catch (ForbiddenOperationException e) {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
-		} catch (Exception e){
+		}
+		catch (RecordNotFoundException | NotFoundException e){
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
+			Thread.currentThread().interrupt();
+			logger.error(e.getClass() + e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+		}
+		catch (Exception e) {
+			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
 			logger.error(e.getClass() + e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));

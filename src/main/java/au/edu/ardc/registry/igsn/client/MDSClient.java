@@ -36,7 +36,7 @@ public class MDSClient {
 	public MDSClient(IGSNAllocation allocation) throws MDSClientConfigurationException {
 		String mds_username = allocation.getMds_username();
 		String mds_password = allocation.getMds_password();
-		String mds_url = allocation.getMds_url();
+		String mds_url = allocation.getMds_url() + "FISHISSISHSY";
 		if (mds_username == null)
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name);
 		if (mds_password == null)

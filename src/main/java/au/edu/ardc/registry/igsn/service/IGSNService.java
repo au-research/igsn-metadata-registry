@@ -14,7 +14,10 @@ import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
 import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 @Service
 public class IGSNService {
@@ -208,34 +212,35 @@ public class IGSNService {
 	}
 
 	public void updateRequest(Request request){
-		int numReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
-		int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
-		int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
-		int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
-		int numError = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
-		String message = String.format("Received: %s, Created: %s, Updated :%s, Registered: %s, Number of Error(s): %s" ,
-				numReceived, numCreated, numUpdated, numRegistered, numError);
-		request.setMessage(message);
+		request.setMessage(getSummaryText(request));
 		igsnRequestService.save(request);
 	}
 
 	public void finalizeRequest(@NotNull Request request) {
-		int numReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
 		int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
 		int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
 		int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
-		int numError = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
 		if((numCreated + numUpdated + numRegistered) > 0){
 			request.setStatus(Request.Status.COMPLETED);
 		}
 		else{
 			request.setStatus(Request.Status.FAILED);
 		}
-		String message = String.format("Received: %s, Created: %s, Updated :%s, Registered: %s, Number of Error(s): %s" ,
-				numReceived, numCreated, numUpdated, numRegistered, numError);
-		request.setMessage(message);
-		igsnRequestService.save(request);
+		updateRequest(request);
 		igsnRequestService.closeLoggerFor(request);
+	}
+
+	private String getSummaryText(Request request){
+		Map<Integer, String> attributes = (HashMap) request.getAttributes();
+		String summaryText = "";
+		for(Map.Entry attribute : attributes.entrySet())
+		{
+			if(attribute.getKey().toString().startsWith("NUM_OF") && attribute.getValue() != null){
+				String item = attribute.getKey().toString().replace("NUM_OF", "").replace("_", " ");
+				summaryText += String.format("%s:%s, ", item, attribute.getValue());
+			}
+		}
+		return summaryText;
 	}
 
 	public void shutdownSync() {

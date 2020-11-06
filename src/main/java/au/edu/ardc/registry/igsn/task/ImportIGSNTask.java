@@ -87,6 +87,8 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 				request.setMessage(e.getMessage());
 				request.setStatus(Request.Status.FAILED);
 				request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+				// for import the only reason it is forbidden if the record already exists
+				request.incrementAttributeValue(Attribute.NUM_OF_RECORD_ALREADY_EXISTS);
 				requestLog.error(e.getMessage());
 				Thread t = Thread.currentThread();
 				t.getUncaughtExceptionHandler().uncaughtException(t, e);
@@ -94,6 +96,8 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			requestLog.error(e.getMessage());
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			// for import the only reason it is forbidden if the record already exists
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_ALREADY_EXISTS);
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 

@@ -72,18 +72,21 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(ForbiddenOperationException e){
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_FORBIDDEN);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(VersionIsOlderThanCurrentException e){
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_CONTENT_NOT_CHANGED);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}catch(VersionContentAlreadyExistsException e){
 			requestLog.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_CONTENT_NOT_CHANGED);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
