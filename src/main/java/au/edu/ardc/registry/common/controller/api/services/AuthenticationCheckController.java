@@ -9,7 +9,6 @@ import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.ValidationService;
-import au.edu.ardc.registry.exception.RecordNotFoundException;
 import au.edu.ardc.registry.igsn.exception.IGSNNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,7 +79,7 @@ public class AuthenticationCheckController {
 		Record record = identifier.getRecord();
 		Embargo embargo = embargoService.findByRecord(record);
 		if (embargo == null){
-			throw new RecordNotFoundException(record.getId().toString());
+			return ResponseEntity.ok().body(null);
 		}
 		return ResponseEntity.ok().body(embargo.getEmbargoEnd().toString());
 	}
