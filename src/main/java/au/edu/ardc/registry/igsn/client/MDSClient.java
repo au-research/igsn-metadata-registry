@@ -3,6 +3,7 @@ package au.edu.ardc.registry.igsn.client;
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 
 import au.edu.ardc.registry.exception.MDSClientConfigurationException;
+import au.edu.ardc.registry.exception.MDSClientException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -36,13 +37,13 @@ public class MDSClient {
 	public MDSClient(IGSNAllocation allocation) throws MDSClientConfigurationException {
 		String mds_username = allocation.getMds_username();
 		String mds_password = allocation.getMds_password();
-		String mds_url = allocation.getMds_url() + "FISHISSISHSY";
+		String mds_url = allocation.getMds_url();
 		if (mds_username == null)
-			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name);
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name, allocation.getName());
 		if (mds_password == null)
-			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.password);
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.password, allocation.getName());
 		if (mds_url == null)
-			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.server_url);
+			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.server_url, allocation.getName());
 		this.webClient = WebClient.builder().filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
 				.build();
 	}
@@ -54,10 +55,10 @@ public class MDSClient {
 	 * POST new metadata or set the isActive-flag in the user interface.
 	 * @param identifier the IGSN identifier as String
 	 * @return the response code of the DELETE request
-	 * @throws Exception If response code is not 200 containing the response body if
+	 * @throws MDSClientException If response code is not 200 containing the response body if
 	 * present
 	 */
-	public int deactivateIGSN(String identifier) throws Exception {
+	public int deactivateIGSN(String identifier) throws MDSClientException {
 		String service_url = "metadata/" + identifier;
 		int response_code = 0;
 		try {
@@ -71,7 +72,7 @@ public class MDSClient {
 			}
 		}
 		catch (Exception e) {
-			throw e;
+			throw new MDSClientException(e.getMessage());
 		}
 		return response_code;
 	}
@@ -81,9 +82,9 @@ public class MDSClient {
 	 * @param identifier the IGSN Identifier
 	 * @param landingPage the URL of the landing page of the IGSN
 	 * @return the response code (201 CREATED)
-	 * @throws Exception if response code is not 201
+	 * @throws MDSClientException if response code is not 201
 	 */
-	public int createOrUpdateIdentifier(String identifier, String landingPage) throws Exception {
+	public int createOrUpdateIdentifier(String identifier, String landingPage) throws MDSClientException {
 
 		String service_url = "igsn";
 		int response_code = 0;
@@ -103,7 +104,7 @@ public class MDSClient {
 			}
 		}
 		catch (Exception e) {
-			throw e;
+			throw new MDSClientException(e.getMessage());
 		}
 		return response_code;
 	}
@@ -113,9 +114,9 @@ public class MDSClient {
 	 * eg:parameter is needed
 	 * @param registrationMetadata XML String of the registration metadata
 	 * @return the response code (201 CREATED)
-	 * @throws Exception if response code is not 201
+	 * @throws MDSClientException if response code is not 201
 	 */
-	public int addMetadata(String registrationMetadata) throws Exception {
+	public int addMetadata(String registrationMetadata) throws MDSClientException {
 
 		String service_url = "metadata";
 		int response_code = 0;
@@ -132,7 +133,7 @@ public class MDSClient {
 			}
 		}
 		catch (Exception e) {
-			throw e;
+			throw new MDSClientException(e.getMessage());
 		}
 		return response_code;
 	}
@@ -141,9 +142,9 @@ public class MDSClient {
 	 * Get the latest registration metadata for a given IGSN record
 	 * @param identifier the IGSN value
 	 * @return the XML registration metadata as String
-	 * @throws Exception if response code is not 200
+	 * @throws MDSClientException if response code is not 200
 	 */
-	public String getIGSNMetadata(String identifier) throws Exception {
+	public String getIGSNMetadata(String identifier) throws MDSClientException {
 
 		String service_url = "metadata/" + identifier;
 		return doGetRequest(service_url);
@@ -153,9 +154,9 @@ public class MDSClient {
 	 * Get the URL of the landing page for a given IGSN record
 	 * @param identifier the IGSN value
 	 * @return URL of the landing page as String
-	 * @throws Exception if response code is not 200
+	 * @throws MDSClientException if response code is not 200
 	 */
-	public String getIGSNLandingPage(String identifier) throws Exception {
+	public String getIGSNLandingPage(String identifier) throws MDSClientException {
 
 		String service_url = "igsn/" + identifier;
 		return doGetRequest(service_url);
@@ -165,10 +166,10 @@ public class MDSClient {
 	 * executes a GET request and returns the body content
 	 * @param service_url the url of the request
 	 * @return the body content as String
-	 * @throws Exception if the response code is not 200
+	 * @throws MDSClientException if the response code is not 200
 	 */
 	@Nullable
-	private String doGetRequest(String service_url) throws Exception {
+	private String doGetRequest(String service_url) throws MDSClientException {
 		try {
 			ClientResponse response = this.webClient.get().uri(service_url).exchange().block();
 			if (response != null && response.rawStatusCode() == 200) {
@@ -179,7 +180,7 @@ public class MDSClient {
 			}
 		}
 		catch (Exception e) {
-			throw e;
+			throw new MDSClientException(e.getMessage());
 		}
 		return null;
 	}

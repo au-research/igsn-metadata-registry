@@ -61,7 +61,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 		}
 		catch (IOException e) {
 			// todo log the exception in the request log
-			requestLog.warn(e.getMessage());
+			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
@@ -85,7 +85,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (ForbiddenOperationException e) {
-			requestLog.warn(e.getMessage());
+			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
@@ -93,7 +93,15 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (RecordNotFoundException | NotFoundException e){
-			requestLog.warn(e.getMessage());
+			requestLog.error(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
+			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
+			Thread.currentThread().interrupt();
+			logger.error(e.getClass() + e.getMessage());
+			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+		}
+		catch (MDSClientException e){
+			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
@@ -101,7 +109,7 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
 		catch (Exception e) {
-			requestLog.warn(e.getMessage());
+			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
 			Thread.currentThread().interrupt();
