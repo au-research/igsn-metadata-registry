@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.igsn.controller;
 
+import au.edu.ardc.registry.common.dto.AllocationDTO;
 import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,6 +44,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -119,7 +123,6 @@ public class IGSNServiceController {
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
-
 
 		// process the request (async)
 		request.setStatus(Request.Status.QUEUED);
@@ -225,7 +228,7 @@ public class IGSNServiceController {
 				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
 		String identifierValue = fragmentProvider.get(payload, 0);
 		UpdateIGSNTask task = new UpdateIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
-				applicationEventPublisher,igsnRequestService);
+				applicationEventPublisher, igsnRequestService);
 		task.run();
 
 		// finish
@@ -256,7 +259,6 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 
-
 		request.setStatus(Request.Status.QUEUED);
 		igsnRequestService.save(request);
 		igsnService.processMintOrUpdate(request);
@@ -270,9 +272,10 @@ public class IGSNServiceController {
 			description = "Reserved IGSN would not require metadata and will not be resolvable")
 	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest, @NotNull @RequestParam UUID allocationID,
-											  @RequestParam(required = false, defaultValue = "User") String ownerType,
-											  @RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
+	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
+			@NotNull @RequestParam UUID allocationID,
+			@RequestParam(required = false, defaultValue = "User") String ownerType,
+			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
 
@@ -307,7 +310,7 @@ public class IGSNServiceController {
 	@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @NotNull @RequestParam UUID ownerID,
-											 @RequestParam String ownerType, @RequestBody String payload) throws IOException {
+			@RequestParam String ownerType, @RequestBody String payload) throws IOException {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
@@ -337,20 +340,36 @@ public class IGSNServiceController {
 	}
 
 	@GetMapping("/generate-igsn")
-	public ResponseEntity<?> generateIGSN(HttpServletRequest httpServletRequest) {
+	public ResponseEntity<?> generateIGSN(HttpServletRequest httpServletRequest,
+			@RequestParam(required = false) String allocationID) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 
-		// currently only support generation of IGSN belongs to the first Allocation
-		IGSNAllocation allocation = (IGSNAllocation) user.getAllocationsByType(IGSNService.IGSNallocationType).get(0);
+		// if allocationID is provided, use that allocation, otherwise get the first one
+		IGSNAllocation allocation = (allocationID != null)
+				? (IGSNAllocation) user.getAllocationsByType(IGSNService.IGSNallocationType).stream()
+						.filter(alloc -> alloc.getId().equals(UUID.fromString(allocationID))).findFirst().get()
+				: (IGSNAllocation) user.getAllocationsByType(IGSNService.IGSNallocationType).get(0);
 
 		// generate unique IGSN Value
-		String igsnValue;
+		String igsn;
+		String value;
+		String prefix = allocation.getPrefix();
+		String namespace = allocation.getNamespace();
 		do {
-			igsnValue = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),
-					RandomStringUtils.randomAlphanumeric(6)).toUpperCase();
-		} while (identifierService.findByValueAndType(igsnValue, Identifier.Type.IGSN) != null);
+			value = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),value
+					).toUpperCase();
+		}
+		while (identifierService.findByValueAndType(igsn, Identifier.Type.IGSN) != null);
 
-		return ResponseEntity.ok().body(igsnValue);
+		Map<String, Object> response = new HashMap<>();
+		response.put("prefix", prefix);
+		response.put("namespace", namespace);
+		response.put("value", value);
+		response.put("igsn", igsn);
+		response.put("allocation", new ModelMapper().map(allocation, AllocationDTO.class));
+
+		return ResponseEntity.ok().body(response);
 	}
 
 }
