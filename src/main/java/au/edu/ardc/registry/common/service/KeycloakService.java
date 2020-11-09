@@ -236,6 +236,7 @@ public class KeycloakService {
 		logger.debug(String.format("Obtained GroupRepresentation %s", group));
 		DataCenter dataCenter = new DataCenter(UUID.fromString(group.getId()));
 		dataCenter.setName(group.getName());
+		dataCenter.setPath(group.getPath());
 		return dataCenter;
 	}
 
@@ -266,6 +267,23 @@ public class KeycloakService {
 		Map<String, List<String>> attributes = resource.getAttributes();
 		allocation.setStatus(attributes.containsKey("status") ? String.valueOf(attributes.get("status")) : null);
 		allocation.setAttributes(attributes);
+
+		// obtain groups attribute to determine Allocation<->DataCenter relationships
+		if (attributes.containsKey("groups")) {
+			List<DataCenter> dataCenters = new ArrayList<>();
+			for (String groupName : attributes.get("groups")) {
+				try {
+					DataCenter dc = self.getDataCenterByGroupName(groupName);
+					dataCenters.add(dc);
+				}
+				catch (Exception e) {
+					logger.error(String.format("Failed building data center for group %s ,Message: %s ,Cause: %s",
+							groupName, e.getMessage(), e.getCause()));
+				}
+			}
+			allocation.setDataCenters(dataCenters);
+		}
+
 		return allocation;
 	}
 

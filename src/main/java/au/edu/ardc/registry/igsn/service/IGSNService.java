@@ -113,6 +113,7 @@ public class IGSNService {
 	/**
 	 * a request is considered finished if there are no tasks in the importQueue for that
 	 * allocationID, and no more syncTask for that request
+	 * @param allocationID the UUID of the Allocation
 	 * @param request the {@link Request} in question
 	 * @return true if the request is considered finished
 	 */

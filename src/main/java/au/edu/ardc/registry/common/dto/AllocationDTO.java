@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.dto;
 
+import au.edu.ardc.registry.common.model.DataCenter;
 import au.edu.ardc.registry.common.model.Scope;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public class AllocationDTO {
 	private List<Scope> scopes;
 
 	private String type;
+
+	private List<DataCenter> dataCenters;
 
 	public UUID getId() {
 		return id;
@@ -47,4 +50,11 @@ public class AllocationDTO {
 		this.type = type;
 	}
 
+	public List<DataCenter> getDataCenters() {
+		return dataCenters;
+	}
+
+	public void setDataCenters(List<DataCenter> dataCenters) {
+		this.dataCenters = dataCenters;
+	}
 }

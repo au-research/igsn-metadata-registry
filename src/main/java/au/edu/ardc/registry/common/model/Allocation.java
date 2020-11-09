@@ -19,6 +19,8 @@ public class Allocation implements Serializable {
 
 	private Map<String, List<String>> attributes;
 
+	private List<DataCenter> dataCenters;
+
 	public Allocation(UUID id) {
 		this.id = id;
 	}
@@ -67,4 +69,11 @@ public class Allocation implements Serializable {
 		this.status = status;
 	}
 
+	public List<DataCenter> getDataCenters() {
+		return dataCenters;
+	}
+
+	public void setDataCenters(List<DataCenter> dataCenters) {
+		this.dataCenters = dataCenters;
+	}
 }

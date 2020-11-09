@@ -9,6 +9,8 @@ public class DataCenter implements Serializable {
 
 	private String name;
 
+	private String path;
+
 	public DataCenter(UUID id) {
 		this.id = id;
 	}
@@ -25,4 +27,11 @@ public class DataCenter implements Serializable {
 		this.name = name;
 	}
 
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
 }
