@@ -12,6 +12,7 @@ import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
+import au.edu.ardc.registry.igsn.task.ReserveIGSNTask;
 import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -99,6 +100,16 @@ public class IGSNService {
 		importExecutors.get(allocationID)
 				.execute(new ImportIGSNTask(identifierValue, file, request, importService, applicationEventPublisher, igsnRequestService));
 	}
+
+	public void queueReserve(UUID allocationID, String identifierValue, Request request) {
+		if (!importExecutors.containsKey(allocationID)) {
+			importExecutors.put(allocationID, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+		}
+
+		importExecutors.get(allocationID)
+				.execute(new ReserveIGSNTask(identifierValue, request, importService, applicationEventPublisher, igsnRequestService));
+	}
+
 
 	public void queueUpdate(UUID allocationID, String identifierValue, File file, Request request) {
 		if (!importExecutors.containsKey(allocationID)) {
@@ -217,7 +228,7 @@ public class IGSNService {
 	}
 
 	public void updateRequest(Request request){
-		request.setMessage(getSummaryText(request));
+		request.setSummary(getSummaryText(request));
 		igsnRequestService.save(request);
 	}
 
@@ -225,52 +236,65 @@ public class IGSNService {
 		int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
 		int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
 		int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
+		int nReceived = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+		int nErrors = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
 		if((numCreated + numUpdated + numRegistered) > 0){
 			request.setStatus(Request.Status.COMPLETED);
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE))){
+				if(nErrors > 0){
+					request.setMessage("Request completed with some errors");
+				}else{
+					request.setMessage("Request completed successfully");
+				}
+			}
 		}
 		else{
 			request.setStatus(Request.Status.FAILED);
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE)))
+			{
+				request.setMessage("Request failed");
+			}
 		}
 		updateRequest(request);
 		igsnRequestService.closeLoggerFor(request);
 	}
 
 	private String getSummaryText(Request request){
-		Map<Integer, String> attributes = (HashMap) request.getAttributes();
-		String summaryText = "";
+		Map<String, String> attributes = request.getAttributes();
+		StringBuilder summaryText = new StringBuilder();
 		long runningTime = request.getUpdatedAt().getTime() - request.getCreatedAt().getTime();
 		long diffSeconds = runningTime / 1000 % 60;
 		long diffMinutes = runningTime / (60 * 1000) % 60;
 		long diffHours = runningTime / (60 * 60 * 1000);
-		summaryText += String.format("TOTAL TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+		summaryText.append(String.format("TOTAL TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds));
 
 		if(request.getAttribute(Attribute.START_TIME_CHUNKING) != null && request.getAttribute(Attribute.END_TIME_CHUNKING) != null){
 			runningTime = new Long(request.getAttribute(Attribute.END_TIME_CHUNKING)) - new Long(request.getAttribute(Attribute.START_TIME_CHUNKING));
 			diffSeconds = runningTime / 1000 % 60;
 			diffMinutes = runningTime / (60 * 1000) % 60;
 			diffHours = runningTime / (60 * 60 * 1000);
-			summaryText += String.format("PROCESS TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+			summaryText.append(String.format("PROCESS TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds));
 		}
 		if(request.getAttribute(Attribute.START_TIME_IMPORT) != null && request.getAttribute(Attribute.END_TIME_IMPORT) != null){
 			runningTime = new Long(request.getAttribute(Attribute.END_TIME_IMPORT)) - new Long(request.getAttribute(Attribute.START_TIME_IMPORT));
 			diffSeconds = runningTime / 1000 % 60;
 			diffMinutes = runningTime / (60 * 1000) % 60;
 			diffHours = runningTime / (60 * 60 * 1000);
-			summaryText += String.format("IMPORT TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+			summaryText.append(String.format("IMPORT TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds));
 		}
 		if(request.getAttribute(Attribute.START_TIME_UPDATE) != null && request.getAttribute(Attribute.END_TIME_UPDATE) != null){
 			runningTime = new Long(request.getAttribute(Attribute.END_TIME_UPDATE)) - new Long(request.getAttribute(Attribute.START_TIME_UPDATE));
 			diffSeconds = runningTime / 1000 % 60;
 			diffMinutes = runningTime / (60 * 1000) % 60;
 			diffHours = runningTime / (60 * 60 * 1000);
-			summaryText += String.format("UPDATE TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+			summaryText.append(String.format("UPDATE TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds));
 		}
 		if(request.getAttribute(Attribute.START_TIME_REGISTER) != null && request.getAttribute(Attribute.END_TIME_REGISTER) != null){
 			runningTime = new Long(request.getAttribute(Attribute.END_TIME_REGISTER)) - new Long(request.getAttribute(Attribute.START_TIME_REGISTER));
 			diffSeconds = runningTime / 1000 % 60;
 			diffMinutes = runningTime / (60 * 1000) % 60;
 			diffHours = runningTime / (60 * 60 * 1000);
-			summaryText += String.format("REGISTER TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds);
+			summaryText.append(String.format("REGISTER TIME: %dh %dm %ds, ", diffHours, diffMinutes, diffSeconds));
 		}
 
 
@@ -278,10 +302,10 @@ public class IGSNService {
 		{
 			if(attribute.getKey().toString().startsWith("NUM_OF") && attribute.getValue() != null){
 				String item = attribute.getKey().toString().replace("NUM_OF", "").replace("_", " ");
-				summaryText += String.format("%s:%s, ", item, attribute.getValue());
+				summaryText.append(String.format("%s:%s,", item, attribute.getValue()));
 			}
 		}
-		return summaryText;
+		return summaryText.toString();
 	}
 
 	public void shutdownSync() {
@@ -368,6 +392,7 @@ public class IGSNService {
 
 			int count = fragmentProvider.getCount(payload);
 			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, count);
+			request.setMessage(String.format("Processing %d records", count));
 			requestLogger.debug("Found {} fragments in payload", count);
 			for (int i = 0; i < count; i++) {
 				String content = fragmentProvider.get(payload, i);
@@ -396,6 +421,57 @@ public class IGSNService {
 		}
 		request.setAttribute(Attribute.END_TIME_CHUNKING, new Date().getTime());
 	}
+
+	/**
+	 * Read indvividual Identifiers from the payload and Queue the Request. Specifically used for bulk requests.
+	 * @param request the {@link Request} to chunk and queue if necessary.
+	 */
+	@Async
+	public void processReserve(@NotNull Request request) {
+
+		String payloadPath = request.getAttribute(Attribute.PAYLOAD_PATH);
+		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
+
+		request.setAttribute(Attribute.START_TIME_CHUNKING, new Date().getTime());
+
+		request.setStatus(Request.Status.RUNNING);
+		// read the payload
+		String payload = "";
+		try {
+			requestLogger.debug("Reading payload at {}", payloadPath);
+			payload = Helpers.readFile(payloadPath);
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		String schemaId = request.getAttribute(Attribute.SCHEMA_ID);
+
+
+		// chunk the payload and queue an import task per payload
+		try {
+			UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
+
+			Schema schema = schemaService.getSchemaByID(schemaId);
+			IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
+					Metadata.Identifier);
+
+			List<String> identifiers = identifierProvider.getAll(payload);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, identifiers.size());
+			requestLogger.debug("Found {} fragments in payload", identifiers.size());
+			for (String identifierValue : identifiers) {
+				String taskType = IGSNTask.TASK_RESERVE;
+				queueReserve(allocationID, identifierValue, request);
+				logger.info("Queued task {} for Identifier: {}", taskType, identifierValue);
+			}
+			igsnRequestService.save(request);
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		request.setAttribute(Attribute.END_TIME_CHUNKING, new Date().getTime());
+	}
+
+
 
 	/**
 	 * Return the {@link IGSNAllocation}. The Allocation is extracted with first

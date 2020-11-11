@@ -42,7 +42,7 @@ public class SchemaService {
 
 	public static final String OAIDC = "oai_dc";
 
-	public static final String plainText = "plain_text_igsn_list";
+	public static final String IGSNList = "igsn_list";
 
 	private static Schema schema;
 
@@ -205,7 +205,7 @@ public class SchemaService {
 			}
 			else if (validator.getClass().equals(PlainTextValidator.class)) {
 				String nameSpace = XMLUtil.getNamespaceURI(payload);
-				return this.getSchemaByID(SchemaService.plainText);
+				return this.getSchemaByID(SchemaService.IGSNList);
 			}
 			else if (validator.getClass().equals(JSONValidator.class)) {
 				throw new ContentNotSupportedException("JSON content import is not yet supported");

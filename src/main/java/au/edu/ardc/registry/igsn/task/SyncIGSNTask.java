@@ -59,6 +59,13 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			}
 			logger.info("{} MDS record for:{} request: {}", tMsg, identifier.getValue(), request.getId());
 			request.incrementAttributeValue(Attribute.NUM_OF_IGSN_REGISTERED);
+			// only update request message for bulk
+			if(request.getType().equals(IGSNService.EVENT_BULK_UPDATE) || request.getType().equals(IGSNService.EVENT_BULK_MINT)){
+				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+				int numRegistered = new Integer(request.getAttribute(Attribute.NUM_OF_IGSN_REGISTERED));
+				request.setMessage(String.format("%s MDS record %d out of %d", tMsg, numRegistered, totalCount));
+			}
+
 			requestLog.info(String.format("%s MDS record for: %s", tMsg, identifier.getValue()));
 			logger.info("publishEvent (IGSNSyncedEvent) Identifier:{} request: {}", identifier.getValue(), request.getId());
 			applicationEventPublisher.publishEvent(new IGSNSyncedEvent(identifier, request));

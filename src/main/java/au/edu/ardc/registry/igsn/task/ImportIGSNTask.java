@@ -67,6 +67,9 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
 			if (identifier != null) {
 				Record record = identifier.getRecord();
+				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+				int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
+				request.setMessage(String.format("Imported %d out of %d", numCreated, totalCount));
 				if(record != null){
 					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 					applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
@@ -82,30 +85,27 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			logger.info("Processed import file: {}", file.getAbsoluteFile());
 		}
 		catch (IOException e) {
-			// todo log the exception in the request log
+			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			requestLog.warn(e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			if(request.getType().equals(IGSNService.EVENT_MINT)) {
+				request.setMessage(e.getMessage());
+			}
+			else {
+				applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			}
 		}
 		catch (ForbiddenOperationException e) {
-			if(request.getType().equals(IGSNService.EVENT_MINT))
-			{
-				request.setMessage(e.getMessage());
-				request.setStatus(Request.Status.FAILED);
-				request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-				// for import the only reason it is forbidden if the record already exists
-				request.incrementAttributeValue(Attribute.NUM_OF_RECORD_ALREADY_EXISTS);
-				requestLog.error(e.getMessage());
-				Thread t = Thread.currentThread();
-				t.getUncaughtExceptionHandler().uncaughtException(t, e);
-			}
-			requestLog.error(e.getMessage());
+			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_FORBIDDEN);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			// for import the only reason it is forbidden if the record already exists
-			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_ALREADY_EXISTS);
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			if(request.getType().equals(IGSNService.EVENT_MINT)) {
+				request.setMessage(e.getMessage());
+			}
+			else {
+				applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			}
 		}
 
 	}

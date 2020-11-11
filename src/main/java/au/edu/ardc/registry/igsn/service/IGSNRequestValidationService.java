@@ -3,17 +3,11 @@ package au.edu.ardc.registry.igsn.service;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
-import au.edu.ardc.registry.common.model.Attribute;
-import au.edu.ardc.registry.common.model.Schema;
-import au.edu.ardc.registry.common.model.Scope;
-import au.edu.ardc.registry.common.model.User;
+import au.edu.ardc.registry.common.model.*;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
-import au.edu.ardc.registry.common.service.IdentifierService;
-import au.edu.ardc.registry.common.service.RecordService;
-import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.common.service.ValidationService;
+import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
@@ -26,7 +20,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service for validating IGSN Requests Mainly
@@ -45,13 +42,18 @@ public class IGSNRequestValidationService {
 
 	final ValidationService validationService;
 
+	final KeycloakService keycloakService;
+
+	final List<String> supportedUserTypes = Arrays.asList("User", "DataCenter");
+
 	public IGSNRequestValidationService(SchemaService schemaService, IGSNService igsnService,
-			IdentifierService identifierService, RecordService recordService, ValidationService validationService) {
+			IdentifierService identifierService, RecordService recordService, ValidationService validationService, KeycloakService keycloakService) {
 		this.schemaService = schemaService;
 		this.igsnService = igsnService;
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.validationService = validationService;
+		this.keycloakService = keycloakService;
 	}
 
 	/**
@@ -76,9 +78,6 @@ public class IGSNRequestValidationService {
 
 
 		String content = Helpers.readFile(file);
-
-		// limit content size
-
 
 
 		// todo validate request.attributes.ownerType, request.attributes.ownerID
@@ -120,6 +119,40 @@ public class IGSNRequestValidationService {
 			throw new ForbiddenOperationException(String.format("User has no access to the given Identifier: %s", firstIdentifier));
 		}
 
+
+		/*
+		Owner type must be User or DataCenter
+		User currently only able to mint, reserve , transfer as a datacenter they are member of
+		updates does not have ownerID
+		*/
+		if(type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_MINT)
+				||  type.equals(IGSNService.EVENT_RESERVE) || type.equals(IGSNService.EVENT_TRANSFER)){
+
+			UUID ownerID = UUID.fromString(request.getAttribute(Attribute.OWNER_ID));
+			if(!ownerID.equals(user.getId())){
+				// check for supported ownerType
+				String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
+				if(!supportedUserTypes.contains(ownerType)){
+					throw new ForbiddenOperationException(String.format("OwnerType value: %s is not supported", ownerType));
+				}
+				if(!ownerType.equals("DataCenter")){
+					throw new ForbiddenOperationException(String.format("User can only create records for a datacenter not: %s", ownerType));
+				}
+				// validate the owen not just the user
+
+				boolean userHasDataCenter = false;
+				List<DataCenter> dataCenters = user.getDataCenters();
+				for (DataCenter dataCenter : dataCenters) {
+					if (dataCenter.getId().equals(ownerID)) {
+						userHasDataCenter = true;
+						break;
+					}
+				}
+				if(!userHasDataCenter){
+					throw new ForbiddenOperationException(String.format("User is not a member of datacenter : %s", ownerID));
+				}
+			}
+		}
 
 
 
@@ -181,5 +214,8 @@ public class IGSNRequestValidationService {
 			}
 		}
 	}
+
+
+
 
 }

@@ -39,7 +39,8 @@ public class ImportService {
 	private final EmbargoService embargoService;
 
 	public ImportService(IdentifierService identifierService, RecordService recordService,
-						 IGSNVersionService igsnVersionService, SchemaService schemaService, IGSNRequestService igsnRequestService, EmbargoService embargoService) {
+						 IGSNVersionService igsnVersionService, SchemaService schemaService,
+						 IGSNRequestService igsnRequestService, EmbargoService embargoService) {
 		this.identifierService = identifierService;
 		this.recordService = recordService;
 		this.igsnVersionService = igsnVersionService;
@@ -63,10 +64,10 @@ public class ImportService {
 
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
-		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
-				? request.getAttribute(Attribute.OWNER_TYPE) : "User";
-		String ownerID = request.getAttribute(Attribute.OWNER_ID) != null
-				? request.getAttribute(Attribute.OWNER_ID) : creatorID;
+		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
+		//!= null ? request.getAttribute(Attribute.OWNER_TYPE) : "User";
+		String ownerID = request.getAttribute(Attribute.OWNER_ID);
+		//!= null ? request.getAttribute(Attribute.OWNER_ID) : creatorID;
 
 		// build the providers
 		Schema schema = schemaService.getSchemaForContent(content);
@@ -201,6 +202,11 @@ public class ImportService {
 			throw new ForbiddenOperationException(
 					String.format("Record with Identifier %s doesn't exist", identifierValue));
 		}
+		// if owner type is user the creator id must be the same as the ownerid
+		if (record.getOwnerType().equals(Record.OwnerType.User) && !record.getOwnerID().equals(UUID.fromString(creatorID))) {
+			throw new ForbiddenOperationException(String.format("User has no access to the Record with Identifier: %s", identifierValue));
+		}
+
 		Version currentVersion = null;
 		Optional<Version> cVersion = record.getCurrentVersions().stream()
 				.filter(version -> version.getSchema().equals(schema.getId())).findFirst();
@@ -244,6 +250,7 @@ public class ImportService {
 		version.setCreatedAt(request.getCreatedAt());
 		version.setCurrent(isThisCurrent);
 		version.setHash(VersionService.getHash(content));
+		version.setRequestID(request.getId());
 		igsnVersionService.save(version);
 		logger.debug("Created a version {}", version.getId());
 

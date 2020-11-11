@@ -5,16 +5,19 @@ import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
+import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestValidationService;
@@ -68,7 +71,7 @@ public class IGSNServiceController {
 
 	private final IGSNRequestService igsnRequestService;
 
-	private final KeycloakService kcService;
+	private final KeycloakService keycloakService;
 
 	private final IGSNRequestValidationService igsnRequestValidationService;
 
@@ -81,14 +84,14 @@ public class IGSNServiceController {
 	private final IdentifierService identifierService;
 
 	public IGSNServiceController(IGSNRequestService igsnRequestService, RequestService requestService,
-			RequestMapper requestMapper, KeycloakService kcService,
+			RequestMapper requestMapper, KeycloakService keycloakService,
 			IGSNRequestValidationService igsnRequestValidationService, IGSNService igsnService,
 			ApplicationEventPublisher applicationEventPublisher, ImportService importService,
 			SchemaService schemaService, IdentifierService identifierService) {
 		this.igsnRequestService = igsnRequestService;
 		this.requestService = requestService;
 		this.requestMapper = requestMapper;
-		this.kcService = kcService;
+		this.keycloakService = keycloakService;
 		this.igsnRequestValidationService = igsnRequestValidationService;
 		this.igsnService = igsnService;
 		this.applicationEventPublisher = applicationEventPublisher;
@@ -99,21 +102,24 @@ public class IGSNServiceController {
 
 	@PostMapping("/bulk-mint")
 	@Operation(summary = "Bulk mint IGSN", description = "Mint a batch of IGSN identifier with metadata")
-	@ApiResponse(responseCode = "202", description = "Bulk mint request is accepted",
+	@ApiResponse(responseCode = "200", description = "Bulk mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload,
-			@RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
+	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest,
+			@RequestBody String payload,
+			@RequestParam(required = false) String ownerID,
+			@RequestParam(required = false, defaultValue = "User") String ownerType)
 			throws IOException {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_BULK_MINT, payload);
-		if (ownerType != null) {
-			request.setAttribute(Attribute.OWNER_TYPE, ownerType);
-		}
 
+		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
 			request.setAttribute(Attribute.OWNER_ID, ownerID);
+		}else{
+			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
 		}
 
 		// Validate the request
@@ -124,15 +130,15 @@ public class IGSNServiceController {
 		// Queue request
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
-		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 
 		// process the request (async)
 		request.setStatus(Request.Status.QUEUED);
+		request.setMessage("Bulk Mint Request is Queued");
 		igsnRequestService.save(request);
 		igsnService.processMintOrUpdate(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.accepted().body(dto);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	/**
@@ -147,32 +153,31 @@ public class IGSNServiceController {
 	 */
 	@PostMapping("/mint")
 	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata")
-	@ApiResponse(responseCode = "201", description = "Mint request is accepted",
+	@ApiResponse(responseCode = "200", description = "Mint request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload,
-			@RequestParam(required = false) String ownerID, @RequestParam(required = false) String ownerType)
+	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest,
+			@RequestBody String payload,
+			@RequestParam(required = false) String ownerID,
+			@RequestParam(required = false, defaultValue = "User") String ownerType)
 			throws Exception {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_MINT, payload);
-		if (ownerType != null) {
-			request.setAttribute(Attribute.OWNER_TYPE, ownerType);
-		}
 
+		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
 			request.setAttribute(Attribute.OWNER_ID, ownerID);
+		}else{
+			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
 		}
 
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);
-		request.setStatus(Request.Status.ACCEPTED);
-		igsnRequestService.save(request);
-
 		// process (single)
 		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
-		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
@@ -190,7 +195,7 @@ public class IGSNServiceController {
 		igsnService.finalizeRequest(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	/**
@@ -201,12 +206,12 @@ public class IGSNServiceController {
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
 	@PostMapping("/update")
-	@ApiResponse(responseCode = "201", description = "Update request is accepted",
+	@ApiResponse(responseCode = "200", description = "Update request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	@Operation(summary = "Updates an existing IGSN metadata", description = "Updates an existing IGSN Metadata")
 	public ResponseEntity<RequestDTO> update(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_UPDATE, payload);
@@ -237,16 +242,16 @@ public class IGSNServiceController {
 		igsnService.finalizeRequest(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.status(HttpStatus.ACCEPTED).body(dto);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/bulk-update")
 	@Operation(summary = "Bulk update IGSN", description = "Update a batch of IGSN identifier with metadata")
-	@ApiResponse(responseCode = "202", description = "Bulk update request is accepted",
+	@ApiResponse(responseCode = "200", description = "Bulk update request is accepted",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> bulkUpdate(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_BULK_UPDATE, payload);
@@ -262,11 +267,12 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 
 		request.setStatus(Request.Status.QUEUED);
+		request.setMessage("Bulk Update Request is Queued");
 		igsnRequestService.save(request);
 		igsnService.processMintOrUpdate(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
-		return ResponseEntity.accepted().body(dto);
+		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/reserve")
@@ -275,56 +281,51 @@ public class IGSNServiceController {
 	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
-			@NotNull @RequestParam UUID allocationID,
+			@RequestParam(required = false, defaultValue = "User") String schemaId,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
-
+		request.setAttribute(Attribute.SCHEMA_ID, schemaId);
+		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
+		if (ownerID != null) {
+			request.setAttribute(Attribute.OWNER_ID, ownerID);
+		}else{
+			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
+		}
 		// todo validate the request
 		igsnRequestValidationService.validate(request, user);
-		request.setStatus(Request.Status.ACCEPTED);
-		igsnRequestService.save(request);
-
-		// process
-		// todo obtain allocationID from payload instead
-		request.setAttribute(Attribute.ALLOCATION_ID, allocationID.toString());
 		request.setStatus(Request.Status.QUEUED);
+		request.setMessage("Bulk Reserve Request is Queued");
 		igsnRequestService.save(request);
-
-		// run
-		// todo handle this better (validate each line)
-		String[] lines = payload.split("\\r?\\n");
-		for (String identifierValue : lines) {
-			ReserveIGSNTask task = new ReserveIGSNTask(identifierValue, request, importService);
-			task.run();
-		}
-
-		igsnService.finalizeRequest(request);
+		igsnService.processReserve(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.ok().body(dto);
 	}
 
 	@PostMapping("/transfer")
-	@Operation(summary = "Transfer a set of IGSNs to another User/DataCenter",
-			description = "Transfer the ownership of a list of IGSN Identifier to another User or DataCenter")
+	@Operation(summary = "Transfer a set of IGSNs to another DataCenter",
+			description = "Transfer the ownership of a list of IGSN Identifier to a DataCenter")
 	@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @NotNull @RequestParam UUID ownerID,
-			@RequestParam String ownerType, @RequestBody String payload) throws IOException {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @NotNull @RequestParam String ownerID,
+	      @RequestParam(required = false, defaultValue = "DataCenter") String ownerType, @RequestBody String payload) throws IOException {
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
+		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
+		request.setAttribute(Attribute.OWNER_ID, ownerID);
 
-		// todo validate
-		request.setStatus(Request.Status.ACCEPTED);
-		igsnRequestService.save(request);
+		igsnRequestValidationService.validate(request, user);
+
 
 		// process
-		request.setAttribute(Attribute.OWNER_ID, ownerID.toString());
-		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
+
 		request.setStatus(Request.Status.QUEUED);
+		request.setMessage("Bulk Transfer Request is Queued");
 		igsnRequestService.save(request);
 
 		// run
@@ -344,7 +345,7 @@ public class IGSNServiceController {
 	@GetMapping("/generate-igsn")
 	public ResponseEntity<?> generateIGSN(HttpServletRequest httpServletRequest,
 			@RequestParam(required = false) String allocationID) {
-		User user = kcService.getLoggedInUser(httpServletRequest);
+		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// if allocationID is provided, use that allocation, otherwise get the first one
 		IGSNAllocation allocation = (allocationID != null)
