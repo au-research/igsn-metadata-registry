@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.task;
 
 import au.edu.ardc.registry.common.entity.Identifier;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.Attribute;
@@ -64,39 +65,58 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 			Identifier identifier = importService.updateRequest(file, request);
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_UPDATED);
 			request.setAttribute(Attribute.END_TIME_UPDATE, new Date().getTime());
-			requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
-			applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
-			logger.info("Queue a sync task for identifier: {}", identifier.getValue());
-			applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
+			if (identifier != null) {
+				Record record = identifier.getRecord();
+				if(record != null){
+					int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+					int numUpdated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_UPDATED));
+					request.setMessage(String.format("Updated %d out of %d", numUpdated, totalCount));
+					requestLog.info(String.format("Updated Record with Identifier: %s", identifier.getValue()));
+					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
+					applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
+					logger.debug("Queued sync task for identifier: {}", identifier.getValue());
+				}
+			}
+			if(request.getType().equals(IGSNService.EVENT_UPDATE)) {
+				if(identifier != null){
+					request.setMessage(String.format("Successfully updated Identifier: %s", identifier.getValue()));
+				}else{
+					request.setMessage(String.format("Error creating Identifier: %s", identifier.getValue()));
+				}
+			}
 		}
 		catch (IOException e) {
-			// todo log the exception in the request log
 			requestLog.warn(e.getMessage());
+			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			Thread.currentThread().interrupt();
-			logger.error(e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			if(request.getType().equals(IGSNService.EVENT_UPDATE)) {
+				request.setMessage(e.getMessage());
+			}
+			else {
+				applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			}
 		}catch(ForbiddenOperationException e){
 			requestLog.warn(e.getMessage());
+			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_FORBIDDEN);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			Thread.currentThread().interrupt();
-			logger.warn(e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
-		}catch(VersionIsOlderThanCurrentException e){
+			if(request.getType().equals(IGSNService.EVENT_UPDATE)) {
+				request.setMessage(e.getMessage());
+			}
+			else {
+				applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			}
+		}catch(VersionIsOlderThanCurrentException | VersionContentAlreadyExistsException e){
 			requestLog.warn(e.getMessage());
+			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_CONTENT_NOT_CHANGED);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			Thread.currentThread().interrupt();
-			logger.warn(e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
-		}catch(VersionContentAlreadyExistsException e){
-			requestLog.warn(e.getMessage());
-			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_CONTENT_NOT_CHANGED);
-			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			Thread.currentThread().interrupt();
-			logger.warn(e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			if(request.getType().equals(IGSNService.EVENT_UPDATE)) {
+				request.setMessage(e.getMessage());
+			}
+			else {
+				applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
+			}
 		}
 	}
 

@@ -11,11 +11,15 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.GroupsResource;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.TokenIntrospectionResponse;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.RolesRepresentation;
 import org.keycloak.representations.idm.authorization.AuthorizationResponse;
 import org.keycloak.representations.idm.authorization.Permission;
 import org.keycloak.representations.idm.authorization.ResourceRepresentation;
@@ -239,6 +243,56 @@ public class KeycloakService {
 		dataCenter.setPath(group.getPath());
 		return dataCenter;
 	}
+
+	/**
+	 * @param datacenterId The UUID of the Group
+	 * @throws Exception normally when the environment is not properly set or (rarely)
+	 * group name doesn't exist
+	 * @return DataCenter representation of a keycloak Group
+	 */
+	@Cacheable("datacenters")
+	public DataCenter getDataCenterByUUID(UUID datacenterId) throws Exception {
+		// todo cache
+		logger.debug("Obtaining DataCenter for uuid: " + datacenterId);
+		Keycloak keycloak = getAdminClient();
+		List<GroupRepresentation> groups = keycloak.realm(kcRealm).groups().groups();
+		List<RoleRepresentation> roles = keycloak.realm(kcRealm).roles().list();
+		GroupRepresentation group = null;
+		for (GroupRepresentation g  : groups) {
+			if(g.getId().equals(datacenterId.toString())){
+				group = g;
+			}else{
+				group = getSubgroupByID(g, datacenterId.toString());
+			}
+			if(group != null)
+			{
+				logger.debug(String.format("Obtained GroupRepresentation %s", group.getName()));
+				DataCenter dataCenter = new DataCenter(UUID.fromString(group.getId()));
+				dataCenter.setName(group.getName());
+				dataCenter.setPath(group.getPath());
+				return dataCenter;
+			}
+		}
+		return null;
+	}
+
+	private GroupRepresentation getSubgroupByID(GroupRepresentation group, String groupId){
+		if(group.getSubGroups().isEmpty()) {
+			return null;
+		}
+		for(GroupRepresentation sg : group.getSubGroups()){
+			if(sg.getId().equals(groupId)){
+				return sg;
+			}else{
+				GroupRepresentation ssg = getSubgroupByID(sg, groupId);
+				if(ssg != null){
+					return ssg;
+				}
+			}
+		}
+		return null;
+	}
+
 
 	@Cacheable("allocations")
 	public Allocation getAllocationByResourceID(String id) {

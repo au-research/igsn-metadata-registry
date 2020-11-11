@@ -95,7 +95,7 @@
     }
   },
   {
-    "id": "plain_text_igsn_list",
+    "id": "igsn_list",
     "name": "Text File containing list of Identifiers",
     "description": "Text File containing list of Identifiers",
     "type": "",

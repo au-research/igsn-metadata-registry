@@ -63,7 +63,10 @@ class ImportServiceTest {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 
 		Request request = TestHelper.mockRequest();
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		String ownerId = UUID.randomUUID().toString();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
+		request.setAttribute(Attribute.OWNER_ID, ownerId);
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 
 		// when importRequest a valid payload and a valid request
@@ -85,8 +88,10 @@ class ImportServiceTest {
 		when(identifierService.save(any(Identifier.class))).thenThrow(new ForbiddenOperationException("bad"));
 
 		Request request = TestHelper.mockRequest();
+		String ownerId = UUID.randomUUID().toString();
 		request.setAttribute(Attribute.OWNER_TYPE, "User");
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
+		request.setAttribute(Attribute.OWNER_ID, ownerId);
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 
 		// when importRequest a valid payload and a valid request
@@ -117,8 +122,11 @@ class ImportServiceTest {
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
 		Request request = TestHelper.mockRequest();
+		String ownerId = UUID.randomUUID().toString();
+		record.setOwnerID(UUID.fromString(ownerId));
+		record.setOwnerType(Record.OwnerType.User);
 		request.setAttribute(Attribute.OWNER_TYPE, "User");
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 
 		// when importRequest a valid payload and a valid request
@@ -137,7 +145,10 @@ class ImportServiceTest {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 
 		// given an existing Identifier and an existing Record
+		String ownerId = UUID.randomUUID().toString();
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setOwnerID(UUID.fromString(ownerId));
+		record.setOwnerType(Record.OwnerType.User);
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version oldVersion = TestHelper.mockVersion(record);
@@ -148,7 +159,7 @@ class ImportServiceTest {
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
 		Request request = TestHelper.mockRequest();
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
 
 		Assert.assertThrows(VersionContentAlreadyExistsException.class, () -> {
 			importService.updateRequest(new File("src/test/resources/xml/sample_ardcv1.xml"), request);
@@ -163,7 +174,10 @@ class ImportServiceTest {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 
 		// given an existing Identifier and an existing Record
+		String ownerId = UUID.randomUUID().toString();
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setOwnerID(UUID.fromString(ownerId));
+		record.setOwnerType(Record.OwnerType.User);
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version oldVersion = TestHelper.mockVersion(record);
@@ -178,7 +192,7 @@ class ImportServiceTest {
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
 		Request request = TestHelper.mockRequest();
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
 
 		Assert.assertThrows(VersionIsOlderThanCurrentException.class, () -> {
 			importService.updateRequest(new File("src/test/resources/xml/older_sample_ardcv1.xml"), request);
@@ -193,7 +207,10 @@ class ImportServiceTest {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 
 		Request request = TestHelper.mockRequest();
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		String ownerId = UUID.randomUUID().toString();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
+		request.setAttribute(Attribute.OWNER_ID, ownerId);
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 
 		// when importRequest a valid payload and a valid request
@@ -215,7 +232,10 @@ class ImportServiceTest {
 				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
 
 		// given an existing Identifier and an existing Record
+		String ownerId = UUID.randomUUID().toString();
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setOwnerID(UUID.fromString(ownerId));
+		record.setOwnerType(Record.OwnerType.User);
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version version = TestHelper.mockVersion(record);
@@ -227,7 +247,7 @@ class ImportServiceTest {
 
 		Request request = TestHelper.mockRequest();
 		request.setAttribute(Attribute.OWNER_TYPE, "User");
-		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
 		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
 
 		// when importRequest a valid payload and a valid request

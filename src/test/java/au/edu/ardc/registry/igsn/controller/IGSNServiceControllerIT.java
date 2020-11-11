@@ -130,7 +130,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 	}
 
 	@Test
-	void mint_201() throws Exception {
+	void mint_200() throws Exception {
 		String validXML = Helpers.readFile("src/test/resources/xml/sample_mintable_ardcv1.xml");
 		String identifierValue = "20.500.11812/XXZT1000023";
 		IGSNAllocation allocation = getStubAllocation();
@@ -155,7 +155,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
 				.body(Mono.just(validXML), String.class)
 				.exchange()
-				.expectStatus().isCreated();
+				.expectStatus().isOk();
 		// @formatter:on
 
 		// the identifier is created

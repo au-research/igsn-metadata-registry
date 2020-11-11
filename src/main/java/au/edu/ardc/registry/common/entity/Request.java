@@ -125,6 +125,14 @@ public class Request {
 		setAttribute("message", msg);
 	}
 
+	public String getSummary() {
+		return getAttribute("summary");
+	}
+
+	public void setSummary(String msg) {
+		setAttribute("summary", msg);
+	}
+
 	public String getType() {
 		return type;
 	}

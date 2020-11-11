@@ -4,6 +4,7 @@ import au.edu.ardc.registry.common.controller.api.resources.RequestResourceContr
 import org.springframework.hateoas.RepresentationModel;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -23,6 +24,8 @@ public class RequestDTO extends RepresentationModel<RequestDTO> {
 	private Date updatedAt;
 
 	private String message;
+
+	private HashMap summary = new HashMap<String, String>();
 
 	public UUID getId() {
 		return id;
@@ -83,6 +86,27 @@ public class RequestDTO extends RepresentationModel<RequestDTO> {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+	public HashMap getSummary() {
+		return summary;
+	}
+
+	public void setSummary(String summary) {
+		HashMap<String, String> map = new HashMap<String, String>();
+		if(summary == null){
+			return;
+		}
+		String[] list = summary.split(",");
+		if(list.length > 0){
+			for (String item:list){
+				String[] kv = item.split(":");
+				if(kv.length > 1){
+					map.put(kv[0].trim(), kv[1].trim());
+				}
+			}
+		}
+		this.summary = map;
 	}
 
 }

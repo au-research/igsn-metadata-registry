@@ -27,7 +27,7 @@ class LineContentProviderTest {
     @Test
     void get_all_identifiers() throws IOException {
         String text = Helpers.readFile("src/test/resources/data/igsn.txt");
-        Schema schema = schemaService.getSchemaByID(SchemaService.plainText);
+        Schema schema = schemaService.getSchemaByID(SchemaService.IGSNList);
         IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
         assert provider != null;
         List<String> identifiers = provider.getAll(text);
@@ -46,7 +46,7 @@ class LineContentProviderTest {
 
          */
         String text = Helpers.readFile("src/test/resources/data/igsn.txt");
-        Schema schema = schemaService.getSchemaByID(SchemaService.plainText);
+        Schema schema = schemaService.getSchemaByID(SchemaService.IGSNList);
         IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
         assert provider != null;
         String identifier;
