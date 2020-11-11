@@ -12,6 +12,7 @@ import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
 import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class ImportService {
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ImportService.class);
 

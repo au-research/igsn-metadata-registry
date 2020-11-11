@@ -21,6 +21,7 @@ import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.List;
  * Service for validating IGSN Requests Mainly
  */
 @Service
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNRequestValidationService {
 
 	final SchemaService schemaService;

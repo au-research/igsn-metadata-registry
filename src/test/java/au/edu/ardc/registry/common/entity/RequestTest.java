@@ -1,4 +1,4 @@
-package au.edu.ardc.registry.igsn.entity;
+package au.edu.ardc.registry.common.entity;
 
 import au.edu.ardc.registry.common.entity.Request;
 import org.junit.jupiter.api.Test;

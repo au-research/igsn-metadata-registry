@@ -1,4 +1,4 @@
-package au.edu.ardc.registry.igsn.repository;
+package au.edu.ardc.registry.common.repository;
 
 import au.edu.ardc.registry.common.repository.RequestRepository;
 import au.edu.ardc.registry.common.entity.Request;

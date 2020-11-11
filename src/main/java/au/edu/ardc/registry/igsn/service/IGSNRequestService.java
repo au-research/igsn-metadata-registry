@@ -10,6 +10,7 @@ import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 
 @Service
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNRequestService {
 
 	Logger logger = LoggerFactory.getLogger(IGSNRequestService.class);

@@ -25,7 +25,26 @@
 		<commons-io.version>2.5</commons-io.version>
 		<micrometer.version>1.5.3</micrometer.version>
 		<ecs-logging-java.version>0.5.1</ecs-logging-java.version>
+		<unit-tests>**/*Test.*</unit-tests>
+		<integration-tests>**/*IT.*</integration-tests>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>common</id>
+			<properties>
+				<unit-tests>**/common/**/*Test.*</unit-tests>
+				<integration-tests>**/common/**/*IT.*</integration-tests>
+			</properties>
+		</profile>
+		<profile>
+			<id>igsn</id>
+			<properties>
+				<unit-tests>**/common/**/*Test.*,**/igsn/**/*Test.*,**/oai/**/*Test.*</unit-tests>
+				<integration-tests>**/common/**/*IT.*,**/igsn/**/*IT.*,**/oai/**/*IT.*</integration-tests>
+			</properties>
+		</profile>
+	</profiles>
 
 	<dependencies>
 
@@ -285,6 +304,22 @@
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-help-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>show-profiles</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>active-profiles</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.openclover</groupId>
 				<artifactId>clover-maven-plugin</artifactId>
@@ -312,7 +347,7 @@
 						<configuration>
 							<skipTests>false</skipTests>
 							<includes>
-								<include>**/*Test.java</include>
+								<include>${unit-tests}</include>
 							</includes>
 						</configuration>
 					</execution>
@@ -325,7 +360,7 @@
 						<configuration>
 							<skipTests>false</skipTests>
 							<includes>
-								<include>**/*IT.*</include>
+								<include>${integration-tests}</include>
 							</includes>
 						</configuration>
 					</execution>

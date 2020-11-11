@@ -8,6 +8,8 @@ import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.test.context.junit.jupiter.EnabledIf;
 
 import java.util.List;
 import java.util.Map;

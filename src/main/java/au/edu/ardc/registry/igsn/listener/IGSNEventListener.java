@@ -12,11 +12,13 @@ import au.edu.ardc.registry.igsn.service.IGSNService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNEventListener {
 
 	Logger logger = LoggerFactory.getLogger(RecordEventListener.class);

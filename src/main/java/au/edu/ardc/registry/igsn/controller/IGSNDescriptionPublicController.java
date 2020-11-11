@@ -14,6 +14,7 @@ import au.edu.ardc.registry.igsn.exception.IGSNNoValidContentForSchema;
 import au.edu.ardc.registry.igsn.exception.IGSNNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/public/igsn-description")
+@ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Description Public API")
 public class IGSNDescriptionPublicController {
 

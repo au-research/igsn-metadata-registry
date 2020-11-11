@@ -35,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,6 +52,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/services/igsn",
 		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+@ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Service", description = "API endpoints for IGSN related operations")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")

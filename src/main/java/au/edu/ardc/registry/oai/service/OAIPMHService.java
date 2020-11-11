@@ -16,6 +16,7 @@ import au.edu.ardc.registry.oai.model.*;
 import au.edu.ardc.registry.oai.response.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@ConditionalOnProperty(name = "app.oai.enabled")
 public class OAIPMHService {
 
 	public static final int pageSize = 100;

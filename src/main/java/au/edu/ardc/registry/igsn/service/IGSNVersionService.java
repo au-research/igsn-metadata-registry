@@ -11,6 +11,7 @@ import au.edu.ardc.registry.common.service.ValidationService;
 import au.edu.ardc.registry.common.service.VersionService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Service("IGSNVersionService")
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNVersionService {
 
 	@Autowired
