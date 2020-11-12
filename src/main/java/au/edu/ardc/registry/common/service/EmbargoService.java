@@ -3,6 +3,7 @@ package au.edu.ardc.registry.common.service;
 import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.repository.EmbargoRepository;
+import au.edu.ardc.registry.common.repository.RecordRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -15,9 +16,11 @@ import java.util.UUID;
 public class EmbargoService {
 
 	private final EmbargoRepository repository;
+	private final RecordRepository recordRepository;
 
-	public EmbargoService(EmbargoRepository repository) {
+	public EmbargoService(EmbargoRepository repository, RecordRepository recordRepository) {
 		this.repository = repository;
+		this.recordRepository = recordRepository;
 	}
 
 	/**
@@ -38,6 +41,7 @@ public class EmbargoService {
 		for(Embargo endEmbargo: embargoList) {
 			Record record = endEmbargo.getRecord();
 			record.setVisible(true);
+			recordRepository.save(record);
 			delete(endEmbargo.getId());
 		}
 	}
