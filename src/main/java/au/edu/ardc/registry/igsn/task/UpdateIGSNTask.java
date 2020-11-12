@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
@@ -85,7 +86,7 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 				}
 			}
 		}
-		catch (IOException e) {
+		catch (IOException | ContentNotSupportedException e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);

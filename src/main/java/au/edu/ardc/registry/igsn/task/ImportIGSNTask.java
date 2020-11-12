@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
@@ -84,7 +85,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			}
 			logger.info("Processed import file: {}", file.getAbsoluteFile());
 		}
-		catch (IOException e) {
+		catch (IOException | ContentNotSupportedException e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
