@@ -68,13 +68,18 @@ public class IGSNRequestValidationService {
 	 * @throws ContentNotSupportedException when the payload content type is not supported
 	 */
 	public void validate(@NotNull Request request, User user) throws IOException ,ContentNotSupportedException{
-
+		String type = request.getType();
 		// check for file size before anything else
-        long fiveMB = 5 * 1024 * 1024;
+		// 5 MB for BATCH
+		long maxContentSize = 5 * 1024 * 1024;
+		// 60 KB for single mint and update
+		if(type.equals(IGSNService.EVENT_MINT) || type.equals(IGSNService.EVENT_UPDATE)){
+			maxContentSize = 60 * 1024; // 60 KB
+		}
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
 
-		Helpers.checkFileSize(request.getAttribute(Attribute.PAYLOAD_PATH), fiveMB);
+		Helpers.checkFileSize(request.getAttribute(Attribute.PAYLOAD_PATH), maxContentSize);
 
 
 		String content = Helpers.readFile(file);
@@ -90,7 +95,7 @@ public class IGSNRequestValidationService {
 		schemaService.validate(content);
 
 		// get first IdentifierValue in the payload
-		String type = request.getType();
+
 		Scope scope = Scope.UPDATE;
 		if (type.equals(IGSNService.EVENT_BULK_MINT) || (type.equals(IGSNService.EVENT_MINT))) {
 			scope = Scope.CREATE;
