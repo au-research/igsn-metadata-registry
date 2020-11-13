@@ -311,8 +311,8 @@ public class IGSNServiceController {
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the newline separated IGSN list, 1 per line"),
 			parameters = {
-					@Parameter(name = "schemaId", description = "the schema of the payload",
-							schema = @Schema(description = "schema ID", type = "string",
+					@Parameter(name = "schemaID", description = "the schema of the payload",
+							schema = @Schema(description = "Schema ID", type = "string",
 									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
 					@Parameter(name = "ownerID",
 							description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
@@ -359,6 +359,9 @@ public class IGSNServiceController {
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the newline separated IGSN list, 1 per line"),
 			parameters = {
+					@Parameter(name = "schemaID", description = "the schema of the payload",
+							schema = @Schema(description = "Schema ID", type = "string",
+									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
 					@Parameter(name = "ownerID", required = true, description = "The UUID of the intended Owner",
 							schema = @Schema(implementation = UUID.class)),
 					@Parameter(name = "ownerType", description = "The Type of the Owner", required = true,
@@ -373,11 +376,13 @@ public class IGSNServiceController {
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> transfer(HttpServletRequest httpServletRequest,
 			@NotNull @RequestParam String ownerID,
+			@RequestParam(required = false, defaultValue = "igsn_list") String schemaID,
 			@RequestParam(required = false, defaultValue = "DataCenter") String ownerType, @RequestBody String payload)
 			throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
+		request.setAttribute(Attribute.SCHEMA_ID, schemaID);
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		request.setAttribute(Attribute.OWNER_ID, ownerID);
@@ -390,15 +395,7 @@ public class IGSNServiceController {
 		request.setMessage("Bulk Transfer Request is Queued");
 		igsnRequestService.save(request);
 
-		// run
-		// todo handle this better (validate each line)
-		String[] lines = payload.split("\\r?\\n");
-		for (String identifierValue : lines) {
-			TransferIGSNTask task = new TransferIGSNTask(identifierValue, request, importService);
-			task.run();
-		}
-
-		igsnService.finalizeRequest(request);
+		igsnService.processTransfer(request);
 
 		RequestDTO dto = requestMapper.getConverter().convert(request);
 		return ResponseEntity.ok().body(dto);

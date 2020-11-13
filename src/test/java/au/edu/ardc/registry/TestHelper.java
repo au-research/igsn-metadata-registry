@@ -2,6 +2,7 @@ package au.edu.ardc.registry;
 
 import au.edu.ardc.registry.common.entity.*;
 import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.DataCenter;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
@@ -201,6 +202,13 @@ public class TestHelper {
 		user.setDataCenters(new ArrayList<>());
 		user.setAllocations(new ArrayList<>());
 		return user;
+
+		// mock a user resources
+	}
+
+	public static DataCenter mockDataCenter() {
+		DataCenter dataCenter = new DataCenter(UUID.randomUUID());
+		return dataCenter;
 
 		// mock a user resources
 	}

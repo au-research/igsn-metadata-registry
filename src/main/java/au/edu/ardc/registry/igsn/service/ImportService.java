@@ -6,10 +6,7 @@ import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
-import au.edu.ardc.registry.exception.ContentNotSupportedException;
-import au.edu.ardc.registry.exception.ForbiddenOperationException;
-import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
-import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
+import au.edu.ardc.registry.exception.*;
 import org.apache.logging.log4j.core.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -344,13 +341,23 @@ public class ImportService {
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 		if (identifier == null) {
-			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+			throw new ForbiddenOperationException(String.format("Identifier : %s and type %s doesn't exist",
 					identifierValue, Identifier.Type.IGSN));
 		}
 
 		Record record = identifier.getRecord();
+		if(record == null){
+			throw new ForbiddenOperationException(String.format("Record with Identifier: %s and type: %s doesn't exist",
+					identifierValue, Identifier.Type.IGSN));
+		}
+
+		if(record.getOwnerID().equals(UUID.fromString(ownerID))){
+			throw new NotChangedException("Record", "OwnerID", ownerID);
+		}
 		record.setOwnerID(UUID.fromString(ownerID));
 		record.setOwnerType(Record.OwnerType.valueOf(ownerType));
+		record.setModifiedAt(request.getCreatedAt());
+		record.setModifierID(UUID.fromString(request.getAttribute(Attribute.CREATOR_ID)));
 		recordService.save(record);
 
 		logger.info("Transfered ownership of identifier {} to {}:{}", identifier.getValue(), ownerType, ownerID);
