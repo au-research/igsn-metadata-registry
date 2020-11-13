@@ -105,7 +105,7 @@ public class RecordService {
 		Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
 
 		if (!validationService.validateRecordOwnership(record, user)) {
-			throw new ForbiddenOperationException("User does not have access to create record for this allocation");
+			throw new ForbiddenOperationException("User does not own this record");
 		}
 
 		return record;
