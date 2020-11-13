@@ -11,10 +11,7 @@ import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
-import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
-import au.edu.ardc.registry.igsn.task.ReserveIGSNTask;
-import au.edu.ardc.registry.igsn.task.SyncIGSNTask;
-import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
+import au.edu.ardc.registry.igsn.task.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.james.mime4j.field.datetime.DateTime;
@@ -110,6 +107,15 @@ public class IGSNService {
 				.execute(new ReserveIGSNTask(identifierValue, request, importService, applicationEventPublisher, igsnRequestService));
 	}
 
+
+	public void queueTransfer(UUID allocationID, String identifierValue, Request request) {
+		if (!importExecutors.containsKey(allocationID)) {
+			importExecutors.put(allocationID, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+		}
+
+		importExecutors.get(allocationID)
+				.execute(new TransferIGSNTask(identifierValue, request, importService, applicationEventPublisher, igsnRequestService));
+	}
 
 	public void queueUpdate(UUID allocationID, String identifierValue, File file, Request request) {
 		if (!importExecutors.containsKey(allocationID)) {
@@ -472,6 +478,54 @@ public class IGSNService {
 	}
 
 
+	/**
+	 * Read indvividual Identifiers from the payload and Queue the Request. Specifically used for bulk requests.
+	 * @param request the {@link Request} to chunk and queue if necessary.
+	 */
+	@Async
+	public void processTransfer(@NotNull Request request) {
+
+		String payloadPath = request.getAttribute(Attribute.PAYLOAD_PATH);
+		org.apache.logging.log4j.core.Logger requestLogger = igsnRequestService.getLoggerFor(request);
+
+		request.setAttribute(Attribute.START_TIME_CHUNKING, new Date().getTime());
+
+		request.setStatus(Request.Status.RUNNING);
+		// read the payload
+		String payload = "";
+		try {
+			requestLogger.debug("Reading payload at {}", payloadPath);
+			payload = Helpers.readFile(payloadPath);
+		}
+		catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		String schemaId = request.getAttribute(Attribute.SCHEMA_ID);
+
+
+		// chunk the payload and queue an import task per payload
+		try {
+			UUID allocationID = UUID.fromString(request.getAttribute(Attribute.ALLOCATION_ID));
+
+			Schema schema = schemaService.getSchemaByID(schemaId);
+			IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
+					Metadata.Identifier);
+
+			List<String> identifiers = identifierProvider.getAll(payload);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, identifiers.size());
+			requestLogger.debug("Found {} fragments in payload", identifiers.size());
+			for (String identifierValue : identifiers) {
+				String taskType = IGSNTask.TASK_TRANSFER;
+				queueTransfer(allocationID, identifierValue, request);
+				logger.info("Queued task {} for Identifier: {}", taskType, identifierValue);
+			}
+			igsnRequestService.save(request);
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+		request.setAttribute(Attribute.END_TIME_CHUNKING, new Date().getTime());
+	}
 
 	/**
 	 * Return the {@link IGSNAllocation}. The Allocation is extracted with first

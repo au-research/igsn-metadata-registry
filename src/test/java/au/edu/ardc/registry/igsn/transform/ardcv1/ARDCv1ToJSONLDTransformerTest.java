@@ -55,6 +55,8 @@ class ARDCv1ToJSONLDTransformerTest {
 		assertThat(actual).isInstanceOf(Version.class);
 		assertThat(actual.getSchema()).isEqualTo(SchemaService.ARDCv1JSONLD);
 		assertThat(actual.getContent()).isNotNull();
+		assertThat(actual.getRequestID()).isNotNull();
+		assertThat(actual.getRequestID()).isEqualTo(version.getRequestID());
 
 		// json assertions
 		String resultJSON = new String(actual.getContent());

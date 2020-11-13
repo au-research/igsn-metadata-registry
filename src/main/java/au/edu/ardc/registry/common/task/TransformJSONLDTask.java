@@ -44,19 +44,29 @@ public class TransformJSONLDTask implements Runnable {
 		logger.debug("Transformer from {} to {} obtained", SchemaService.ARDCv1, SchemaService.ARDCv1JSONLD);
 
 		try {
-			Version jsonLDVersion = transformer.transform(version);
-			jsonLDVersion.setHash(VersionService.getHash(jsonLDVersion));
-
+			Version newVersion = transformer.transform(version);
+			String hash = VersionService.getHash(newVersion);
 			// check if there's existing current json-ld and if they're different
 			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.ARDCv1JSONLD);
-			if (existingVersion != null && existingVersion.getHash().equals(jsonLDVersion.getHash())) {
-				logger.info("There's already a version with existing hash {} for schema {}, skipping",
-						existingVersion.getHash(), SchemaService.ARDCv1JSONLD);
-				return;
-			}
+			if (existingVersion != null) {
+				if (!existingVersion.getHash().equals(hash)) {
+					existingVersion.setHash(hash);
+					existingVersion.setContent(newVersion.getContent());
+					existingVersion.setCreatedAt(record.getModifiedAt());
+					existingVersion.setRequestID(record.getRequestID());
+					versionService.save(existingVersion);
 
-			// save the newly created version
-			versionService.save(jsonLDVersion);
+				} else {
+					logger.debug("There's already a version with existing hash {} for schema {}, skipping",
+							existingVersion.getHash(), SchemaService.ARDCv1JSONLD);
+					return;
+				}
+			}else{
+				newVersion.setRequestID(record.getRequestID());
+				newVersion.setCreatedAt(record.getCreatedAt());
+				newVersion.setHash(hash);
+				versionService.save(newVersion);
+			}
 
 			logger.info("Processed json-ld transformation for record {}", record.getId());
 		}

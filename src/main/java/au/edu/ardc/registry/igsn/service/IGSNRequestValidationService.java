@@ -44,7 +44,7 @@ public class IGSNRequestValidationService {
 
 	final KeycloakService keycloakService;
 
-	final List<String> supportedUserTypes = Arrays.asList("User", "DataCenter");
+	final List<String> supportedOwnerTypes = Arrays.asList("User", "DataCenter");
 
 	public IGSNRequestValidationService(SchemaService schemaService, IGSNService igsnService,
 			IdentifierService identifierService, RecordService recordService, ValidationService validationService, KeycloakService keycloakService) {
@@ -84,25 +84,32 @@ public class IGSNRequestValidationService {
 
 		String content = Helpers.readFile(file);
 
-
-		// todo validate request.attributes.ownerType, request.attributes.ownerID
-
-		// todo validate reserve, transfer, bulk-reserve, bulk-transfer
-
-		// todo single-mint, check for
-
 		// validate well-formed and schema validation for all requests
+
+		Schema schema = null;
+		if(request.getAttribute(Attribute.SCHEMA_ID) != null){
+			schema = schemaService.getSchemaByID(request.getAttribute(Attribute.SCHEMA_ID));
+			if(schema == null){
+				throw new ContentNotSupportedException(String.format("Validator for schema %s is not found",
+						request.getAttribute(Attribute.SCHEMA_ID)));
+			}
+		}else{
+			schema = schemaService.getSchemaForContent(content);
+		}
+
 		schemaService.validate(content);
 
 		// get first IdentifierValue in the payload
 
 		Scope scope = Scope.UPDATE;
-		if (type.equals(IGSNService.EVENT_BULK_MINT) || (type.equals(IGSNService.EVENT_MINT))) {
+		if (type.equals(IGSNService.EVENT_BULK_MINT) || (type.equals(IGSNService.EVENT_MINT))
+		|| type.equals(IGSNService.EVENT_RESERVE)) {
 			scope = Scope.CREATE;
 		}
 
 		// get the first identifier and find existingIdentifier
-		Schema schema = schemaService.getSchemaForContent(content);
+
+
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
 		List<String> identifiers = provider.getAll(content);
 
@@ -115,36 +122,38 @@ public class IGSNRequestValidationService {
 			throw new ContentNotSupportedException(String.format("Only single resource is allowed for %s service", type));
 		}
 
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(content, user, scope);
+		String firstIdentifier = identifiers.get(0);
+
+		IGSNAllocation allocation = igsnService.getIGSNAllocationForIdentifier(firstIdentifier, user, scope);
 
 		if (allocation == null) {
 			// todo language
 			request.setStatus(Request.Status.FAILED);
-			String firstIdentifier = identifiers.get(0);
 			throw new ForbiddenOperationException(String.format("User has no access to the given Identifier: %s", firstIdentifier));
 		}
 
+		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 
 		/*
-		Owner type must be User or DataCenter
 		User currently only able to mint, reserve , transfer as a datacenter they are member of
 		updates does not have ownerID
 		*/
 		if(type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_MINT)
 				||  type.equals(IGSNService.EVENT_RESERVE) || type.equals(IGSNService.EVENT_TRANSFER)){
+			// check for supported ownerType
+			// Owner type must be User or DataCenter
+			String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
+			if(!supportedOwnerTypes.contains(ownerType)){
+				throw new ForbiddenOperationException(String.format("OwnerType value: %s is not supported", ownerType));
+			}
 
 			UUID ownerID = UUID.fromString(request.getAttribute(Attribute.OWNER_ID));
 			if(!ownerID.equals(user.getId())){
-				// check for supported ownerType
-				String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
-				if(!supportedUserTypes.contains(ownerType)){
-					throw new ForbiddenOperationException(String.format("OwnerType value: %s is not supported", ownerType));
-				}
 				if(!ownerType.equals("DataCenter")){
 					throw new ForbiddenOperationException(String.format("User can only create records for a datacenter not: %s", ownerType));
 				}
 				// validate the owen not just the user
-
+				// validate reserve, transfer, bulk-reserve, bulk-transfer
 				boolean userHasDataCenter = false;
 				List<DataCenter> dataCenters = user.getDataCenters();
 				for (DataCenter dataCenter : dataCenters) {
@@ -183,7 +192,7 @@ public class IGSNRequestValidationService {
 		// SINGLE MINT OR UPDATE CONTINUES HERE
 
 		// get the first one, and start validating singles
-		String firstIdentifier = identifiers.get(0);
+
 		Identifier existingIdentifier = identifierService.findByValueAndType(firstIdentifier, Identifier.Type.IGSN);
 
 		// if it's single mint, check if the identifier already exist
@@ -219,8 +228,4 @@ public class IGSNRequestValidationService {
 			}
 		}
 	}
-
-
-
-
 }

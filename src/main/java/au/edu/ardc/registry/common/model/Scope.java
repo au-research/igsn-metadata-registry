@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public enum Scope implements Serializable {
 
-	UPDATE("igsn:update"), CREATE("igsn:create"), IMPORT("igsn:import");
+	UPDATE("update"), CREATE("create"), IMPORT("import");
 
 	private final String value;
 

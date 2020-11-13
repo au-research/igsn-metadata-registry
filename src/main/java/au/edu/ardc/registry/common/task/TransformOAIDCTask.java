@@ -42,20 +42,27 @@ public class TransformOAIDCTask implements Runnable {
 		logger.debug("Transformer from {} to {} obtained", SchemaService.ARDCv1, SchemaService.OAIDC);
 
 		try {
-			Version oaiDCVersion = transformer.transform(version);
-			oaiDCVersion.setHash(VersionService.getHash(oaiDCVersion));
-
-			// check if there's existing current json-ld and if they're different
+			Version newVersion = transformer.transform(version);
+			String hash = VersionService.getHash(newVersion);
 			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.OAIDC);
-			if (existingVersion != null && existingVersion.getHash().equals(oaiDCVersion.getHash())) {
-				logger.info("There's already a version with existing hash {} for schema {}, skipping",
-						existingVersion.getHash(), SchemaService.OAIDC);
-				return;
+			if (existingVersion != null){
+				if(!existingVersion.getHash().equals(hash)) {
+					existingVersion.setContent(newVersion.getContent());
+					existingVersion.setRequestID(record.getRequestID());
+					existingVersion.setCreatedAt(record.getModifiedAt());
+					existingVersion.setHash(hash);
+					versionService.save(existingVersion);
+				}else{
+					logger.debug("There's already a version with existing hash {} for schema {}, skipping",
+							existingVersion.getHash(), SchemaService.OAIDC);
+					return;
+				}
+			}else {
+				newVersion.setRequestID(record.getRequestID());
+				newVersion.setCreatedAt(record.getCreatedAt());
+				newVersion.setHash(hash);
+				versionService.save(newVersion);
 			}
-
-			// save the newly created version
-			// todo end previous version by record and schema
-			versionService.save(oaiDCVersion);
 
 			logger.info("Processed oai-dc transformation for record {}", record.getId());
 		}

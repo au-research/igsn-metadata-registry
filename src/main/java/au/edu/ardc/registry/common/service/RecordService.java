@@ -72,9 +72,14 @@ public class RecordService {
 	 */
 	public Record findPublicById(String id) {
 		Record record = findById(id);
-		if (record == null || !record.isVisible()) {
+		if (record == null) {
 			throw new RecordNotFoundException(id);
 		}
+
+		if (!record.isVisible()) {
+			throw new ForbiddenOperationException(String.format("Record %s is private", id));
+		}
+
 		return record;
 	}
 
@@ -100,7 +105,7 @@ public class RecordService {
 		Record record = opt.orElseThrow(() -> new RecordNotFoundException(id));
 
 		if (!validationService.validateRecordOwnership(record, user)) {
-			throw new ForbiddenOperationException("User does not have access to create record for this allocation");
+			throw new ForbiddenOperationException("User does not own this record");
 		}
 
 		return record;

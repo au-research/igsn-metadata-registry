@@ -8,6 +8,7 @@ import au.edu.ardc.registry.common.service.RecordProcessingService;
 import au.edu.ardc.registry.igsn.event.IGSNSyncedEvent;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
+import au.edu.ardc.registry.igsn.event.TaskCompletedEvent;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,14 @@ public class IGSNEventListener {
 	public void handleIGSNSErrorEvent(RequestExceptionEvent event) {
 		Request request = event.getRequest();
 		logger.debug("Event RequestExceptionEvent raised with message {} for request {}", event.getMessage(),
+				request.getId());
+		igsnService.checkRequest(request);
+	}
+
+	@EventListener
+	public void handleTaskCompletedEvent(TaskCompletedEvent event) {
+		Request request = event.getRequest();
+		logger.debug("Event handleTaskCompletedEvent raised with message {} for request {}", event.getMessage(),
 				request.getId());
 		igsnService.checkRequest(request);
 	}

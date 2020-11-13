@@ -88,7 +88,7 @@ public class OAIPMHService {
 		}
 
 		try {
-			Record record = recordService.findById(identifier);
+			Record record = recordService.findPublicById(identifier);
 			Version version = versionService.findVersionForRecord(record, metadataPrefix);
 			String content = new String(version.getContent());
 			return new GetRecordResponse(record, content);

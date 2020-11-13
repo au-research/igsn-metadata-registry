@@ -34,6 +34,10 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 		resultVersion.setSchema(targetSchemaID);
 		resultVersion.setContent(resultDocument.getBytes());
 		resultVersion.setHash(VersionService.getHash(new String(resultDocument.getBytes())));
+
+		// resulting version should have the same request ID as the original version
+		resultVersion.setRequestID(version.getRequestID());
+
 		return resultVersion;
 	}
 

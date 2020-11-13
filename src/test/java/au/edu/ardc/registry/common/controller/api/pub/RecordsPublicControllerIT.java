@@ -87,8 +87,8 @@ class RecordsPublicControllerIT extends WebIntegrationTest {
 		record.setVisible(false);
 		recordRepository.saveAndFlush(record);
 
-		// private record returns 404
-		this.webTestClient.get().uri(baseUrl + record.getId().toString()).exchange().expectStatus().isNotFound();
+		// private record returns 403
+		this.webTestClient.get().uri(baseUrl + record.getId().toString()).exchange().expectStatus().isForbidden();
 	}
 
 	@Test
