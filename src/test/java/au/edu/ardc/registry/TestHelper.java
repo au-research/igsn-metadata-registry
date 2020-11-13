@@ -80,6 +80,7 @@ public class TestHelper {
 		version.setCreatorID(UUID.randomUUID());
 		version.setRecord(record);
 		version.setSchema("test-schema");
+		version.setRequestID(UUID.randomUUID());
 		return version;
 	}
 

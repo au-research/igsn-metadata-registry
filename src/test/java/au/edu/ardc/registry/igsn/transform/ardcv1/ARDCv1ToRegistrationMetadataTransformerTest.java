@@ -63,6 +63,8 @@ class ARDCv1ToRegistrationMetadataTransformerTest {
 		assertThat(actual).isInstanceOf(Version.class);
 		assertThat(actual.getSchema()).isEqualTo(SchemaService.IGSNREGv1);
 		assertThat(actual.getContent()).isNotNull();
+		assertThat(actual.getRequestID()).isNotNull();
+		assertThat(actual.getRequestID()).isEqualTo(version.getRequestID());
 
 		// json assertions
 		String content = new String(actual.getContent());

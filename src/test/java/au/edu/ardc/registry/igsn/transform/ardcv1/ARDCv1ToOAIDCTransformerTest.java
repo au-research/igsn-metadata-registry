@@ -48,6 +48,8 @@ class ARDCv1ToOAIDCTransformerTest {
 		assertThat(actual).isInstanceOf(Version.class);
 		assertThat(actual.getSchema()).isEqualTo(SchemaService.OAIDC);
 		assertThat(actual.getContent()).isNotNull();
+		assertThat(actual.getRequestID()).isNotNull();
+		assertThat(actual.getRequestID()).isEqualTo(version.getRequestID());
 
 		// ensure the result contains some text, maybe extend to xpath testing
 		String resultXML = new String(actual.getContent());
