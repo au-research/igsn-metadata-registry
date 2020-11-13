@@ -268,11 +268,12 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 
 		this.webTestClient.post().uri(updateEndpoint)
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Content-Type", "application/xml")
 				.body(Mono.just(validXML), String.class).exchange().expectStatus().isForbidden();
 	}
 
 	@Test
-	@DisplayName("401 in update because the content is invalid")
+	@DisplayName("400 in update because the content is invalid")
 	void update_invalid_400() throws Exception {
 		String invalidXML = Helpers.readFile("src/test/resources/xml/invalid_sample_igsn_csiro_v3.xml");
 		IGSNAllocation allocation = getStubAllocation();
@@ -284,6 +285,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 
 		this.webTestClient.post().uri(updateEndpoint)
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Content-Type", "application/xml")
 				.body(Mono.just(invalidXML), String.class).exchange().expectStatus().isBadRequest();
 	}
 

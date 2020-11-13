@@ -5,29 +5,27 @@ import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
-import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
-import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNRequestValidationService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import au.edu.ardc.registry.igsn.service.ImportService;
 import au.edu.ardc.registry.igsn.task.ImportIGSNTask;
-import au.edu.ardc.registry.igsn.task.ReserveIGSNTask;
 import au.edu.ardc.registry.igsn.task.TransferIGSNTask;
 import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -100,15 +97,25 @@ public class IGSNServiceController {
 		this.identifierService = identifierService;
 	}
 
-	@PostMapping("/bulk-mint")
-	@Operation(summary = "Bulk mint IGSN", description = "Mint a batch of IGSN identifier with metadata")
-	@ApiResponse(responseCode = "200", description = "Bulk mint request is accepted",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest,
-			@RequestBody String payload,
+	@PostMapping(value = "/bulk-mint", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@Operation(summary = "Bulk mint IGSN", description = "Creates several IGSNs in a single payload",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the Bulk XML payload"),
+			parameters = { @Parameter(name = "ownerID",
+					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
+					schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerType", description = "The Type of the Owner",
+							schema = @Schema(description = "Owner Type", type = "string",
+									allowableValues = { "User", "DataCenter" })) },
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
+	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 			@RequestParam(required = false) String ownerID,
-			@RequestParam(required = false, defaultValue = "User") String ownerType)
-			throws IOException {
+			@RequestParam(required = false, defaultValue = "User") String ownerType) throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
@@ -118,7 +125,8 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
 			request.setAttribute(Attribute.OWNER_ID, ownerID);
-		}else{
+		}
+		else {
 			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
 		}
 
@@ -151,15 +159,25 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping("/mint")
-	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata")
-	@ApiResponse(responseCode = "200", description = "Mint request is accepted",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest,
-			@RequestBody String payload,
+	@PostMapping(value = "/mint", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE} )
+	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the XML payload"),
+			parameters = { @Parameter(name = "ownerID",
+					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
+					schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerType", description = "The Type of the Owner",
+							schema = @Schema(description = "Owner Type", type = "string",
+									allowableValues = { "User", "DataCenter" })) },
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Mint request is accepted",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
+	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 			@RequestParam(required = false) String ownerID,
-			@RequestParam(required = false, defaultValue = "User") String ownerType)
-			throws Exception {
+			@RequestParam(required = false, defaultValue = "User") String ownerType) throws Exception {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		// creating the IGSN Request & write the payload to file
@@ -169,7 +187,8 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
 			request.setAttribute(Attribute.OWNER_ID, ownerID);
-		}else{
+		}
+		else {
 			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
 		}
 
@@ -205,10 +224,17 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping("/update")
-	@ApiResponse(responseCode = "200", description = "Update request is accepted",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	@Operation(summary = "Updates an existing IGSN metadata", description = "Updates an existing IGSN Metadata")
+	@PostMapping(value = "/update", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@Operation(summary = "Update IGSN", description = "Updates an existing IGSN metadata",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "the updated XML payload"),
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Update request is accepted",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
@@ -245,10 +271,17 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping("/bulk-update")
-	@Operation(summary = "Bulk update IGSN", description = "Update a batch of IGSN identifier with metadata")
-	@ApiResponse(responseCode = "200", description = "Bulk update request is accepted",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
+	@PostMapping(value = "/bulk-update", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@Operation(summary = "Bulk Update IGSN", description = "Updates many IGSNs metadata in a single payload",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "the updated XML payload"),
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Bulk Update request is accepted",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> bulkUpdate(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
@@ -275,13 +308,19 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping("/reserve")
-	@Operation(summary = "Reserve a set of IGSN",
-			description = "Reserved IGSN would not require metadata and will not be resolvable")
-	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
+	@PostMapping(value = "/reserve", consumes = {MediaType.TEXT_PLAIN_VALUE})
+	@Operation(summary = "Reserve IGSN", description = "Reserve a list of IGSNs without registering metadata",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "the newline separated IGSN list, 1 per line"),
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Reserve request has completed successfully",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
-			@RequestParam(required = false, defaultValue = "User") String schemaId,
+			@RequestParam(required = false) String schemaId,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
@@ -291,7 +330,8 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
 			request.setAttribute(Attribute.OWNER_ID, ownerID);
-		}else{
+		}
+		else {
 			request.setAttribute(Attribute.OWNER_ID, user.getId().toString());
 		}
 		// todo validate the request
@@ -305,13 +345,28 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping("/transfer")
-	@Operation(summary = "Transfer a set of IGSNs to another DataCenter",
-			description = "Transfer the ownership of a list of IGSN Identifier to a DataCenter")
-	@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
-			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
-	public ResponseEntity<RequestDTO> handle(HttpServletRequest httpServletRequest, @NotNull @RequestParam String ownerID,
-	      @RequestParam(required = false, defaultValue = "DataCenter") String ownerType, @RequestBody String payload) throws IOException {
+	@PostMapping(value = "/transfer", consumes = MediaType.TEXT_PLAIN_VALUE)
+	@Operation(summary = "Transfer IGSN ownership",
+			description = "Transfer the ownership of a list of IGSN Identifier to another Owner",
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "the newline separated IGSN list, 1 per line"),
+			parameters = {
+					@Parameter(name = "ownerID", required = true, description = "The UUID of the intended Owner",
+							schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerType", description = "The Type of the Owner", required = true,
+							schema = @Schema(description = "Owner Type", type = "string", defaultValue = "DataCenter",
+									allowableValues = { "User", "DataCenter" })) },
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
+					@ApiResponse(responseCode = "400", description = "Validation Exception",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
+	public ResponseEntity<RequestDTO> transfer(HttpServletRequest httpServletRequest,
+			@NotNull @RequestParam String ownerID,
+			@RequestParam(required = false, defaultValue = "DataCenter") String ownerType, @RequestBody String payload)
+			throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
@@ -320,7 +375,6 @@ public class IGSNServiceController {
 		request.setAttribute(Attribute.OWNER_ID, ownerID);
 
 		igsnRequestValidationService.validate(request, user);
-
 
 		// process
 
@@ -343,6 +397,13 @@ public class IGSNServiceController {
 	}
 
 	@GetMapping("/generate-igsn")
+	@Operation(summary = "Generate unique IGSN (this is not a mint)",
+			description = "Returns an IGSN value ready to be minted. The IGSN generated is not minted and serve only to provide a unique identifier",
+			parameters = { @Parameter(name = "allocationID", required = false,
+					description = "The allocationID to generate the IGSN for, if blank will default to the first Allocation",
+					schema = @Schema(implementation = UUID.class)), },
+			responses = { @ApiResponse(responseCode = "200", description = "IGSN value generated",
+					content = @Content(schema = @Schema(implementation = RequestDTO.class))), })
 	public ResponseEntity<?> generateIGSN(HttpServletRequest httpServletRequest,
 			@RequestParam(required = false) String allocationID) {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
@@ -360,8 +421,7 @@ public class IGSNServiceController {
 		String namespace = allocation.getNamespace();
 		do {
 			value = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
-			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),value
-					).toUpperCase();
+			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(), value).toUpperCase();
 		}
 		while (identifierService.findByValueAndType(igsn, Identifier.Type.IGSN) != null);
 
