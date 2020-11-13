@@ -52,8 +52,8 @@ public class TransformJSONLDTask implements Runnable {
 				if (!existingVersion.getHash().equals(hash)) {
 					existingVersion.setHash(hash);
 					existingVersion.setContent(newVersion.getContent());
-					existingVersion.setCreatedAt(record.getModifiedAt());
-					existingVersion.setRequestID(record.getRequestID());
+					existingVersion.setCreatedAt(version.getCreatedAt());
+					existingVersion.setRequestID(version.getRequestID());
 					versionService.save(existingVersion);
 
 				} else {
@@ -62,8 +62,8 @@ public class TransformJSONLDTask implements Runnable {
 					return;
 				}
 			}else{
-				newVersion.setRequestID(record.getRequestID());
-				newVersion.setCreatedAt(record.getCreatedAt());
+				newVersion.setRequestID(version.getRequestID());
+				newVersion.setCreatedAt(version.getCreatedAt());
 				newVersion.setHash(hash);
 				versionService.save(newVersion);
 			}
