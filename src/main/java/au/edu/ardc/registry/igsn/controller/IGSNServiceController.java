@@ -128,8 +128,6 @@ public class IGSNServiceController {
 		igsnRequestService.save(request);
 
 		// Queue request
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
-		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 
 		// process the request (async)
 		request.setStatus(Request.Status.QUEUED);
@@ -176,8 +174,6 @@ public class IGSNServiceController {
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);
 		// process (single)
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.CREATE);
-		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
 
@@ -222,8 +218,6 @@ public class IGSNServiceController {
 		igsnRequestService.save(request);
 
 		// process
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
-		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, "1");
 		igsnRequestService.save(request);
@@ -261,9 +255,9 @@ public class IGSNServiceController {
 		request.setStatus(Request.Status.ACCEPTED);
 		igsnRequestService.save(request);
 
-		// Queue
-		IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
-		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
+		// the requestvalidator is setting the Allocation ID
+		//IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
+		//request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 
 		request.setStatus(Request.Status.QUEUED);
@@ -281,7 +275,7 @@ public class IGSNServiceController {
 	@ApiResponse(responseCode = "200", description = "Reserve request has finished successfully",
 			content = @Content(schema = @Schema(implementation = RequestDTO.class)))
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
-			@RequestParam(required = false, defaultValue = "User") String schemaId,
+			@RequestParam(required = false, defaultValue = "igsn_list") String schemaId,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
@@ -321,7 +315,6 @@ public class IGSNServiceController {
 
 		igsnRequestValidationService.validate(request, user);
 
-
 		// process
 
 		request.setStatus(Request.Status.QUEUED);
@@ -359,7 +352,7 @@ public class IGSNServiceController {
 		String prefix = allocation.getPrefix();
 		String namespace = allocation.getNamespace();
 		do {
-			value = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+			value = RandomStringUtils.randomAlphanumeric(6);
 			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),value
 					).toUpperCase();
 		}

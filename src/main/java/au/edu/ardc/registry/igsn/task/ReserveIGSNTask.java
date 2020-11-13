@@ -8,6 +8,7 @@ import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
 import au.edu.ardc.registry.igsn.event.RequestExceptionEvent;
+import au.edu.ardc.registry.igsn.event.TaskCompletedEvent;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
 import au.edu.ardc.registry.igsn.service.IGSNService;
@@ -55,10 +56,20 @@ public class ReserveIGSNTask extends IGSNTask implements Runnable {
 			if(request.getAttribute(Attribute.START_TIME_IMPORT) == null){
 				request.setAttribute(Attribute.START_TIME_IMPORT, new Date().getTime());
 			}
-			Identifier identifier = importService.reserveIGSNIdentifier(identifierValue, request);
+			Identifier identifier = importService.reserveRequest(identifierValue, request);
+			if (identifier != null) {
+				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
+				int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
+				requestLog.info(String.format("Successfully created Record with Identifier: %s , status: %s",
+						identifier.getValue(), identifier.getStatus()));
+				request.setMessage(String.format("Imported %d out of %d", numCreated, totalCount));
+			}
 			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_CREATED);
 			request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
-			logger.info("Processed Identifier: {}", identifierValue);
+
+			String message = String.format("Processed Identifier: %s", identifierValue);
+			logger.info(message);
+			applicationEventPublisher.publishEvent(new TaskCompletedEvent(message, request));
 		}
 		catch (ForbiddenOperationException e) {
 			requestLog.error(e.getMessage());

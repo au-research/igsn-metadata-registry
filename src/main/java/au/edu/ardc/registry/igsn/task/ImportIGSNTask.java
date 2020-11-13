@@ -71,6 +71,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
 				int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
 				request.setMessage(String.format("Imported %d out of %d", numCreated, totalCount));
+				requestLog.info(String.format("Created Record with Identifier: %s", identifier.getValue()));
 				if(record != null){
 					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 					applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));

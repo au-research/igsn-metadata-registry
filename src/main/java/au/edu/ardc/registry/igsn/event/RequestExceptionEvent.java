@@ -1,6 +1,4 @@
 package au.edu.ardc.registry.igsn.event;
-
-import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 
 public class RequestExceptionEvent {

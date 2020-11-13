@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
@@ -275,6 +276,11 @@ public class TestHelper {
 		embargo.setEmbargoEnd(new Date());
 		embargo.setRecord(record);
 		return embargo;
+	}
+
+	public static String getRandomIdentifierValue(String prefix, String allocation){
+		String suffix = RandomStringUtils.random(10, true, true);
+		return String.format("%s/%s%s", prefix, allocation,suffix).toUpperCase();
 	}
 
 }
