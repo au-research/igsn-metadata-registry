@@ -72,9 +72,14 @@ public class RecordService {
 	 */
 	public Record findPublicById(String id) {
 		Record record = findById(id);
-		if (record == null || !record.isVisible()) {
+		if (record == null) {
 			throw new RecordNotFoundException(id);
 		}
+
+		if (!record.isVisible()) {
+			throw new ForbiddenOperationException(String.format("Record %s is private", id));
+		}
+
 		return record;
 	}
 
