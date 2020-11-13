@@ -6,7 +6,6 @@ import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
-import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
@@ -97,7 +96,8 @@ public class IGSNServiceController {
 		this.identifierService = identifierService;
 	}
 
-	@PostMapping(value = "/bulk-mint", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@PostMapping(value = "/bulk-mint", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
+			MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Bulk mint IGSN", description = "Creates several IGSNs in a single payload",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the Bulk XML payload"),
 			parameters = { @Parameter(name = "ownerID",
@@ -157,7 +157,8 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping(value = "/mint", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE} )
+	@PostMapping(value = "/mint", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
+			MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the XML payload"),
 			parameters = { @Parameter(name = "ownerID",
@@ -220,7 +221,8 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping(value = "/update", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@PostMapping(value = "/update", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
+			MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Update IGSN", description = "Updates an existing IGSN metadata",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the updated XML payload"),
@@ -265,7 +267,8 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping(value = "/bulk-update", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE})
+	@PostMapping(value = "/bulk-update", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
+			MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Bulk Update IGSN", description = "Updates many IGSNs metadata in a single payload",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the updated XML payload"),
@@ -289,8 +292,9 @@ public class IGSNServiceController {
 		igsnRequestService.save(request);
 
 		// the requestvalidator is setting the Allocation ID
-		//IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload, user, Scope.UPDATE);
-		//request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
+		// IGSNAllocation allocation = igsnService.getIGSNAllocationForContent(payload,
+		// user, Scope.UPDATE);
+		// request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 
 		request.setStatus(Request.Status.QUEUED);
@@ -302,10 +306,20 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping(value = "/reserve", consumes = {MediaType.TEXT_PLAIN_VALUE})
+	@PostMapping(value = "/reserve", consumes = { MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Reserve IGSN", description = "Reserve a list of IGSNs without registering metadata",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the newline separated IGSN list, 1 per line"),
+			parameters = {
+					@Parameter(name = "schemaId", description = "the schema of the payload",
+							schema = @Schema(description = "schema ID", type = "string",
+									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
+					@Parameter(name = "ownerID",
+							description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
+							schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerType", description = "The Type of the Owner",
+							schema = @Schema(description = "Owner Type", type = "string",
+									allowableValues = { "User", "DataCenter" })) },
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Reserve request has completed successfully",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
@@ -415,8 +429,7 @@ public class IGSNServiceController {
 		String namespace = allocation.getNamespace();
 		do {
 			value = RandomStringUtils.randomAlphanumeric(6);
-			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(),value
-					).toUpperCase();
+			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(), value).toUpperCase();
 		}
 		while (identifierService.findByValueAndType(igsn, Identifier.Type.IGSN) != null);
 
