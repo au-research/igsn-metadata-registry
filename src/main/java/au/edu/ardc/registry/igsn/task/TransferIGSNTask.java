@@ -29,7 +29,7 @@ public class TransferIGSNTask extends IGSNTask implements Runnable {
 	@Override
 	public void run() {
 		try {
-			importService.transferIdentifier(identifierValue, request);
+			importService.transferRequest(identifierValue, request);
 			// todo handle returned identifier
 		}
 		catch (Exception e) {

@@ -6,6 +6,7 @@ import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.provider.*;
 import au.edu.ardc.registry.common.service.*;
 import au.edu.ardc.registry.common.util.Helpers;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.exception.VersionContentAlreadyExistsException;
 import au.edu.ardc.registry.exception.VersionIsOlderThanCurrentException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +40,8 @@ public class ImportService {
 
 	private final EmbargoService embargoService;
 
+	private final long maxFileSize = 60 * 1024;
+
 	public ImportService(IdentifierService identifierService, RecordService recordService,
 						 IGSNVersionService igsnVersionService, SchemaService schemaService,
 						 IGSNRequestService igsnRequestService, EmbargoService embargoService) {
@@ -56,8 +60,12 @@ public class ImportService {
 	 * @return the {@link Identifier}
 	 * @throws IOException when failing to read file or any other operation
 	 */
-	public Identifier importRequest(File file, Request request) throws IOException, ForbiddenOperationException {
+	public Identifier importRequest(File file, Request request) throws IOException, ForbiddenOperationException , ContentNotSupportedException {
 		Logger requestLog = igsnRequestService.getLoggerFor(request);
+
+
+		// IGSN-217 each resource should be less than 64Kb (BLOB) in DB
+		Helpers.checkFileSize(file.getAbsolutePath(), maxFileSize);
 
 		// read the content of the item Resource
 		String content = Helpers.readFile(file);
@@ -174,10 +182,11 @@ public class ImportService {
 	 * @throws VersionContentAlreadyExistsException when the exact same version is updated
 	 */
 	public Identifier updateRequest(@NotNull File file, Request request)
-			throws IOException, ForbiddenOperationException, VersionIsOlderThanCurrentException {
-
+			throws IOException, ContentNotSupportedException, ForbiddenOperationException, VersionIsOlderThanCurrentException {
 		logger.debug("Updating content for request:{} with file:{}", request, file.getAbsolutePath());
-
+		// IGSN-217 each resource should be less than 64Kb (BLOB) in DB
+		Helpers.checkFileSize(file.getAbsolutePath(), maxFileSize);
+		// read the content of the item Resource
 		String content = Helpers.readFile(file);
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		Schema schema = schemaService.getSchemaForContent(content);
@@ -280,7 +289,7 @@ public class ImportService {
 		return identifier;
 	}
 
-	public Identifier reserveIGSNIdentifier(String identifierValue, @NotNull Request request) {
+	public Identifier reserveRequest(String identifierValue, @NotNull Request request) {
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE) != null
@@ -288,8 +297,8 @@ public class ImportService {
 
 		// validate existing User
 		Identifier existingIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
-		if (existingIdentifier == null) {
-			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s doesn't exist",
+		if (existingIdentifier != null) {
+			throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s already exist",
 					identifierValue, Identifier.Type.IGSN));
 		}
 
@@ -325,11 +334,11 @@ public class ImportService {
 			return null;
 		}
 
-		logger.info("Reserved identifier: {}", identifier.getValue());
+		//logger.info("Reserved identifier: {}", identifier.getValue());
 		return identifier;
 	}
 
-	public Identifier transferIdentifier(String identifierValue, @NotNull Request request) {
+	public Identifier transferRequest(String identifierValue, @NotNull Request request) {
 		String ownerID = request.getAttribute(Attribute.OWNER_ID);
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 

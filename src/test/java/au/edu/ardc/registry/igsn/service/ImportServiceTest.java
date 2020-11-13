@@ -265,4 +265,27 @@ class ImportServiceTest {
 	}
 
 
+	@Test
+	@DisplayName("Import valid payload but error creating Identifier should returns null and delete Record")
+	void reserveRequest_Test() throws IOException {
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+
+		Request request = TestHelper.mockRequest();
+		String ownerId = UUID.randomUUID().toString();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
+		request.setAttribute(Attribute.OWNER_ID, ownerId);
+		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
+
+		for(int i = 0; i< 10 ; i++){
+			String identifierValue = TestHelper.getRandomIdentifierValue("20.500.11812", "XXZT1");
+			System.out.print(identifierValue+ "\n");
+			Identifier result = importService.reserveRequest(identifierValue, request);
+			assertThat(result.getValue().equals(identifierValue));
+		}
+		verify(recordService, times(10)).save(any(Record.class));
+
+	}
+
 }

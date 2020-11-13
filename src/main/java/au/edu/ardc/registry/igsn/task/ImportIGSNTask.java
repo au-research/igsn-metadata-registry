@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.event.RecordUpdatedEvent;
 import au.edu.ardc.registry.common.model.Attribute;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
 import au.edu.ardc.registry.igsn.event.IGSNUpdatedEvent;
@@ -70,6 +71,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
 				int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
 				request.setMessage(String.format("Imported %d out of %d", numCreated, totalCount));
+				requestLog.info(String.format("Created Record with Identifier: %s", identifier.getValue()));
 				if(record != null){
 					applicationEventPublisher.publishEvent(new RecordUpdatedEvent(identifier.getRecord()));
 					applicationEventPublisher.publishEvent(new IGSNUpdatedEvent(identifier, request));
@@ -84,7 +86,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			}
 			logger.info("Processed import file: {}", file.getAbsoluteFile());
 		}
-		catch (IOException e) {
+		catch (IOException | ContentNotSupportedException e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);

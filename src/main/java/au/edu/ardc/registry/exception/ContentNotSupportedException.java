@@ -10,6 +10,11 @@ public class ContentNotSupportedException extends APIException {
 	}
 
 	@Override
+	public String getMessage() {
+		return this.msg;
+	}
+
+	@Override
 	public String getMessageID() {
 		return "api.error.content_not_supported";
 	}
