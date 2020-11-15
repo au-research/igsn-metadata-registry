@@ -12,7 +12,8 @@
       "Title": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1TitleProvider",
       "LandingPage": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1LandingPageProvider",
       "OAI": "au.edu.ardc.registry.common.provider.OAIProvider",
-      "EmbargoEnd": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1EmbargoEndProvider"
+      "EmbargoEnd": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1EmbargoEndProvider",
+      "Status": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1StatusProvider"
     },
     "transforms": {
       "ardc-igsn-desc-1.0-jsonld": "au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToJSONLDTransformer",

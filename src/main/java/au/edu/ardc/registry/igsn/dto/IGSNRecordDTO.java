@@ -14,6 +14,8 @@ public class IGSNRecordDTO extends RecordDTO {
 
 	private Date embargoDate;
 
+	private String status;
+
 	public IdentifierDTO getIgsn() {
 		return igsn;
 	}
@@ -36,5 +38,13 @@ public class IGSNRecordDTO extends RecordDTO {
 
 	public void setEmbargoDate(Date embargoDate) {
 		this.embargoDate = embargoDate;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

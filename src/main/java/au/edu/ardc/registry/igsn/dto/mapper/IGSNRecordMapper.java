@@ -4,7 +4,12 @@ import au.edu.ardc.registry.common.dto.IdentifierDTO;
 import au.edu.ardc.registry.common.entity.Embargo;
 import au.edu.ardc.registry.common.entity.Identifier;
 import au.edu.ardc.registry.common.entity.Record;
+import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.Metadata;
+import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
+import au.edu.ardc.registry.common.provider.StatusProvider;
 import au.edu.ardc.registry.common.service.EmbargoService;
+import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.dto.IGSNRecordDTO;
 import com.google.common.base.Converter;
@@ -22,13 +27,16 @@ public class IGSNRecordMapper {
 
 	final EmbargoService embargoService;
 
+	final SchemaService schemaService;
+
 	protected Converter<Record, IGSNRecordDTO> converter;
 
 	public IGSNRecordMapper(ModelMapper modelMapper, IGSNApplicationConfig igsnApplicationConfig,
-			EmbargoService embargoService) {
+							EmbargoService embargoService, SchemaService schemaService) {
 		this.modelMapper = modelMapper;
 		this.igsnApplicationConfig = igsnApplicationConfig;
 		this.embargoService = embargoService;
+		this.schemaService = schemaService;
 	}
 
 	@PostConstruct
@@ -61,7 +69,11 @@ public class IGSNRecordMapper {
 					dto.setEmbargoDate(embargo.getEmbargoEnd());
 				}
 
-				// todo set Status
+				// set Status
+				Schema schema = schemaService.getSchemaByID(SchemaService.ARDCv1);
+				StatusProvider provider = (StatusProvider) MetadataProviderFactory.create(schema, Metadata.Status);
+				String status = provider.get(record);
+				dto.setStatus(status);
 
 				// set portalUrl
 				String portalBaseUrl = igsnApplicationConfig.getPortalUrl() != null
