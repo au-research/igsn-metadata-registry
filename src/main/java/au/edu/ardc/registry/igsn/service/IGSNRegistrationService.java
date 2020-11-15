@@ -148,7 +148,6 @@ public class IGSNRegistrationService {
 		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName", allocation.getMds_username());
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
-		logger.info("Updating Version" + landingPage);
 		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
 				request);
 		// update the registration Metadata at MDS
@@ -192,7 +191,6 @@ public class IGSNRegistrationService {
 		UUID creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
 		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
 
-		logger.info("Updating Version" + version.getContent().toString());
 		if (currentVersion != null) {
 			// the version is later than the current request (shouldn't happen unless
 			// requests are re-run

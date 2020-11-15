@@ -48,8 +48,8 @@ public class TransformOAIDCTask implements Runnable {
 			if (existingVersion != null){
 				if(!existingVersion.getHash().equals(hash)) {
 					existingVersion.setContent(newVersion.getContent());
-					existingVersion.setRequestID(record.getRequestID());
-					existingVersion.setCreatedAt(record.getModifiedAt());
+					existingVersion.setRequestID(version.getRequestID());
+					existingVersion.setCreatedAt(version.getCreatedAt());
 					existingVersion.setHash(hash);
 					versionService.save(existingVersion);
 				}else{
@@ -58,8 +58,8 @@ public class TransformOAIDCTask implements Runnable {
 					return;
 				}
 			}else {
-				newVersion.setRequestID(record.getRequestID());
-				newVersion.setCreatedAt(record.getCreatedAt());
+				newVersion.setRequestID(version.getRequestID());
+				newVersion.setCreatedAt(version.getCreatedAt());
 				newVersion.setHash(hash);
 				versionService.save(newVersion);
 			}
