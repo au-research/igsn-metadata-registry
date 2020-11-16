@@ -217,8 +217,8 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		thread1.start();
 		thread2.start();
 		thread1.join();
-		responses.add(runnableWebTestClient1.getResponseCode());
 		thread2.join();
+		responses.add(runnableWebTestClient1.getResponseCode());
 		responses.add(runnableWebTestClient2.getResponseCode());
 		// sometimes the first mints sometimes the second
 

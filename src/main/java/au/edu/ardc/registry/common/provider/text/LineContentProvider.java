@@ -42,4 +42,9 @@ public class LineContentProvider implements IdentifierProvider {
         return identifiers;
     }
 
+    @Override
+    public void setPrefix(String prefix) {
+        // prefix is provided in the content
+    }
+
 }
