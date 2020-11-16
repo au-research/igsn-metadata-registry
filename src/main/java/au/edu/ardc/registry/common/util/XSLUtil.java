@@ -1,5 +1,10 @@
 package au.edu.ardc.registry.common.util;
 
+import org.json.JSONArray;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.traversal.NodeIterator;
+
 /**
  * XSLUtils a collection of functions that are much simpler in Java than XSLT
  */
@@ -37,6 +42,26 @@ public class XSLUtil {
 		escaped = escaped.replace("\t", "\\t");
 		// TODO: escape other non-printing characters using uXXXX notation
 		return escaped;
+	}
+
+	public static String createJsonArray(NodeList nodeList){
+		JSONArray result = new JSONArray();
+		int length = nodeList.getLength();
+		for(int i = 0 ; i < length; i++)
+		{
+			result.put(nodeList.item(i).getNodeValue());
+		}
+		return result.toString();
+	}
+
+	public static String createJsonArray(NodeIterator iterator){
+		JSONArray result = new JSONArray();
+		Node n;
+		while( (n = iterator.nextNode()) != null)
+		{
+			result.put(n.getNodeValue());
+		}
+		return result.toString();
 	}
 
 }

@@ -47,8 +47,8 @@
         <xsl:apply-templates select="igsn:resourceIdentifier" mode="igsn-id"/>
         <xsl:apply-templates select="igsn:landingPage" mode="json-ld"/>
         <xsl:apply-templates select="igsn:resourceTitle" mode="json-ld"/>
-        <xsl:apply-templates select="igsn:curationDetails/igsn:curation/igsn:curator/igsn:curatorName" mode="json-ld"/>
-        <xsl:apply-templates select="igsn:contributors/igsn:contributor[0]/igsn:contributorName" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:curationDetails" mode="json-ld"/>
+        <xsl:apply-templates select="igsn:contributors" mode="json-ld"/>
         <xsl:apply-templates select="igsn:classifications" mode="json-ld"/>
         <xsl:apply-templates select="igsn:resourceTypes" mode="json-ld"/>
         <xsl:apply-templates select="igsn:materialTypes" mode="json-ld"/>
@@ -166,15 +166,17 @@
         </xsl:if>
     </xsl:template>
 
-    <xsl:template match="igsn:curatorName" mode="json-ld">
-        <xsl:text>    "curator" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
+    <xsl:template match="igsn:curationDetails" mode="json-ld">
+        <xsl:variable name="nodeList" select="//igsn:curatorName/text()"/>
+        <xsl:text>    "curator" : </xsl:text><xsl:value-of select="xslUtil:createJsonArray($nodeList)"/><xsl:text>,
 </xsl:text>
     </xsl:template>
 
-    <xsl:template match="igsn:contributorName" mode="json-ld">
-        <xsl:text>    "contributor" : "</xsl:text><xsl:value-of select="xslUtil:escapeJsonString(.)"/><xsl:text>",
+    <xsl:template match="igsn:contributors" mode="json-ld">
+        <xsl:variable name="nodeList" select="//igsn:contributorName/text()"/>
+        <xsl:text>    "contributor" : </xsl:text><xsl:value-of select="xslUtil:createJsonArray($nodeList)"/><xsl:text>,
 </xsl:text>
     </xsl:template>
 
 
-</xsl:stylesheet>
+</xsl:stylesheet> curator
