@@ -246,7 +246,7 @@ public class IGSNService {
 		int nErrors = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
 		if((numCreated + numUpdated + numRegistered) > 0){
 			request.setStatus(Request.Status.COMPLETED);
-			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE))){
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) || request.getType().equals(IGSNService.EVENT_UPDATE))){
 				if(nErrors > 0){
 					request.setMessage("Request completed with some errors");
 				}else{
@@ -256,7 +256,7 @@ public class IGSNService {
 		}
 		else{
 			request.setStatus(Request.Status.FAILED);
-			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE)))
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) || request.getType().equals(IGSNService.EVENT_UPDATE)))
 			{
 				request.setMessage("Request failed");
 			}

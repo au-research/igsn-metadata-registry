@@ -62,11 +62,11 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 			if(request.getAttribute(Attribute.START_TIME_IMPORT) == null){
 				request.setAttribute(Attribute.START_TIME_IMPORT, new Date().getTime());
 			}
-
 			Identifier identifier = importService.importRequest(file, request);
-			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_CREATED);
 			request.setAttribute(Attribute.END_TIME_IMPORT, new Date().getTime());
+
 			if (identifier != null) {
+				request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_CREATED);
 				Record record = identifier.getRecord();
 				int totalCount = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_RECEIVED));
 				int numCreated = new Integer(request.getAttribute(Attribute.NUM_OF_RECORDS_CREATED));
@@ -100,7 +100,7 @@ public class ImportIGSNTask extends IGSNTask implements Runnable {
 		catch (ForbiddenOperationException e) {
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
-			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_FORBIDDEN);
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_FORBIDDEN);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			if(request.getType().equals(IGSNService.EVENT_MINT)) {
 				request.setMessage(e.getMessage());
