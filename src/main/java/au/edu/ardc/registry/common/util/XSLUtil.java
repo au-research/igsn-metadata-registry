@@ -49,7 +49,7 @@ public class XSLUtil {
 		int length = nodeList.getLength();
 		for(int i = 0 ; i < length; i++)
 		{
-			result.put(nodeList.item(i).getNodeValue());
+			result.put(XSLUtil.escapeJsonString(nodeList.item(i).getNodeValue()));
 		}
 		return result.toString();
 	}
@@ -59,7 +59,7 @@ public class XSLUtil {
 		Node n;
 		while( (n = iterator.nextNode()) != null)
 		{
-			result.put(n.getNodeValue());
+			result.put(XSLUtil.escapeJsonString(n.getNodeValue()));
 		}
 		return result.toString();
 	}
