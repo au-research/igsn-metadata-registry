@@ -48,13 +48,13 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 
 		// obtain the transformer
 		Schema fromSchema = schemaService.getSchemaByID(defaultSchema);
-		Schema toSchema = schemaService.getSchemaByID(SchemaService.ARDCv1JSONLD);
+		Schema toSchema = schemaService.getSchemaByID(SchemaService.JSONLD);
 		Transformer transformer = (Transformer) TransformerFactory.create(fromSchema, toSchema);
 		if (transformer == null) {
-			log.error("Failed to obtain a transformer from {} to {}", defaultSchema, SchemaService.ARDCv1JSONLD);
+			log.error("Failed to obtain a transformer from {} to {}", defaultSchema, SchemaService.JSONLD);
 			return null;
 		}
-		log.debug("Transformer from {} to {} obtained", defaultSchema, SchemaService.ARDCv1JSONLD);
+		log.debug("Transformer from {} to {} obtained", defaultSchema, SchemaService.JSONLD);
 
 		// perform the transform
 		try {
@@ -62,10 +62,10 @@ public class RecordTransformLDProcessor implements ItemProcessor<Record, Record>
 			jsonLDVersion.setHash(versionService.getHash(jsonLDVersion));
 
 			// check if there's existing current json-ld and if they're different
-			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.ARDCv1JSONLD);
+			Version existingVersion = versionService.findVersionForRecord(record, SchemaService.JSONLD);
 			if (existingVersion != null && existingVersion.getHash().equals(jsonLDVersion.getHash())) {
 				log.info("There's already a version with existing hash {} for schema {}, skipping",
-						existingVersion.getHash(), SchemaService.ARDCv1JSONLD);
+						existingVersion.getHash(), SchemaService.JSONLD);
 				return recordService.findById(record.getId().toString());
 			}
 

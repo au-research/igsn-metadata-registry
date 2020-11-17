@@ -565,6 +565,18 @@ public class IGSNService {
 				return ia;
 			}
 		}
+		// if we got this far it means we didn't find an allocation
+		// it maybe an Identifier that doesn't contain the prefix
+		// special case we might need to rething CSIROv3 validation
+		if(!identifiervalue.contains("/")){
+			for (Allocation allocation : allocations) {
+				IGSNAllocation ia = (IGSNAllocation) allocation;
+				String namespace = ia.getNamespace();
+				if (identifiervalue.startsWith(namespace) && ia.getScopes().contains(scope)) {
+					return ia;
+				}
+			}
+		}
 		return null;
 	}
 

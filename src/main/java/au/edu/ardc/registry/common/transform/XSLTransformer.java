@@ -50,7 +50,9 @@ public class XSLTransformer {
 			// set parameters if any
 			if (parameters != null) {
 				for (Map.Entry<String, String> entry : parameters.entrySet()) {
-					transformer.setParameter(entry.getKey(), entry.getValue());
+					if(entry.getValue() != null){
+						transformer.setParameter(entry.getKey(), entry.getValue());
+					}
 				}
 			}
 

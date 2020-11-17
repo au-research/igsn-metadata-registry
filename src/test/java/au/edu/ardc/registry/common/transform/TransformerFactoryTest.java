@@ -23,7 +23,7 @@ class TransformerFactoryTest {
 	@DisplayName("Returns the right class for converting between ardcv1 and ardcv1jsonld")
 	void create_SchemaARDCv1ToJSONLD_returnsRightClass() {
 		Schema fromSchema = schemaService.getSchemaByID(SchemaService.ARDCv1);
-		Schema toSchema = schemaService.getSchemaByID(SchemaService.ARDCv1JSONLD);
+		Schema toSchema = schemaService.getSchemaByID(SchemaService.JSONLD);
 		Transformer transformer = (Transformer) TransformerFactory.create(fromSchema, toSchema);
 
 		assertThat(transformer).isInstanceOf(Transformer.class);

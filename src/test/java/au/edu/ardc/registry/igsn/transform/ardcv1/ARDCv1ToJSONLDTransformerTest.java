@@ -38,7 +38,7 @@ class ARDCv1ToJSONLDTransformerTest {
 	void transform_ardcv1_to_jsonld() throws IOException {
 		// setup the transformer, make sure it exists
 		Schema fromSchema = schemaService.getSchemaByID(SchemaService.ARDCv1);
-		Schema toSchema = schemaService.getSchemaByID(SchemaService.ARDCv1JSONLD);
+		Schema toSchema = schemaService.getSchemaByID(SchemaService.JSONLD);
 		Transformer transformer = (Transformer) TransformerFactory.create(fromSchema, toSchema);
 		assertThat(transformer).isNotNull();
 
@@ -53,7 +53,7 @@ class ARDCv1ToJSONLDTransformerTest {
 		// actual assertions
 		assertThat(actual).isNotNull();
 		assertThat(actual).isInstanceOf(Version.class);
-		assertThat(actual.getSchema()).isEqualTo(SchemaService.ARDCv1JSONLD);
+		assertThat(actual.getSchema()).isEqualTo(SchemaService.JSONLD);
 		assertThat(actual.getContent()).isNotNull();
 		assertThat(actual.getRequestID()).isNotNull();
 		assertThat(actual.getRequestID()).isEqualTo(version.getRequestID());

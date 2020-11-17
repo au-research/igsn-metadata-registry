@@ -111,6 +111,7 @@ public class IGSNRequestValidationService {
 
 
 		IdentifierProvider provider = (IdentifierProvider) MetadataProviderFactory.create(schema, Metadata.Identifier);
+
 		List<String> identifiers = provider.getAll(content);
 
 		if(identifiers.isEmpty()){
@@ -132,8 +133,15 @@ public class IGSNRequestValidationService {
 			throw new ForbiddenOperationException(String.format("User has no access to the given Identifier: %s", firstIdentifier));
 		}
 
-		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
+		if(!firstIdentifier.startsWith(String.format("%s/", allocation.getPrefix()))){
+			firstIdentifier = String.format("%s/%s", allocation.getPrefix(), firstIdentifier);
+		}
 
+		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
+		request.setAttribute(Attribute.ALLOCATION_PREFIX, allocation.getPrefix());
+		provider.setPrefix(allocation.getPrefix());
+		// fetch them again this time with Prefix
+		identifiers = provider.getAll(content);
 		/*
 		User currently only able to mint, reserve , transfer as a datacenter they are member of
 		updates does not have ownerID
@@ -169,10 +177,7 @@ public class IGSNRequestValidationService {
 		}
 
 
-
-
-		// if it's bulk, all identifiers has to be the same
-		// no mix allocation
+		// if it's bulk, all identifiers has to be by the same allocation
 		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)) {
 			String prefix = allocation.getPrefix();
 			String namespace = allocation.getNamespace();
@@ -192,6 +197,7 @@ public class IGSNRequestValidationService {
 		// SINGLE MINT OR UPDATE CONTINUES HERE
 
 		// get the first one, and start validating singles
+
 
 		Identifier existingIdentifier = identifierService.findByValueAndType(firstIdentifier, Identifier.Type.IGSN);
 

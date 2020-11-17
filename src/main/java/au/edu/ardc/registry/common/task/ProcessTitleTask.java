@@ -9,8 +9,12 @@ import au.edu.ardc.registry.common.provider.TitleProvider;
 import au.edu.ardc.registry.common.service.RecordService;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
+import au.edu.ardc.registry.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class ProcessTitleTask implements Runnable {
 
@@ -23,6 +27,8 @@ public class ProcessTitleTask implements Runnable {
 	private final RecordService recordService;
 
 	private final SchemaService schemaService;
+
+	private final List<String> supportedSchemas = Arrays.asList(SchemaService.ARDCv1, SchemaService.CSIROv3);
 
 	public ProcessTitleTask(Record record, VersionService versionService, RecordService recordService,
 			SchemaService schemaService) {
@@ -38,7 +44,20 @@ public class ProcessTitleTask implements Runnable {
 	@Override
 	public void run() {
 		// process title
-		Version version = versionService.findVersionForRecord(record, SchemaService.ARDCv1);
+		Version version = null;
+
+		for(String supportedSchema: supportedSchemas){
+			Version v = versionService.findVersionForRecord(record, supportedSchema);
+			if(v != null){
+				if(version == null){
+					version = v;
+				}
+				else if(version.getCreatedAt().before(v.getCreatedAt())){
+					version = v;
+				}
+			}
+		}
+
 		if (version == null) {
 			logger.error("No valid version found for record {}", record.getId());
 			return;

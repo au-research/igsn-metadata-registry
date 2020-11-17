@@ -7,7 +7,7 @@
     <xsl:output indent="yes" method="text"/>
 
     <!--
-    XSLT transformation to create json-ld from an IGSN CSIRO v3.0 record
+    XSLT transformation to create json-ld from an ARDC v1.0 record
     -->
 
     <xsl:template match="/">

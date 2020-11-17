@@ -72,12 +72,14 @@ public class ImportService {
 		String ownerType = request.getAttribute(Attribute.OWNER_TYPE);
 		//!= null ? request.getAttribute(Attribute.OWNER_TYPE) : "User";
 		String ownerID = request.getAttribute(Attribute.OWNER_ID);
+		String prefix = request.getAttribute(Attribute.ALLOCATION_PREFIX);
 		//!= null ? request.getAttribute(Attribute.OWNER_ID) : creatorID;
 
 		// build the providers
 		Schema schema = schemaService.getSchemaForContent(content);
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
+		identifierProvider.setPrefix(prefix);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(schema,
@@ -187,9 +189,10 @@ public class ImportService {
 		String content = Helpers.readFile(file);
 		String creatorID = request.getAttribute(Attribute.CREATOR_ID);
 		Schema schema = schemaService.getSchemaForContent(content);
-
+		String prefix = request.getAttribute(Attribute.ALLOCATION_PREFIX);
 		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory.create(schema,
 				Metadata.Identifier);
+		identifierProvider.setPrefix(prefix);
 		String identifierValue = identifierProvider.get(content);
 		VisibilityProvider visibilityProvider = (VisibilityProvider) MetadataProviderFactory.create(schema,
 				Metadata.Visibility);

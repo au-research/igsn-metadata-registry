@@ -69,7 +69,7 @@ class IGSNDescriptionPublicControllerIT extends WebIntegrationTest {
 
 		Version jsonld = TestHelper.mockVersion(record);
 		jsonld.setCurrent(true);
-		jsonld.setSchema(SchemaService.ARDCv1JSONLD);
+		jsonld.setSchema(SchemaService.JSONLD);
 		String validJSON = Helpers.readFile("src/test/resources/json/sample_ardcv1_jsonld.json");
 		jsonld.setContent(validJSON.getBytes());
 		versionRepository.saveAndFlush(jsonld);
@@ -82,7 +82,7 @@ class IGSNDescriptionPublicControllerIT extends WebIntegrationTest {
 		// when get igsn-description?schema=json-ld, returns the version content
 		this.webTestClient.get()
 				.uri(uriBuilder -> uriBuilder.path(baseUrl).queryParam("identifier", "10273/XXAA")
-						.queryParam("schema", SchemaService.ARDCv1JSONLD).build())
+						.queryParam("schema", SchemaService.JSONLD).build())
 				.exchange().expectStatus().isOk().expectHeader().contentType(MediaType.APPLICATION_JSON).expectBody()
 				.json(validJSON);
 	}

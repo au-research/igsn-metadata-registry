@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.provider.csirov3;
 
 import au.edu.ardc.registry.common.model.Schema;
+import au.edu.ardc.registry.common.provider.FragmentProvider;
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { SchemaService.class })
@@ -31,5 +35,40 @@ public class CSIROv3IProviderTest {
         provider.setPrefix("10273/");
         identifierValue = provider.get(xml);
         assertEquals("10273/CSTSTDOCO1", identifierValue);
+    }
+
+
+    @Test
+    void get_fragments() throws IOException {
+        Schema schema = service.getSchemaByID(SchemaService.CSIROv3);
+        String xml = Helpers.readFile("src/test/resources/xml/sample_csirov3_batch.xml");
+        FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+        String first = fProvider.get(xml, 0);
+        assertTrue(first.contains("<resourceTitle>A title worthy for FIRST kings</resourceTitle>"));
+        String third = fProvider.get(xml, 2);
+        assertTrue(
+                third.contains("<resourceTitle>A title worthy for THIRD kings"));
+    }
+
+    @Test
+    void getfragmentCount() throws IOException {
+        Schema schema = service.getSchemaByID(SchemaService.CSIROv3);
+        String xml = Helpers.readFile("src/test/resources/xml/sample_csirov3_batch.xml");
+        FragmentProvider fProvider = (FragmentProvider) MetadataProviderFactory.create(schema, Metadata.Fragment);
+        int fragCounter = fProvider.getCount(xml);
+        assertTrue(fragCounter == 3);
+    }
+
+    @Test
+    void get_fragmentOnSameDocumentConsistentResult() throws IOException {
+        Schema schema = service.getSchemaByID(SchemaService.CSIROv3);
+        String original = Helpers.readFile("src/test/resources/xml/sample_csirov3_batch.xml");
+
+        FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory.create(schema,
+                Metadata.Fragment);
+        String firstFragmentOnce = fragmentProvider.get(original, 0);
+        String firstFragmentAgain = fragmentProvider.get(original, 0);
+
+        assertThat(firstFragmentOnce).isEqualTo(firstFragmentAgain);
     }
 }

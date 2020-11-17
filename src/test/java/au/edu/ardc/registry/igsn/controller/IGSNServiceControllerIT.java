@@ -187,7 +187,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		// json-ld is also created
 		// Version jsonldVersion = record.getCurrentVersions().stream()
 		// .filter(version ->
-		// version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
+		// version.getSchema().equals(SchemaService.JSONLD)).findAny().orElse(null);
 		// assertThat(jsonldVersion).isNotNull();
 		// assertThat(jsonldVersion.getContent()).isNotEmpty();
 	}
@@ -251,7 +251,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 		// json-ld is also created
 		// Version jsonldVersion = record.getCurrentVersions().stream()
 		// .filter(version ->
-		// version.getSchema().equals(SchemaService.ARDCv1JSONLD)).findAny().orElse(null);
+		// version.getSchema().equals(SchemaService.JSONLD)).findAny().orElse(null);
 		// assertThat(jsonldVersion).isNotNull();
 		// assertThat(jsonldVersion.getContent()).isNotEmpty();
 	}
