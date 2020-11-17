@@ -247,7 +247,7 @@ public class ImportService {
 			isThisCurrent = false;
 		}
 		else if (currentVersion != null) {
-			igsnVersionService.end(currentVersion, UUID.fromString(creatorID));
+			igsnVersionService.end(currentVersion, UUID.fromString(creatorID), request.getCreatedAt());
 		}
 
 		// create new version even if it's not the current on
