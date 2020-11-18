@@ -8,12 +8,14 @@ import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
+import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.IdentifierService;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.service.IGSNRequestService;
@@ -198,12 +200,20 @@ public class IGSNServiceController {
 		igsnRequestService.save(request);
 
 		// run
-		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
 		request.setStatus(Request.Status.RUNNING);
+
+		String dataPath = request.getAttribute(Attribute.DATA_PATH);
+		String schemaID = request.getAttribute(Attribute.SCHEMA_ID);
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
-				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
-		String identifierValue = fragmentProvider.get(payload, 0);
-		ImportIGSNTask task = new ImportIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
+				.create(schemaService.getSchemaByID(schemaID), Metadata.Fragment);
+		// get the fragment so we are in control of the container
+		String content = fragmentProvider.get(payload, 0);
+		String fragmentPath = dataPath + File.separator + "fragment.xml";
+		Helpers.writeFile(fragmentPath, content);
+		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory
+				.create(schemaService.getSchemaByID(schemaID), Metadata.Identifier);
+		String identifierValue = identifierProvider.get(payload, 0);
+		ImportIGSNTask task = new ImportIGSNTask(identifierValue, new File(fragmentPath), request, importService,
 				applicationEventPublisher, igsnRequestService);
 		task.run();
 
@@ -251,12 +261,21 @@ public class IGSNServiceController {
 		igsnRequestService.save(request);
 
 		// run
-		String payLoadContentPath = request.getAttribute(Attribute.PAYLOAD_PATH);
 		request.setStatus(Request.Status.RUNNING);
+
+		String dataPath = request.getAttribute(Attribute.DATA_PATH);
+		String schemaID = request.getAttribute(Attribute.SCHEMA_ID);
 		FragmentProvider fragmentProvider = (FragmentProvider) MetadataProviderFactory
-				.create(schemaService.getSchemaForContent(payload), Metadata.Fragment);
-		String identifierValue = fragmentProvider.get(payload, 0);
-		UpdateIGSNTask task = new UpdateIGSNTask(identifierValue, new File(payLoadContentPath), request, importService,
+				.create(schemaService.getSchemaByID(schemaID), Metadata.Fragment);
+		// use the new and improved content
+		String content = fragmentProvider.get(payload, 0);
+		String fragmentPath = dataPath + File.separator + "fragment.xml";
+
+		Helpers.writeFile(fragmentPath, content);
+		IdentifierProvider identifierProvider = (IdentifierProvider) MetadataProviderFactory
+				.create(schemaService.getSchemaByID(schemaID), Metadata.Identifier);
+		String identifierValue = identifierProvider.get(payload, 0);
+		UpdateIGSNTask task = new UpdateIGSNTask(identifierValue, new File(fragmentPath), request, importService,
 				applicationEventPublisher, igsnRequestService);
 		task.run();
 
