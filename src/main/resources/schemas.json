@@ -105,7 +105,7 @@
     "@type": "XMLSchema",
     "xml": {
       "namespace": "http://www.openarchives.org/OAI/2.0/oai_dc/",
-      "schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
+      "schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
     },
     "providers": {
       "OAI": "au.edu.ardc.registry.common.provider.OAIProvider"
