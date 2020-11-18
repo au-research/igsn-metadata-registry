@@ -55,8 +55,9 @@ public class TransformOAIDCTask implements Runnable {
 
 		if (version == null) {
 			logger.error("Unable to generate registration metadata missing supported Schema version");
-			throw new NotFoundException(
-					"Unable to generate registration metadata missing supported Schema version");
+			return;
+			//throw new NotFoundException(
+			//		"Unable to generate registration metadata missing supported Schema version");
 		}
 
 		Schema fromSchema = schemaService.getSchemaByID(version.getSchema());

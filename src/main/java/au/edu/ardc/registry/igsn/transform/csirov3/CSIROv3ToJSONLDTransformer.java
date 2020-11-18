@@ -6,12 +6,16 @@ import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CSIROv3ToJSONLDTransformer implements Transformer {
 
 	private static final String path = "xslt/csiro_v3_to_jsonld.xsl";
 
 	private static final String targetSchemaID = SchemaService.JSONLD;
 
+	private Map<String, String> parameters = new HashMap<>();
 	/**
 	 * Transform a {@link Version} with schema ardcv1 to a {@link Version} with schema
 	 * ardcjsonld
@@ -39,6 +43,16 @@ public class CSIROv3ToJSONLDTransformer implements Transformer {
 		resultVersion.setRequestID(version.getRequestID());
 
 		return resultVersion;
+	}
+
+	@Override
+	public Transformer setParam(String key, String value) {
+		return null;
+	}
+
+	@Override
+	public Map<String, String> getParams() {
+		return null;
 	}
 
 }

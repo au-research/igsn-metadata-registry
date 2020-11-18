@@ -62,7 +62,7 @@
      "Status": "au.edu.ardc.registry.igsn.provider.ardcv1.ARDCv1StatusProvider"
    },
    "transforms": {
-     "ardc-igsn-desc-1.0": "au.edu.ardc.registry.igsn.transform.csirov3.CSIROv3ToJSONLDTransformer",
+     "ardc-igsn-desc-1.0": "au.edu.ardc.registry.igsn.transform.csirov3.CSIROv3ToARDCv1Transformer",
      "jsonld": "au.edu.ardc.registry.igsn.transform.csirov3.CSIROv3ToJSONLDTransformer",
      "igsn-reg-1.0" : "au.edu.ardc.registry.igsn.transform.csirov3.CSIROv3ToRegistrationMetadataTransformer",
      "oai_dc": "au.edu.ardc.registry.igsn.transform.csirov3.CSIROv3ToOAIDCTransformer"

@@ -3,13 +3,12 @@ package au.edu.ardc.registry.igsn.transform.ardcv1;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
-import au.edu.ardc.registry.common.transform.RegistrationMetadataTransformer;
 import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ARDCv1ToRegistrationMetadataTransformer implements RegistrationMetadataTransformer {
+public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 
 	private static final String path = "xslt/ardc_v1_to_registration_metadata_v1.xsl";
 
@@ -46,7 +45,7 @@ public class ARDCv1ToRegistrationMetadataTransformer implements RegistrationMeta
 	 * Adds or Updates parameters that is used by the XSLT Transform These parameters
 	 * enable to create a richer registration metadata
 	 * @param key String {registrantName| nameIdentifier| nameIdentifierScheme | eventType
-	 * | timeStamp}
+	 * | timeStamp | prefix}
 	 * @param value String the value of the given parameter
 	 * @return self for fluent API usage
 	 */

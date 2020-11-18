@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.common.entity.Identifier;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.*;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
@@ -8,6 +9,7 @@ import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
@@ -62,6 +64,9 @@ public class IGSNService {
 	SchemaService schemaService;
 
 	@Autowired
+	VersionService versionService;
+
+	@Autowired
 	IGSNRequestService igsnRequestService;
 
 	@Autowired
@@ -71,6 +76,7 @@ public class IGSNService {
 
 	@Autowired
 	private ImportService importService;
+
 
 	@Autowired
 	private IGSNRegistrationService igsnRegistrationService;
@@ -125,6 +131,17 @@ public class IGSNService {
 		importExecutors.get(allocationID)
 				.execute(new UpdateIGSNTask(identifierValue, file, request, importService, applicationEventPublisher, igsnRequestService));
 	}
+
+	public void queueIGSNTransformer(Identifier identifier, String fromSchema, String toSchema, Map<String, String> parameters) {
+		if (syncIGSNExecutor == null) {
+			syncIGSNExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+		}
+		syncIGSNExecutor
+				.execute(new IGSNTransformerTask(identifier, versionService, schemaService, fromSchema, toSchema, parameters));
+	}
+
+
+
 
 	// todo check if there's any additional tasks in the request and init finalize if
 	// there's none

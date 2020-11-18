@@ -3,13 +3,13 @@ package au.edu.ardc.registry.igsn.transform.csirov3;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
-import au.edu.ardc.registry.common.transform.RegistrationMetadataTransformer;
+import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CSIROv3ToRegistrationMetadataTransformer implements RegistrationMetadataTransformer {
+public class CSIROv3ToRegistrationMetadataTransformer implements Transformer {
 
 	private static final String path = "xslt/csiro_v3_to_registration_metadata_v1.xsl";
 

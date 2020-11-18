@@ -4,7 +4,7 @@ import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.SchemaService;
-import au.edu.ardc.registry.common.transform.RegistrationMetadataTransformer;
+import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.transform.ardcv1.ARDCv1ToRegistrationMetadataTransformer;
@@ -33,7 +33,7 @@ class CSIROv3ToRegistrationMetadataTransformerTest {
         // setup the transformer, make sure it exists
         Schema fromSchema = schemaService.getSchemaByID(SchemaService.CSIROv3);
         Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
-        RegistrationMetadataTransformer transformer = (RegistrationMetadataTransformer) TransformerFactory
+        Transformer transformer = (Transformer) TransformerFactory
                 .create(fromSchema, toSchema);
 
         assertThat(transformer).isNotNull();
@@ -77,7 +77,7 @@ class CSIROv3ToRegistrationMetadataTransformerTest {
     void setParam() {
         Schema fromSchema = schemaService.getSchemaByID(SchemaService.CSIROv3);
         Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
-        RegistrationMetadataTransformer transformer = (RegistrationMetadataTransformer) TransformerFactory
+        Transformer transformer = (Transformer) TransformerFactory
                 .create(fromSchema, toSchema);
 
         assertThat(transformer).isNotNull();

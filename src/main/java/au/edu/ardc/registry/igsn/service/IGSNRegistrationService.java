@@ -8,7 +8,7 @@ import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.*;
-import au.edu.ardc.registry.common.transform.RegistrationMetadataTransformer;
+import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.XMLUtil;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
@@ -152,7 +152,7 @@ public class IGSNRegistrationService {
 		logger.debug("fromSchema: {}", fromSchema);
 		logger.debug("toSchema: {}", toSchema);
 
-		RegistrationMetadataTransformer transformer = (RegistrationMetadataTransformer) TransformerFactory
+		Transformer transformer = (Transformer) TransformerFactory
 				.create(fromSchema, toSchema);
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");

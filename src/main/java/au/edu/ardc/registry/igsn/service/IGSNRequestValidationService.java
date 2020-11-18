@@ -139,6 +139,7 @@ public class IGSNRequestValidationService {
 
 		request.setAttribute(Attribute.ALLOCATION_ID, allocation.getId().toString());
 		request.setAttribute(Attribute.ALLOCATION_PREFIX, allocation.getPrefix());
+		request.setAttribute(Attribute.SCHEMA_ID, schema.getId());
 		provider.setPrefix(allocation.getPrefix());
 		// fetch them again this time with Prefix
 		identifiers = provider.getAll(content);
