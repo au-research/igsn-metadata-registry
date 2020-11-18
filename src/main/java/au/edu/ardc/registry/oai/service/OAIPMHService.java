@@ -70,7 +70,7 @@ public class OAIPMHService {
 		identify.setAdminEmail(applicationProperties.getContactEmail());
 		identify.setEarliestDatestamp(recordService.findEarliest());
 		identify.setDeletedRecord("transient");
-		identify.setGranularity("yyyy-MM-ddTHH:mm:ssZ");
+		identify.setGranularity("YYYY-MM-DDTHH:mm:ssZ");
 		return new OAIIdentifyResponse(identify);
 	}
 
