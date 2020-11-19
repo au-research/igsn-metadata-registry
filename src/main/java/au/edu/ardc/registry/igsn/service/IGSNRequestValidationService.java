@@ -185,7 +185,8 @@ public class IGSNRequestValidationService {
 
 
 		// if it's bulk, all identifiers has to be by the same allocation
-		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)) {
+		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)
+				||  type.equals(IGSNService.EVENT_RESERVE) || type.equals(IGSNService.EVENT_TRANSFER)) {
 			String prefix = allocation.getPrefix();
 			String namespace = allocation.getNamespace();
 			for (String identifierValue : identifiers) {
