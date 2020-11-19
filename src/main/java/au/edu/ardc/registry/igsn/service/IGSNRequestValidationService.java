@@ -15,7 +15,9 @@ import au.edu.ardc.registry.exception.XMLValidationException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -46,6 +48,15 @@ public class IGSNRequestValidationService {
 
 	final List<String> supportedOwnerTypes = Arrays.asList("User", "DataCenter");
 
+	@Value("${request.max-single-filesize:6144}")
+	long maxSingleFileSize;
+
+	@Value("${request.max-bulk-filesize:5242880}")
+	long maxBulkFileSize;
+
+	@Value("${request.max-records-per-request:1000}")
+	int maxNumOfRecords = 1000;
+
 	public IGSNRequestValidationService(SchemaService schemaService, IGSNService igsnService,
 			IdentifierService identifierService, RecordService recordService, ValidationService validationService, KeycloakService keycloakService) {
 		this.schemaService = schemaService;
@@ -71,10 +82,10 @@ public class IGSNRequestValidationService {
 		String type = request.getType();
 		// check for file size before anything else
 		// 5 MB for BATCH
-		long maxContentSize = 5 * 1024 * 1024;
+		long maxContentSize = maxBulkFileSize;
 		// 60 KB for single mint and update
 		if(type.equals(IGSNService.EVENT_MINT) || type.equals(IGSNService.EVENT_UPDATE)){
-			maxContentSize = 60 * 1024; // 60 KB
+			maxContentSize = maxSingleFileSize; // 60 KB
 		}
 
 		File file = new File(request.getAttribute(Attribute.PAYLOAD_PATH));
@@ -121,6 +132,9 @@ public class IGSNRequestValidationService {
 				(type.equals(IGSNService.EVENT_MINT) || type.equals(IGSNService.EVENT_UPDATE))){
 			request.setStatus(Request.Status.FAILED);
 			throw new ContentNotSupportedException(String.format("Only single resource is allowed for %s service", type));
+		}else if(identifiers.size() > maxNumOfRecords){
+			request.setStatus(Request.Status.FAILED);
+			throw new ContentNotSupportedException(String.format("Number of records received %d is greater than allowed %d", identifiers.size(), maxNumOfRecords));
 		}
 
 		String firstIdentifier = identifiers.get(0);
