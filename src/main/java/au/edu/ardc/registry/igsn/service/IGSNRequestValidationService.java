@@ -157,6 +157,9 @@ public class IGSNRequestValidationService {
 			}
 
 			UUID ownerID = UUID.fromString(request.getAttribute(Attribute.OWNER_ID));
+
+
+
 			if(!ownerID.equals(user.getId())){
 				if(!ownerType.equals("DataCenter")){
 					throw new ForbiddenOperationException(String.format("User can only create records for a datacenter not: %s", ownerType));
@@ -174,6 +177,9 @@ public class IGSNRequestValidationService {
 				if(!userHasDataCenter){
 					throw new ForbiddenOperationException(String.format("User is not a member of datacenter : %s", ownerID));
 				}
+			}
+			else if(ownerType.equals("DataCenter")){
+				throw new ForbiddenOperationException("Valid DataCenter UUID must be provided as the ownerId");
 			}
 		}
 
