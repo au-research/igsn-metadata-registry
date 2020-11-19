@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * Service for validating IGSN Requests Mainly
@@ -199,11 +200,30 @@ public class IGSNRequestValidationService {
 
 
 		// if it's bulk, all identifiers has to be by the same allocation
-		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE)
-				||  type.equals(IGSNService.EVENT_RESERVE) || type.equals(IGSNService.EVENT_TRANSFER)) {
+		if (type.equals(IGSNService.EVENT_BULK_MINT) || type.equals(IGSNService.EVENT_BULK_UPDATE) || type.equals(IGSNService.EVENT_TRANSFER)) {
 			String prefix = allocation.getPrefix();
 			String namespace = allocation.getNamespace();
 			for (String identifierValue : identifiers) {
+				if (!identifierValue.startsWith(prefix + "/" + namespace)) {
+					// todo language
+					request.setStatus(Request.Status.FAILED);
+					throw new ForbiddenOperationException(String.format("Mixed allocations are not supported. %s " +
+							"doesn't match the prefix or namespace of the previous identifier. ", identifierValue));
+				}
+			}
+			return;
+		}
+
+		// if it's bulk reserve , all identifiers has to be valid as well
+		if (type.equals(IGSNService.EVENT_RESERVE)) {
+			String prefix = allocation.getPrefix();
+			String namespace = allocation.getNamespace();
+			for (String identifierValue : identifiers) {
+				if (!isvalidIdentifierFormat(identifierValue)) {
+					// todo language
+					request.setStatus(Request.Status.FAILED);
+					throw new ContentNotSupportedException(String.format("Identifier %s fails format validation", identifierValue));
+				}
 				if (!identifierValue.startsWith(prefix + "/" + namespace)) {
 					// todo language
 					request.setStatus(Request.Status.FAILED);
@@ -255,5 +275,10 @@ public class IGSNRequestValidationService {
 				}
 			}
 		}
+	}
+
+	public static boolean isvalidIdentifierFormat(String IdentifierValue){
+		String patternString = "[0-9\\.]+\\/[A-Z]{2}[A-Za-z0-9\\-.]+";
+		return IdentifierValue.matches(patternString);
 	}
 }
