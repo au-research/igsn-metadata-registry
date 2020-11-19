@@ -67,7 +67,7 @@
 			<xsl:apply-templates select="igsn:relatedResourceIdentifier/@relatedResourceIdentifierType"/>
 			<xsl:apply-templates select="@relationType"/>
 
-			<xsl:value-of select="normalize-space(.)"/>
+			<xsl:value-of select="normalize-space(igsn:relatedResourceIdentifier)"/>
 		</xsl:element>
 	</xsl:template>
 
