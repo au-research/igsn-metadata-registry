@@ -20,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,7 +51,8 @@ public class IGSNRecordsResourceController {
 			description = "Retrieves all IGSN records that the current user has access to")
 	@PageableOperation
 	public ResponseEntity<Page<IGSNRecordDTO>> index(HttpServletRequest request,
-			@PageableDefault @Parameter(hidden = true) Pageable pageable) {
+			@PageableDefault @Parameter(hidden = true) Pageable pageable,
+			@RequestParam(required = false) String title) {
 		RecordSpecification specs = new RecordSpecification();
 		User user = kcService.getLoggedInUser(request);
 
@@ -61,6 +63,10 @@ public class IGSNRecordsResourceController {
 		// building a search specification, by default ownerID in the provided list
 		specs.add(new SearchCriteria("ownerID", ownerIDs, SearchOperation.IN));
 		specs.add(new SearchCriteria("type", "IGSN", SearchOperation.EQUAL));
+
+		if (title != null) {
+			specs.add(new SearchCriteria("title", title, SearchOperation.MATCH));
+		}
 
 		// perform the search
 		Page<Record> result = recordService.search(specs, pageable);

@@ -54,8 +54,8 @@ public class IGSNRecordMapper {
 			protected IGSNRecordDTO doForward(Record record) {
 				IGSNRecordDTO dto = modelMapper.map(record, IGSNRecordDTO.class);
 
-				dto.setCurrentVersions(null);
-				dto.setIdentifiers(null);
+				//dto.setCurrentVersions(null);
+				//dto.setIdentifiers(null);
 
 				// set IGSN
 				IdentifierDTO igsn = record.getIdentifiers().stream()
