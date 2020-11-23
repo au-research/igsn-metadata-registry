@@ -26,8 +26,11 @@ public class ARDCv1FragmentProvider implements FragmentProvider {
 	 * the resources container for ARDCv1 IGSN resource(s)
 	 *
 	 */
-	private static final String container = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-			+ "<resources xmlns=\"https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc\">" + "</resources>";
+	private static final String container = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+			"<resources xmlns=\"https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc\"" +
+			" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+			" xsi:schemaLocation=\"https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc" +
+			" https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/resource.xsd\">" + "</resources>";
 
 	/**
 	 * returns 1 resource elements from a given resources content at the given position

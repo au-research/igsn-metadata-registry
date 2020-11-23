@@ -1,16 +1,17 @@
-package au.edu.ardc.registry.igsn.transform.ardcv1;
+package au.edu.ardc.registry.igsn.transform.csirov3;
 
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
 import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
+public class CSIROv3ToRegistrationMetadataTransformer implements Transformer {
 
-	private static final String path = "xslt/ardc_v1_to_registration_metadata_v1.xsl";
+	private static final String path = "xslt/csiro_v3_to_registration_metadata_v1.xsl";
 
 	private static final String targetSchemaID = SchemaService.IGSNREGv1;
 
@@ -45,11 +46,11 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 	 * Adds or Updates parameters that is used by the XSLT Transform These parameters
 	 * enable to create a richer registration metadata
 	 * @param key String {registrantName| nameIdentifier| nameIdentifierScheme | eventType
-	 * | timeStamp | prefix}
+	 * | timeStamp}
 	 * @param value String the value of the given parameter
 	 * @return self for fluent API usage
 	 */
-	public ARDCv1ToRegistrationMetadataTransformer setParam(String key, String value) {
+	public CSIROv3ToRegistrationMetadataTransformer setParam(String key, String value) {
 		if (this.parameters.containsKey(key)) {
 			this.parameters.replace(key, value);
 		}

@@ -159,7 +159,7 @@ class SchemaServiceTest {
 	void getSchemaLocation() {
 		Schema schema1 = service.getSchemaByID(SchemaService.ARDCv1);
 		String theLocation = schema1.getSchemaLocation();
-		assertThat(theLocation).isEqualTo("https://identifiers.ardc.edu.au/igsn-schema/description/1.0/resource.xsd");
+		assertThat(theLocation).isEqualTo("https://identifiers.ardc.edu.au/igsn-schema/descriptive/1.0/resource.xsd");
 	}
 
 }

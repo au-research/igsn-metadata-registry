@@ -1,4 +1,4 @@
-package au.edu.ardc.registry.igsn.transform.ardcv1;
+package au.edu.ardc.registry.igsn.transform.csirov3;
 
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
@@ -9,9 +9,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ARDCv1ToJSONLDTransformer implements Transformer {
+public class CSIROv3ToJSONLDTransformer implements Transformer {
 
-	private static final String path = "xslt/ardc_v1_to_jsonld.xsl";
+	private static final String path = "xslt/csiro_v3_to_jsonld.xsl";
 
 	private static final String targetSchemaID = SchemaService.JSONLD;
 
@@ -47,7 +47,7 @@ public class ARDCv1ToJSONLDTransformer implements Transformer {
 
 	@Override
 	public Transformer setParam(String key, String value) {
-		return this;
+		return null;
 	}
 
 	@Override

@@ -1,26 +1,25 @@
-package au.edu.ardc.registry.igsn.provider.ardcv1;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
+package au.edu.ardc.registry.igsn.provider.csirov3;
 
 import au.edu.ardc.registry.common.provider.IdentifierProvider;
-import org.jetbrains.annotations.NotNull;
+import au.edu.ardc.registry.common.util.XMLUtil;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.util.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import au.edu.ardc.registry.common.util.XMLUtil;
-
-public class ARDCv1IdentifierProvider implements IdentifierProvider {
+public class CSIROv3IdentifierProvider implements IdentifierProvider {
 
 	/**
 	 * Finds the resourceIdentifier of an IGSN record with ARDC v1 schema
 	 * @param content XML String of one ARDCv1 Resource document
 	 * @return The resourceIdentifier as String
 	 */
+	private String prefix = "";
+
 	@Override
 	public String get(String content) {
 		String identifierValue = "";
@@ -29,7 +28,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		try {
 			NodeList l = XMLUtil.getXPath(content, xpath);
 			if (l.getLength() > 0) {
-				identifierValue = l.item(0).getFirstChild().getNodeValue();
+				identifierValue = String.format("%s%s", prefix, l.item(0).getFirstChild().getNodeValue()).toUpperCase();
 			}
 		}
 		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
@@ -48,7 +47,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		try {
 			NodeList l = XMLUtil.getXPath(content, xpath);
 			if (l.getLength() > position) {
-				identifierValue = l.item(position).getFirstChild().getNodeValue();
+				identifierValue = String.format("%s%s", prefix, l.item(position).getFirstChild().getNodeValue()).toUpperCase();
 			}
 		}
 		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
@@ -70,7 +69,7 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		try {
 			NodeList l = XMLUtil.getXPath(content, xpath);
 			for (int i = 0; i < l.getLength(); i++) {
-				identifiers.add(l.item(i).getFirstChild().getNodeValue().toUpperCase());
+				identifiers.add(String.format("%s%s", prefix, l.item(i).getFirstChild().getNodeValue()).toUpperCase());
 			}
 		}
 		catch (XPathExpressionException | ParserConfigurationException | IOException | SAXException e) {
@@ -82,8 +81,14 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 
 	@Override
 	public void setPrefix(String prefix) {
-		// ardcv1 identifier contains the prefix so nothing to do here
-	}
+		// add a paths separator if not present
+		if(!prefix.endsWith("/")){
+			this.prefix = prefix + "/";
+		}
+		else{
+			this.prefix = prefix;
+		}
 
+	}
 
 }

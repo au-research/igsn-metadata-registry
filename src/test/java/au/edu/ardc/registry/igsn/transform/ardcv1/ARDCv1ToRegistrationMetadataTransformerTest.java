@@ -4,6 +4,7 @@ import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.model.Schema;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.Helpers;
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +34,7 @@ class ARDCv1ToRegistrationMetadataTransformerTest {
 		// setup the transformer, make sure it exists
 		Schema fromSchema = schemaService.getSchemaByID(SchemaService.ARDCv1);
 		Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
-		ARDCv1ToRegistrationMetadataTransformer transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory
+		Transformer transformer = (Transformer) TransformerFactory
 				.create(fromSchema, toSchema);
 
 		assertThat(transformer).isNotNull();

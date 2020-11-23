@@ -1,4 +1,4 @@
-package au.edu.ardc.registry.igsn.transform.ardcv1;
+package au.edu.ardc.registry.igsn.transform.csirov3;
 
 import au.edu.ardc.registry.common.entity.Version;
 import au.edu.ardc.registry.common.service.SchemaService;
@@ -8,9 +8,9 @@ import au.edu.ardc.registry.common.transform.XSLTransformer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ARDCv1ToOAIDCTransformer implements Transformer {
+public class CSIROv3ToOAIDCTransformer implements Transformer {
 
-	private static final String path = "xslt/ardc_v1_to_oai_dc.xsl";
+	private static final String path = "xslt/csiro_v3_to_oai_dc.xsl";
 
 	private static final String targetSchemaID = SchemaService.OAIDC;
 

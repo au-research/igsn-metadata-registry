@@ -42,26 +42,48 @@
         <curationDetails>
             <curation>
                 <curator>
-                    <curatorName>Joel Benn</curatorName>
-                    <curatorIdentifier curatorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/DOI">
-                        10.523546
-                    </curatorIdentifier>
+                    <curatorName>Jay Bee</curatorName>
+                    <curatorIdentifier curatorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/DOI">10.523546</curatorIdentifier>
                 </curator>
                 <curationDate>2020-08-05</curationDate>
                 <curationLocation>Curation Location</curationLocation>
-                <curatingInstitution institutionURI="CurationURL">Curation Inst</curatingInstitution>
+                <curatingInstitution institutionURI="https://institution.url">Research Lab 123</curatingInstitution>
+            </curation>
+            <curation>
+                <curator>
+                    <curatorName>Prof. Jay R</curatorName>
+                    <curatorIdentifier curatorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/DOI">10.523546</curatorIdentifier>
+                </curator>
+                <curationDate>2020-08-05</curationDate>
+                <curationLocation>Second Curation Location</curationLocation>
+                <curatingInstitution institutionURI="https://institution2.url">Research Lab 2004</curatingInstitution>
             </curation>
         </curationDetails>
         <contributors>
             <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/pointOfContact">
                 <contributorName>Sarah Contributor</contributorName>
+                <contributorIdentifier contributorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID">0000-1111-2222-9999</contributorIdentifier>
             </contributor>
-            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/owner">
-                <contributorName>Mark Adams Sozo CEO</contributorName>
-                <contributorIdentifier
-                        contributorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID">
-                    0000-0003-0318-3132
-                </contributorIdentifier>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/principalInvestigator">
+                <contributorName>Sam Smith</contributorName>
+            </contributor>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/collaborator">
+                <contributorName>Greg Chalms</contributorName>
+                <contributorIdentifier contributorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID">0000-1111-2222-9998</contributorIdentifier>
+            </contributor>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/stakeholder">
+                <contributorName>Peter Mards</contributorName>
+                <contributorIdentifier contributorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID">0000-1111-2222-9997</contributorIdentifier>
+            </contributor>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/sponsor">
+                <contributorName>Craig A</contributorName>
+            </contributor>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/funder">
+                <contributorName>Shelly M</contributorName>
+            </contributor>
+            <contributor contributorType="http://registry.it.csiro.au/def/isotc211/CI_RoleCode/processor">
+                <contributorName>Ron</contributorName>
+                <contributorIdentifier contributorIdentifierType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/Handle">102.123/387554</contributorIdentifier>
             </contributor>
         </contributors>
         <relatedResources>
