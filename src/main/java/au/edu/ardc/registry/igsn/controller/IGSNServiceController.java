@@ -28,6 +28,7 @@ import au.edu.ardc.registry.igsn.task.UpdateIGSNTask;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -328,7 +329,17 @@ public class IGSNServiceController {
 	@PostMapping(value = "/reserve", consumes = { MediaType.TEXT_PLAIN_VALUE })
 	@Operation(summary = "Reserve IGSN", description = "Reserve a list of IGSNs without registering metadata",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-					description = "the newline separated IGSN list, 1 per line"),
+					description = "the newline separated IGSN list, 1 per line",
+			content= @Content(examples = @ExampleObject(value="20.500.11812/XXZT1UDZY8RKYBE234\n" +
+					"20.500.11812/XXZT1ECT9BUJ59F234\n" +
+					"20.500.11812/XXZT1AXSALZL2GQ234\n" +
+					"20.500.11812/XXZT1KK6S8VQEKD234\n" +
+					"20.500.11812/XXZT1VDOHF93EPI234\n" +
+					"20.500.11812/XXZT1XHURL3OTV5234\n" +
+					"20.500.11812/XXZT1RW7GAGZBNH234\n" +
+					"20.500.11812/XXZT1ZM34HZOG7V234\n" +
+					"20.500.11812/XXZT1FZTQSKVIP7234\n" +
+					"20.500.11812/XXZT16FDGYYH1XR234"))),
 			parameters = {
 					@Parameter(name = "schemaID", description = "the schema of the payload",
 							schema = @Schema(description = "Schema ID", type = "string",
@@ -347,12 +358,12 @@ public class IGSNServiceController {
 					@ApiResponse(responseCode = "400", description = "Validation Exception",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
-			@RequestParam(required = false, defaultValue = "igsn_list") String schemaId,
+			@RequestParam(required = false, defaultValue = "igsn_list") String schemaID,
 			@RequestParam(required = false, defaultValue = "User") String ownerType,
 			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
-		request.setAttribute(Attribute.SCHEMA_ID, schemaId);
+		request.setAttribute(Attribute.SCHEMA_ID, schemaID);
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
 		if (ownerID != null) {
@@ -374,18 +385,31 @@ public class IGSNServiceController {
 
 	@PostMapping(value = "/transfer", consumes = MediaType.TEXT_PLAIN_VALUE)
 	@Operation(summary = "Transfer IGSN ownership",
-			description = "Transfer the ownership of a list of IGSN Identifier to another Owner",
+			description = "Transfer the ownership of a list of IGSN Records to a DataCenter the User is member of",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-					description = "the newline separated IGSN list, 1 per line"),
+					description = "A list of Identifiers owned by the user, 1 IGSN per line",
+					// content= @Content(
+					// examples = @ExampleObject(name="IGSN list",
+					// externalValue = "http://localhost:8085/igsn-registry/examples/igsnlist.txt"))),
+					content= @Content(examples = @ExampleObject(value="20.500.11812/XXZT1UDZY8RKYBE234\n" +
+							"20.500.11812/XXZT1ECT9BUJ59F234\n" +
+							"20.500.11812/XXZT1AXSALZL2GQ234\n" +
+							"20.500.11812/XXZT1KK6S8VQEKD234\n" +
+							"20.500.11812/XXZT1VDOHF93EPI234\n" +
+							"20.500.11812/XXZT1XHURL3OTV5234\n" +
+							"20.500.11812/XXZT1RW7GAGZBNH234\n" +
+							"20.500.11812/XXZT1ZM34HZOG7V234\n" +
+							"20.500.11812/XXZT1FZTQSKVIP7234\n" +
+							"20.500.11812/XXZT16FDGYYH1XR234"))),
 			parameters = {
 					@Parameter(name = "schemaID", description = "the schema of the payload",
 							schema = @Schema(description = "Schema ID", type = "string",
 									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
-					@Parameter(name = "ownerID", required = true, description = "The UUID of the intended Owner",
+					@Parameter(name = "ownerID", required = true, description = "The UUID of the user's DataCenter to transfer Ownership to",
 							schema = @Schema(implementation = UUID.class)),
-					@Parameter(name = "ownerType", description = "The Type of the Owner", required = true,
+					@Parameter(name = "ownerType", description = "The Type of the Owner currently only DataCenter is supported",
 							schema = @Schema(description = "Owner Type", type = "string", defaultValue = "DataCenter",
-									allowableValues = { "User", "DataCenter" })) },
+									allowableValues = {"DataCenter"})) },
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
