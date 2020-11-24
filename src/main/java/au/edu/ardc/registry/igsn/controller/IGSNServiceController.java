@@ -160,10 +160,189 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping(value = "/mint", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-			MediaType.TEXT_PLAIN_VALUE })
+	@PostMapping(value = "/mint", consumes = { MediaType.APPLICATION_XML_VALUE})
 	@Operation(summary = "Mint a new IGSN", description = "Creates a new IGSN Identifier and Metadata",
-			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the XML payload"),
+			//requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "the XML payload"),
+			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+					description = "The Descriptive XML metadata of 1 IGSN record",
+//					content= @Content(examples = {
+//							@ExampleObject(name="ARDC v1 XML", externalValue="http://localhost:8085/igsn-registry/examples/sample_ardc_v1.xml"),
+//							@ExampleObject(name="CSIRO v3 XML", externalValue="http://localhost:8085/igsn-registry/examples/sample_csiro_v3.xml")})),
+					content= @Content(examples = {
+							@ExampleObject(name="ARDC v1 XML", value="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+									"<resources xmlns=\"https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc\"\n" +
+									"           xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+									"           xsi:schemaLocation=\"https://identifiers.ardc.edu.au/schemas/ardc-igsn-desc\">\n" +
+									"    <resource registeredObjectType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/PhysicalSample\">\n" +
+									"        <resourceIdentifier>20.500.11812/XXZT1UIAYLV</resourceIdentifier>\n" +
+									"        <landingPage>https://demo.identifiers.ardc.edu.au/igsn/#/meta/XX0TUIAYLV</landingPage>\n" +
+									"        <isPublic>true</isPublic>\n" +
+									"        <resourceTitle>This Title also left blank on purpose</resourceTitle>\n" +
+									"        <alternateIdentifiers>\n" +
+									"            <alternateIdentifier alternateIdentifierType=\"local\">AltID2134</alternateIdentifier>\n" +
+									"        </alternateIdentifiers>\n" +
+									"        <resourceTypes>\n" +
+									"            <resourceType>http://vocabulary.odm2.org/specimentype/core</resourceType>\n" +
+									"        </resourceTypes>\n" +
+									"        <materialTypes>\n" +
+									"            <materialType>http://vocabulary.odm2.org/medium/liquidOrganic</materialType>\n" +
+									"        </materialTypes>\n" +
+									"        <classifications>\n" +
+									"            <classification classificationURI=\"ClassificationUrl\">Classification</classification>\n" +
+									"            <classification classificationURI=\"\"/>\n" +
+									"        </classifications>\n" +
+									"        <purpose>Purpose</purpose>\n" +
+									"        <sampledFeatures>\n" +
+									"            <sampledFeature sampledFeatureURI=\"SampledFeatureURL\">Sampled Feature</sampledFeature>\n" +
+									"            <sampledFeature/>\n" +
+									"        </sampledFeatures>\n" +
+									"        <location>\n" +
+									"            <locality localityURI=\"locality URL\">Locality</locality>\n" +
+									"            <geometry srid=\"https://epsg.io/4326\" verticalDatum=\"https://epsg.io/4326\" geometryURI=\"GeoURL\">POLYGON\n" +
+									"                ((10.689 -25.092, 34.595 -20.17, 38.814 -35.639, 13.502 -39.155, 10.689 -25.092))\n" +
+									"            </geometry>\n" +
+									"        </location>\n" +
+									"        <date>\n" +
+									"            <timePeriod>\n" +
+									"                <start>2020-07-30</start>\n" +
+									"                <end>2020-07-30</end>\n" +
+									"            </timePeriod>\n" +
+									"        </date>\n" +
+									"        <method methodURI=\"MethodURL\">Method</method>\n" +
+									"        <campaign>Project</campaign>\n" +
+									"        <curationDetails>\n" +
+									"            <curation>\n" +
+									"                <curator>\n" +
+									"                    <curatorName>Jay Bee</curatorName>\n" +
+									"                    <curatorIdentifier curatorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/DOI\">10.523546</curatorIdentifier>\n" +
+									"                </curator>\n" +
+									"                <curationDate>2020-08-05</curationDate>\n" +
+									"                <curationLocation>Curation Location</curationLocation>\n" +
+									"                <curatingInstitution institutionURI=\"https://institution.url\">Research Lab 123</curatingInstitution>\n" +
+									"            </curation>\n" +
+									"            <curation>\n" +
+									"                <curator>\n" +
+									"                    <curatorName>Prof. Jay R</curatorName>\n" +
+									"                    <curatorIdentifier curatorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/DOI\">10.523546</curatorIdentifier>\n" +
+									"                </curator>\n" +
+									"                <curationDate>2020-08-05</curationDate>\n" +
+									"                <curationLocation>Second Curation Location</curationLocation>\n" +
+									"                <curatingInstitution institutionURI=\"https://institution2.url\">Research Lab 2004</curatingInstitution>\n" +
+									"            </curation>\n" +
+									"        </curationDetails>\n" +
+									"        <contributors>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/pointOfContact\">\n" +
+									"                <contributorName>Sarah Contributor</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID\">0000-1111-2222-9999</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/principalInvestigator\">\n" +
+									"                <contributorName>Sam Smith</contributorName>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/collaborator\">\n" +
+									"                <contributorName>Greg Chalms</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID\">0000-1111-2222-9998</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/stakeholder\">\n" +
+									"                <contributorName>Peter Mards</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/ORCID\">0000-1111-2222-9997</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/sponsor\">\n" +
+									"                <contributorName>Craig A</contributorName>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/funder\">\n" +
+									"                <contributorName>Shelly M</contributorName>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/processor\">\n" +
+									"                <contributorName>Ron</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/Handle\">102.123/387554</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"        </contributors>\n" +
+									"        <relatedResources>\n" +
+									"            <relatedResource relationType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/HasReferenceResource\">\n" +
+									"                <relatedResourceTitle>Example Publication</relatedResourceTitle>\n" +
+									"                <relatedResourceIdentifier\n" +
+									"                        relatedResourceIdentifierType=\"http://pid.geoscience.gov.au/def/voc/ga/igsncode/EISSN\">\n" +
+									"                    eissn-sdoiuowre\n" +
+									"                </relatedResourceIdentifier>\n" +
+									"            </relatedResource>\n" +
+									"        </relatedResources>\n" +
+									"        <comments>Comments</comments>\n" +
+									"        <logDate eventType=\"updated\">2020-08-03T12:05:12+10:00</logDate>\n" +
+									"    </resource>\n" +
+									"</resources>\n"),
+							@ExampleObject(name="CSIRO v3 XML", value="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+									"<resources xmlns=\"https://igsn.csiro.au/schemas/3.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"https://igsn.csiro.au/schemas/3.0 https://igsn.csiro.au/schemas/3.0/igsn-csiro-v3.0.xsd\">\n" +
+									"    <resource registeredObjectType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/PhysicalSample\">\n" +
+									"        <resourceIdentifier>XXZT1CSTSTDOCO1</resourceIdentifier>\n" +
+									"        <landingPage>http://example.com.au/abcde</landingPage>\n" +
+									"        <isPublic>true</isPublic>\n" +
+									"        <resourceTitle>A title worthy for kings</resourceTitle>\n" +
+									"        <alternateIdentifiers>\n" +
+									"            <alternateIdentifier>Another identifer option</alternateIdentifier>\n" +
+									"            <alternateIdentifier>And again another identifer</alternateIdentifier>\n" +
+									"        </alternateIdentifiers>\n" +
+									"        <resourceTypes>\n" +
+									"            <resourceType>http://vocabulary.odm2.org/specimentype/core</resourceType>\n" +
+									"            <resourceType>http://vocabulary.odm2.org/specimentype/corePiece</resourceType>\n" +
+									"        </resourceTypes>\n" +
+									"        <materialTypes>\n" +
+									"            <materialType>http://vocabulary.odm2.org/medium/particulate</materialType>\n" +
+									"            <materialType>http://vocabulary.odm2.org/medium/air</materialType>\n" +
+									"        </materialTypes>\n" +
+									"        <classifications>\n" +
+									"            <classification classificationURI=\"http://www.classification.com/tin\">Some phrases for classification</classification>\n" +
+									"            <classification classificationURI=\"http://www.classification.com/gold\">maybe gold or silver</classification>\n" +
+									"        </classifications>\n" +
+									"        <purpose>This is a test resource for demo multi</purpose>\n" +
+									"        <sampledFeatures>\n" +
+									"            <sampledFeature sampledFeatureURI=\"http://www.samplefeature.com/uri/abcde\">A sample feature sitting somewhere</sampledFeature>\n" +
+									"            <sampledFeature sampledFeatureURI=\"http://www.samplefeature.com/uri/hfsgfs\">A lalala land</sampledFeature>\n" +
+									"            <sampledFeature sampledFeatureURI=\"http://www.samplefeature.com/uri/gfnbgdgfd\">Curry for dinner</sampledFeature>\n" +
+									"        </sampledFeatures>\n" +
+									"        <location>\n" +
+									"            <locality localityURI=\"http://google.map/perth\">Canning vale</locality>\n" +
+									"            <geometry srid=\"https://epsg.io/4326\" verticalDatum=\"https://epsg.io/4326\" geometryURI=\"http://www.altova.com\">POLYGON ((127.05688476563 -20.5224609375, 124.24438476563 -28.2568359375, 143.22875976563 -32.1240234375, 142.17407226563 -20.8740234375, 127.05688476563 -20.5224609375))</geometry>\n" +
+									"        </location>\n" +
+									"        <date>\n" +
+									"            <timePeriod>\n" +
+									"                <start>2003</start>\n" +
+									"                <end>2002</end>\n" +
+									"            </timePeriod>\n" +
+									"        </date>\n" +
+									"        <method methodURI=\"http://method.com/collection\">Lab sampling</method>\n" +
+									"        <campaign>a</campaign>\n" +
+									"        <curationDetails>\n" +
+									"            <curation>\n" +
+									"                <curator>Curtin</curator>\n" +
+									"                <curationDate>2001-12</curationDate>\n" +
+									"                <curationLocation>Bentley</curationLocation>\n" +
+									"                <curatingInstitution institutionURI=\"http://www.curtin.org\">Curtin University</curatingInstitution>\n" +
+									"            </curation>\n" +
+									"            <curation>\n" +
+									"                <curator>CSIRO</curator>\n" +
+									"                <curationDate>2001-12</curationDate>\n" +
+									"                <curationLocation>In the lab somewhere</curationLocation>\n" +
+									"                <curatingInstitution institutionURI=\"http://csiro.au\">ARRC</curatingInstitution>\n" +
+									"            </curation>\n" +
+									"        </curationDetails>\n" +
+									"        <contributors>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/pointOfContact\">\n" +
+									"                <contributorName>Victor Tey</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/ORCID\">Contributor to something</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"            <contributor contributorType=\"http://registry.it.csiro.au/def/isotc211/CI_RoleCode/originator\">\n" +
+									"                <contributorName>Adam Brown</contributorName>\n" +
+									"                <contributorIdentifier contributorIdentifierType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/EISSN\">this has to mean something</contributorIdentifier>\n" +
+									"            </contributor>\n" +
+									"        </contributors>\n" +
+									"        <relatedResources>\n" +
+									"            <relatedResource relatedResourceIdentifierType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/ARK\" relationType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/HasDigitalRepresentation\">A related resource somewhere</relatedResource>\n" +
+									"            <relatedResource relatedResourceIdentifierType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/DOI\" relationType=\"http://pid.geoscience.gov.au/def/voc/igsn-codelists/IsMemberOf\">A related resource somewhere</relatedResource>\n" +
+									"        </relatedResources>\n" +
+									"        <comments>This is a comment fit for kings</comments>\n" +
+									"        <logDate eventType=\"registered\">2002</logDate>\n" +
+									"    </resource>\n" +
+									"</resources>")})),
 			parameters = { @Parameter(name = "ownerID",
 					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
 					schema = @Schema(implementation = UUID.class)),
@@ -232,8 +411,7 @@ public class IGSNServiceController {
 	 * @return an IGSN response records
 	 * @throws Exception when things go wrong, handled by Exception Advice
 	 */
-	@PostMapping(value = "/update", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-			MediaType.TEXT_PLAIN_VALUE })
+	@PostMapping(value = "/update", consumes = { MediaType.APPLICATION_XML_VALUE})
 	@Operation(summary = "Update IGSN", description = "Updates an existing IGSN metadata",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the updated XML payload"),
@@ -287,8 +465,7 @@ public class IGSNServiceController {
 		return ResponseEntity.ok().body(dto);
 	}
 
-	@PostMapping(value = "/bulk-update", consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE,
-			MediaType.TEXT_PLAIN_VALUE })
+	@PostMapping(value = "/bulk-update", consumes = { MediaType.APPLICATION_XML_VALUE})
 	@Operation(summary = "Bulk Update IGSN", description = "Updates many IGSNs metadata in a single payload",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "the updated XML payload"),
@@ -388,9 +565,9 @@ public class IGSNServiceController {
 			description = "Transfer the ownership of a list of IGSN Records to a DataCenter the User is member of",
 			requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 					description = "A list of Identifiers owned by the user, 1 IGSN per line",
-					// content= @Content(
-					// examples = @ExampleObject(name="IGSN list",
-					// externalValue = "http://localhost:8085/igsn-registry/examples/igsnlist.txt"))),
+//				 content= @Content(
+//				 examples = @ExampleObject(name="IGSN list",
+//				 externalValue = "https://test.identifiers.ardc.edu.au/igsn-registry/examples/igsnlist.txt"))),
 					content= @Content(examples = @ExampleObject(value="20.500.11812/XXZT1UDZY8RKYBE234\n" +
 							"20.500.11812/XXZT1ECT9BUJ59F234\n" +
 							"20.500.11812/XXZT1AXSALZL2GQ234\n" +

@@ -94,6 +94,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 					.uri(uriBuilder -> uriBuilder.path(mintEndpoint)
 							.build())
 					.header("Authorization", getBasicAuthenticationHeader(username, password))
+					.header("Content-Type", "application/xml")
 					.body(Mono.just(validXML), String.class)
 					.exchange().expectStatus().isForbidden();
 				this.respons_code = 400;
@@ -121,6 +122,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 
 		this.webTestClient.post().uri(mintEndpoint)
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Content-Type", "application/xml")
 				.body(Mono.just(validXML), String.class).exchange().expectStatus().isForbidden();
 	}
 
@@ -157,6 +159,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 				.uri(uriBuilder -> uriBuilder.path(mintEndpoint)
 						.build())
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Content-Type", "application/xml")
 				.body(Mono.just(validXML), String.class)
 				.exchange()
 				.expectStatus().isOk();
@@ -303,6 +306,7 @@ class IGSNServiceControllerIT extends KeycloakIntegrationTest {
 
 		this.webTestClient.post().uri(updateEndpoint)
 				.header("Authorization", getBasicAuthenticationHeader(username, password))
+				.header("Content-Type", "application/xml")
 				.body(Mono.just(invalidXML), String.class).exchange().expectStatus().isBadRequest();
 	}
 

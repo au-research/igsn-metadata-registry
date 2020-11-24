@@ -19,5 +19,6 @@ class IGSNRequestValidationServiceTest {
             Assert.assertFalse(IGSNRequestValidationService.isvalidIdentifierFormat("FISH/FISH"));
             Assert.assertFalse(IGSNRequestValidationService.isvalidIdentifierFormat("20.500.11812/XXZT1JBCSV33__...."));
             Assert.assertTrue(IGSNRequestValidationService.isvalidIdentifierFormat("20.500.11812/XXZT1VDOHF93EPI234...."));
+            Assert.assertFalse(IGSNRequestValidationService.isvalidIdentifierFormat("20.500.11812/XXZT1bBWfc3aaa$"));
         }
 }
