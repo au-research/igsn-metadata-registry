@@ -5,6 +5,7 @@ import au.edu.ardc.registry.common.model.Allocation;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
@@ -46,6 +47,9 @@ class IGSNServiceTest {
 
 	@MockBean
 	ImportService importService;
+
+	@MockBean
+	VersionService versionService;
 
 	@MockBean
 	IGSNRegistrationService igsnRegistrationService;

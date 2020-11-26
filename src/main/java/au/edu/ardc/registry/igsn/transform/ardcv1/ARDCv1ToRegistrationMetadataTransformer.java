@@ -45,7 +45,7 @@ public class ARDCv1ToRegistrationMetadataTransformer implements Transformer {
 	 * Adds or Updates parameters that is used by the XSLT Transform These parameters
 	 * enable to create a richer registration metadata
 	 * @param key String {registrantName| nameIdentifier| nameIdentifierScheme | eventType
-	 * | timeStamp}
+	 * | timeStamp | prefix}
 	 * @param value String the value of the given parameter
 	 * @return self for fluent API usage
 	 */

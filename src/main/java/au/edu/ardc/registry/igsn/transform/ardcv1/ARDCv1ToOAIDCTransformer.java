@@ -6,12 +6,15 @@ import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.XSLTransformer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ARDCv1ToOAIDCTransformer implements Transformer {
 
 	private static final String path = "xslt/ardc_v1_to_oai_dc.xsl";
 
 	private static final String targetSchemaID = SchemaService.OAIDC;
+
+	private Map<String, String> parameters = new HashMap<>();
 
 	@Override
 	public Version transform(Version version) {
@@ -31,6 +34,16 @@ public class ARDCv1ToOAIDCTransformer implements Transformer {
 		resultVersion.setRequestID(version.getRequestID());
 
 		return resultVersion;
+	}
+
+	@Override
+	public Transformer setParam(String key, String value) {
+		return null;
+	}
+
+	@Override
+	public Map<String, String> getParams() {
+		return null;
 	}
 
 }

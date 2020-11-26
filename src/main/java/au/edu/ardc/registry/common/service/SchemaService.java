@@ -30,7 +30,7 @@ public class SchemaService {
 	// useful helper constants
 	public static final String ARDCv1 = "ardc-igsn-desc-1.0";
 
-	public static final String ARDCv1JSONLD = "ardc-igsn-desc-1.0-jsonld";
+	public static final String JSONLD = "ardc-igsn-desc-1.0-jsonld";
 
 	public static final String IGSNDESCv1 = "igsn-desc-1.0";
 

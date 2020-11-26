@@ -12,4 +12,6 @@ public interface IdentifierProvider {
 
 	List<String> getAll(String content);
 
+	void setPrefix(String prefix);
+
 }

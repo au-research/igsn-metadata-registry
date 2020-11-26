@@ -8,6 +8,7 @@ import au.edu.ardc.registry.common.provider.LandingPageProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.*;
+import au.edu.ardc.registry.common.transform.Transformer;
 import au.edu.ardc.registry.common.transform.TransformerFactory;
 import au.edu.ardc.registry.common.util.XMLUtil;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
@@ -30,8 +31,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @ConditionalOnProperty(name = "app.igsn.enabled")
@@ -54,6 +54,9 @@ public class IGSNRegistrationService {
 
 	@Autowired
 	private KeycloakService keycloakService;
+
+	private final List<String> supportedSchemas = Arrays.asList(SchemaService.ARDCv1, SchemaService.CSIROv3);
+
 
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(IGSNRegistrationService.class);
 
@@ -80,11 +83,6 @@ public class IGSNRegistrationService {
 		}
 
 
-
-
-		String supportedSchema = SchemaService.ARDCv1;
-		Schema fromSchema = schemaService.getSchemaByID(supportedSchema);
-
 		String allocationID = request.getAttribute(Attribute.ALLOCATION_ID);
 
 		IGSNAllocation allocation = (IGSNAllocation) keycloakService.getAllocationByResourceID(allocationID);
@@ -105,14 +103,30 @@ public class IGSNRegistrationService {
 			throw new RecordNotFoundException(identifier.getId().toString());
 		}
 
-		// obtain version
+		// obtain latest version from supported schemas
+		// we need to support CSIROv3 and ARDCv1 at least !!
+		Version supportedVersion = null;
 
-		Version supportedVersion = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
-		if (supportedVersion == null) {
-			requestLog.error("Failed to generate registration metadata with schema {}", supportedSchema);
-			throw new NotFoundException(
-					"Unable to generate registration metadata missing " + supportedSchema + " version");
+		for(String supportedSchema: supportedSchemas){
+			Version v = igsnVersionService.getCurrentVersionForRecord(record, supportedSchema);
+			if(v != null){
+				if(supportedVersion == null){
+					supportedVersion = v;
+				}
+				else if(supportedVersion.getCreatedAt().before(v.getCreatedAt())){
+					supportedVersion = v;
+				}
+			}
 		}
+
+		if (supportedVersion == null) {
+			requestLog.error("Unable to generate registration metadata missing supported Schema version");
+			throw new NotFoundException(
+					"Unable to generate registration metadata missing supported Schema version");
+		}
+
+		Schema fromSchema = schemaService.getSchemaByID(supportedVersion.getSchema());
+
 
 		LandingPageProvider landingPageProvider = (LandingPageProvider) MetadataProviderFactory.create(fromSchema,
 				Metadata.LandingPage);
@@ -138,7 +152,7 @@ public class IGSNRegistrationService {
 		logger.debug("fromSchema: {}", fromSchema);
 		logger.debug("toSchema: {}", toSchema);
 
-		ARDCv1ToRegistrationMetadataTransformer transformer = (ARDCv1ToRegistrationMetadataTransformer) TransformerFactory
+		Transformer transformer = (Transformer) TransformerFactory
 				.create(fromSchema, toSchema);
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -146,9 +160,10 @@ public class IGSNRegistrationService {
 		df.setTimeZone(tz);
 		String utcDateTimeStr = df.format(supportedVersion.getCreatedAt());
 		transformer.setParam("timeStamp", utcDateTimeStr).setParam("registrantName", allocation.getMds_username());
+		transformer.setParam("prefix", request.getAttribute(Attribute.ALLOCATION_PREFIX));
 		transformer.getParams().forEach((key, value) -> requestLog.debug("Transformer.{}: {}", key, value));
+
 		Version registrationMetadataVersion = transformer.transform(supportedVersion);
-		logger.info("Updating Version" + landingPage);
 		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
 				request);
 		// update the registration Metadata at MDS
@@ -192,21 +207,20 @@ public class IGSNRegistrationService {
 		UUID creatorID = UUID.fromString(request.getAttribute(Attribute.CREATOR_ID));
 		Version currentVersion = igsnVersionService.getCurrentVersionForRecord(record, SchemaService.IGSNREGv1);
 
-		logger.info("Updating Version" + version.getContent().toString());
 		if (currentVersion != null) {
 			// the version is later than the current request (shouldn't happen unless
 			// requests are re-run
 			if (currentVersion.getCreatedAt().after(request.getCreatedAt())) {
-				logger.info("Current Version is newer" + version.getContent().toString());
+				logger.debug(String.format("Current Version is newer created at: %s" ,version.getCreatedAt()));
 				return false;
 			}
 			// the current version was created by the same request
 			if (currentVersion.getRequestID() != null && currentVersion.getRequestID().equals(request.getId())) {
-				logger.info("Current Version already the same" + version.getContent().toString());
+				logger.debug(String.format("Current Version already the same created at: %s" , version.getCreatedAt()));
 				return false;
 			}
 			// there is current version then end it now
-			igsnVersionService.end(currentVersion, creatorID);
+			igsnVersionService.end(currentVersion, creatorID, request.getCreatedAt());
 		}
 		// if we got this far a new version will be added
 		version.setRecord(record);

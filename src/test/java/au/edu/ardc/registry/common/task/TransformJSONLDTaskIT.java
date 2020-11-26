@@ -56,7 +56,7 @@ class TransformJSONLDTaskIT extends WebIntegrationTest {
 		assertThat(actual).isNotNull();
 		assertThat(actual.getCurrentVersions()).hasSize(2);
 
-		Version actualVersion = versionService.findVersionForRecord(actual, SchemaService.ARDCv1JSONLD);
+		Version actualVersion = versionService.findVersionForRecord(actual, SchemaService.JSONLD);
 		assertThat(actualVersion.isCurrent()).isTrue();
 		assertThat(actualVersion).isNotNull();
 		assertThat(actualVersion.getContent()).isNotEmpty();

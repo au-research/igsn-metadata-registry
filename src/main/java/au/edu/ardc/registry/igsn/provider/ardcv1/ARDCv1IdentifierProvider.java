@@ -80,4 +80,10 @@ public class ARDCv1IdentifierProvider implements IdentifierProvider {
 		return identifiers;
 	}
 
+	@Override
+	public void setPrefix(String prefix) {
+		// ardcv1 identifier contains the prefix so nothing to do here
+	}
+
+
 }

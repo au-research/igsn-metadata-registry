@@ -1,6 +1,7 @@
 package au.edu.ardc.registry.igsn.service;
 
 import au.edu.ardc.registry.common.entity.Identifier;
+import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.*;
 import au.edu.ardc.registry.common.provider.FragmentProvider;
@@ -8,6 +9,7 @@ import au.edu.ardc.registry.common.provider.IdentifierProvider;
 import au.edu.ardc.registry.common.provider.Metadata;
 import au.edu.ardc.registry.common.provider.MetadataProviderFactory;
 import au.edu.ardc.registry.common.service.SchemaService;
+import au.edu.ardc.registry.common.service.VersionService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import au.edu.ardc.registry.igsn.model.IGSNTask;
@@ -62,6 +64,9 @@ public class IGSNService {
 	SchemaService schemaService;
 
 	@Autowired
+	VersionService versionService;
+
+	@Autowired
 	IGSNRequestService igsnRequestService;
 
 	@Autowired
@@ -71,6 +76,7 @@ public class IGSNService {
 
 	@Autowired
 	private ImportService importService;
+
 
 	@Autowired
 	private IGSNRegistrationService igsnRegistrationService;
@@ -125,6 +131,17 @@ public class IGSNService {
 		importExecutors.get(allocationID)
 				.execute(new UpdateIGSNTask(identifierValue, file, request, importService, applicationEventPublisher, igsnRequestService));
 	}
+
+	public void queueIGSNTransformer(Identifier identifier, String fromSchema, String toSchema, Map<String, String> parameters) {
+		if (syncIGSNExecutor == null) {
+			syncIGSNExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+		}
+		syncIGSNExecutor
+				.execute(new IGSNTransformerTask(identifier, versionService, schemaService, fromSchema, toSchema, parameters));
+	}
+
+
+
 
 	// todo check if there's any additional tasks in the request and init finalize if
 	// there's none
@@ -246,7 +263,7 @@ public class IGSNService {
 		int nErrors = new Integer(request.getAttribute(Attribute.NUM_OF_ERROR));
 		if((numCreated + numUpdated + numRegistered) > 0){
 			request.setStatus(Request.Status.COMPLETED);
-			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE))){
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) || request.getType().equals(IGSNService.EVENT_UPDATE))){
 				if(nErrors > 0){
 					request.setMessage("Request completed with some errors");
 				}else{
@@ -256,7 +273,7 @@ public class IGSNService {
 		}
 		else{
 			request.setStatus(Request.Status.FAILED);
-			if(!(request.getType().equals(IGSNService.EVENT_MINT) && request.getType().equals(IGSNService.EVENT_UPDATE)))
+			if(!(request.getType().equals(IGSNService.EVENT_MINT) || request.getType().equals(IGSNService.EVENT_UPDATE)))
 			{
 				request.setMessage("Request failed");
 			}
@@ -563,6 +580,18 @@ public class IGSNService {
 			String namespace = ia.getNamespace();
 			if (identifiervalue.startsWith(prefix + "/" + namespace) && ia.getScopes().contains(scope)) {
 				return ia;
+			}
+		}
+		// if we got this far it means we didn't find an allocation
+		// it maybe an Identifier that doesn't contain the prefix
+		// special case we might need to rething CSIROv3 validation
+		if(!identifiervalue.contains("/")){
+			for (Allocation allocation : allocations) {
+				IGSNAllocation ia = (IGSNAllocation) allocation;
+				String namespace = ia.getNamespace();
+				if (identifiervalue.startsWith(namespace) && ia.getScopes().contains(scope)) {
+					return ia;
+				}
 			}
 		}
 		return null;

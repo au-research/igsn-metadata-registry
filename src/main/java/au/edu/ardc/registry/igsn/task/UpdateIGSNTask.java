@@ -99,7 +99,7 @@ public class UpdateIGSNTask extends IGSNTask implements Runnable {
 		}catch(ForbiddenOperationException e){
 			requestLog.warn(e.getMessage());
 			logger.warn(e.getMessage());
-			request.incrementAttributeValue(Attribute.NUM_OF_RECORD_FORBIDDEN);
+			request.incrementAttributeValue(Attribute.NUM_OF_RECORDS_FORBIDDEN);
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			if(request.getType().equals(IGSNService.EVENT_UPDATE)) {
 				request.setMessage(e.getMessage());

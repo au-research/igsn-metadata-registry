@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNApplicationConfig {
 
+	private String portalUrl;
+
 	private boolean disableAutomaticQueueWorkerInit = false;
 
 	public boolean isDisableAutomaticQueueWorkerInit() {
@@ -21,4 +23,11 @@ public class IGSNApplicationConfig {
 		this.disableAutomaticQueueWorkerInit = disableAutomaticQueueWorkerInit;
 	}
 
+	public String getPortalUrl() {
+		return portalUrl;
+	}
+
+	public void setPortalUrl(String portalUrl) {
+		this.portalUrl = portalUrl;
+	}
 }
