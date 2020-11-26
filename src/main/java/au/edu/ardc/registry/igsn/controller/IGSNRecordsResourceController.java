@@ -14,6 +14,7 @@ import au.edu.ardc.registry.igsn.dto.mapper.IGSNRecordMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/api/resources/igsn-records")
+@ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Records Resource API")
 public class IGSNRecordsResourceController {
 
