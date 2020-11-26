@@ -14,11 +14,13 @@ import au.edu.ardc.registry.igsn.config.IGSNApplicationConfig;
 import au.edu.ardc.registry.igsn.dto.IGSNRecordDTO;
 import com.google.common.base.Converter;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 
 @Service
+@ConditionalOnProperty(name = "app.igsn.enabled")
 public class IGSNRecordMapper {
 
 	final ModelMapper modelMapper;

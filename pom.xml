@@ -44,6 +44,13 @@
 				<integration-tests>**/common/**/*IT.*,**/igsn/**/*IT.*,**/oai/**/*IT.*</integration-tests>
 			</properties>
 		</profile>
+		<profile>
+			<id>drvs</id>
+			<properties>
+				<unit-tests>**/common/**/*Test.*,**/drvs/**/*Test.*</unit-tests>
+				<integration-tests>**/common/**/*IT.*,**/drvs/**/*IT.*</integration-tests>
+			</properties>
+		</profile>
 	</profiles>
 
 	<dependencies>
