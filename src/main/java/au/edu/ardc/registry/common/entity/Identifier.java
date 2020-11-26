@@ -10,8 +10,8 @@ import java.util.UUID;
 @Table(name = "identifiers",
 		indexes = { @Index(name = "idx_status", columnList = "status"),
 				@Index(name = "idx_type_value", columnList = "type,value"),
-				@Index(name = "idx_type_status", columnList = "type,status")},
-		uniqueConstraints= @UniqueConstraint(columnNames={"value", "type"}))
+				@Index(name = "idx_type_status", columnList = "type,status") },
+		uniqueConstraints = @UniqueConstraint(columnNames = { "value", "type" }))
 public class Identifier {
 
 	@Id
@@ -119,7 +119,7 @@ public class Identifier {
 
 	public enum Type {
 
-		IGSN;
+		IGSN, DRVS, PID, DOI, RAID
 
 	}
 
