@@ -60,7 +60,7 @@ public class IdentifierResourceController {
 			@RequestParam(required = false) String value, @RequestParam(required = false) String type) {
 		IdentifierSpecification specs = new IdentifierSpecification();
 		if (value != null) {
-			specs.add(new SearchCriteria("value", value, SearchOperation.MATCH));
+			specs.add(new SearchCriteria("value", value, SearchOperation.EQUAL));
 		}
 		if (type != null) {
 			specs.add(new SearchCriteria("type", Identifier.Type.valueOf(type), SearchOperation.EQUAL));
