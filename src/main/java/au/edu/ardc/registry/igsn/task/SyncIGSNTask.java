@@ -76,7 +76,6 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.error(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
@@ -84,7 +83,6 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
@@ -92,7 +90,6 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			requestLog.warn(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
@@ -100,31 +97,19 @@ public class SyncIGSNTask extends IGSNTask implements Runnable {
 			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.warn(e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}
-		catch (RecordNotFoundException | NotFoundException e){
+		catch (RecordNotFoundException | NotFoundException | MDSClientException e){
 			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.error(e.getClass() + e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
-		}
-		catch (MDSClientException e){
+		} catch (Exception e) {
 			requestLog.error(e.getMessage());
 			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
 			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
-			logger.error(e.getClass() + e.getMessage());
-			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
-		}
-		catch (Exception e) {
-			requestLog.error(e.getMessage());
-			request.incrementAttributeValue(Attribute.NUM_OF_ERROR);
-			request.incrementAttributeValue(Attribute.NUM_OF_FAILED_REGISTRATION);
-			Thread.currentThread().interrupt();
 			logger.error(e.getClass() + e.getMessage());
 			applicationEventPublisher.publishEvent(new RequestExceptionEvent(e.getMessage(), request));
 		}

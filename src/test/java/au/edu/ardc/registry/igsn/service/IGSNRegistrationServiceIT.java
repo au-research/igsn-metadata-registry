@@ -188,8 +188,9 @@ class IGSNRegistrationServiceIT {
 		Record record = TestHelper.mockRecord(UUID.randomUUID());
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setType(Identifier.Type.IGSN);
-		identifier.setStatus(Identifier.Status.RESERVED);
+		identifier.setStatus(Identifier.Status.ACCESSIBLE);
 		identifier.setValue(identifierValue);
+		identifier.setRequestID(UUID.randomUUID());
 		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
 
 		Version version = TestHelper.mockVersion(record);
@@ -211,9 +212,62 @@ class IGSNRegistrationServiceIT {
 		Identifier createdIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 
 		assertEquals(Identifier.Status.ACCESSIBLE, createdIdentifier.getStatus());
-
-
 	}
+
+
+	@Test
+	public void updates_identifier_and_registration_metadata_if_Identifier_status_is_PENDING() throws Exception {
+		String mockedServerURL = String.format("http://localhost:%s", mockMDS.getPort());
+		IGSNAllocation allocation = TestHelper.mockIGSNAllocation();
+		allocation.setScopes(Arrays.asList(Scope.CREATE, Scope.UPDATE));
+		allocation.setPrefix("20.500.11812");
+		allocation.setNamespace("XXZT1");
+		allocation.setName("Mocked up test Allocation");
+		allocation.setMds_username("ANDS.IGSN");
+		allocation.setMds_url(mockedServerURL);
+
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+		Request request = TestHelper.mockRequest();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, UUID.randomUUID().toString());
+		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
+		request.setType(IGSNService.EVENT_UPDATE);
+
+		String identifierValue = "10273/XX0TUIAYLV";
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		identifier.setType(Identifier.Type.IGSN);
+		identifier.setStatus(Identifier.Status.PENDING);
+		identifier.setValue(identifierValue);
+		identifier.setRequestID(UUID.randomUUID());
+		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
+
+		Version version = TestHelper.mockVersion(record);
+		version.setSchema(SchemaService.ARDCv1);
+		String content = Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml");
+		version.setContent(content.getBytes());
+		version.setHash(VersionService.getHash(content));
+		version.setCreatedAt(request.getCreatedAt());
+
+		URL url = new URL();
+		url.setRecord(record);
+		url.setUrl("https://demo.identifiers.ardc.edu.au/igsn/#/meta/XX0TUIAYLV");
+		when(igsnVersionService.getCurrentVersionForRecord(record, SchemaService.ARDCv1)).thenReturn(version);
+		when(urlService.findByRecord(any(Record.class))).thenReturn(url);
+		when(keycloakService.getAllocationByResourceID(any())).thenReturn(allocation);
+
+		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
+		mockMDS.enqueue(new MockResponse().setBody("OK").setResponseCode(201));
+		igsnRegistrationService.registerIdentifier(identifierValue, request);
+		Identifier createdIdentifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
+
+		assertEquals(Identifier.Status.ACCESSIBLE, createdIdentifier.getStatus());
+	}
+
+
+
+
 
 	@Test
 	public void do_not_updates_once_registration_igsn_and_metadata_is_latest() throws Exception {

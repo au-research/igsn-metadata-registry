@@ -5,33 +5,28 @@ import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.common.model.Scope;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
+import au.edu.ardc.registry.exception.ContentNotSupportedException;
+import au.edu.ardc.registry.exception.MDSClientException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
 import clover.org.apache.commons.lang.RandomStringUtils;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.SocketPolicy;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.EnabledIf;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -128,6 +123,25 @@ public class MDSClientIT extends IntegrationTest {
 			System.out.print(e.getMessage());
 		}
 		assertTrue(metadata.contains(identifier));
+	}
+
+	@Test void timeoutException()
+	{
+		String mockedServerURL = String.format("http://localhost:%s", mockMDS.getPort());
+		IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+		ia.setMds_username("username").setMds_password("password").setMds_url(mockedServerURL);
+		MDSClient mc = new MDSClient(ia);
+		String identifier = "20.500.11812/XXAAAURRXDFVJA";
+		String metadata = "";
+		mockMDS.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+//		Assert.assertThrows(MDSClientException.class, () -> {
+//			mc.getIGSNMetadata(identifier);
+//		});
+		try{
+			mc.getIGSNMetadata(identifier);
+		}catch(Exception e){
+			String message = e.getMessage();
+		}
 	}
 
 }

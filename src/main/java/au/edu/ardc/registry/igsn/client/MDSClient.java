@@ -5,17 +5,23 @@ import static org.springframework.web.reactive.function.client.ExchangeFilterFun
 import au.edu.ardc.registry.exception.MDSClientConfigurationException;
 import au.edu.ardc.registry.exception.MDSClientException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutException;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.TcpClient;
+
 
 /**
  * https://doidb.wdc-terra.org/igsn/static/apidoc a client implementation for the IGSN
@@ -28,6 +34,9 @@ public class MDSClient {
 
 	private WebClient webClient;
 
+	private int connectionTimeoutMillies = 5000; // default is 30000
+	private int connectionReadWriteTimeoutSecons = 10; // default is 100
+	private String mds_url;
 	/**
 	 * @param allocation and IGSN allocation that must contain username , password and
 	 * server_url
@@ -37,14 +46,20 @@ public class MDSClient {
 	public MDSClient(IGSNAllocation allocation) throws MDSClientConfigurationException {
 		String mds_username = allocation.getMds_username();
 		String mds_password = allocation.getMds_password();
-		String mds_url = allocation.getMds_url();
+		mds_url = allocation.getMds_url();
 		if (mds_username == null)
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name, allocation.getName());
 		if (mds_password == null)
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.password, allocation.getName());
 		if (mds_url == null)
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.server_url, allocation.getName());
-		this.webClient = WebClient.builder().filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
+		// add custom timeout
+		TcpClient tcpClient = TcpClient.create()
+				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeoutMillies) // Connection Timeout
+				.doOnConnected(connection ->
+						connection.addHandlerLast(new ReadTimeoutHandler(connectionReadWriteTimeoutSecons)) // Read Timeout
+								.addHandlerLast(new WriteTimeoutHandler(connectionReadWriteTimeoutSecons))); // Write Timeout
+		this.webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient))).filter(basicAuthentication(mds_username, mds_password)).baseUrl(mds_url)
 				.build();
 	}
 
@@ -66,13 +81,16 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 200) {
-					throw new MDSClientException(response.bodyToMono(String.class).block());
+					throw new MDSClientException(mds_url, service_url, response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
 		}
+		catch(ReadTimeoutException e){
+			throw new MDSClientException(mds_url, service_url, "ReadTimeoutException");
+		}
 		catch (Exception e) {
-			throw new MDSClientException(e.getMessage());
+			throw new MDSClientException(mds_url, service_url, e.getMessage());
 		}
 		return response_code;
 	}
@@ -98,13 +116,16 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 201) {
-					throw new MDSClientException(response.bodyToMono(String.class).block());
+					throw new MDSClientException(mds_url, service_url, response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
 		}
+		catch(ReadTimeoutException e){
+			throw new MDSClientException(mds_url, service_url, "ReadTimeoutException");
+		}
 		catch (Exception e) {
-			throw new MDSClientException(e.getMessage());
+			throw new MDSClientException(mds_url, service_url, e.getMessage());
 		}
 		return response_code;
 	}
@@ -127,13 +148,16 @@ public class MDSClient {
 			if (response != null) {
 				response_code = response.statusCode().value();
 				if (response_code != 201) {
-					throw new MDSClientException(response.bodyToMono(String.class).block());
+					throw new MDSClientException(mds_url, service_url, response.bodyToMono(String.class).block());
 				}
 				response.releaseBody();
 			}
 		}
+		catch(ReadTimeoutException e){
+			throw new MDSClientException(mds_url, service_url, "ReadTimeoutException");
+		}
 		catch (Exception e) {
-			throw new MDSClientException(e.getMessage());
+			throw new MDSClientException(mds_url, service_url, e.getMessage());
 		}
 		return response_code;
 	}
@@ -176,12 +200,16 @@ public class MDSClient {
 				return response.bodyToMono(String.class).block();
 			}
 			else if (response != null) {
-				throw new MDSClientException(response.bodyToMono(String.class).block());
+				throw new MDSClientException(mds_url, service_url, response.bodyToMono(String.class).block());
 			}
 		}
-		catch (Exception e) {
-			throw new MDSClientException(e.getMessage());
+		catch(ReadTimeoutException e){
+			throw new MDSClientException(mds_url, service_url, "ReadTimeoutException");
 		}
+		catch (Exception e) {
+			throw new MDSClientException(mds_url, service_url, e.getMessage());
+		}
+
 		return null;
 	}
 

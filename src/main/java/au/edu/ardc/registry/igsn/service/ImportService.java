@@ -223,7 +223,7 @@ public class ImportService {
 			currentVersion = cVersion.get();
 			String versionHash = currentVersion.getHash();
 			String incomingHash = VersionService.getHash(content);
-			if (incomingHash.equals(versionHash)) {
+			if (incomingHash.equals(versionHash) && currentVersion.getRequestID() != request.getId()) {
 				logger.warn("Previous version already contain the same content. Skipping");
 				throw new VersionContentAlreadyExistsException(identifierValue, currentVersion.getSchema());
 			}
@@ -263,9 +263,10 @@ public class ImportService {
 		igsnVersionService.save(version);
 		logger.debug("Created a version {}", version.getId());
 
-		if (!isThisCurrent) {
+		if (!isThisCurrent && currentVersion.getRequestID() != request.getId()) {
 			// if not the current version don't return the Identifier to avoid
 			// registration metadata being updated
+			// unless it's a request restart then continue
 
 			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
 					request.getCreatedAt());

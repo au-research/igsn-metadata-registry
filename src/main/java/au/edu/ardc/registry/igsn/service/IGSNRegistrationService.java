@@ -136,7 +136,7 @@ public class IGSNRegistrationService {
 		boolean hasLandingPageChanged = updateLandingPage(landingPage, record, request);
 		// Update the URL of the IGSN at MDS
 
-		if (hasLandingPageChanged) {
+		if (hasLandingPageChanged || !identifier.getStatus().equals(Identifier.Status.ACCESSIBLE)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
 			requestLog.debug("Successfully {} Identifier {} with Landing Page {}", igsnMsg, identifierValue, landingPage);
@@ -149,8 +149,8 @@ public class IGSNRegistrationService {
 		Schema toSchema = schemaService.getSchemaByID(SchemaService.IGSNREGv1);
 
 		// obtain landing page
-		logger.debug("fromSchema: {}", fromSchema);
-		logger.debug("toSchema: {}", toSchema);
+		logger.debug("fromSchema: {}", fromSchema.getName());
+		logger.debug("toSchema: {}", toSchema.getName());
 
 		Transformer transformer = (Transformer) TransformerFactory
 				.create(fromSchema, toSchema);
@@ -167,7 +167,7 @@ public class IGSNRegistrationService {
 		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
 				request);
 		// update the registration Metadata at MDS
-		if (hasRegistrationMetadataChanged) {
+		if (hasRegistrationMetadataChanged || !identifier.getStatus().equals(Identifier.Status.ACCESSIBLE)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
 			requestLog.debug("Successfully {} Registration Metadata for Identifier {}", metadataMsg, identifierValue);
