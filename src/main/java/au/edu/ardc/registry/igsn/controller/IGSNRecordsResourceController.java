@@ -54,7 +54,7 @@ public class IGSNRecordsResourceController {
 	@PageableOperation
 	public ResponseEntity<Page<IGSNRecordDTO>> index(HttpServletRequest request,
 			@PageableDefault @Parameter(hidden = true) Pageable pageable,
-			@RequestParam(required = false) String title) {
+			@RequestParam(required = false) String title, @RequestParam(required = false) String igsn) {
 		RecordSpecification specs = new RecordSpecification();
 		User user = kcService.getLoggedInUser(request);
 
@@ -68,6 +68,10 @@ public class IGSNRecordsResourceController {
 
 		if (title != null) {
 			specs.add(new SearchCriteria("title", title, SearchOperation.MATCH));
+		}
+
+		if (igsn != null) {
+			specs.add(new SearchCriteria("value", igsn, SearchOperation.IDENTIFIER_EQUAL));
 		}
 
 		// perform the search

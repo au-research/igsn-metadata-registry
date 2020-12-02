@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.stream.Collectors;
 
 @Service
 @ConditionalOnProperty(name = "app.igsn.enabled")
@@ -83,6 +84,13 @@ public class IGSNRecordMapper {
 				if (igsn != null) {
 					dto.setPortalUrl(String.format("%s/view/%s", portalBaseUrl, igsn.getValue()));
 				}
+
+				// hide currentVersion.record|content
+				dto.setCurrentVersions(dto.getCurrentVersions().stream().map(version -> {
+					version.setContent(null);
+					version.setRecord(null);
+					return version;
+				}).collect(Collectors.toList()));
 
 				return dto;
 			}
