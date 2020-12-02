@@ -7,10 +7,14 @@ import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
+import au.edu.ardc.registry.exception.APIExceptionResponse;
+import au.edu.ardc.registry.exception.ForbiddenOperationException;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.core.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -48,14 +52,21 @@ public class IGSNRequestController {
 	}
 
 	@PutMapping(value = "/{id}")
-	@Operation(summary = "Restart a completed or failed IGSN Request", description = "Rerun an IGSN single/bulk mint or update request",
-			parameters = {@Parameter(name = "status", description = "the required action",
-							schema = @Schema(description = "status", type = "string", allowableValues = { "RESTART" }, defaultValue = "RESTART"))})
+	@Operation(summary = "Restart a completed or failed IGSN Request",
+			description = "Interact with any existing IGSN request (Only RESTART is supported as of v1.0)",
+			parameters = {@Parameter(name = "status", description = "The state which the Request is set to",
+							schema = @Schema(description = "status", type = "string", allowableValues = { "RESTART" }, defaultValue = "RESTART"))},
+			responses = {
+					@ApiResponse(responseCode = "200", description = "Request has restarted",
+							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception either " +
+							"user has no access to the Request or the Request is not Completed yet",
+							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(@PathVariable String id,
 			@RequestParam(name = "status") String status,
 			@RequestBody Optional<RequestDTO> requestDTO, HttpServletRequest httpServletRequest) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
-		Request request = requestService.findById(id);
+		Request request = requestService.findOwnedById(id, user);
 		RequestDTO dto = null;
 		Logger requestLog = requestService.getLoggerFor(request);
 		Date date = new Date();
@@ -63,7 +74,10 @@ public class IGSNRequestController {
 		// empty the log file
 		// set request status to RESTARTED
 		// re-run the request
-		if (status.equals("RESTART") && request.getType().startsWith("igsn")) {
+		if(!request.getStatus().equals(Request.Status.COMPLETED) && !request.getStatus().equals(Request.Status.FAILED)){
+			throw new ForbiddenOperationException("Only COMPLETED or FAILED Requests can be restarted");
+		}
+		else if (status.equals("RESTART") && request.getType().startsWith("igsn")) {
 			try {
 				requestLog.info("Restarted Request at: " + date);
 				String logPath = requestService.getLoggerPathFor(request);
