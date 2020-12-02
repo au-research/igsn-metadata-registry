@@ -59,15 +59,16 @@ public class IGSNRequestController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Request has restarted",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception either " +
-							"user has no access to the Request or the Request is not Completed yet",
+					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception either:<br/>" +
+							"User is not the owner of the Request<br/>" +
+							"The Request is not Completed yet<br/>" +
+							"the value of the parameter 'status' is not supported (only RESTART is supported as of v1.0)<br/>" +
+							"The request type is not IGSN only mint, bulk-mint, update, bulk-update, reserve and transfer requests are Supported",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(@PathVariable String id,
-			@RequestParam(name = "status") String status,
-			@RequestBody Optional<RequestDTO> requestDTO, HttpServletRequest httpServletRequest) {
+			@RequestParam(name = "status") String status, HttpServletRequest httpServletRequest) {
 		User user = kcService.getLoggedInUser(httpServletRequest);
 		Request request = requestService.findOwnedById(id, user);
-		RequestDTO dto = null;
 		Logger requestLog = requestService.getLoggerFor(request);
 		Date date = new Date();
 		// archive log at log.millieseconds
@@ -77,42 +78,43 @@ public class IGSNRequestController {
 		if(!request.getStatus().equals(Request.Status.COMPLETED) && !request.getStatus().equals(Request.Status.FAILED)){
 			throw new ForbiddenOperationException("Only COMPLETED or FAILED Requests can be restarted");
 		}
-		else if (status.equals("RESTART") && request.getType().startsWith("igsn")) {
-			try {
-				requestLog.info("Restarted Request at: " + date);
-				String logPath = requestService.getLoggerPathFor(request);
-				File logFile = new File(logPath);
-				File acrhived = new File(logFile.getParentFile().getPath() + File.separator + "logs." + date.getTime());
-				InputStream is = new FileInputStream(logFile);
-				OutputStream os = new FileOutputStream(acrhived);
-				byte[] buffer = new byte[1024];
-				int length;
-				while ((length = is.read(buffer)) > 0) {
-					os.write(buffer, 0, length);
-				}
-				PrintWriter pw = new PrintWriter(logFile);
-				pw.close();
-				requestLog.info("Restarting Request at: " + date);
+		else if(!status.equals("RESTART")){
+			throw new ForbiddenOperationException("Only RESTART is supported");
+		}
+		else if(!request.getType().startsWith("igsn")){
+			throw new ForbiddenOperationException("Only IGSN requests are supported");
+		}
+		// all should be ready to proceed
+		try {
+			requestLog.info("Restarted Request at: " + date);
+			String logPath = requestService.getLoggerPathFor(request);
+			File logFile = new File(logPath);
+			File acrhived = new File(logFile.getParentFile().getPath() + File.separator + "logs." + date.getTime());
+			InputStream is = new FileInputStream(logFile);
+			OutputStream os = new FileOutputStream(acrhived);
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = is.read(buffer)) > 0) {
+				os.write(buffer, 0, length);
 			}
-			catch (Exception e) {
+			PrintWriter pw = new PrintWriter(logFile);
+			pw.close();
+			requestLog.info("Restarting Request at: " + date);
+		}
+		catch (Exception e) {
 
-				requestLog.info("Couldn't archive existing logs");
-			}
-			request.setStatus(Request.Status.RESTARTED);
-			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, 0);
-			request.setAttribute(Attribute.NUM_OF_RECORDS_CREATED, 0);
-			request.setAttribute(Attribute.NUM_OF_RECORDS_UPDATED, 0);
-			request.setAttribute(Attribute.NUM_OF_IGSN_REGISTERED, 0);
-			request.setAttribute(Attribute.NUM_OF_ERROR, 0);
-			request.setAttribute(Attribute.NUM_OF_RECORDS_FORBIDDEN, 0);
-			request.setAttribute(Attribute.NUM_OF_FAILED_REGISTRATION, 0);
-			igsnService.processMintOrUpdate(request);
-			dto = requestMapper.getConverter().convert(request);
+			requestLog.info("Couldn't archive existing logs");
 		}
-		else if (requestDTO.isPresent()) {
-			Request updatedRequest = requestService.update(request, requestDTO.get(), user);
-			dto = requestMapper.getConverter().convert(updatedRequest);
-		}
+		request.setStatus(Request.Status.RESTARTED);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, 0);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_CREATED, 0);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_UPDATED, 0);
+		request.setAttribute(Attribute.NUM_OF_IGSN_REGISTERED, 0);
+		request.setAttribute(Attribute.NUM_OF_ERROR, 0);
+		request.setAttribute(Attribute.NUM_OF_RECORDS_FORBIDDEN, 0);
+		request.setAttribute(Attribute.NUM_OF_FAILED_REGISTRATION, 0);
+		igsnService.processMintOrUpdate(request);
+		RequestDTO dto = requestMapper.getConverter().convert(request);
 
 		return ResponseEntity.accepted().body(dto);
 	}

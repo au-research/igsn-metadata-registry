@@ -46,7 +46,7 @@ class ValidationServiceTest {
 
 	@Test
 	void validateRecordOwnership_validDataCenterOwner_returnsTrue() {
-		// given a record that is owned by an user
+		// given a record that is owned by a DataCenter that the user is member of
 		DataCenter dataCenter = new DataCenter(UUID.randomUUID());
 		User user = TestHelper.mockUser();
 		user.setDataCenters(Arrays.asList(dataCenter));
@@ -58,8 +58,8 @@ class ValidationServiceTest {
 	}
 
 	@Test
-	void validateRecordOwnership_invalidDataCenterOwner_returnsTrue() {
-		// given a record that is owned by an user
+	void validateRecordOwnership_invalidDataCenterOwner_returnsFalse() {
+		// given a record that is owned by a DataCenter that the user is NOT a member of
 		DataCenter dataCenter = new DataCenter(UUID.randomUUID());
 		User user = TestHelper.mockUser();
 		user.setDataCenters(Arrays.asList(dataCenter));
