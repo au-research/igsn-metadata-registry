@@ -25,6 +25,20 @@
             </Policies>
         </RollingFile>
 
+        <RollingFile name="HibernateSlowLog"
+                     fileName="${logPath}/hibernate-slow.log"
+                     filePattern="${logPath}/$${date:yyyy-MM}/hibernate-slow-%d{-dd-MMMM-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <!-- rollover on startup, daily and when the file reaches 10 MegaBytes -->
+                <OnStartupTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
         <RollingFile name="API"
                      fileName="${logPath}/api.log"
                      filePattern="${logPath}/$${date:yyyy-MM}/api-%d{-dd-MMMM-yyyy}-%i.log.gz">
@@ -50,6 +64,10 @@
 
         <Logger name="au.edu.ardc.registry.common.service.APILoggingService" level="info">
             <AppenderRef ref="API"/>
+        </Logger>
+
+        <Logger name="org.hibernate.SQL_SLOW" level="info">
+            <AppenderRef ref="HibernateSlowLog"/>
         </Logger>
     </Loggers>
 

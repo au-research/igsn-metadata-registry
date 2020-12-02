@@ -76,6 +76,10 @@ public class SearchSpecification {
 				// special join to the record table
 				predicates.add(builder.in(root.join("record").get(criteria.getKey())).value(criteria.getValue()));
 			}
+			else if (criteria.getOperation().equals(SearchOperation.IDENTIFIER_EQUAL)) {
+				// special join to the record table
+				predicates.add(builder.equal(root.join("identifiers").get(criteria.getKey()), criteria.getValue()));
+			}
 		}
 
 		return predicates;
