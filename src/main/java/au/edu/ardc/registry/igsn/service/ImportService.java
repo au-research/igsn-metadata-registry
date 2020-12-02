@@ -104,7 +104,10 @@ public class ImportService {
 				throw new ForbiddenOperationException(String.format("Identifier with value %s and type %s does exist",
 						identifierValue, Identifier.Type.IGSN));
 			}
-			// run an update instead
+			// if the Identifier was created by the same request
+			// it means a record already exists
+			// then this is a request that was restarted manually
+			// continue to update instead and try to
 			requestLog.info("Identifier: {} already exists attempting to refresh content", identifierValue);
 			return updateRequest(file, request);
 		}
@@ -227,6 +230,10 @@ public class ImportService {
 				logger.warn("Previous version already contain the same content. Skipping");
 				throw new VersionContentAlreadyExistsException(identifierValue, currentVersion.getSchema());
 			}
+			if(incomingHash.equals(versionHash) && currentVersion.getRequestID().equals(request.getId())){
+				logger.info("Restarted Request but version already exists. Skipping");
+				return identifier;
+			}
 		}
 
 		// update the record
@@ -263,11 +270,9 @@ public class ImportService {
 		igsnVersionService.save(version);
 		logger.debug("Created a version {}", version.getId());
 
-		if (!isThisCurrent && !currentVersion.getRequestID().equals(request.getId())) {
+		if (!isThisCurrent) {
 			// if not the current version don't return the Identifier to avoid
 			// registration metadata being updated
-			// unless it's a request restart then continue
-
 			throw new VersionIsOlderThanCurrentException(identifierValue, currentVersion.getCreatedAt(),
 					request.getCreatedAt());
 		}

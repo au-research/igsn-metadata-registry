@@ -213,12 +213,12 @@ public class IGSNRegistrationService {
 			// the version is later than the current request (shouldn't happen unless
 			// requests are re-run
 			if (currentVersion.getCreatedAt().after(request.getCreatedAt())) {
-				logger.debug(String.format("Current Version is newer created at: %s" ,version.getCreatedAt()));
+				logger.info(String.format("Current Version is newer created at: %s" ,currentVersion.getCreatedAt()));
 				return false;
 			}
 			// the current version was created by the same request
 			if (currentVersion.getRequestID() != null && currentVersion.getRequestID().equals(request.getId())) {
-				logger.debug(String.format("Current Version already the same created at: %s" , version.getCreatedAt()));
+				logger.info(String.format("Current Version already the same created at: %s" , currentVersion.getCreatedAt()));
 				return false;
 			}
 			// there is current version then end it now

@@ -3,6 +3,7 @@ package au.edu.ardc.registry.igsn.controller;
 import au.edu.ardc.registry.common.dto.RequestDTO;
 import au.edu.ardc.registry.common.dto.mapper.RequestMapper;
 import au.edu.ardc.registry.common.entity.Request;
+import au.edu.ardc.registry.common.model.Attribute;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
@@ -84,6 +85,13 @@ public class IGSNRequestController {
 				requestLog.info("Couldn't archive existing logs");
 			}
 			request.setStatus(Request.Status.RESTARTED);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_RECEIVED, 0);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_CREATED, 0);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_UPDATED, 0);
+			request.setAttribute(Attribute.NUM_OF_IGSN_REGISTERED, 0);
+			request.setAttribute(Attribute.NUM_OF_ERROR, 0);
+			request.setAttribute(Attribute.NUM_OF_RECORDS_FORBIDDEN, 0);
+			request.setAttribute(Attribute.NUM_OF_FAILED_REGISTRATION, 0);
 			igsnService.processMintOrUpdate(request);
 			dto = requestMapper.getConverter().convert(request);
 		}

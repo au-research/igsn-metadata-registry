@@ -64,7 +64,9 @@
     </xsl:template>
     
     <xsl:template match="@*">
-        <xsl:attribute name="{name()}" select="."/>
+        <xsl:attribute name="{name()}">
+            <xsl:value-of select="."/>
+        </xsl:attribute>
     </xsl:template>
     
     <xsl:template match="node()">
