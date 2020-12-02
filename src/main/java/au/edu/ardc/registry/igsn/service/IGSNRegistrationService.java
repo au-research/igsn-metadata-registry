@@ -135,9 +135,9 @@ public class IGSNRegistrationService {
 
 		boolean hasLandingPageChanged = updateLandingPage(landingPage, record, request);
 		// Update the URL of the IGSN at MDS
-		// if the URL Changed or for some reason the previous request has failed and IGSN is still PENDING
+		// if the URL Changed or for some reason the previous request has failed and IGSN is still PENDING or RESERVED
 
-		if (hasLandingPageChanged || identifier.getStatus().equals(Identifier.Status.PENDING)) {
+		if (hasLandingPageChanged || identifier.getStatus().equals(Identifier.Status.PENDING) || identifier.getStatus().equals(Identifier.Status.RESERVED)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
 			requestLog.debug("Successfully {} Identifier {} with Landing Page {}", igsnMsg, identifierValue, landingPage);
@@ -168,8 +168,8 @@ public class IGSNRegistrationService {
 		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
 				request);
 		// update the registration Metadata at MDS
-		// or for some reason the previous request has failed and IGSN is still PENDING
-		if (hasRegistrationMetadataChanged || identifier.getStatus().equals(Identifier.Status.PENDING)) {
+		// or for some reason the previous request has failed and IGSN is still PENDING or RESERVED
+		if (hasRegistrationMetadataChanged || identifier.getStatus().equals(Identifier.Status.PENDING) || identifier.getStatus().equals(Identifier.Status.RESERVED)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
 			requestLog.debug("Successfully {} Registration Metadata for Identifier {}", metadataMsg, identifierValue);
