@@ -135,9 +135,9 @@ public class IGSNRegistrationService {
 
 		boolean hasLandingPageChanged = updateLandingPage(landingPage, record, request);
 		// Update the URL of the IGSN at MDS
-		// if the URL Changed or for some reason the previous request has failed and IGSN is still PENDING
+		// if the URL Changed or for some reason the previous request has failed and IGSN is still PENDING or RESERVED
 
-		if (hasLandingPageChanged || identifier.getStatus().equals(Identifier.Status.PENDING)) {
+		if (hasLandingPageChanged || identifier.getStatus().equals(Identifier.Status.PENDING) || identifier.getStatus().equals(Identifier.Status.RESERVED)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.createOrUpdateIdentifier(identifierValue, landingPage);
 			requestLog.debug("Successfully {} Identifier {} with Landing Page {}", igsnMsg, identifierValue, landingPage);
@@ -168,8 +168,8 @@ public class IGSNRegistrationService {
 		boolean hasRegistrationMetadataChanged = addRegistrationMetadataVersion(registrationMetadataVersion, record,
 				request);
 		// update the registration Metadata at MDS
-		// or for some reason the previous request has failed and IGSN is still PENDING
-		if (hasRegistrationMetadataChanged || identifier.getStatus().equals(Identifier.Status.PENDING)) {
+		// or for some reason the previous request has failed and IGSN is still PENDING or RESERVED
+		if (hasRegistrationMetadataChanged || identifier.getStatus().equals(Identifier.Status.PENDING) || identifier.getStatus().equals(Identifier.Status.RESERVED)) {
 			MDSClient mdsClient = new MDSClient(allocation);
 			mdsClient.addMetadata(new String(registrationMetadataVersion.getContent()));
 			requestLog.debug("Successfully {} Registration Metadata for Identifier {}", metadataMsg, identifierValue);
@@ -213,12 +213,12 @@ public class IGSNRegistrationService {
 			// the version is later than the current request (shouldn't happen unless
 			// requests are re-run
 			if (currentVersion.getCreatedAt().after(request.getCreatedAt())) {
-				logger.debug(String.format("Current Version is newer created at: %s" ,version.getCreatedAt()));
+				logger.info(String.format("Current Version is newer created at: %s" ,currentVersion.getCreatedAt()));
 				return false;
 			}
 			// the current version was created by the same request
 			if (currentVersion.getRequestID() != null && currentVersion.getRequestID().equals(request.getId())) {
-				logger.debug(String.format("Current Version already the same created at: %s" , version.getCreatedAt()));
+				logger.info(String.format("Current Version already the same created at: %s" , currentVersion.getCreatedAt()));
 				return false;
 			}
 			// there is current version then end it now

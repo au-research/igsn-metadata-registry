@@ -25,6 +25,6 @@ public class MDSClientException extends APIException {
 
     @Override
     public String getMessage() {
-        return String.format("Error while connecting to %s/%s, msg:%s",this.mds_url, this.service_url, this.msg);
+        return String.format("Error while connecting to %s%s, msg:%s",this.mds_url, this.service_url, this.msg);
     }
 }
