@@ -123,6 +123,7 @@ public class ImportService {
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
 		record.setRequestID(request.getId());
+		record.setType(IGSNService.IGSNRecordType);
 		recordService.save(record);
 		requestLog.debug("Added Record: {}", record.getId());
 
@@ -313,6 +314,7 @@ public class ImportService {
 		record.setAllocationID(UUID.fromString(allocationID));
 		record.setCreatorID(UUID.fromString(creatorID));
 		record.setRequestID(request.getId());
+		record.setType(IGSNService.IGSNRecordType);
 		recordService.save(record);
 		logger.debug("Added Record: {}", record.getId());
 

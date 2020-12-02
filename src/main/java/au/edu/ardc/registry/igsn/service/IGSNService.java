@@ -56,6 +56,8 @@ public class IGSNService {
 
 	public static final String IGSNallocationType = "urn:ardc:igsn:allocation";
 
+	public static final String IGSNRecordType = "IGSN";
+
 	private static final Logger logger = LoggerFactory.getLogger(IGSNService.class);
 
 	ThreadPoolExecutor syncIGSNExecutor;
