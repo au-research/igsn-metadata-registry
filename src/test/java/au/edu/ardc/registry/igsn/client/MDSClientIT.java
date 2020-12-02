@@ -134,14 +134,9 @@ public class MDSClientIT extends IntegrationTest {
 		String identifier = "20.500.11812/XXAAAURRXDFVJA";
 		String metadata = "";
 		mockMDS.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
-//		Assert.assertThrows(MDSClientException.class, () -> {
-//			mc.getIGSNMetadata(identifier);
-//		});
-		try{
+		Assert.assertThrows(MDSClientException.class, () -> {
 			mc.getIGSNMetadata(identifier);
-		}catch(Exception e){
-			String message = e.getMessage();
-		}
+		});
 	}
 
 }

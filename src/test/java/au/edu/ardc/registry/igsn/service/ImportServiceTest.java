@@ -156,6 +156,7 @@ class ImportServiceTest {
 		Identifier identifier = TestHelper.mockIdentifier(record);
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version oldVersion = TestHelper.mockVersion(record);
+		oldVersion.setRequestID(UUID.randomUUID());
 		oldVersion.setSchema(SchemaService.ARDCv1);
 		oldVersion.setHash(VersionService.getHash(Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml")));
 		record.setCurrentVersions(Collections.singletonList(oldVersion));
@@ -186,6 +187,7 @@ class ImportServiceTest {
 		identifier.setValue("10273/XX0TUIAYLV");
 		Version oldVersion = TestHelper.mockVersion(record);
 		oldVersion.setSchema(SchemaService.ARDCv1);
+		oldVersion.setRequestID(UUID.randomUUID());
 		oldVersion.setHash(VersionService.getHash(Helpers.readFile("src/test/resources/xml/sample_ardcv1.xml")));
 		Calendar calendar = Calendar.getInstance();
 		// make the current version 7 days newer
