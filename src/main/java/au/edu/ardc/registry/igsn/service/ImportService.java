@@ -279,9 +279,9 @@ public class ImportService {
 		}
 
 		Date embargoDate= embargoEnd.get(content);
+		Embargo embargo = embargoService.findByRecord(record);
 		if(embargoDate != null){
 			//see if an embargo exists for this record
-			Embargo embargo = embargoService.findByRecord(record);
 			if(embargo != null){
 				embargo.setEmbargoEnd(embargoDate);
 			}else{
@@ -290,6 +290,11 @@ public class ImportService {
 				embargo.setEmbargoEnd(embargoDate);
 			}
 			embargoService.save(embargo);
+		}else{
+			//if an embargo exists for this record, but now it has been set to public then delete the embargo
+			if(embargo != null){
+				embargoService.delete(embargo.getId());
+			}
 		}
 
 		logger.info("Updated identifier {} with a new version", identifier.getValue());
