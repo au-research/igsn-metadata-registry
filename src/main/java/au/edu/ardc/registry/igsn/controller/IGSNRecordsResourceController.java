@@ -3,6 +3,7 @@ package au.edu.ardc.registry.igsn.controller;
 import au.edu.ardc.registry.common.controller.api.PageableOperation;
 import au.edu.ardc.registry.common.entity.Record;
 import au.edu.ardc.registry.common.model.Allocation;
+import au.edu.ardc.registry.common.model.DataCenter;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.common.repository.specs.RecordSpecification;
 import au.edu.ardc.registry.common.repository.specs.SearchCriteria;
@@ -59,7 +60,7 @@ public class IGSNRecordsResourceController {
 		User user = kcService.getLoggedInUser(request);
 
 		// build ownerIDs list
-		List<UUID> ownerIDs = user.getAllocations().stream().map(Allocation::getId).collect(Collectors.toList());
+		List<UUID> ownerIDs = user.getDataCenters().stream().map(DataCenter::getId).collect(Collectors.toList());
 		ownerIDs.add(user.getId());
 
 		// building a search specification, by default ownerID in the provided list
