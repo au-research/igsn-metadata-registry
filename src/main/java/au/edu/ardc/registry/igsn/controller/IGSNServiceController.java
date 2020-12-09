@@ -123,6 +123,7 @@ public class IGSNServiceController {
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_BULK_MINT, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
 
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
@@ -363,6 +364,7 @@ public class IGSNServiceController {
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_MINT, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
 
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
@@ -428,6 +430,7 @@ public class IGSNServiceController {
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_UPDATE, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
 
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);
@@ -482,6 +485,7 @@ public class IGSNServiceController {
 
 		// creating the IGSN Request & write the payload to file
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_BULK_UPDATE, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
 
 		// Validate the request
 		igsnRequestValidationService.validate(request, user);
@@ -540,6 +544,7 @@ public class IGSNServiceController {
 			@RequestParam(required = false) String ownerID, @RequestBody String payload) throws IOException {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_RESERVE, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
 		request.setAttribute(Attribute.SCHEMA_ID, schemaID);
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());
@@ -602,6 +607,8 @@ public class IGSNServiceController {
 		User user = keycloakService.getLoggedInUser(httpServletRequest);
 
 		Request request = igsnRequestService.createRequest(user, IGSNService.EVENT_TRANSFER, payload);
+		httpServletRequest.setAttribute(String.valueOf(Request.class), request);
+
 		request.setAttribute(Attribute.SCHEMA_ID, schemaID);
 		request.setAttribute(Attribute.OWNER_TYPE, ownerType);
 		request.setAttribute(Attribute.CREATOR_ID, user.getId().toString());

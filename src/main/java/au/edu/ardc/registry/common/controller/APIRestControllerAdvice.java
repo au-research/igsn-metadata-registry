@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.common.controller;
 
+import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.exception.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -30,7 +31,7 @@ public class APIRestControllerAdvice {
 	public ResponseEntity<Object> handleNotfound(APIException ex, HttpServletRequest request, Locale locale) {
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.NOT_FOUND, request);
-
+		request.setAttribute(APILoggingService.ExceptionMessage, message);
 		return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	}
 
@@ -45,6 +46,7 @@ public class APIRestControllerAdvice {
 	public ResponseEntity<Object> handleForbidden(APIException ex, HttpServletRequest request, Locale locale) {
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.FORBIDDEN, request);
+		request.setAttribute(APILoggingService.ExceptionMessage, message);
 		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 	}
 
@@ -59,6 +61,7 @@ public class APIRestControllerAdvice {
 	public ResponseEntity<Object> handleBadRequest(APIException ex, HttpServletRequest request, Locale locale) {
 		String message = messageSource.getMessage(ex.getMessageID(), ex.getArgs(), locale);
 		APIExceptionResponse response = new APIExceptionResponse(message, HttpStatus.BAD_REQUEST, request);
+		request.setAttribute(APILoggingService.ExceptionMessage, message);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 

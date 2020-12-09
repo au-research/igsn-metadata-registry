@@ -1,8 +1,8 @@
 package au.edu.ardc.registry.common.service;
 
+import au.edu.ardc.registry.common.entity.Request;
 import au.edu.ardc.registry.common.model.User;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
-import au.edu.ardc.registry.common.entity.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
@@ -29,6 +29,8 @@ public class APILoggingService {
 
 	private final Logger log = LogManager.getLogger(APILoggingService.class);
 
+	public static final String ExceptionMessage = "ExceptionMessage";
+
 	/**
 	 * Log the request and response.
 	 *
@@ -49,11 +51,11 @@ public class APILoggingService {
 	 *
 	 * @see <a href="https://www.elastic.co/guide/en/ecs/current/ecs-reference.html">ECS
 	 * specification</a>
-	 * @param request the current request
+	 * @param httpServletRequest the current request
 	 * @param response the current request
 	 * @return ObjectNode representing the ECS jackson ObjectNode
 	 */
-	public ObjectNode getLoggableMessage(HttpServletRequest request, HttpServletResponse response) {
+	public ObjectNode getLoggableMessage(HttpServletRequest httpServletRequest, HttpServletResponse response) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		ObjectNode ecs = mapper.createObjectNode();
@@ -62,12 +64,12 @@ public class APILoggingService {
 		// client.address can contain comma separated list of IP
 		// client.ip should contain the FIRST IP Address in that comma separated list
 		ObjectNode client = mapper.createObjectNode();
-		String clientAddress = getClientIpAddress(request);
+		String clientAddress = getClientIpAddress(httpServletRequest);
 		client.put("address", clientAddress);
 		client.put("ip", clientAddress.split(",")[0].trim());
 
 		// client.user
-		User user = (User) request.getAttribute(String.valueOf(User.class));
+		User user = (User) httpServletRequest.getAttribute(String.valueOf(User.class));
 		if (user != null) {
 			ObjectNode userNode = mapper.createObjectNode();
 			userNode.put("email", user.getEmail());
@@ -80,19 +82,19 @@ public class APILoggingService {
 		ecs.set("client", client);
 
 		// url
-		String uri = request.getRequestURI();
-		String fullURL = request.getRequestURL().toString();
+		String uri = httpServletRequest.getRequestURI();
+		String fullURL = httpServletRequest.getRequestURL().toString();
 
 		// if this is a forwarded Error Request, we'll have to rebuild the full URL
-		if (request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
-			uri = (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+		if (httpServletRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI) != null) {
+			uri = (String) httpServletRequest.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
 			try {
-				URL rebuiltURL = new URL(request.getRequestURL().toString());
+				URL rebuiltURL = new URL(httpServletRequest.getRequestURL().toString());
 				String host = rebuiltURL.getHost();
 				String userInfo = rebuiltURL.getUserInfo();
 				String scheme = rebuiltURL.getProtocol();
 				int port = rebuiltURL.getPort();
-				String query = (String) request.getAttribute(RequestDispatcher.FORWARD_QUERY_STRING);
+				String query = (String) httpServletRequest.getAttribute(RequestDispatcher.FORWARD_QUERY_STRING);
 				URI rebuiltURI = new URI(scheme, userInfo, host, port, uri, query, null);
 				fullURL = rebuiltURI.toString();
 			}
@@ -114,8 +116,8 @@ public class APILoggingService {
 
 		}
 
-		if (request.getQueryString() != null) {
-			url.put("query", request.getQueryString());
+		if (httpServletRequest.getQueryString() != null) {
+			url.put("query", httpServletRequest.getQueryString());
 		}
 
 		ecs.set("url", url);
@@ -125,8 +127,8 @@ public class APILoggingService {
 
 		// http.request
 		ObjectNode httpRequest = mapper.createObjectNode();
-		httpRequest.put("method", request.getMethod());
-		String referrer = request.getHeader("referrer");
+		httpRequest.put("method", httpServletRequest.getMethod());
+		String referrer = httpServletRequest.getHeader("referrer");
 		if (referrer != null) {
 			httpRequest.put("referrer", referrer);
 		}
@@ -141,7 +143,7 @@ public class APILoggingService {
 
 		// useragent
 		ObjectNode userAgent = mapper.createObjectNode();
-		userAgent.put("original", request.getHeader("User-Agent"));
+		userAgent.put("original", httpServletRequest.getHeader("User-Agent"));
 		ecs.set("user_agent", userAgent);
 
 		// service
@@ -151,22 +153,27 @@ public class APILoggingService {
 		service.put("kind", "event");
 		ecs.set("service", service);
 
-		// igsn
-		Request igsn = (Request) request.getAttribute(String.valueOf(Request.class));
-		if (igsn != null) {
-			ecs.set("igsn", mapper.valueToTree(igsn));
+		// custom metadata_registry fields
+		ObjectNode metadataRegistry = mapper.createObjectNode();
+		Request request = (Request) httpServletRequest.getAttribute(String.valueOf(Request.class));
+		if (request != null) {
+			metadataRegistry.set("request", mapper.valueToTree(request));
 		}
+		ecs.set("metadata_registry", metadataRegistry);
 
 		// event
 		ObjectNode event = mapper.createObjectNode();
 		event.put("category", "web");
-		event.put("action", determineEventAction(request));
+		event.put("action", determineEventAction(httpServletRequest));
 		String outcome = (response.getStatus() < 200 || response.getStatus() > 299) ? "failure" : "success";
 		event.put("outcome", outcome);
 		ecs.set("event", event);
 
 		// message
-		ecs.put("message", String.format("%s %s %s", request.getMethod(), uri, response.getStatus()));
+		String defaultMessage = String.format("%s %s %s", httpServletRequest.getMethod(), uri, response.getStatus());
+		String exceptionMessage = (String) httpServletRequest.getAttribute(ExceptionMessage);
+		ecs.put("message",
+				exceptionMessage != null && !exceptionMessage.trim().equals("") ? exceptionMessage : defaultMessage);
 
 		return ecs;
 	}

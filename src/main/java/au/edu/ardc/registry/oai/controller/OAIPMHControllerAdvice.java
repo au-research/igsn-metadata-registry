@@ -1,5 +1,6 @@
 package au.edu.ardc.registry.oai.controller;
 
+import au.edu.ardc.registry.common.service.APILoggingService;
 import au.edu.ardc.registry.oai.exception.*;
 import au.edu.ardc.registry.oai.model.ErrorFragment;
 import au.edu.ardc.registry.oai.model.RequestFragment;
@@ -51,6 +52,7 @@ public class OAIPMHControllerAdvice {
 		// todo try catch here
 		String xml = mapper.writeValueAsString(response);
 
+		request.setAttribute(APILoggingService.ExceptionMessage, message);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_XML).body(xml);
 	}
 
