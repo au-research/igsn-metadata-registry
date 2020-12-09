@@ -86,6 +86,7 @@ public class ImportService {
 				Metadata.LandingPage);
 		EmbargoEndProvider embargoEnd = (EmbargoEndProvider) MetadataProviderFactory.create(schema,
 				Metadata.EmbargoEnd);
+		Date currentDate = new Date();
 
 
 
@@ -161,7 +162,8 @@ public class ImportService {
 		igsnVersionService.save(version);
 		requestLog.debug("Added version: {}", version.getId());
 
-		if(embargoDate != null){
+
+		if(embargoDate != null && embargoDate.after(currentDate) ){
 			Embargo embargo = new Embargo();
 			embargo.setRecord(record);
 			embargo.setEmbargoEnd(embargoDate);
@@ -202,6 +204,7 @@ public class ImportService {
 				Metadata.Visibility);
 		EmbargoEndProvider embargoEnd = (EmbargoEndProvider) MetadataProviderFactory.create(schema,
 				Metadata.EmbargoEnd);
+		Date currentDate = new Date();
 
 		Identifier identifier = identifierService.findByValueAndType(identifierValue, Identifier.Type.IGSN);
 
@@ -280,7 +283,7 @@ public class ImportService {
 
 		Date embargoDate= embargoEnd.get(content);
 		Embargo embargo = embargoService.findByRecord(record);
-		if(embargoDate != null){
+		if(embargoDate != null && embargoDate.after(currentDate)){
 			//see if an embargo exists for this record
 			if(embargo != null){
 				embargo.setEmbargoEnd(embargoDate);

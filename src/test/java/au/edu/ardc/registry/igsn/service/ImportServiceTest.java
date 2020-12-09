@@ -334,4 +334,40 @@ class ImportServiceTest {
 
 	}
 
+	@Test
+	@DisplayName("Update valid payload with embargo in the past does not call embargo save method")
+	void updateRequestEmbargoInPast() throws IOException {
+		when(igsnRequestService.getLoggerFor(any(Request.class)))
+				.thenReturn(TestHelper.getConsoleLogger(ImportServiceTest.class.getName(), Level.DEBUG));
+
+		// given an existing Identifier and an existing Record
+		String ownerId = UUID.randomUUID().toString();
+		Record record = TestHelper.mockRecord(UUID.randomUUID());
+		record.setOwnerID(UUID.fromString(ownerId));
+		record.setOwnerType(Record.OwnerType.User);
+		Identifier identifier = TestHelper.mockIdentifier(record);
+		identifier.setValue("10273/XX0TUIAYLV");
+		Version version = TestHelper.mockVersion(record);
+		version.setSchema(SchemaService.ARDCv1);
+		version.setCreatedAt(new Date());
+		record.setCurrentVersions(Collections.singletonList(version));
+
+		when(identifierService.findByValueAndType(identifier.getValue(), Identifier.Type.IGSN)).thenReturn(identifier);
+
+		Request request = TestHelper.mockRequest();
+		request.setAttribute(Attribute.OWNER_TYPE, "User");
+		request.setAttribute(Attribute.CREATOR_ID, ownerId);
+		request.setAttribute(Attribute.ALLOCATION_ID, UUID.randomUUID().toString());
+
+		// when importRequest a valid payload and a valid request
+		Identifier result = importService.updateRequest(new File("src/test/resources/xml/sample_ardcv1_embargoEndPast.xml"), request);
+
+		assertThat(result).isInstanceOf(Identifier.class);
+
+		verify(recordService, times(1)).save(any(Record.class));
+		verify(igsnVersionService, times(1)).save(any(Version.class));
+		verify(embargoService, times(0)).save(any(Embargo.class));
+	}
+
+
 }

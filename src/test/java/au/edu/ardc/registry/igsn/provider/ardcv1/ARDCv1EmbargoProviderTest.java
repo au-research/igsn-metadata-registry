@@ -32,7 +32,7 @@ public class ARDCv1EmbargoProviderTest {
 	@DisplayName("Get embargoEnd of a ARDCV1 record")
 	void extractEmbargoEndFromARDCV1() throws IOException {
 		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_embargoEnd.xml");
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_embargoEndPast.xml");
 
 		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
 		Date embargoEnd = provider.get(xml);
