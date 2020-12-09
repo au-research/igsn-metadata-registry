@@ -345,8 +345,32 @@ public class IGSNServiceController {
 							schema = @Schema(description = "Owner Type", type = "string",
 									allowableValues = { "User", "DataCenter" })) },
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted, to watch progress, " +
+							"logs or status of the request use the /resources/requests API links provided in the response",
+							content = @Content(examples= {@ExampleObject(name="QUEUED", value="{\n" +
+									"    \"id\": \"efcc83ce-667e-451d-8ef0-68720749f7ae\",\n" +
+									"    \"status\": \"QUEUED\",\n" +
+									"    \"type\": \"igsn.bulk-mint\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T00:04:16.914+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T00:04:17.148+00:00\",\n" +
+									"    \"message\": \"Bulk Mint Request is Queued\",\n" +
+									"    \"summary\": {},\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/><br/>"+
@@ -534,7 +558,38 @@ public class IGSNServiceController {
 									allowableValues = { "User", "DataCenter" })) },
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Mint request is accepted",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+							content = @Content(examples= {@ExampleObject(name="COMPLETED", value="{\n" +
+									"    \"id\": \"1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1\",\n" +
+									"    \"status\": \"COMPLETED\",\n" +
+									"    \"type\": \"igsn.mint\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T04:56:36.381+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T04:56:47.732+00:00\",\n" +
+									"    \"message\": \"Successfully created Identifier 20.500.11812/XXZT100000001\",\n" +
+									"    \"summary\": {\n" +
+									"        \"TOTAL TIME\": \"0h 0m 11s\",\n" +
+									"        \"IGSN REGISTERED\": \"1\",\n" +
+									"        \"RECORDS RECEIVED\": \"1\",\n" +
+									"        \"IMPORT TIME\": \"0h 0m 0s\",\n" +
+									"        \"RECORDS CREATED\": \"1\",\n" +
+									"        \"RECORDS UPDATED\": \"0\",\n" +
+									"        \"ERROR\": \"0\"\n" +
+									"    },\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/><br/>"+
@@ -724,7 +779,38 @@ public class IGSNServiceController {
 									"</resources>")})),
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Update request is accepted",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+							content = @Content(examples= {@ExampleObject(name="COMPLETED", value="{\n" +
+									"    \"id\": \"1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1\",\n" +
+									"    \"status\": \"COMPLETED\",\n" +
+									"    \"type\": \"igsn.update\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T04:56:36.381+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T04:56:47.732+00:00\",\n" +
+									"    \"message\": \"Successfully created Identifier 20.500.11812/XXZT100000001\",\n" +
+									"    \"summary\": {\n" +
+									"        \"TOTAL TIME\": \"0h 0m 11s\",\n" +
+									"        \"IGSN REGISTERED\": \"0\",\n" +
+									"        \"RECORDS RECEIVED\": \"1\",\n" +
+									"        \"IMPORT TIME\": \"0h 0m 0s\",\n" +
+									"        \"RECORDS CREATED\": \"1\",\n" +
+									"        \"RECORDS UPDATED\": \"0\",\n" +
+									"        \"ERROR\": \"0\"\n" +
+									"    },\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/1dca13fb-d3e8-40ad-a050-bf6f9c65f0c1/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/><br/>"+
@@ -1010,8 +1096,32 @@ public class IGSNServiceController {
 									"    </resource>\n" +
 									"</resources>")})),
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Bulk Update request is accepted",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "200", description = "Bulk Update request is accepted, to watch progress, " +
+							"logs or status of the request use the /resources/requests API links provided in the response",
+							content = @Content(examples= {@ExampleObject(name="QUEUED", value="{\n" +
+									"    \"id\": \"efcc83ce-667e-451d-8ef0-68720749f7ae\",\n" +
+									"    \"status\": \"QUEUED\",\n" +
+									"    \"type\": \"igsn.bulk-update\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T00:04:16.914+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T00:04:17.148+00:00\",\n" +
+									"    \"message\": \"Bulk Update Request is Queued\",\n" +
+									"    \"summary\": {},\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/><br/>"+
@@ -1075,8 +1185,32 @@ public class IGSNServiceController {
 							schema = @Schema(description = "Owner Type", type = "string",
 									allowableValues = { "User", "DataCenter" })) },
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Reserve request has completed successfully",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "200", description = "Bulk Reserve Request is Queued, to watch progress, " +
+							"logs or status of the request use the /resources/requests API links provided in the response",
+							content = @Content(examples= {@ExampleObject(name="QUEUED", value="{\n" +
+									"    \"id\": \"efcc83ce-667e-451d-8ef0-68720749f7ae\",\n" +
+									"    \"status\": \"QUEUED\",\n" +
+									"    \"type\": \"igsn.reserve\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T00:04:16.914+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T00:04:17.148+00:00\",\n" +
+									"    \"message\": \"Bulk Reserve Request is Queued\",\n" +
+									"    \"summary\": {},\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/>"+
@@ -1143,8 +1277,32 @@ public class IGSNServiceController {
 							schema = @Schema(description = "Owner Type", type = "string", defaultValue = "DataCenter",
 									allowableValues = {"DataCenter"})) },
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
-							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
+					@ApiResponse(responseCode = "200", description = "Transfer request is queued, to watch progress, " +
+							"logs or status of the request use the /resources/requests API links provided in the response",
+							content = @Content(examples= {@ExampleObject(name="QUEUED", value="{\n" +
+									"    \"id\": \"efcc83ce-667e-451d-8ef0-68720749f7ae\",\n" +
+									"    \"status\": \"QUEUED\",\n" +
+									"    \"type\": \"igsn.transfer\",\n" +
+									"    \"createdBy\": \"1a59c4c8-d8b2-448b-84cf-7108dd54869b\",\n" +
+									"    \"createdAt\": \"2020-12-09T00:04:16.914+00:00\",\n" +
+									"    \"updatedAt\": \"2020-12-09T00:04:17.148+00:00\",\n" +
+									"    \"message\": \"Bulk Transfer Request is Queued\",\n" +
+									"    \"summary\": {},\n" +
+									"    \"_links\": {\n" +
+									"        \"self\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae\"\n" +
+									"        },\n" +
+									"        \"logs\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/logs\"\n" +
+									"        },\n" +
+									"        \"identifiers\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/identifiers\"\n" +
+									"        },\n" +
+									"        \"records\": {\n" +
+									"            \"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/efcc83ce-667e-451d-8ef0-68720749f7ae/records\"\n" +
+									"        }\n" +
+									"    }\n" +
+									"}" )}, schema = @Schema(implementation = RequestDTO.class))),
 					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
 							"The content of the payload is not of a schema that is currently supported<br/>"+
 							"The payload is missing or non readable<br/><br/>"+
