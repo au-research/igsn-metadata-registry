@@ -7,6 +7,8 @@ import au.edu.ardc.registry.common.repository.RequestRepository;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.common.util.Helpers;
 import au.edu.ardc.registry.igsn.entity.IGSNEventType;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ import java.util.Date;
 
 @Service
 @ConditionalOnProperty(name = "app.igsn.enabled")
+@Tag(name = "IGSN Service", description = "API endpoint for IGSN Request related operations")
+@SecurityRequirement(name = "basic")
+@SecurityRequirement(name = "oauth2")
 public class IGSNRequestService {
 
 	Logger logger = LoggerFactory.getLogger(IGSNRequestService.class);
