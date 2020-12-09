@@ -24,6 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
 				.allowedMethods(HttpMethod.GET.toString(), HttpMethod.POST.toString(), HttpMethod.PUT.toString(),
 						HttpMethod.DELETE.toString(), HttpMethod.OPTIONS.toString())
 				.allowedHeaders("*").allowCredentials(true);
+
+		// OpenAPI doc
+		registry.addMapping("/v3/api-docs/**").allowedOrigins("*")
+				.allowedMethods(HttpMethod.GET.toString(), HttpMethod.POST.toString(), HttpMethod.PUT.toString(),
+						HttpMethod.DELETE.toString(), HttpMethod.OPTIONS.toString())
+				.allowedHeaders("*").allowCredentials(true);
 	}
 
 	@Override
