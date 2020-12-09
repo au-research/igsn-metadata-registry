@@ -347,9 +347,15 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/><br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>" +
+							"The content contains records from different allocations<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 											   @RequestParam(required = false) String ownerID,
@@ -529,9 +535,16 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Mint request is accepted",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/><br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"The payload contains more than 1 IGSN record<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>" +
+							"Record already exists with given Identifier<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 										   @RequestParam(required = false) String ownerID,
@@ -712,9 +725,16 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Update request is accepted",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/><br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"The payload contains more than 1 IGSN record<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>" +
+							"Record doesn't exist with given Identifier<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
@@ -992,9 +1012,15 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Bulk Update request is accepted",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/><br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"The payload contains records from different allocations<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> bulkUpdate(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
@@ -1051,9 +1077,16 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Reserve request has completed successfully",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"The payload contains invalid Identifiers<br/>" +
+							"The payload contains Identifiers with mixed allocations<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
 											  @RequestParam(required = false, defaultValue = "igsn_list") String schemaID,
@@ -1112,9 +1145,20 @@ public class IGSNServiceController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Transfer request has completed successfully",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception",
+					@ApiResponse(responseCode = "400", description = "ContentNotSupportedException:<br/>" +
+							"The content of the payload is not of a schema that is currently supported<br/>"+
+							"The payload is missing or non readable<br/><br/>"+
+							"ValidationException:<br/>" +
+							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
-					@ApiResponse(responseCode = "400", description = "Validation Exception",
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
+							"The payload contains invalid Identifiers<br/>" +
+							"The payload contains Identifiers with mixed allocations<br/>" +
+							"User has no access to the given Allocation (prefix)<br/>"+
+							"The OwnerType is not 'DataCenter'<br/>" +
+							"The OwnerID is not a DataCenter<br/>" +
+							"The User is not a member of the DataCenter<br/>" +
+							"The DataCenter has no access to the given Allocation<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> transfer(HttpServletRequest httpServletRequest,
 											   @NotNull @RequestParam String ownerID,

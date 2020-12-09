@@ -63,7 +63,7 @@ public class IGSNRequestController {
 			responses = {
 					@ApiResponse(responseCode = "200", description = "Request is restarting",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException either:<br/>" +
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
 							"User is not the owner of the Request or Request doesn't exist<br/>" +
 							"The Request is not Completed either successfully or failed yet<br/>" +
 							"The value of the parameter 'status' is not supported (only RESTART is supported as of v1.0)<br/>" +
