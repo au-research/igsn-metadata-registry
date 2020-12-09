@@ -336,7 +336,8 @@ public class IGSNServiceController {
 									"        </relatedResources>\n" +
 									"        <comments>This is a comment section about the rock samples</comments>\n" +
 									"        <logDate eventType=\"registered\">2002</logDate>\n" +
-									"    </resource>")})),
+									"    </resource>\n" +
+									"</resources>")})),
 			parameters = { @Parameter(name = "ownerID",
 					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
 					schema = @Schema(implementation = UUID.class)),
