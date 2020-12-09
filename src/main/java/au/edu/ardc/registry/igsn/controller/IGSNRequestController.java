@@ -9,12 +9,14 @@ import au.edu.ardc.registry.common.service.KeycloakService;
 import au.edu.ardc.registry.common.service.RequestService;
 import au.edu.ardc.registry.exception.APIExceptionResponse;
 import au.edu.ardc.registry.exception.ForbiddenOperationException;
+import au.edu.ardc.registry.exception.RequestNotFoundException;
 import au.edu.ardc.registry.igsn.service.IGSNService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.core.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,6 +35,8 @@ import java.util.UUID;
 		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 @ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Request Resource", description = "API endpoints to interact with IGSN related Requests")
+@SecurityRequirement(name = "basic")
+@SecurityRequirement(name = "oauth2")
 public class IGSNRequestController {
 
 	final KeycloakService kcService;
@@ -57,25 +61,35 @@ public class IGSNRequestController {
 			parameters = {@Parameter(name = "status", description = "The state which the Request is set to",
 							schema = @Schema(description = "status", type = "string", allowableValues = { "RESTART" }, defaultValue = "RESTART"))},
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Request has restarted",
+					@ApiResponse(responseCode = "200", description = "Request is restarting",
 							content = @Content(schema = @Schema(implementation = RequestDTO.class))),
-					@ApiResponse(responseCode = "403", description = "Forbidden Operation Exception either:<br/>" +
-							"User is not the owner of the Request<br/>" +
-							"The Request is not Completed yet<br/>" +
-							"the value of the parameter 'status' is not supported (only RESTART is supported as of v1.0)<br/>" +
+					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException either:<br/>" +
+							"User is not the owner of the Request or Request doesn't exist<br/>" +
+							"The Request is not Completed either successfully or failed yet<br/>" +
+							"The value of the parameter 'status' is not supported (only RESTART is supported as of v1.0)<br/>" +
 							"The request type is not IGSN only mint, bulk-mint, update, bulk-update, reserve and transfer requests are Supported",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(@PathVariable String id,
-			@RequestParam(name = "status") String status, HttpServletRequest httpServletRequest) {
+			@RequestParam(name = "status") String status, HttpServletRequest httpServletRequest){
 		User user = kcService.getLoggedInUser(httpServletRequest);
-		Request request = requestService.findOwnedById(id, user);
-		Logger requestLog = requestService.getLoggerFor(request);
+		Request request;
+		try {
+			request = requestService.findOwnedById(id, user);
+		}catch(RequestNotFoundException e ){
+			throw new ForbiddenOperationException("Request with UUID " + id + " not found");
+		}
+		catch(ForbiddenOperationException e ){
+			throw e;
+		}catch(NumberFormatException e){
+			throw new ForbiddenOperationException(e.getMessage());
+		}
 		Date date = new Date();
+		Logger requestLog = requestService.getLoggerFor(request);
 		// archive log at log.millieseconds
 		// empty the log file
 		// set request status to RESTARTED
 		// re-run the request
-		if(!request.getStatus().equals(Request.Status.COMPLETED) && !request.getStatus().equals(Request.Status.FAILED)){
+		if(!(request.getStatus().equals(Request.Status.COMPLETED) || request.getStatus().equals(Request.Status.FAILED))){
 			throw new ForbiddenOperationException("Only COMPLETED or FAILED Requests can be restarted");
 		}
 		else if(!status.equals("RESTART")){
