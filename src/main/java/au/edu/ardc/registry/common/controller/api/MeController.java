@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @Tag(name = "About Me", description = "Display information about the current logged in user")
+@Tag(name = "public", description = "shown in public facing documentation")
 @RequestMapping(value = "/api/me/", produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")

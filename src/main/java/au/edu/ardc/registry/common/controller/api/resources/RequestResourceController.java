@@ -36,6 +36,7 @@ import java.net.URI;
 @RequestMapping(value = "/api/resources/requests",
 		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 @Tag(name = "Request Resource API")
+@Tag(name = "public", description = "shown in public facing documentation")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class RequestResourceController {

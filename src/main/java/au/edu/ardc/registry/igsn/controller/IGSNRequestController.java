@@ -54,10 +54,46 @@ public class IGSNRequestController {
 		this.igsnService = igsnService;
 		this.requestMapper = requestMapper;
 	}
-
+	@Tag(name = "public", description = "shown in public facing documentation")
 	@PutMapping(value = "/{id}")
 	@Operation(summary = "Restart a completed or failed IGSN Request",
-			description = "Interact with any existing IGSN request (Only RESTART is supported as of v1.0)",
+			description = "Modifies the status of an existing IGSN request in order to stop or invoke processing. (Only RESTART is supported as of v1.0)<br/>" +
+					"The \"<b>id</b>\" of a request can be found as \"<b>id</b>\" in the response body in all ACCEPTED IGSN requests<br/>" +
+					"{<br/>" +
+					"&nbsp;&nbsp;\"<b>id</b>\": \"<b>b7ffa7ac-3e6c-4aad-81a4-848528b90ddb</b>\",<br/>" +
+					"&nbsp;&nbsp;\"status\": \"COMPLETED\",<br/>" +
+					"&nbsp;&nbsp;\"type\": \"igsn.bulk-mint\",<br/>" +
+					"&nbsp;&nbsp;\"createdBy\": \"b3cc6369-448a-4853-9b9f-2ab56f90a18d\",<br/>" +
+					"&nbsp;&nbsp;\"createdAt\": \"2020-12-10T03:48:52.000+00:00\",<br/>" +
+					"&nbsp;&nbsp;\"updatedAt\": \"2020-12-10T03:48:59.000+00:00\",<br/>" +
+					"&nbsp;&nbsp;\"message\": \"Request completed with some errors\",<br/>" +
+					"&nbsp;&nbsp;\"summary\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"TOTAL TIME\": \"0h 0m 7s\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"RECORDS FORBIDDEN\": \"1\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"IGSN REGISTERED\": \"1\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"RECORDS RECEIVED\": \"2\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"PROCESS TIME\": \"0h 0m 0s\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"IMPORT TIME\": \"0h 0m 0s\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"RECORDS CREATED\": \"1\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"REGISTER TIME\": \"0h 0m 7s\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"RECORDS UPDATED\": \"0\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"ERROR\": \"1\"<br/>" +
+					"&nbsp;&nbsp;},<br/>" +
+					"&nbsp;&nbsp;\"_links\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"self\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/b7ffa7ac-3e6c-4aad-81a4-848528b90ddb\"<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;},<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"logs\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/b7ffa7ac-3e6c-4aad-81a4-848528b90ddb/logs\"<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;},<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"identifiers\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/b7ffa7ac-3e6c-4aad-81a4-848528b90ddb/identifiers\"<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;},<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"records\": {<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"href\": \"https://test.identifiers.ardc.edu.au/igsn-registry/api/resources/requests/b7ffa7ac-3e6c-4aad-81a4-848528b90ddb/records\"<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;}<br/>" +
+					"&nbsp;&nbsp;}<br/>" +
+					"}",
 			parameters = {@Parameter(name = "status", description = "The state which the Request is set to",
 							schema = @Schema(description = "status", type = "string", allowableValues = { "RESTART" }, defaultValue = "RESTART"))},
 			responses = {

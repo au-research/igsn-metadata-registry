@@ -57,6 +57,7 @@ import java.util.UUID;
 		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 @ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Service", description = "API endpoints for IGSN related operations")
+@Tag(name = "public", description = "shown in public facing documentation")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class IGSNServiceController {
@@ -338,14 +339,31 @@ public class IGSNServiceController {
 									"        <logDate eventType=\"registered\">2002</logDate>\n" +
 									"    </resource>\n" +
 									"</resources>")})),
-			parameters = { @Parameter(name = "ownerID",
-					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
-					schema = @Schema(implementation = UUID.class)),
+			parameters = { @Parameter(name = "ownerID", description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.<br>" +
+					"Otherwise it has to be the UUID of the user's DataCenter" +
+					"The DataCenter's UUID can be found in the /api/me API response under \"dataCenters\" eg:" +
+					"<br/>\"allocations\": [<br/>" +
+					"&nbsp;{<br/>" +
+					"&nbsp;&nbsp;\"id\": \"03b94e54-56c8-4800-8132-8b65601aac0a\",<br/>" +
+					"&nbsp;&nbsp;\"name\": \"IGSN Allocation 20.500.11812/XXZT1\",<br/>" +
+					"&nbsp;&nbsp;\"scopes\": [<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"UPDATE\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"CREATE\"<br/>" +
+					"&nbsp;&nbsp;],<br/>" +
+					"&nbsp;&nbsp;\"type\": \"urn:ardc:igsn:allocation\",<br/>" +
+					"&nbsp;&nbsp;\"<b>dataCenters</b>\": [<br/>" +
+					"&nbsp;&nbsp;{<br/>" +
+					"&nbsp;&nbsp;\"id\": \"<b>bfcefcfd-dc5c-4083-a554-85888334f353</b>\",<br/>" +
+					"&nbsp;&nbsp;\"name\": \"TestUserGroup1\",<br/>" +
+					"&nbsp;&nbsp;\"path\": \"/ARDC/TestUserGroup1\"<br/>" +
+					"&nbsp;&nbsp;}<br/>" +
+					"&nbsp;]<br/>" +
+					"},", schema = @Schema(implementation = UUID.class)),
 					@Parameter(name = "ownerType", description = "The Type of the Owner",
 							schema = @Schema(description = "Owner Type", type = "string",
 									allowableValues = { "User", "DataCenter" })) },
 			responses = {
-					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted, to watch progress, " +
+					@ApiResponse(responseCode = "200", description = "Bulk Mint request is accepted and being queued, to watch progress, " +
 							"logs or status of the request use the /resources/requests API links provided in the response",
 							content = @Content(examples= {@ExampleObject(name="QUEUED", value="{\n" +
 									"    \"id\": \"efcc83ce-667e-451d-8ef0-68720749f7ae\",\n" +
@@ -378,8 +396,8 @@ public class IGSNServiceController {
 							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>" +
-							"The content contains records from different allocations<br/>",
+							"User has no access to the given Namespace<br/>" +
+							"The content contains records from different Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> bulkMint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 											   @RequestParam(required = false) String ownerID,
@@ -550,9 +568,26 @@ public class IGSNServiceController {
 									"        <logDate eventType=\"registered\">2002</logDate>\n" +
 									"    </resource>\n" +
 									"</resources>")})),
-			parameters = { @Parameter(name = "ownerID",
-					description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
-					schema = @Schema(implementation = UUID.class)),
+			parameters = { @Parameter(name = "ownerID", description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.<br>" +
+					"Otherwise it has to be the UUID of the user's DataCenter" +
+					"The DataCenter's UUID can be found in the /api/me API response under \"dataCenters\" eg:" +
+					"<br/>\"allocations\": [<br/>" +
+					"&nbsp;{<br/>" +
+					"&nbsp;&nbsp;\"id\": \"03b94e54-56c8-4800-8132-8b65601aac0a\",<br/>" +
+					"&nbsp;&nbsp;\"name\": \"IGSN Allocation 20.500.11812/XXZT1\",<br/>" +
+					"&nbsp;&nbsp;\"scopes\": [<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"UPDATE\",<br/>" +
+					"&nbsp;&nbsp;&nbsp;&nbsp;\"CREATE\"<br/>" +
+					"&nbsp;&nbsp;],<br/>" +
+					"&nbsp;&nbsp;\"type\": \"urn:ardc:igsn:allocation\",<br/>" +
+					"&nbsp;&nbsp;\"<b>dataCenters</b>\": [<br/>" +
+					"&nbsp;&nbsp;{<br/>" +
+					"&nbsp;&nbsp;\"id\": \"<b>bfcefcfd-dc5c-4083-a554-85888334f353</b>\",<br/>" +
+					"&nbsp;&nbsp;\"name\": \"TestUserGroup1\",<br/>" +
+					"&nbsp;&nbsp;\"path\": \"/ARDC/TestUserGroup1\"<br/>" +
+					"&nbsp;&nbsp;}<br/>" +
+					"&nbsp;]<br/>" +
+					"},", schema = @Schema(implementation = UUID.class)),
 					@Parameter(name = "ownerType", description = "The Type of the Owner",
 							schema = @Schema(description = "Owner Type", type = "string",
 									allowableValues = { "User", "DataCenter" })) },
@@ -598,8 +633,8 @@ public class IGSNServiceController {
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
 							"The payload contains more than 1 IGSN record<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>" +
-							"Record already exists with given Identifier<br/>",
+							"User has no access to the given Namespace<br/>" +
+							"Record already exists with given Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> mint(HttpServletRequest httpServletRequest, @RequestBody String payload,
 										   @RequestParam(required = false) String ownerID,
@@ -819,8 +854,8 @@ public class IGSNServiceController {
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
 							"The payload contains more than 1 IGSN record<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>" +
-							"Record doesn't exist with given Identifier<br/>",
+							"User has no access to the given Namespace<br/>" +
+							"Record doesn't exist with given Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> update(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
@@ -1129,8 +1164,8 @@ public class IGSNServiceController {
 							"The content of the payload is invalid<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
-							"The payload contains records from different allocations<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>",
+							"The payload contains records from different Namespace<br/>" +
+							"User has no access to the given Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> bulkUpdate(HttpServletRequest httpServletRequest, @RequestBody String payload)
 			throws Exception {
@@ -1178,9 +1213,26 @@ public class IGSNServiceController {
 					@Parameter(name = "schemaID", description = "the schema of the payload",
 							schema = @Schema(description = "Schema ID", type = "string",
 									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
-					@Parameter(name = "ownerID",
-							description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.",
-							schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerID", description = "The UUID of the intended Owner, if the OwnerType value is set to User, this value must be equal to the User's UUID.<br>" +
+							"Otherwise it has to be the UUID of the user's DataCenter. " +
+							"The DataCenter's UUID can be found in the /api/me API response under \"dataCenters\" eg:" +
+							"<br/>\"allocations\": [<br/>" +
+							"&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"03b94e54-56c8-4800-8132-8b65601aac0a\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"IGSN Allocation 20.500.11812/XXZT1\",<br/>" +
+							"&nbsp;&nbsp;\"scopes\": [<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"UPDATE\",<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"CREATE\"<br/>" +
+							"&nbsp;&nbsp;],<br/>" +
+							"&nbsp;&nbsp;\"type\": \"urn:ardc:igsn:allocation\",<br/>" +
+							"&nbsp;&nbsp;\"<b>dataCenters</b>\": [<br/>" +
+							"&nbsp;&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"<b>bfcefcfd-dc5c-4083-a554-85888334f353</b>\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"TestUserGroup1\",<br/>" +
+							"&nbsp;&nbsp;\"path\": \"/ARDC/TestUserGroup1\"<br/>" +
+							"&nbsp;&nbsp;}<br/>" +
+							"&nbsp;]<br/>" +
+							"},", schema = @Schema(implementation = UUID.class)),
 					@Parameter(name = "ownerType", description = "The Type of the Owner",
 							schema = @Schema(description = "Owner Type", type = "string",
 									allowableValues = { "User", "DataCenter" })) },
@@ -1219,8 +1271,8 @@ public class IGSNServiceController {
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
 							"The payload contains invalid Identifiers<br/>" +
-							"The payload contains Identifiers with mixed allocations<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>",
+							"The payload contains Identifiers with mixed Namespace<br/>" +
+							"User has no access to the given Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> reserve(HttpServletRequest httpServletRequest,
 											  @RequestParam(required = false, defaultValue = "igsn_list") String schemaID,
@@ -1271,8 +1323,25 @@ public class IGSNServiceController {
 					@Parameter(name = "schemaID", description = "the schema of the payload",
 							schema = @Schema(description = "Schema ID", type = "string",
 									allowableValues = { "igsn_list" }, defaultValue = "igsn_list")),
-					@Parameter(name = "ownerID", required = true, description = "The UUID of the user's DataCenter to transfer Ownership to",
-							schema = @Schema(implementation = UUID.class)),
+					@Parameter(name = "ownerID", required = true, description = "The UUID of the user's DataCenter to transfer Ownership to" +
+							"The DataCenter's UUID can be found in the /api/me API response under \"dataCenters\" eg:" +
+							"<br/>\"allocations\": [<br/>" +
+							"&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"03b94e54-56c8-4800-8132-8b65601aac0a\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"IGSN Allocation 20.500.11812/XXZT1\",<br/>" +
+							"&nbsp;&nbsp;\"scopes\": [<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"UPDATE\",<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"CREATE\"<br/>" +
+							"&nbsp;&nbsp;],<br/>" +
+							"&nbsp;&nbsp;\"type\": \"urn:ardc:igsn:allocation\",<br/>" +
+							"&nbsp;&nbsp;\"<b>dataCenters</b>\": [<br/>" +
+							"&nbsp;&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"<b>bfcefcfd-dc5c-4083-a554-85888334f353</b>\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"TestUserGroup1\",<br/>" +
+							"&nbsp;&nbsp;\"path\": \"/ARDC/TestUserGroup1\"<br/>" +
+							"&nbsp;&nbsp;}<br/>" +
+							"&nbsp;]<br/>" +
+							"},", schema = @Schema(implementation = UUID.class)),
 					@Parameter(name = "ownerType", description = "The Type of the Owner currently only DataCenter is supported",
 							schema = @Schema(description = "Owner Type", type = "string", defaultValue = "DataCenter",
 									allowableValues = {"DataCenter"})) },
@@ -1311,12 +1380,12 @@ public class IGSNServiceController {
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))),
 					@ApiResponse(responseCode = "403", description = "ForbiddenOperationException:<br/>" +
 							"The payload contains invalid Identifiers<br/>" +
-							"The payload contains Identifiers with mixed allocations<br/>" +
-							"User has no access to the given Allocation (prefix)<br/>"+
+							"The payload contains Identifiers with mixed Namespace<br/>" +
+							"User has no access to the given Namespace<br/>"+
 							"The OwnerType is not 'DataCenter'<br/>" +
 							"The OwnerID is not a DataCenter<br/>" +
 							"The User is not a member of the DataCenter<br/>" +
-							"The DataCenter has no access to the given Allocation<br/>",
+							"The DataCenter has no access to the given Namespace<br/>",
 							content = @Content(schema = @Schema(implementation = APIExceptionResponse.class))) })
 	public ResponseEntity<RequestDTO> transfer(HttpServletRequest httpServletRequest,
 											   @NotNull @RequestParam String ownerID,
@@ -1351,7 +1420,26 @@ public class IGSNServiceController {
 	@Operation(summary = "Generate unique IGSN (this is not a mint)",
 			description = "Returns an IGSN value ready to be minted. The IGSN generated is not minted and serve only to provide a unique identifier",
 			parameters = { @Parameter(name = "allocationID", required = false,
-					description = "The allocationID to generate the IGSN for, if blank will default to the first Allocation",
+					description = "The allocationID to generate the IGSN for<br/>" +
+							"If omitted the UUID will default to the first Allocation that is assigned to the User.<br>" +
+							"The available UUID(s) can be found in the /api/me API response under \"allocations\" eg:" +
+							"<br/>\"<b>allocations</b>\": [<br/>" +
+							"&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"<b>03b94e54-56c8-4800-8132-8b65601aac0a</b>\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"IGSN Allocation 20.500.11812/XXZT1\",<br/>" +
+							"&nbsp;&nbsp;\"scopes\": [<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"UPDATE\",<br/>" +
+							"&nbsp;&nbsp;&nbsp;&nbsp;\"CREATE\"<br/>" +
+							"&nbsp;&nbsp;],<br/>" +
+							"&nbsp;&nbsp;\"type\": \"urn:ardc:igsn:allocation\",<br/>" +
+							"&nbsp;&nbsp;\"dataCenters\": [<br/>" +
+							"&nbsp;&nbsp;{<br/>" +
+							"&nbsp;&nbsp;\"id\": \"bfcefcfd-dc5c-4083-a554-85888334f353\",<br/>" +
+							"&nbsp;&nbsp;\"name\": \"TestUserGroup1\",<br/>" +
+							"&nbsp;&nbsp;\"path\": \"/ARDC/TestUserGroup1\"<br/>" +
+							"&nbsp;&nbsp;}<br/>" +
+							"&nbsp;]<br/>" +
+							"},",
 					schema = @Schema(implementation = UUID.class)), },
 			responses = { @ApiResponse(responseCode = "200", description = "IGSN value generated",
 					content = @Content(schema = @Schema(implementation = RequestDTO.class))), })
