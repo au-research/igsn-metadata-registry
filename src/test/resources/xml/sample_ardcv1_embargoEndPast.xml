@@ -5,7 +5,7 @@
     <resource registeredObjectType="http://pid.geoscience.gov.au/def/voc/ga/igsncode/PhysicalSample">
         <resourceIdentifier>10273/XX0TUIAYLV</resourceIdentifier>
         <landingPage>https://demo.identifiers.ardc.edu.au/igsn/#/meta/XX0TUIAYLV</landingPage>
-        <isPublic embargoEnd="2020-09-07">true</isPublic>
+        <isPublic embargoEnd="2020-09-07">false</isPublic>
         <resourceTitle>This Tiltle also left blank on purpose</resourceTitle>
         <alternateIdentifiers>
             <alternateIdentifier alternateIdentifierType="local">AltID2134</alternateIdentifier>

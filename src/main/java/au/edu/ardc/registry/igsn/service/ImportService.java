@@ -169,6 +169,9 @@ public class ImportService {
 			embargo.setEmbargoEnd(embargoDate);
 			embargoService.save(embargo);
 			requestLog.debug("Added embargo: {} {}", embargo.getId(),embargoDate);
+		}else if (embargoDate != null && embargoDate.after(currentDate)){
+			record.setVisible(true);
+			recordService.save(record);
 		}
 
 		// append identifierValue to the outputFile path for use in next step
@@ -293,11 +296,16 @@ public class ImportService {
 				embargo.setEmbargoEnd(embargoDate);
 			}
 			embargoService.save(embargo);
-		}else{
-			//if an embargo exists for this record, but now it has been set to public then delete the embargo
+		}else if(embargoDate != null && embargoDate.before(currentDate)){
+			//if an embargo exists for this record, but new embargo date is in the past
 			if(embargo != null){
 				embargoService.delete(embargo.getId());
 			}
+			record.setVisible(true);
+			recordService.save(record);
+		}
+		if(embargoDate == null && embargo != null){
+			embargoService.delete(embargo.getId());
 		}
 
 		logger.info("Updated identifier {} with a new version", identifier.getValue());

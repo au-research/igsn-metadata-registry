@@ -11,9 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.EnabledIf;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
@@ -51,7 +49,7 @@ public class ARDCv1EmbargoProviderTest {
 	}
 
 	@Test
-	@DisplayName("Attempt to get embargoEnd of a ARDCV1 record with just a YYYY date")
+	@DisplayName("Attempt to get embargoEnd of a ARDCV1 record with a YYYY date format")
 	void extractEmbargoEndFromARDCV1EmbargoEndYYYY() throws IOException {
 		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
 		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_EmbargoEndYYYY.xml");
@@ -66,10 +64,9 @@ public class ARDCv1EmbargoProviderTest {
 	void extractEmbargoEndFromARDCV1Invalid() throws IOException {
 		Schema schema = service.getSchemaByID(SchemaService.OAIDC);
 		try {
-			EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
+			EmbargoEndProvider pro = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
 		} catch (ContentProviderNotFoundException ex){
 			assertEquals(ex.getMessageID(),"api.error.content_not_supported");
 		}
 	}
-
 }
