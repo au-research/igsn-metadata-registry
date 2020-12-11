@@ -52,7 +52,7 @@ public class ARDCv1EmbargoProviderTest {
 	@DisplayName("Attempt to get embargoEnd of a ARDCV1 record with a YYYY date format")
 	void extractEmbargoEndFromARDCV1EmbargoEndYYYY() throws IOException {
 		Schema schema = service.getSchemaByID(SchemaService.ARDCv1);
-		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_EmbargoEndYYYY.xml");
+		String xml = Helpers.readFile("src/test/resources/xml/sample_ardcv1_embargoEndYYYY.xml");
 
 		EmbargoEndProvider provider = (EmbargoEndProvider) MetadataProviderFactory.create(schema, Metadata.EmbargoEnd);
 		Date embargoEnd = provider.get(xml);
