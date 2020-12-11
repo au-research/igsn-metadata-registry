@@ -151,6 +151,8 @@ public class Helpers {
 				return out;
 			}
 			else {
+				if(inputDate.length()==4) inputDate = inputDate + "-01-01";
+				if(inputDate.length()==7) inputDate = inputDate + "-01";
 				LocalDateTime parsedDate = LocalDate.parse(inputDate, DateTimeFormatter.ISO_DATE).atStartOfDay();
 				Date out = Date.from(
 						Instant.from(parsedDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC)));
