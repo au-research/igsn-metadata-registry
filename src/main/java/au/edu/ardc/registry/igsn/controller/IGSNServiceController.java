@@ -57,7 +57,6 @@ import java.util.UUID;
 		produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 @ConditionalOnProperty(name = "app.igsn.enabled")
 @Tag(name = "IGSN Service", description = "API endpoints for IGSN related operations")
-@Tag(name = "public", description = "shown in public facing documentation")
 @SecurityRequirement(name = "basic")
 @SecurityRequirement(name = "oauth2")
 public class IGSNServiceController {

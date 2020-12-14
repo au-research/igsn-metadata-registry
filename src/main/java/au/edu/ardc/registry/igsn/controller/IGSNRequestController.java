@@ -54,7 +54,7 @@ public class IGSNRequestController {
 		this.igsnService = igsnService;
 		this.requestMapper = requestMapper;
 	}
-	@Tag(name = "public", description = "shown in public facing documentation")
+
 	@PutMapping(value = "/{id}")
 	@Operation(summary = "Restart a completed or failed IGSN Request",
 			description = "Modifies the status of an existing IGSN request in order to stop or invoke processing. (Only RESTART is supported as of v1.0)<br/>" +
