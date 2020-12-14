@@ -61,6 +61,27 @@ public class HelpersTest {
 		assertThat(newDateTime).isInstanceOf(Date.class);
 	}
 
+	@Test
+	void convertDateYYYY() {
+		String ISO8601Date = "2011";
+
+		Date newDate = Helpers.convertDate(ISO8601Date);
+		assertThat(newDate).isInstanceOf(Date.class);
+		assertThat(newDate).hasDayOfMonth(01);
+		assertThat(newDate).hasMonth(1);
+
+	}
+
+	@Test
+	void convertDateYYYYMM() {
+		String ISO8601Date = "2011-12";
+
+		Date newDate = Helpers.convertDate(ISO8601Date);
+		assertThat(newDate).isInstanceOf(Date.class);
+		assertThat(newDate).hasDayOfMonth(01);
+
+	}
+
 
     @Test
 	public void getContentType_text() {

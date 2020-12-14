@@ -364,7 +364,7 @@ class ImportServiceTest {
 
 		assertThat(result).isInstanceOf(Identifier.class);
 
-		verify(recordService, times(1)).save(any(Record.class));
+		verify(recordService, times(2)).save(any(Record.class));
 		verify(igsnVersionService, times(1)).save(any(Version.class));
 		verify(embargoService, times(0)).save(any(Embargo.class));
 	}
