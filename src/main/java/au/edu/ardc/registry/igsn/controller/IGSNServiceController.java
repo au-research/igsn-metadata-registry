@@ -1458,7 +1458,7 @@ public class IGSNServiceController {
 		String prefix = allocation.getPrefix();
 		String namespace = allocation.getNamespace();
 		do {
-			value = RandomStringUtils.randomAlphanumeric(6);
+			value = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
 			igsn = String.format("%s/%s%s", allocation.getPrefix(), allocation.getNamespace(), value).toUpperCase();
 		}
 		while (identifierService.findByValueAndType(igsn, Identifier.Type.IGSN) != null);
