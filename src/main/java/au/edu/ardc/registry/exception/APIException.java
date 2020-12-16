@@ -1,5 +1,9 @@
 package au.edu.ardc.registry.exception;
 
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+
+import java.util.Locale;
+
 public class APIException extends RuntimeException {
 
 	public APIException() {
@@ -16,6 +20,14 @@ public class APIException extends RuntimeException {
 
 	public String getMessageID() {
 		return "";
+	}
+
+	public String getMessage(){
+		Locale defaultLocale = Locale.getDefault();
+		ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+		messageSource.setBasename("classpath:messages");
+		messageSource.setDefaultEncoding("UTF-8");
+		return messageSource.getMessage(getMessageID(), getArgs(), defaultLocale);
 	}
 
 }
