@@ -2,23 +2,21 @@ package au.edu.ardc.registry.igsn.client;
 
 import au.edu.ardc.registry.TestHelper;
 import au.edu.ardc.registry.exception.MDSClientConfigurationException;
-import au.edu.ardc.registry.exception.MDSClientException;
 import au.edu.ardc.registry.igsn.model.IGSNAllocation;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.SocketPolicy;
 import org.junit.Assert;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class MDSClientTest {
 
     @Test
-    void configurationException()
+    @DisplayName("Test for ConfigurationException if MDS password is not set")
+    void configurationException_pwd()
     {
 
         IGSNAllocation ia = TestHelper.mockIGSNAllocation();
-        ia.setName(null);
+        ia.setName("Faulty Allocation");
         ia.setMds_password(null);
         Assert.assertThrows(MDSClientConfigurationException.class, () -> {
             MDSClient mc = new MDSClient(ia);
@@ -27,7 +25,45 @@ class MDSClientTest {
             MDSClient mc = new MDSClient(ia);
         }catch(Exception e){
             String msg = e.getMessage();
-            System.out.print(msg);
+            Assert.assertEquals("MDS Password is not set for Allocation Faulty Allocation", msg);
+        }
+    }
+
+    @Test
+    @DisplayName("Test for ConfigurationException if MDS url is not set")
+    void configurationException_url()
+    {
+
+        IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+        ia.setName("Faulty Allocation");
+        ia.setMds_url("");
+        Assert.assertThrows(MDSClientConfigurationException.class, () -> {
+            MDSClient mc = new MDSClient(ia);
+        });
+        try{
+            MDSClient mc = new MDSClient(ia);
+        }catch(Exception e){
+            String msg = e.getMessage();
+            Assert.assertEquals("MDS URL is not set for Allocation Faulty Allocation", msg);
+        }
+    }
+
+    @Test
+    @DisplayName("Test for ConfigurationException if MDS username is not set")
+    void configurationException_userNamel()
+    {
+
+        IGSNAllocation ia = TestHelper.mockIGSNAllocation();
+        ia.setName("Faulty Allocation");
+        ia.setMds_username("     ");
+        Assert.assertThrows(MDSClientConfigurationException.class, () -> {
+            MDSClient mc = new MDSClient(ia);
+        });
+        try{
+            MDSClient mc = new MDSClient(ia);
+        }catch(Exception e){
+            String msg = e.getMessage();
+            Assert.assertEquals("MDS Username is not set for Allocation Faulty Allocation", msg);
         }
     }
 
