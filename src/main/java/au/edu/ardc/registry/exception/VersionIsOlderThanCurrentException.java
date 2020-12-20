@@ -20,14 +20,6 @@ public class VersionIsOlderThanCurrentException extends APIException {
 	}
 
 	@Override
-	public String getMessage() {
-		return String.format(
-				"Given version content is older than current version for "
-						+ "Identifier %s current Date: %s, Incoming Date : %s",
-				identifierValue, currentDate, versionDate);
-	}
-
-	@Override
 	public String getMessageID() {
 		return "api.error.version-already-exist";
 	}

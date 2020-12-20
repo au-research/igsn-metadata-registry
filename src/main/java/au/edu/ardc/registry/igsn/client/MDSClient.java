@@ -47,11 +47,11 @@ public class MDSClient {
 		String mds_username = allocation.getMds_username();
 		String mds_password = allocation.getMds_password();
 		mds_url = allocation.getMds_url();
-		if (mds_username == null)
+		if (mds_username == null || mds_username.trim().isEmpty())
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.user_name, allocation.getName());
-		if (mds_password == null)
+		if (mds_password == null || mds_password.trim().isEmpty())
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.password, allocation.getName());
-		if (mds_url == null)
+		if (mds_url == null || mds_url.trim().isEmpty())
 			throw new MDSClientConfigurationException(MDSClientConfigurationException.Configuration.server_url, allocation.getName());
 		// add custom timeout
 		TcpClient tcpClient = TcpClient.create()

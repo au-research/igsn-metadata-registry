@@ -15,12 +15,6 @@ public class VersionContentAlreadyExistsException extends APIException {
 	}
 
 	@Override
-	public String getMessage() {
-		return String.format("Given version content already exists for Record %s with schema: %s", identifierValue,
-				schema);
-	}
-
-	@Override
 	public String getMessageID() {
 		return "api.error.version-already-exist";
 	}

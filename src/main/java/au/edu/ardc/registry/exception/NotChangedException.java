@@ -24,11 +24,6 @@ public class NotChangedException extends APIException {
     }
 
     @Override
-    public String getMessage() {
-        return String.format("The %s's %s, already set to %s", targetObject, targetField , value);
-    }
-
-    @Override
     public String[] getArgs() {
         return new String[] { targetObject, targetField , value};
     }
