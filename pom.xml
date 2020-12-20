@@ -11,7 +11,7 @@
 
 	<groupId>au.edu.ardc.registry</groupId>
 	<artifactId>metadata-registry</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 	<name>Metadata Registry</name>
 	<description>Metadata Registry</description>
@@ -409,7 +409,7 @@
 			<plugin>
 				<groupId>io.spring.javaformat</groupId>
 				<artifactId>spring-javaformat-maven-plugin</artifactId>
-				<version>0.0.25</version>
+				<version>0.0.26</version>
 			</plugin>
 
 		</plugins>
