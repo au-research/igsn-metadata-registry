@@ -12,6 +12,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.DS_Store
 
 ### IntelliJ IDEA ###
 .idea
@@ -28,8 +29,11 @@ target/
 build/
 
 ### config files ###
-
 src/main/resources/application.properties
+src/test/resources/application-integration.properties
+
+### logs artifacts ###
+logs
 
 ### VS Code ###
 .vscode/
