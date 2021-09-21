@@ -1,0 +1,143 @@
+{
+  "allowRemoteResourceManagement": true,
+  "policyEnforcementMode": "ENFORCING",
+  "resources": [
+    {
+      "name": "IGSN Allocation 10273/XXAA",
+      "type": "urn:ardc:igsn:allocation",
+      "ownerManagedAccess": false,
+      "displayName": "Production Allocation for AuScope",
+      "attributes": {
+        "password": [
+          "xxxxxxx"
+        ],
+        "prefix": [
+          "10273"
+        ],
+        "namespace": [
+          "XXAA"
+        ],
+        "groups": [
+          "/AuScope"
+        ],
+        "server_url": [
+          "https://doidb.wdc-terra.org/igsn/"
+        ],
+        "username": [
+          "xxxxxx"
+        ],
+        "status": [
+          "prod"
+        ]
+      },
+      "_id": "d55e5ff3-72c1-4494-9e61-205eaecfb6d3",
+      "uris": [],
+      "scopes": [
+        {
+          "name": "import"
+        },
+        {
+          "name": "update"
+        },
+        {
+          "name": "create"
+        }
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "id": "04196638-4a2f-49c1-b9ae-fc9aee7db346",
+      "name": "is an IGSN_USER",
+      "type": "role",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "roles": "[{\"id\":\"IGSN_USER\",\"required\":true}]"
+      }
+    },
+    {
+      "id": "6b1750d1-277e-408c-948d-3adf86c002b4",
+      "name": "is an IGSN_ADMIN",
+      "type": "role",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "roles": "[{\"id\":\"IGSN_ADMIN\",\"required\":true}]"
+      }
+    },
+    {
+      "id": "6e0a6aea-d049-49bd-b226-81e853b2d47c",
+      "name": "Default Policy",
+      "description": "A policy that grants access only for users within this realm",
+      "type": "js",
+      "logic": "POSITIVE",
+      "decisionStrategy": "AFFIRMATIVE",
+      "config": {
+        "code": "// by default, grants any permission associated with this policy\n$evaluation.grant();\n"
+      }
+    },
+    {
+      "id": "c8a59f10-3483-4185-962c-44089561e5d4",
+      "name": "is in AuScope group",
+      "type": "group",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "groups": "[{\"path\":\"/AuScope\",\"extendChildren\":true}]"
+      }
+    },
+    {
+      "id": "050c3ff9-e38d-4d24-aae4-84ab0bfdabc2",
+      "name": "IGSN ADMIN can import",
+      "type": "scope",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "scopes": "[\"import\"]",
+        "applyPolicies": "[\"is an IGSN_ADMIN\"]"
+      }
+    },
+    {
+      "id": "a8bd866f-9c2b-4445-b32e-71896c86e6cd",
+      "name": "Access ISGN Allocation 10273/XXAA",
+      "type": "resource",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "resources": "[\"IGSN Allocation 10273/XXAA\"]",
+        "applyPolicies": "[\"is in AuScope group\",\"is an IGSN_USER\"]"
+      }
+    },
+    {
+      "id": "ea35303d-6703-4e9a-8ac2-8c08ed8f8208",
+      "name": "Default Permission",
+      "description": "A permission that applies to the default resource type",
+      "type": "resource",
+      "logic": "POSITIVE",
+      "decisionStrategy": "UNANIMOUS",
+      "config": {
+        "defaultResourceType": "urn:example-igsn-client:resources:default",
+        "applyPolicies": "[\"Default Policy\"]"
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "id": "655de0ae-732d-4e70-b65b-a90541f8b1e7",
+      "name": "create",
+      "displayName": "create"
+    },
+    {
+      "id": "d7a0e69e-1d10-454d-af62-2bca9bd7c0af",
+      "name": "update",
+      "displayName": "update"
+    },
+    {
+      "id": "f9306ceb-120d-4eba-819e-a4a7c5d6bea9",
+      "name": "import",
+      "displayName": "import"
+    }
+  ],
+  "decisionStrategy": "UNANIMOUS"
+}
