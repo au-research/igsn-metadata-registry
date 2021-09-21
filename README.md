@@ -24,6 +24,8 @@ The solution also supports integration with external services such as [IGSN](htt
 * Apache Maven 3.2.1+ 
 * Keycloak 10.0.1
 
+For detailed requirements and installation instructions, please refer to the [Installation Guide](docs/Install.md) and [Keycloak Guide](docs/Keycloak.md)
+
 ## Quick Start
 ```
 cp /src/main/resources/application.properties.sample /src/main/resources/application.properties
