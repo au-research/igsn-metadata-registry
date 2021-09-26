@@ -2,7 +2,7 @@
 
 IGSN Metadata Registry is a metadata registry solution that enables the creation and management of metadata records. While IGSN Metadata Registry was primarily developed by ARDC as a solution for providing [International Geo Sample Numbers](https://www.ands.org.au/working-with-data/citation-and-identifiers/igsn) (IGSN) identifier minting and management services to end user clients, the solution has been designed in a way that makes it reusable for other metadata registry requirements. Two of the main design principles underpinning IGSN Metadata Registry is extensibility and schema agnosticism. Through the addition of custom handlers, IGSN Metadata Registry can be extended to support the management and creation of virtually any schema and serialisation format. 
 
-The solution also supports integration with external services such as [IGSN](https://doidb.wdc-terra.org/igsn/) for the minting and management of persistent identifiers associated with metadata records. insertNameHereis is Java based and backed by a MySQL database.
+The solution also supports integration with external services such as [IGSN](https://doidb.wdc-terra.org/igsn/) for the minting and management of persistent identifiers associated with metadata records. IGSN Metadata Registry is Java based and backed by a MySQL database.
 
 ## Features
 * Metadata Store
